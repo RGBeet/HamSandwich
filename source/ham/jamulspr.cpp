@@ -144,6 +144,9 @@ void sprite_t::Draw(int x, int y, MGLDraw *mgl) const
 	int srcx, srcy;
 	byte noDraw;
 
+	if (this == nullptr)
+		return;
+
 	x -= ofsx;
 	y -= ofsy;
 	int constrainX2 = ResolveConstrainX2(mgl);

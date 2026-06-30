@@ -3,6 +3,7 @@
 #include <string.h>
 #include <algorithm>
 #include <string>
+#include <math.h>
 #include "mgldraw.h"
 #include "appdata.h"
 #include "owned_sdl.h"
@@ -693,10 +694,48 @@ void FontPrintStringBright(int x, int y, std::string_view s, const mfont_t *font
 	}
 }
 
+int GetWavyVerticalOffset(int x, int clock, int wavy)
+{
+	return cos((x/4 + clock/2 + wavy) / 8.0) * 8;
+}
+
 void FontPrintStringSolid(int x, int y, std::string_view s, const mfont_t *font, byte color)
 {
 	for (char ch : s)
 	{
+		FontPrintCharSolid(x, y, ch, font, color);
+		x += CharWidth(ch, font) + font->gapSize;
+	}
+}
+
+void FontPrintStringWavy(int x, int y, std::string_view s, const mfont_t* font, int clock)
+{
+	int wavy = 0;
+	for (char ch : s)
+	{
+		wavy++;
+		FontPrintChar(x, y + GetWavyVerticalOffset(x, clock, wavy), ch, font);
+		x += CharWidth(ch, font) + font->gapSize;
+	}
+}
+
+void FontPrintStringWavyBright(int x, int y, std::string_view s, const mfont_t* font, char bright, int clock)
+{
+	int wavy = 0;
+	for (char ch : s)
+	{
+		wavy++;
+		FontPrintChar(x, y + GetWavyVerticalOffset(x, clock, wavy), ch, font);
+		x += CharWidth(ch, font) + font->gapSize;
+	}
+}
+
+void FontPrintStringWavySolid(int x, int y, std::string_view s, const mfont_t* font, byte color, int clock)
+{
+	int wavy = 0;
+	for (char ch : s)
+	{
+		wavy++;
 		FontPrintCharSolid(x, y, ch, font, color);
 		x += CharWidth(ch, font) + font->gapSize;
 	}
@@ -708,6 +747,17 @@ void FontPrintStringGlow(int x, int y, std::string_view s, const mfont_t *font, 
 	{
 		FontPrintCharGlow(x, y, ch, bright, font);
 		x+=CharWidth(ch,font)+font->gapSize;
+	}
+}
+
+void FontPrintStringWavyGlow(int x, int y, std::string_view s, const mfont_t* font, char bright, int clock)
+{
+	int wavy = 0;
+	for (char ch : s)
+	{
+		FontPrintCharGlow(x, y+cos(wavy/2)*15, ch, bright, font);
+		wavy++;
+		x += CharWidth(ch, font) + font->gapSize;
 	}
 }
 

@@ -1,0 +1,125 @@
+#ifndef DISPLAY_H
+#define DISPLAY_H
+
+#include <string_view>
+#include <utility>
+#include "mgldraw.h"
+#include "jamulspr.h"
+#include "jamulfont.h"
+#include "cossin.h"
+#include "map.h"
+#include "tile.h"
+#include "bitflags.h"
+
+/* This file handles all screen displaying.  It's a go-between so that you
+   don't have to pass the mgldraw object everywhere, and also handles the display
+   list and camera, so everything is drawn in sorted order (or not drawn). */
+
+constexpr int MAX_DISPLAY_OBJS = 1024 * 4;
+
+constexpr int DISPLAY_XBORDER = 128;
+constexpr int DISPLAY_YBORDER = 128;
+
+// Display object flags.
+enum DisplayFlags : word
+{
+	DISPLAY_DRAWME      = 1 << 0,
+	DISPLAY_SHADOW      = 1 << 1,
+	DISPLAY_WALLTILE    = 1 << 2,
+	DISPLAY_ROOFTILE    = 1 << 3,
+	DISPLAY_PARTICLE    = 1 << 4,
+	DISPLAY_GHOST       = 1 << 5,
+	DISPLAY_GLOW        = 1 << 6,
+	DISPLAY_TRANSTILE   = 1 << 7,
+	DISPLAY_LIGHTNING   = 1 << 8,
+	DISPLAY_OFFCOLOR    = 1 << 9,
+	DISPLAY_TILESPRITE  = 1 << 10,
+};
+BITFLAGS(DisplayFlags)
+
+// Text file display modes.
+// SERIALIZED in special effect Show Pic/Movie.
+enum : byte
+{
+	TEXTFILE_NORMAL     = 0,
+	TEXTFILE_YERFDOG    = 1,
+	TEXTFILE_COMPUTER   = 2,
+	TEXTFILE_MAX
+};
+
+struct DisplayObj
+{
+	const sprite_t *spr;
+	int x,y,z,z2;
+	DisplayFlags flags;
+	word hue;
+	char bright;
+	char light[9];
+};
+bool operator<(const DisplayObj& lhs, const DisplayObj &rhs);
+
+class DisplayList
+{
+	public:
+		DisplayList();
+
+		bool DrawSprite(int x,int y,int z,int z2,word hue,char bright,const sprite_t *spr,DisplayFlags flags);
+		void ClearList();
+		void Render();
+
+	private:
+		int nextfree;
+		DisplayObj dispObj[MAX_DISPLAY_OBJS];
+};
+
+bool InitDisplay(MGLDraw *mainmgl);
+void ExitDisplay(void);
+
+byte *GetDisplayScreen(void);
+
+void DrawMouseCursor(int x,int y);
+
+void PutCamera(int x,int y);
+void GetCamera(int *x,int *y);
+std::pair<int, int> GetCamera();
+// call this once per gameloop, with the X and Y of the object you want the camera to track
+void UpdateCamera(int x,int y,int dx,int dy,Map *map);
+void Print(int x,int y,std::string_view s,char bright,byte font);
+void PrintGlow(int x,int y,std::string_view s,char bright,byte font);
+void PrintUnGlow(int x,int y,std::string_view s,byte font);
+void PrintProgressiveGlow(int x,int y,std::string_view s,int bright,byte font);
+void PrintRect(int x,int y,int x2,int y2,int height,std::string_view s,byte font);
+void PrintGlowRect(int x,int y,int x2,int y2,int height,std::string_view s,byte font);
+void PrintGlowRectBright(int x,int y,int x2,int y2,int height,std::string_view s,char bright,byte font);
+void PrintUnGlowRect(int x,int y,int x2,int y2,int height,std::string_view s,byte font);
+void PrintLimited(int x,int y,int maxX,std::string_view s,char bright,byte font);
+void PrintGlowLimited(int x,int y,int maxX,std::string_view s,char bright,byte font);
+
+void PrintWavy(int x, int y, std::string_view s, char bright, byte font, int clock);
+void PrintWavyGlow(int x, int y, std::string_view s, char bright, byte font, int clock);
+
+void CenterPrint(int x,int y,std::string_view s,char bright,byte font);
+void RenderItAll(world_t *world,Map *map,MapRenderFlags flags);
+int GetStrLength(std::string_view s,byte font);
+
+void SprDraw(int x,int y,int z,byte hue,char bright,const sprite_t *spr,DisplayFlags flags);
+void SprDrawOff(int x,int y,int z,byte fromHue,byte hue,char bright,const sprite_t *spr,DisplayFlags flags);
+void SprDrawTile(int x,int y,word tile,char light,DisplayFlags flags);	// use a tile as a sprite
+
+void WallDraw(int x,int y,word wall,word floor,const char *light,DisplayFlags flags);
+void RoofDraw(int x,int y,word roof,const char *light,DisplayFlags flags);
+void ParticleDraw(int x,int y,int z,byte type,byte size,DisplayFlags flags);
+void LightningDraw(int x,int y,int x2,int y2,byte bright,char range);
+
+void DrawBox(int x,int y,int x2,int y2,byte c);
+void DrawFillBox(int x,int y,int x2,int y2,byte c);
+void DrawDebugBox(int x,int y,int x2,int y2);
+void ShakeScreen(byte howlong);
+TASK(void) ShowImageOrFlic(const char *str,byte nosnd,byte mode);
+
+MGLDraw *GetDisplayMGL(void);
+byte GetGamma(void);
+void SetGamma(byte g);
+void DrawLine(int x,int y,int x2,int y2,byte col);
+
+#endif
