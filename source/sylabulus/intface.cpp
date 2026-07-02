@@ -3,14 +3,16 @@
 #include "player.h"
 #include "shop.h"
 
-constexpr int SPR_LIFEMETER   = 0;
-constexpr int SPR_RAGEGAUGE   = 1;
+constexpr int SPR_LIFEMETER   = 68;
+constexpr int SPR_POWERUP	  = 69;
+constexpr int SPR_RAGEGAUGE   = 70;
+constexpr int SPR_VARBAR	  = 71;
+
 constexpr int SPR_SCORE       = 2;
 constexpr int SPR_WEAPONBOX   = 3;
 constexpr int SPR_BRAINOMETER = 4;
 constexpr int SPR_HAMMERBOX   = 5;
 constexpr int SPR_KEYBOX      = 6;
-constexpr int SPR_POWERUP     = 7;
 constexpr int SPR_OXYGAUGE    = 8;
 constexpr int SPR_ENEMYLIFE   = 11;
 constexpr int SPR_NUMBERS     = 12;
@@ -22,11 +24,11 @@ constexpr int SPR_CANDLE      = 51;
 constexpr int SPR_KEYCH       = 52;
 constexpr int SPR_BRAIN       = 56;
 constexpr int SPR_RAGE        = 57;
-constexpr int SPR_VARBAR      = 64;
-constexpr int SPR_TIME        = 65;
-constexpr int SPR_LOCK        = 66;
-constexpr int SPR_BACKDROP    = 67;
-constexpr int SPR_HEAD		  = 68;
+constexpr int SPR_LOCK        = 65;
+constexpr int SPR_PORTRAIT    = 66;
+constexpr int SPR_HEAD		  = 67;
+
+constexpr int SPR_TIME = 999;
 
 constexpr int OLD_SPR_LIFEMETER   = 0;
 constexpr int OLD_SPR_IFHAMMER    = 1;
@@ -70,6 +72,25 @@ enum {
 	INTF_TIME,
 	NUM_INTF,
 };
+
+/*
+
+	Portrait of player
+	Life meter
+	Effects meter
+	Rage meter
+
+	Hammers/pants/spring/reverse
+	Weapon (icon, name, ammo meter)
+	Time
+	Score
+	Brains
+	Coins
+
+	Oxygen
+
+
+*/
 
 enum {
 	IV_NONE,
@@ -122,40 +143,40 @@ struct intface_t
 };
 
 intface_t defaultSetup[NUM_INTF]={
-	{0,-100,0,48,	// power ups
+	{56,-50,56,20,	// power ups
 	 SPR_POWERUP,
-	 IV_VERTMETER,64,
-	 2,66,
+	 IV_SMALLMETER,64,
+	 2,2,
 	 0,0,
 	 0},
-	{0,-50,17,18,	// keys
+	{0,-50,0,38,	// keys
 	 SPR_KEYBOX,
 	 IV_KEYS,0,
 	 0,0,
 	 0,0,
 	 0},
-	{0,-50,17,10,	// varbar
+	{56,-47,56,39,	// varbar
 	 SPR_VARBAR,
 	 IV_SMALLMETER,128,
 	 18,2,
 	 0,0,
 	 0},
-	{0,-50,17,10,	// rage meter
+	{40,-39,40,31,	// rage meter
 	 SPR_RAGEGAUGE,
 	 IV_SMALLMETER,128,
-	 18,2,
+	 17,1,
 	 0,100,
 	 0},
-	{165,-50,165,-1,	// oxygen
+	{330,-50,330,-1,	// oxygen
 	 SPR_OXYGAUGE,
 	 IV_DIAL,192,
 	 14,12,
 	 0,128,
 	 0},
-	{0,-50,17,0,		// life meter
+	{40,-68,40,3,		// life meter
 	 SPR_LIFEMETER,
 	 IV_BIGMETER,128,
-	 18,2,
+	 17,2,
 	 0,128,
 	 0},
 	{SCRWID-1,-102,SCRWID-1,25,	// brains
@@ -182,7 +203,7 @@ intface_t defaultSetup[NUM_INTF]={
 	 -54,3,
 	 0,1000,
 	 0},
-	{-40,0,0,-1,		// hammers
+	{188,0,188,0,		// hammers
 	 SPR_HAMMERBOX,
 	 IV_ICONS,0,
 	 0,0,
@@ -200,7 +221,7 @@ intface_t defaultSetup[NUM_INTF]={
 	 -18,-14,
 	 0,0,
 	 0},
-	{SCRWID-79,-50,SCRWID-79,-1,	// time
+	{SCRWID - 79,-50,SCRWID - 79,-1,	// time
 	 SPR_TIME,
 	 IV_TIME,2,
 	 -19,3,
@@ -413,30 +434,41 @@ void RenderRage(byte size,MGLDraw *mgl)
 	intfaceSpr->GetSprite(SPR_RAGE+size)->Draw(320,240,mgl);
 }
 
-void DrawBigMeter(int x,int y,int value,int length,MGLDraw *mgl)
+void DrawBigMeter(int x, int y, int value, int length, int height, MGLDraw* mgl)
 {
-	byte c;
-
-	if(value==0)
+	if (value <= 0)
 		return;
 
-	if(value>length)
-		value=length;
+	if (value > length)
+		value = length;
 
-	c=32;
+	byte c = 32;
 
-	if(value<length*2/3)
-		c=162;
-	if(value<length/4)
-		c=128;
+	if (value < length * 2 / 3)
+		c = 162;
+	if (value < length / 4)
+		c = 128;
 
-	mgl->FillBox(x,y,x+value-1,y,c+10);
-	mgl->FillBox(x,y+1,x+value-1,y+1,c+12);
-	mgl->FillBox(x,y+2,x+value-1,y+2,c+15);
-	mgl->FillBox(x,y+3,x+value-1,y+3,c+26);
-	mgl->FillBox(x,y+4,x+value-1,y+5,c+15);
-	mgl->FillBox(x,y+6,x+value-1,y+6,c+12);
-	mgl->FillBox(x,y+7,x+value-1,y+7,c+10);
+	for (int row = 0; row < height; row++)
+	{
+		float t = (height <= 1) ? 0.0f : (float)row / (height - 1);
+
+		// Distance from center (0 at center, 1 at edge)
+		float d = fabsf(t - 0.5f) * 2.0f;
+
+		byte shade;
+
+		if (d < 0.25f)
+			shade = c + 26; // brightest center
+		else if (d < 0.5f)
+			shade = c + 15;
+		else if (d < 0.75f)
+			shade = c + 12;
+		else
+			shade = c + 10;
+
+		mgl->FillBox(x, y + row, x + value - 1, y + row, shade);
+	}
 }
 
 void DrawEvilMeter(int x,int y,int value,int length,MGLDraw *mgl)
@@ -583,80 +615,83 @@ void DrawDial(int x,int y,int value,byte length,MGLDraw *mgl)
 	}
 }
 
-void DrawPULightning(int x,int y,int height,byte color,MGLDraw *mgl)
+void DrawPULightning(int x, int y, int width, byte color, MGLDraw* mgl)
 {
-	byte *scrn;
+	byte* scrn;
 	int pitch;
-	int i,x2,b,db;
+	int i, y2, b, db;
 
-	pitch=mgl->GetWidth();
-	scrn=mgl->GetScreen();
-	scrn+=x+y*pitch;
+	pitch = mgl->GetWidth();
+	scrn = mgl->GetScreen();
+	scrn += y * pitch + x;
 
-	x2=Random(4);
-	b=Random(8);
-	if(Random(2))
-		db=1;
-	else
-		db=-1;
-	for(i=0;i<height;i++)
+	y2 = Random(4);
+	b = Random(8);
+
+	db = Random(2) ? 1 : -1;
+
+	for (i = 0;i < width;i++)
 	{
-		if(x+x2>=0 && x+x2<mgl->GetWidth()-1 && y>=0 && y<mgl->GetHeight())
+		int py = y + y2;
+
+		if (py >= 0 && py < mgl->GetHeight() - 1 &&
+			x + i >= 0 && x + i < mgl->GetWidth())
 		{
-			scrn[x2]=color+b;
-			scrn[x2+1]=color+b;
+			scrn[y2 * pitch] = color + b;
+			scrn[y2 * pitch + pitch] = color + b;
 		}
-		b+=db;
-		if(b>7)
+
+		b += db;
+
+		if (b > 7)
 		{
-			b=7;
-			db=-1;
+			b = 7;
+			db = -1;
 		}
-		if(b<0)
+		if (b < 0)
 		{
-			b=0;
-			db=1;
+			b = 0;
+			db = 1;
 		}
-		switch(Random(3))
+
+		switch (Random(3))
 		{
-			case 1:
-				x2++;
-				if(x2>3)
-					x2=3;
-				break;
-			case 2:
-				x2--;
-				if(x2<0)
-					x2=0;
-				break;
+		case 1:
+			y2 = std::min(y2 + 1, 3);
+			break;
+		case 2:
+			y2 = std::max(y2 - 1, 0);
+			break;
 		}
-		scrn-=pitch;
-		y--;
+
+		scrn++; // move right one pixel
 	}
 }
 
+byte POWERUP_WIDTH = 128;
+
 void DrawPowerupBar(int x,int y,MGLDraw *mgl)
 {
-	byte height[7],th;
+	byte width[7],th;
 	byte color[7],tc;
 	int i,swap;
 
-	height[0]=player.shield*64/240;
+	width[0]=player.shield*POWERUP_WIDTH/240;
 	color[0]=32*3+16;	// blue for shield
-	height[1]=player.garlic*64/255;
+	width[1]=player.garlic*POWERUP_WIDTH/255;
 	color[1]=32*0+20;	// light grey for garlic
-	height[2]=player.speed*64/255;
+	width[2]=player.speed*POWERUP_WIDTH/255;
 	color[2]=32*7+16;	// aqua for speed
-	height[3]=player.invisibility*64/255;
+	width[3]=player.invisibility*POWERUP_WIDTH/255;
 	color[3]=32*6+16;	// purple for invis
-	height[4]=player.ammoCrate*64/255;
+	width[4]=player.ammoCrate*POWERUP_WIDTH/255;
 	color[4]=32*4+16;	// red for ammo
 	if(goodguy)
-		height[5]=goodguy->poison*64/255;
+		width[5]=goodguy->poison*POWERUP_WIDTH/255;
 	else
-		height[5]=0;
+		width[5]=0;
 	color[5]=32*1+16;	// green for poison
-	height[6]=player.cheesePower*64/255;
+	width[6]=player.cheesePower*POWERUP_WIDTH/255;
 	color[6]=32*5+16;	// yellow for cheese
 
 	swap=1;
@@ -665,26 +700,32 @@ void DrawPowerupBar(int x,int y,MGLDraw *mgl)
 		swap=0;
 		for(i=0;i<6;i++)
 		{
-			if(height[i]<height[i+1])
+			if(width[i]< width[i+1])
 			{
-				th=height[i];
-				tc=color[i];
-				height[i]=height[i+1];
-				color[i]=color[i+1];
-				height[i+1]=th;
-				color[i+1]=tc;
-				swap=1;
+				th = width[i];
+				tc = color[i];
+				width[i] = width[i+1];
+				color[i] = color[i+1];
+				width[i+1] = th;
+				color[i+1] = tc;
+				swap = 1;
 			}
 		}
 	}
 
 	for(i=0;i<6;i++)
 	{
-		if(height[i]>0)
+		if(width[i]>0)
 		{
-			DrawPULightning(x,y,height[i],color[i],mgl);
+			DrawPULightning(x,y, width[i],color[i],mgl);
 		}
 	}
+}
+
+void DrawPortrait(int x, int y, MGLDraw* mgl)
+{
+	intfaceSpr->GetSprite(SPR_PORTRAIT)->Draw(x, y, mgl);
+	intfaceSpr->GetSprite(SPR_HEAD)->Draw(x + 19, y + 19, mgl); // todo: add more players
 }
 
 void DrawKeys(int x,int y,MGLDraw *mgl)
@@ -728,175 +769,19 @@ void UpdateInterface(Map *map)
 {
 	int i,j;
 
-	if(player.comboClock && player.combo>1 && comboY<2)
-		comboY+=2;
-	if(!player.comboClock && comboY>-22)
-		comboY-=2;
-	if(player.comboClock && player.combo>1)
-		curCombo=player.combo;
-
-	if(player.shield || player.garlic || player.speed || player.invisibility || player.ammoCrate || (goodguy && goodguy->poison) ||
-		player.cheesePower)
-	{
-		intf[INTF_POWERUP].tx=0;
-		intf[INTF_POWERUP].ty=50;
-	}
-	else
-	{
-		intf[INTF_POWERUP].tx=-10;
-		intf[INTF_POWERUP].ty=48;
-	}
-
-	// set up the correct destinations for each piece
-	if(player.keys[0]+player.keys[1]+player.keys[2]+player.keys[3])
-	{
-		intf[INTF_KEYS].tx=17;
-		intf[INTF_KEYS].ty=25; // used to be 18, upped by 7 for varbar
-	}
-	else
-	{
-		intf[INTF_KEYS].tx=17;
-		intf[INTF_KEYS].ty=0;
-	}
-	if(player.varbarMax>0)
-	{
-		intf[INTF_VARBAR].tx=17;
-		intf[INTF_VARBAR].ty=17;
-	}
-	else
-	{
-		intf[INTF_VARBAR].tx=17;
-		intf[INTF_VARBAR].ty=7;
-
-		// move keys up
-		intf[INTF_KEYS].ty-=7;
-	}
-	if(player.rage>0 && player.ability[ABIL_RAGE])
-	{
-		intf[INTF_RAGE].tx=17;
-		intf[INTF_RAGE].ty=10;
-	}
-	else
-	{
-		intf[INTF_RAGE].tx=17;
-		intf[INTF_RAGE].ty=0;
-
-		// and move keys up
-		intf[INTF_KEYS].ty-=7;
-		intf[INTF_VARBAR].ty-=7;
-	}
-
-	if(map->flags&(MAP_UNDERWATER|MAP_OXYGEN))
-	{
-		intf[INTF_OXYGEN].tx=165;
-		intf[INTF_OXYGEN].ty=-1;
-	}
-	else
-	{
-		intf[INTF_OXYGEN].tx=165;
-		intf[INTF_OXYGEN].ty=-25;
-	}
-
-	intf[INTF_LIFE].tx=17;
-	intf[INTF_LIFE].ty=0;
-
-	if(player.hammers==0 && (player.hammerFlags&(HMR_REVERSE|HMR_REFLECT))==0 && player.hamSpeed==16)
-	{
-		// hammer display is unneeded, so shift life over to the left
-		intf[INTF_LIFE].tx-=17;
-		// and rage
-		intf[INTF_RAGE].tx-=17;
-		// and O2
-		intf[INTF_OXYGEN].tx-=17;
-		// and keys
-		intf[INTF_KEYS].tx-=17;
-		// and varbar!
-		intf[INTF_VARBAR].tx-=17;
-		// and shift powerup meter up
-		intf[INTF_POWERUP].ty-=18;
-		if(player.rage==0)
-			intf[INTF_POWERUP].ty-=7;
-		if(!(player.keys[0]+player.keys[1]+player.keys[2]+player.keys[3]))
-			intf[INTF_POWERUP].ty-=14;
-		// and finally move the hammers themselves
-		intf[INTF_HAMMERS].tx=-30;
-		intf[INTF_HAMMERS].ty=-1;
-	}
-	else
-	{
-		intf[INTF_HAMMERS].tx=0;
-		intf[INTF_HAMMERS].ty=-1;
-	}
-
-	// now do the same stuff for the other side of the screen
-	if(player.brains>=map->numBrains)
-	{
-		intf[INTF_BRAINS].tx=GetDisplayMGL()->GetWidth()+30;
-		intf[INTF_BRAINS].ty=25;
-	}
-	else
-	{
-		intf[INTF_BRAINS].tx=GetDisplayMGL()->GetWidth()-1;
-		intf[INTF_BRAINS].ty=25;
-	}
-	if(player.weapon)
-	{
-		intf[INTF_WEAPON].tx=GetDisplayMGL()->GetWidth()-1;
-		intf[INTF_WEAPON].ty=9;
-	}
-	else
-	{
-		intf[INTF_WEAPON].tx=GetDisplayMGL()->GetWidth()-1;
-		intf[INTF_WEAPON].ty=-10;
-		intf[INTF_BRAINS].ty-=10;
-	}
-
-	if(profile.progress.hudChoice == HudChoice::Advanced)
-	{
-		intf[INTF_TIME].tx=GetDisplayMGL()->GetWidth()-79;
-		intf[INTF_TIME].ty=-1;
-	}
-	else
-	{
-		intf[INTF_TIME].tx=GetDisplayMGL()->GetWidth()-79;
-		intf[INTF_TIME].ty=-20;
-	}
-
-	if(profile.progress.hudChoice == HudChoice::Advanced && player.weapon)
-	{
-		intf[INTF_LOCK].tx=GetDisplayMGL()->GetWidth()-79;
-		intf[INTF_LOCK].ty=16;
-	}
-	else
-	{
-		intf[INTF_LOCK].tx=GetDisplayMGL()->GetWidth()-60;
-		intf[INTF_LOCK].ty=-3;
-	}
-
-	if(player.coins)
-	{
-		intf[INTF_COINS].tx=GetDisplayMGL()->GetWidth()-1;
-		intf[INTF_COINS].ty=GetDisplayMGL()->GetHeight()-1;
-	}
-	else
-	{
-		intf[INTF_COINS].tx=GetDisplayMGL()->GetWidth()-1;
-		intf[INTF_COINS].ty=GetDisplayMGL()->GetHeight()+20;
-	}
-
 	intfFlip=1-intfFlip;
 	for(i=0;i<NUM_INTF;i++)
 	{
 		switch(i)	// whatever is unique to each
 		{
 			case INTF_LIFE:
-				intf[i].vDesired=player.life*128/goodguy->maxHP;
+				intf[i].vDesired = player.life*128/goodguy->maxHP;
 				if(intf[i].value<intf[i].vDesired-10)
-					intf[i].value+=3;
+					intf[i].value += 3;
 				if(intf[i].value>intf[i].vDesired+10)
-					intf[i].value-=3;
+					intf[i].value -= 3;
 				if(intf[i].value>128)
-					intf[i].value=128;
+					intf[i].value = 128;
 				break;
 			case INTF_RAGE:
 				intf[i].vDesired=player.rage*intf[i].valueLength/(127*256);
@@ -1213,19 +1098,22 @@ void RenderInterface(MGLDraw *mgl)
 			intfaceSpr->GetSprite(SPR_STEALTH)->DrawOffColor(625,460,mgl,1,5,0);
 	}
 
-
-	intfaceSpr->GetSprite(SPR_BACKDROP)->Draw(0, 0, mgl); // draws the backdrop
-	intfaceSpr->GetSprite(SPR_HEAD)->Draw(16, 16, mgl); // draw a cute little head!
-
 	for(i=0;i<NUM_INTF;i++)
 	{
 		intfaceSpr->GetSprite(intf[i].spr)->Draw(intf[i].x,intf[i].y,mgl);
 
+		switch (i)
+		{
+			case INTF_LIFE:
+				DrawBigMeter(intf[i].x + intf[i].vOffX, intf[i].y + intf[i].vOffY, intf[i].value, intf[i].valueLength, 12, mgl);
+				break;
+			case INTF_POWERUP:
+				DrawPowerupBar(intf[i].x + intf[i].vOffX, intf[i].y + intf[i].vOffY, mgl);
+				break;
+		}
+
 		switch(intf[i].valueType)
 		{
-			case IV_BIGMETER:
-				DrawBigMeter(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value,intf[i].valueLength,mgl);
-				break;
 			case IV_EVILMETER:
 				DrawEvilMeter(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value,intf[i].valueLength,mgl);
 				if(monsAlive || intfFlip)
@@ -1253,10 +1141,7 @@ void RenderInterface(MGLDraw *mgl)
 					DrawNumber(intf[i].x+intf[i].vOffX-intf[i].otherVal,intf[i].y+intf[i].vOffY,intf[i].value / 60,intf[i].	valueLength,mgl);
 				break;
 			case IV_VERTMETER:
-				if(i==INTF_POWERUP)
-					DrawPowerupBar(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,mgl);
-				else
-					DrawVertMeter(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value,intf[i].valueLength,mgl);
+				DrawVertMeter(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value,intf[i].valueLength,mgl);
 				break;
 			case IV_KEYS:
 				DrawKeys(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,mgl);
@@ -1277,6 +1162,8 @@ void RenderInterface(MGLDraw *mgl)
 				intfaceSpr->GetSprite(SPR_WPNNAME+player.weapon-1)->Draw(intf[i].x,intf[i].y,mgl);
 		}
 	}
+
+	DrawPortrait(0, 0, mgl); // nice lil portrait
 
 	sprintf(combo,"Combo x%d",curCombo);
 	PrintGlow(240,comboY,combo,0,2);
