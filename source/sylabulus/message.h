@@ -6,8 +6,9 @@
 struct message_t
 {
 	int x,y;
-	int dy;
+	int dx,dy;
 	int timer;
+	int maxTime;
 	int bright;
 	char brightDir;
 	char msg[32];
@@ -15,11 +16,11 @@ struct message_t
 };
 
 void InitMessage(void);
-void NewMessage(const char *txt,int time,byte priority);
-void NewBigMessage(const char *txt,int time);
+void NewMessage(const char *txt,int maxTime,byte priority);
+void NewBigMessage(const char *txt,int maxTime);
 void UpdateMessage(void);
-void RenderMessage(void);
-byte NoRepeatNewMessage(const char *txt,int time,byte priority);
+void RenderMessage(int clock);
+byte NoRepeatNewMessage(const char *txt,int maxTime,byte priority);
 const char *VariableMsg(const char *txt);
 
 #endif

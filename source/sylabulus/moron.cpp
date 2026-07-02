@@ -406,14 +406,14 @@ void RenderMoron(MGLDraw *mgl)
 	Print(32+1,4,s,-32,2);
 	Print(32,4+1,s,-32,2);
 	Print(32,4-1,s,-32,2);
-	PrintGlow(32,4,s,8,2);
+	Print(32,4,s,8,2);
 
 	sprintf(s,"Winnings: %d",winnings);
 	Print(200-1,4,s,-32,2);
 	Print(200+1,4,s,-32,2);
 	Print(200,4+1,s,-32,2);
 	Print(200,4-1,s,-32,2);
-	PrintGlow(200,4,s,8,2);
+	Print(200,4,s,8,2);
 
 	if(cursor==255)
 	{

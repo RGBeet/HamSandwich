@@ -911,7 +911,7 @@ void RenderProfButton(int x,int y,int wid,const char *txt,MGLDraw *mgl, ButtonId
 	else
 		mgl->Box(x,y,x+wid,y+PBTN_HEIGHT,32+16);
 
-	PrintGlow(x+2,y+3,txt,0,2);
+	Print(x+2,y+3,txt,0,2);
 }
 
 void RenderProfList(int x,int y,MGLDraw *mgl)
@@ -927,14 +927,14 @@ void RenderProfList(int x,int y,MGLDraw *mgl)
 			mgl->FillBox(x+1,y+1+i*18,x+149,y+i*18+18,32*1+8);
 		if(curButton == ButtonId::Profile_0 + i)
 			mgl->Box(x+1,y+1+i*18,x+149,y+i*18+18,32*1+12);
-		PrintGlowLimited(x+2,y+2+i*18,x+150,ShortName(&fileList[i*PRFNAME_LEN]),0,2);
+		PrintLimited(x+2,y+2+i*18,x+150,ShortName(&fileList[i*PRFNAME_LEN]),0,2);
 	}
 
 	if(i<MAX_PROFS)
 	{
 		if(curButton == ButtonId::Profile_New)
 			mgl->Box(x+1,y+1+i*18,x+149,y+i*18+18,32*1+12);
-		PrintGlowLimited(x+2,y+2+i*18,x+150,"<New Profile>",0,2);
+		PrintLimited(x+2,y+2+i*18,x+150,"<New Profile>",0,2);
 	}
 }
 
@@ -962,20 +962,20 @@ void RenderProfMenu(MGLDraw *mgl)
 			RenderProfButton(btn[i].x,btn[i].y,btn[i].wid,btn[i].txt,mgl,btn[i].id);
 	}
 
-	PrintGlow(472,20,"Available Profiles",0,2);
+	Print(472,20,"Profiles",0,2);
 	RenderProfList(470,38,mgl);
 
 	sprintf(s,"Username: %s",profile.name);
-	PrintGlow(20,20,s,0,2);
+	Print(20,20,s,0,2);
 
-	PrintGlow(146,62,GetDifficultyName(profile.difficulty),0,2);
-	PrintGlow(146,92,GetPlayableCharacterName(profile.playAs),0,2);
+	Print(146,62,GetDifficultyName(profile.difficulty),0,2);
+	Print(146,92,GetPlayableCharacterName(profile.playAs),0,2);
 	if(brainRadar)
-		PrintGlow(146,122,yesno[profile.brainRadar],0,2);
+		Print(146,122,yesno[profile.brainRadar],0,2);
 	if(candleRadar)
-		PrintGlow(146,152,yesno[profile.candleRadar],0,2);
+		Print(146,152,yesno[profile.candleRadar],0,2);
 	if(moveNShoot)
-		PrintGlow(146,182,yesno[profile.moveNShoot],0,2);
+		Print(146,182,yesno[profile.moveNShoot],0,2);
 
 	if(mode==PROF_DELETE)
 	{
@@ -1008,22 +1008,22 @@ void RenderKeyConfigMenu(MGLDraw *mgl)
 	for(i=0;i<NUM_KC_BTNS;i++)
 		RenderProfButton(kcBtn[i].x,kcBtn[i].y,kcBtn[i].wid,kcBtn[i].txt,mgl,kcBtn[i].id);
 
-	PrintGlow(20,20,"Configure Controls",0,2);
+	Print(20,20,"Configure Controls",0,2);
 
-	PrintGlow(20,90+3,"Up",0,2);
-	PrintGlow(20,112+3,"Down",0,2);
-	PrintGlow(20,134+3,"Left",0,2);
-	PrintGlow(20,156+3,"Right",0,2);
-	PrintGlow(20,178+3,"Hammer",0,2);
-	PrintGlow(20,200+3,"Weapon",0,2);
-	PrintGlow(20,222+3,"Wpn Lock",0,2);
+	Print(20,90+3,"Up",0,2);
+	Print(20,112+3,"Down",0,2);
+	Print(20,134+3,"Left",0,2);
+	Print(20,156+3,"Right",0,2);
+	Print(20,178+3,"Hammer",0,2);
+	Print(20,200+3,"Weapon",0,2);
+	Print(20,222+3,"Wpn Lock",0,2);
 
-	PrintGlow(110+2,68,"Keyboard 1",0,2);
-	PrintGlow(216+2,68,"Keyboard 2",0,2);
+	Print(110+2,68,"Keyboard 1",0,2);
+	Print(216+2,68,"Keyboard 2",0,2);
 
 	if(kcMode>0)
 	{
-		PrintGlow(20,250,"Press a key to assign, or ESC to cancel",0,2);
+		Print(20,250,"Press a key to assign, or ESC to cancel",0,2);
 	}
 
 	// mouse cursor

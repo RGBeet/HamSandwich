@@ -260,7 +260,7 @@ void MainMenuDisplay(MGLDraw *mgl)
 		if(cursor!=i)
 			Print(320 + x, 280 + y, menuTxt[i], (cursor == i) * 10, 0);
 		else
-			PrintWavy(320+x,280+y,menuTxt[i],(cursor==i)*10,0, titleClock);
+			PrintWavy(320+x,280+y,menuTxt[i],(cursor==i)*10,0, titleClock, 2, 1);
 	}
 
 	titleClock++;

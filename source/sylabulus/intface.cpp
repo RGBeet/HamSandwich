@@ -25,6 +25,8 @@ constexpr int SPR_RAGE        = 57;
 constexpr int SPR_VARBAR      = 64;
 constexpr int SPR_TIME        = 65;
 constexpr int SPR_LOCK        = 66;
+constexpr int SPR_BACKDROP    = 67;
+constexpr int SPR_HEAD		  = 68;
 
 constexpr int OLD_SPR_LIFEMETER   = 0;
 constexpr int OLD_SPR_IFHAMMER    = 1;
@@ -1210,6 +1212,10 @@ void RenderInterface(MGLDraw *mgl)
 		else
 			intfaceSpr->GetSprite(SPR_STEALTH)->DrawOffColor(625,460,mgl,1,5,0);
 	}
+
+
+	intfaceSpr->GetSprite(SPR_BACKDROP)->Draw(0, 0, mgl); // draws the backdrop
+	intfaceSpr->GetSprite(SPR_HEAD)->Draw(16, 16, mgl); // draw a cute little head!
 
 	for(i=0;i<NUM_INTF;i++)
 	{

@@ -2,6 +2,8 @@
 #include "sound.h"
 #include "vars.h"
 #include "progress.h"
+#include <cmath>
+#include <algorithm>
 
 message_t bigMessage;
 message_t message;
@@ -86,15 +88,18 @@ void InitMessage(void)
 void NewBigMessage(const char *txt,int time)
 {
 	SDL_strlcpy(bigMessage.msg, VariableMsg(txt), sizeof(bigMessage.msg));
-	bigMessage.x=GetDisplayMGL()->GetWidth()/2-GetStrLength(bigMessage.msg,0)/2;
-	bigMessage.y=-100;
-	bigMessage.dy=0;
-	bigMessage.timer=time;
-	bigMessage.bright=-32;
+	bigMessage.y = GetDisplayMGL()->GetHeight()/2;
+	bigMessage.x = -GetStrLength(bigMessage.msg,0)/2;
+	bigMessage.dy = 0;
+	bigMessage.dx = 13;
+	// start big timer
+	bigMessage.timer = 0;
+	bigMessage.maxTime = time;
+	bigMessage.bright = -32;
 	bigMessage.brightDir=2;
 }
 
-void NewMessage(const char *txt,int time,byte priority)
+void NewMessage(const char *txt,int time=120,byte priority=0)
 {
 	if(message.priority==1 && priority==0)
 		return;	// can't override it
@@ -102,7 +107,8 @@ void NewMessage(const char *txt,int time,byte priority)
 	message.x=2;
 	message.y=GetDisplayMGL()->GetHeight() + 4;
 	message.dy=-13;
-	message.timer=time;
+	message.timer=0;
+	message.maxTime=time;
 	message.bright=-32;
 	message.brightDir=2;
 	message.priority=priority;
@@ -116,43 +122,49 @@ byte NoRepeatNewMessage(const char *txt,int time,byte priority)
 	return 1;
 }
 
+float EaseOutCubic(float t)
+{
+    return 1.0f - powf(1.0f - t, 3.0f);
+}
+
+float EaseInCubic(float t)
+{
+    return t * t * t;
+}
+
 void UpdateBigMessage(void)
 {
-	bigMessage.y+=bigMessage.dy;
-	bigMessage.dy+=2;
-	bigMessage.bright+=bigMessage.brightDir;
+	const float screenW = (float)GetDisplayMGL()->GetWidth();
+	const float screenH = (float)GetDisplayMGL()->GetHeight();
 
-	if(bigMessage.timer)
-		bigMessage.timer--;
-	else
-		bigMessage.brightDir=-2;
+	bigMessage.y = screenH * 0.5f;
 
-	// while time still remains, don't start falling offscreen
-	if(bigMessage.timer)
+	bigMessage.timer++;
+
+	// 0-60 frames: slide in
+	if (bigMessage.timer < 60)
 	{
-		if(bigMessage.y > GetDisplayMGL()->GetHeight()/2 - 40)
-		{
-			bigMessage.y = GetDisplayMGL()->GetHeight()/2 - 40;
-			bigMessage.dy=-bigMessage.dy/2;
-			if(bigMessage.dy>-2)
-				bigMessage.dy=0;
-		}
-		if(bigMessage.bright>=32)
-			bigMessage.brightDir=-1;
-		if(bigMessage.brightDir<0 && bigMessage.bright<0)
-		{
-			bigMessage.brightDir=0;
-			bigMessage.bright=0;
-		}
+		float startX = -GetStrLength(bigMessage.msg, 0); // offscreen left
+		bigMessage.x = startX + (((screenW * 0.5f) - GetStrLength(bigMessage.msg, 0) * 0.5f) -startX) * EaseOutCubic(bigMessage.timer / 60.0f);
 	}
-	else	// go ahead and fall
+	// 60-180 frames: hold center
+	else if (bigMessage.timer < bigMessage.maxTime)
 	{
-		if(bigMessage.y>GetDisplayMGL()->GetHeight())
-		{
-			bigMessage.msg[0]='\0';
-			bigMessage.y=0;
-			bigMessage.dy=0;
-		}
+		bigMessage.x = (screenW * 0.5f) - GetStrLength(bigMessage.msg, 0) * 0.5f;
+	}
+	// 180-240 frames: slide out right
+	else if (bigMessage.timer < bigMessage.maxTime + 60.0f)
+	{
+		float t = (bigMessage.timer - bigMessage.maxTime) / 60.0f;
+		t = std::clamp(t, 0.0f, 1.0f);
+		float centerX = (screenW * 0.5f) - GetStrLength(bigMessage.msg, 0) * 0.5f;
+		float endX = screenW + GetStrLength(bigMessage.msg, 0);
+
+		bigMessage.x = centerX + (endX - centerX) * EaseInCubic(t);
+	}
+	else
+	{
+		bigMessage.msg[0] = '\0';
 	}
 }
 
@@ -164,13 +176,13 @@ void UpdateMessage(void)
 	message.dy+=1;
 	message.bright+=message.brightDir;
 
-	if(message.timer)
-		message.timer--;
+	if(message.timer < message.maxTime)
+		message.timer++;
 	else
 		message.brightDir=-2;
 
 	// while time still remains, don't start falling offscreen
-	if(message.timer)
+	if(message.timer < message.maxTime)
 	{
 		if(message.dy>0)
 			message.dy=0;
@@ -195,12 +207,12 @@ void UpdateMessage(void)
 	}
 }
 
-void RenderMessage(void)
+void RenderMessage(int clock)
 {
 	char b;
 
 	b=message.bright/2;
-	Print(message.x,message.y,message.msg,b,0);
+	PrintWavy(message.x,message.y,message.msg,b,0,clock+message.timer,1,0.5);
 	b=bigMessage.bright/2;
-	Print(bigMessage.x,bigMessage.y,bigMessage.msg,b,0);
+	PrintWavy(bigMessage.x,bigMessage.y,bigMessage.msg,b,0,clock+message.timer,2,1);
 }

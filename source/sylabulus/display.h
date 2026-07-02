@@ -95,8 +95,8 @@ void PrintUnGlowRect(int x,int y,int x2,int y2,int height,std::string_view s,byt
 void PrintLimited(int x,int y,int maxX,std::string_view s,char bright,byte font);
 void PrintGlowLimited(int x,int y,int maxX,std::string_view s,char bright,byte font);
 
-void PrintWavy(int x, int y, std::string_view s, char bright, byte font, int clock);
-void PrintWavyGlow(int x, int y, std::string_view s, char bright, byte font, int clock);
+void PrintWavy(int x, int y, std::string_view s, char bright, byte font, int clock, int vert, int hori);
+void PrintWavyGlow(int x, int y, std::string_view s, char bright, byte font, int clock, int vert, int hori);
 
 void CenterPrint(int x,int y,std::string_view s,char bright,byte font);
 void RenderItAll(world_t *world,Map *map,MapRenderFlags flags);

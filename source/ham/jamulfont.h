@@ -47,22 +47,26 @@ FontError FontLoad(SDL_IOStream* rw, mfont_t *font);
 FontError FontSave(const char *fname, const mfont_t *font);
 
 void FontPrintString(int x, int y, std::string_view s, const mfont_t *font);
-void FontPrintStringWavy(int x, int y, std::string_view s, const mfont_t* font, int clock=0);
 void FontPrintStringSolid(int x, int y, std::string_view s, const mfont_t *font, byte color);
-void FontPrintStringWavySolid(int x, int y, std::string_view s, const mfont_t* font, byte color, int clock=0);
+
+void FontPrintStringWavy(int x, int y, std::string_view s, const mfont_t* font, int clock = 0, int vert = 0, int hori = 0);
+void FontPrintStringWavySolid(int x, int y, std::string_view s, const mfont_t* font, byte color, int clock = 0, int vert = 0, int hori = 0);
+
 void FontPrintStringLimit(int x, int y, int maxX, std::string_view s, const mfont_t *font);
 void FontPrintStringSolidLimit(int x, int y, int maxX, std::string_view s, const mfont_t *font, byte color);
 void FontPrintStringDropShadow(int x, int y, std::string_view s, const mfont_t *font, byte shadowColor, byte shadowOffset);
 void FontPrintStringColor(int x, int y, std::string_view s, const mfont_t *font, byte color, char bright = 0);
 void FontPrintStringBright(int x, int y, std::string_view s, const mfont_t *font, char bright);
-void FontPrintStringWavyBright(int x, int y, std::string_view s, const mfont_t* font, char bright, int clock=0);
+void FontPrintStringWavyBright(int x, int y, std::string_view s, const mfont_t* font, char bright, int clock = 0, int vert = 0, int hori = 0);
+
 void FontPrintStringItalicsBright(int x, int y, std::string_view s, const mfont_t* font, char bright);
 void FontPrintStringBrightLimit(int x, int y, int maxX, std::string_view s, const mfont_t *font, char bright);
 void FontPrintStringRect(int x, int y, int x2, int y2, std::string_view s, int height, const mfont_t *font);
 void FontPrintStringGlowRect(int x, int y, int x2, int y2, std::string_view s, int height, char bright, const mfont_t *font);
 void FontPrintStringGlow(int x, int y, std::string_view s, const mfont_t *font, char bright = 0);
-void FontPrintStringWavyGlow(int x, int y, std::string_view s, const mfont_t* font, char bright = 0, int clock=0);
+void FontPrintStringWavyGlow(int x, int y, std::string_view s, const mfont_t* font, char bright = 0, int clock = 0, int vert = 0, int hori = 0);
 void FontPrintStringProgressiveGlow(int x, int y, std::string_view s, const mfont_t *font, int bright);
+
 void FontPrintStringGlowLimited(int x, int y, int maxX, std::string_view s, const mfont_t *font, char bright);
 void FontPrintStringUnGlowLimited(int x, int y, int maxX, std::string_view s, const mfont_t *font);
 void FontPrintStringUnGlow(int x, int y, std::string_view s, const mfont_t *font);

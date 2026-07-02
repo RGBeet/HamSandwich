@@ -699,6 +699,11 @@ int GetWavyVerticalOffset(int x, int clock, int wavy)
 	return cos((x/4 + clock/2 + wavy) / 8.0) * 8;
 }
 
+int GetWavyHorizontalOffset(int x, int clock, int wavy)
+{
+	return sin((x / 8 + clock / 4 + wavy) / 8.0) * 8;
+}
+
 void FontPrintStringSolid(int x, int y, std::string_view s, const mfont_t *font, byte color)
 {
 	for (char ch : s)
@@ -708,35 +713,37 @@ void FontPrintStringSolid(int x, int y, std::string_view s, const mfont_t *font,
 	}
 }
 
-void FontPrintStringWavy(int x, int y, std::string_view s, const mfont_t* font, int clock)
+
+// wavy -- moves vertically and horizontally, like jazz jackrabbit font
+void FontPrintStringWavy(int x, int y, std::string_view s, const mfont_t* font, int clock, int vert, int hori)
 {
 	int wavy = 0;
 	for (char ch : s)
 	{
 		wavy++;
-		FontPrintChar(x, y + GetWavyVerticalOffset(x, clock, wavy), ch, font);
+		FontPrintChar(x + GetWavyHorizontalOffset(x, clock, wavy * hori), y + GetWavyVerticalOffset(x, clock, wavy * vert), ch, font);
 		x += CharWidth(ch, font) + font->gapSize;
 	}
 }
 
-void FontPrintStringWavyBright(int x, int y, std::string_view s, const mfont_t* font, char bright, int clock)
+void FontPrintStringWavyBright(int x, int y, std::string_view s, const mfont_t* font, char bright, int clock, int vert, int hori)
 {
 	int wavy = 0;
 	for (char ch : s)
 	{
 		wavy++;
-		FontPrintChar(x, y + GetWavyVerticalOffset(x, clock, wavy), ch, font);
+		FontPrintChar(x + GetWavyHorizontalOffset(x, clock, wavy*hori), y + GetWavyVerticalOffset(x, clock, wavy*vert), ch, font);
 		x += CharWidth(ch, font) + font->gapSize;
 	}
 }
 
-void FontPrintStringWavySolid(int x, int y, std::string_view s, const mfont_t* font, byte color, int clock)
+void FontPrintStringWavySolid(int x, int y, std::string_view s, const mfont_t* font, byte color, int clock, int vert, int hori)
 {
 	int wavy = 0;
 	for (char ch : s)
 	{
 		wavy++;
-		FontPrintCharSolid(x, y, ch, font, color);
+		FontPrintCharSolid(x + GetWavyHorizontalOffset(x, clock, wavy * hori), y + GetWavyVerticalOffset(x, clock, wavy * vert), ch, font, color);
 		x += CharWidth(ch, font) + font->gapSize;
 	}
 }
@@ -750,12 +757,12 @@ void FontPrintStringGlow(int x, int y, std::string_view s, const mfont_t *font, 
 	}
 }
 
-void FontPrintStringWavyGlow(int x, int y, std::string_view s, const mfont_t* font, char bright, int clock)
+void FontPrintStringWavyGlow(int x, int y, std::string_view s, const mfont_t* font, char bright, int clock, int vert, int hori)
 {
 	int wavy = 0;
 	for (char ch : s)
 	{
-		FontPrintCharGlow(x, y+cos(wavy/2)*15, ch, bright, font);
+		FontPrintCharBright(x + GetWavyHorizontalOffset(x, clock, wavy * hori), y + GetWavyVerticalOffset(x, clock, wavy * vert), ch, bright, font);
 		wavy++;
 		x += CharWidth(ch, font) + font->gapSize;
 	}

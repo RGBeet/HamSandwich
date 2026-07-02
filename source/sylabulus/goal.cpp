@@ -134,7 +134,7 @@ void PrintGoalInfo(int x,int y,byte goal)
 	else
 		strcat(s,"???????");
 
-	PrintGlow(x,y,s,0,2);
+	Print(x,y,s,0,2);
 	if(profile.progress.goal[goal])
 	{
 		sprintf(s,"Earned for %s.",goalDesc[goal*2+1]);

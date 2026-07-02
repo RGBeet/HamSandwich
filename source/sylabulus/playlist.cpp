@@ -934,7 +934,7 @@ void RenderPlayListButton(int x,int y,int wid,const char *txt,MGLDraw *mgl, Butt
 	else
 		mgl->Box(x,y,x+wid,y+PLBTN_HEIGHT,32+16);
 
-	PrintGlow(x+2,y+3,txt,0,2);
+	Print(x+2,y+3,txt,0,2);
 }
 
 char *ShortName(char *name)
@@ -977,7 +977,7 @@ void RenderSongList(char *list,int pos,int num,int x,int y,int selectMin,int sel
 				else
 					mgl->Box(x+1,y+1+(i-pos)*18,x+231,y+(i-pos)*18+18,32*1+12);
 			}
-			PrintGlowLimited(x+2,y+2+(i-pos)*18,x+232,ShortName(&list[i*SONGNAME_LEN]),0,2);
+			PrintLimited(x+2,y+2+(i-pos)*18,x+232,ShortName(&list[i*SONGNAME_LEN]),0,2);
 		}
 	}
 
@@ -999,21 +999,21 @@ void RenderPlayListMenu(MGLDraw *mgl)
 	for(i=0;i<480;i++)
 		memcpy(&mgl->GetScreen()[i*mgl->GetWidth()],&backgd[i*640],640);
 
-	PrintGlow(520,20,"Playlist Editor",0,2);
+	Print(520,20,"Playlist Editor",0,2);
 
 	sprintf(s,"Playlist #%d",listNum+1);
-	PrintGlow(20,410,s,0,2);
-	PrintGlow(372,410,"Available Songs",0,2);
+	Print(20,410,s,0,2);
+	Print(372,410,"Available Songs",0,2);
 
 	if (mouseMode)
 	{
-		PrintGlow(20,432,"Right click a song to hear it. Click or drag to select, and use the buttons to",0,2);
-		PrintGlow(20,450,"modify the playlist. Press ESC to exit.",0,2);
+		Print(20,432,"Right click a song to hear it. Click or drag to select, and use the buttons to",0,2);
+		Print(20,450,"modify the playlist. Press ESC to exit.",0,2);
 	}
 	else
 	{
-		PrintGlow(20,432,"Press button 1 to add or remove a song. Press button 2 to hear it.",0,2);
-		PrintGlow(20,450,"Use bumpers to reorder songs.",0,2);
+		Print(20,432,"Press button 1 to add or remove a song. Press button 2 to hear it.",0,2);
+		Print(20,450,"Use bumpers to reorder songs.",0,2);
 	}
 
 	for(i=0;i<NUM_PLAY_BTNS;i++)

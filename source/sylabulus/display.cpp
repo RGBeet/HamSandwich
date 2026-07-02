@@ -39,7 +39,7 @@ bool InitDisplay(MGLDraw *mainmgl)
 	if(!gameFont[0])
 		return false;
 	FontInit(mgl);
-	if(FontLoad("graphics/girlsrweird.jft",gameFont[0])!=FONT_OK)
+	if(FontLoad("graphics/fornire.jft",gameFont[0])!=FONT_OK)
 		return false;
 
 	gameFont[1]=(mfont_t *)malloc(sizeof(mfont_t));
@@ -55,7 +55,7 @@ bool InitDisplay(MGLDraw *mainmgl)
 	if(!gameFont[2])
 		return false;
 
-	if(FontLoad("graphics/microgreen.jft",gameFont[2])!=FONT_OK)
+	if(FontLoad("graphics/robotoblue.jft",gameFont[2])!=FONT_OK)
 		return false;
 
 	dispList=new DisplayList();
@@ -310,18 +310,19 @@ void Print(int x,int y,std::string_view s,char bright,byte font)
 	}
 }
 
-void PrintWavy(int x, int y, std::string_view s, char bright, byte font, int clock)
+void PrintWavy(int x, int y, std::string_view s, char bright, byte font, int clock, int vert, int hori)
 {
 	if(font==0)
-		FontPrintStringWavyBright(x,y,s,gameFont[0],bright, clock);
+		FontPrintStringWavyBright(x,y,s,gameFont[0],bright, clock, vert, hori);
 	else
 	{
 		if(bright==0)
-			FontPrintStringWavy(x,y,s,gameFont[font], clock);
+			FontPrintStringWavy(x,y,s,gameFont[font], clock, vert, hori);
 		else
-			FontPrintStringWavySolid(x,y,s,gameFont[font],0,clock);
+			FontPrintStringWavySolid(x,y,s,gameFont[font],0,clock, vert, hori);
 	}
 }
+
 void PrintGlow(int x,int y,std::string_view s,char bright,byte font)
 {
 	FontPrintStringGlow(x,y,s,gameFont[font],bright);
