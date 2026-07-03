@@ -61,8 +61,10 @@ struct player_t
 	byte levelNum;
 	byte keys[4];
 	int  boredom;
+
 	byte hammers;
 	byte hamSpeed;
+
 	byte weapon;
 	byte lastWeapon;
 	int  ammo;

@@ -3,19 +3,36 @@
 #include "player.h"
 #include "shop.h"
 
-constexpr int SPR_LIFEMETER   = 68;
-constexpr int SPR_POWERUP	  = 69;
-constexpr int SPR_RAGEGAUGE   = 70;
-constexpr int SPR_VARBAR	  = 71;
+constexpr int SPR_LIFEMETER		= 68;
+constexpr int SPR_POWERUP		= 69;
+constexpr int SPR_RAGEGAUGE		= 70;
+constexpr int SPR_VARBAR		= 71;
+constexpr int SPR_NUMBERS_LRG	= 74; // 0-9
+constexpr int SPR_NUMBERS_SML	= 97; // also 0-9
+constexpr int SPR_WPNICON		= 72; // WIP - make it so the weapon is drawn in the interface
+constexpr int SPR_WPNBAR		= 73;
 
-constexpr int SPR_SCORE       = 2;
+constexpr int SPR_ICN_KEY		= 84; //keycard icons (rgb and ylw)
+constexpr int SPR_ICN_HAMMER	= 88;
+constexpr int SPR_ICN_PANTS		= 89;
+constexpr int SPR_ICN_SPRING	= 90;
+constexpr int SPR_ICN_REVGEM	= 91;
+
+// todo: add these as indicators
+constexpr int SPR_ICN_AMMOBOX	= 92;
+constexpr int SPR_ICN_SHIELD	= 93;
+constexpr int SPR_ICN_CLOAK		= 94;
+constexpr int SPR_ICN_SQUEEZY	= 95;
+constexpr int SPR_ICN_SPEEDY	= 96;
+constexpr int SPR_SCORE			= 107;
+constexpr int SPR_COINS			= 108;
+
 constexpr int SPR_WEAPONBOX   = 3;
 constexpr int SPR_BRAINOMETER = 4;
 constexpr int SPR_HAMMERBOX   = 5;
 constexpr int SPR_KEYBOX      = 6;
 constexpr int SPR_OXYGAUGE    = 8;
 constexpr int SPR_ENEMYLIFE   = 11;
-constexpr int SPR_NUMBERS     = 12;
 constexpr int SPR_COINBOX     = 62;
 constexpr int SPR_STEALTH     = 63;
 constexpr int SPR_WPNNAME     = 22;
@@ -150,7 +167,7 @@ intface_t defaultSetup[NUM_INTF]={
 	 0,0,
 	 0},
 	{0,-50,0,38,	// keys
-	 SPR_KEYBOX,
+	 999,
 	 IV_KEYS,0,
 	 0,0,
 	 0,0,
@@ -161,7 +178,7 @@ intface_t defaultSetup[NUM_INTF]={
 	 18,2,
 	 0,0,
 	 0},
-	{40,-39,40,31,	// rage meter
+	{38,-39,38,31,	// rage meter
 	 SPR_RAGEGAUGE,
 	 IV_SMALLMETER,128,
 	 17,1,
@@ -191,10 +208,10 @@ intface_t defaultSetup[NUM_INTF]={
 	 0,0,
 	 0,0,
 	 0},
-	{SCRWID-1,-70,SCRWID-1,9,	// weapon
-	 SPR_WEAPONBOX,
-	 IV_SMALLMETER,40,
-	 -42,10,
+	{232,-70,232,10,	// weapon
+	 SPR_WPNBAR,
+	 IV_SMALLMETER,64,
+	 1,2,
 	 0,10,
 	 1},
 	{SCRWID-1,-50,SCRWID-1,-1,	// score
@@ -203,8 +220,8 @@ intface_t defaultSetup[NUM_INTF]={
 	 -54,3,
 	 0,1000,
 	 0},
-	{188,0,188,0,		// hammers
-	 SPR_HAMMERBOX,
+	{188,1,188,1,		// hammers
+	 999,
 	 IV_ICONS,0,
 	 0,0,
 	 0,0,
@@ -538,7 +555,7 @@ void DrawVertMeter(int x,int y,int value,int height,MGLDraw *mgl)
 	mgl->FillBox(x+4,y+height-(value-1),x+4,y+height,c+7);
 }
 
-void DrawNumber(int x,int y,int value,byte length,MGLDraw *mgl, int width = 0)
+void DrawNumber(int x,int y,int value,byte length,MGLDraw *mgl, int type, int chw, int strw = 0)
 {
 	int i;
 	char s[8];
@@ -548,7 +565,7 @@ void DrawNumber(int x,int y,int value,byte length,MGLDraw *mgl, int width = 0)
 	if(value>999999)
 		value=999999;
 
-	sprintf(s,"%0*d", width, value);
+	sprintf(s,"%0*d", strw, value);
 
 	if(strlen(s)<length)
 	{
@@ -557,9 +574,19 @@ void DrawNumber(int x,int y,int value,byte length,MGLDraw *mgl, int width = 0)
 	}
 	for(i=0;i<length;i++)
 	{
-		intfaceSpr->GetSprite(s[i]-'0'+SPR_NUMBERS)->Draw(x,y,mgl);
+		intfaceSpr->GetSprite(s[i]-'0'+SPR_NUMBERS_SML)->Draw(x,y,mgl);
 		x+=9;
 	}
+}
+
+void DrawSmallNumber(int x, int y, int value, byte length, MGLDraw* mgl, int strw = 0)
+{
+	DrawNumber(x,y,value,length,mgl,SPR_NUMBERS_SML, strw);
+}
+
+void DrawBigNumber(int x, int y, int value, byte length, MGLDraw* mgl, int strw = 0)
+{
+	DrawNumber(x, y, value, length, mgl, SPR_NUMBERS_LRG, strw);
 }
 
 void DrawTime(int x,int y,int value,byte length,MGLDraw *mgl)
@@ -586,7 +613,7 @@ void DrawTime(int x,int y,int value,byte length,MGLDraw *mgl)
 			//extra distance for colon
 			x+=2;
 		}
-		intfaceSpr->GetSprite(s[i]-'0'+SPR_NUMBERS)->Draw(x,y,mgl);
+		intfaceSpr->GetSprite(s[i]-'0'+SPR_NUMBERS_SML)->Draw(x,y,mgl);
 		x+=9;
 	}
 }
@@ -731,34 +758,75 @@ void DrawPortrait(int x, int y, MGLDraw* mgl)
 void DrawKeys(int x,int y,MGLDraw *mgl)
 {
 	int i;
+	int xx=0;
+	int yy=0;
 
-	for(i=0;i<player.keys[0];i++)
-		intfaceSpr->GetSprite(42)->Draw(x+i*10,y,mgl);
+	if (player.keys[1] || player.keys[2] || player.keys[3])
+	{
 
-	if(player.keys[1])
-		intfaceSpr->GetSprite(43)->Draw(x,y+6,mgl);
-	if(player.keys[2])
-		intfaceSpr->GetSprite(45)->Draw(x+10,y+6,mgl);
-	if(player.keys[3])
-		intfaceSpr->GetSprite(44)->Draw(x+20,y+6,mgl);
+		if (player.keys[1])
+		{
+			intfaceSpr->GetSprite(SPR_ICN_KEY + 1)->Draw(x+xx, y, mgl);
+			xx += 10;
+		}
+		if (player.keys[2])
+		{
+			intfaceSpr->GetSprite(SPR_ICN_KEY + 2)->Draw(x + xx, y, mgl);
+			xx += 10;
+		}
+		if (player.keys[3])
+		{
+			intfaceSpr->GetSprite(SPR_ICN_KEY + 3)->Draw(x + xx, y, mgl);
+			xx += 10;
+		}
+		yy+=10;
+	}
+
+	xx=0;
+	for (i = 0;i < player.keys[0];i++)
+	{
+		intfaceSpr->GetSprite(SPR_ICN_KEY)->Draw(x+xx, y+yy, mgl);
+		xx += 10;
+	}
 }
 
+// draw melee stats
 void DrawHammers(int x,int y,MGLDraw *mgl)
 {
 	int i,p;
+	int xx=0, yy=0;
 
-	for(i=0;i<player.hammers;i++)
-		intfaceSpr->GetSprite(46)->Draw(x,y+i*6,mgl);
+	for (i = 0;i < player.hammers;i++) {
+		intfaceSpr->GetSprite(SPR_ICN_HAMMER)->Draw(x+xx, y+yy, mgl);
+		yy += 11;
+	}
 
-	p=(16-player.hamSpeed)/4;
+	if (player.hammerFlags & HMR_REVERSE)
+	{
+		intfaceSpr->GetSprite(SPR_ICN_REVGEM)->Draw(x+xx, y+yy, mgl);
+		yy += 11;
+	}
+
+
+	if (player.hammers > 0)
+		xx += 11;
+	yy=0;
+
+
+	p=(16 - player.hamSpeed)/4;
 	for(i=0;i<p;i++)
-		intfaceSpr->GetSprite(47)->Draw(x,y+i*8,mgl);
+	{
+		intfaceSpr->GetSprite(SPR_ICN_PANTS)->Draw(x+xx, y+yy, mgl);
+		yy += 11;
+	}
 
-	if(player.hammerFlags&HMR_REFLECT)
-		intfaceSpr->GetSprite(48)->Draw(x,y,mgl);
-	if(player.hammerFlags&HMR_REVERSE)
-		intfaceSpr->GetSprite(49)->Draw(x,y,mgl);
+
+	if (player.hammerFlags & HMR_REFLECT)
+	{
+		intfaceSpr->GetSprite(SPR_ICN_SPRING)->Draw(x+xx, y + yy, mgl);
+	}
 }
+
 void DrawLock(int x,int y,MGLDraw *mgl, int value)
 {
 	if(value)
@@ -1100,6 +1168,14 @@ void RenderInterface(MGLDraw *mgl)
 
 	for(i=0;i<NUM_INTF;i++)
 	{
+		if (i == INTF_WEAPON && player.weapon) // has wepon
+		{
+			int xx = intf[i].x - 21;
+			int yy = intf[i].y - 8;
+			intfaceSpr->GetSprite(SPR_WPNICON)->Draw(xx, yy, mgl);
+			intfaceSpr->GetSprite(SPR_WPNNAME + player.weapon - 1)->Draw(intf[i].x+20, intf[i].y+1, mgl);
+		}
+
 		intfaceSpr->GetSprite(intf[i].spr)->Draw(intf[i].x,intf[i].y,mgl);
 
 		switch (i)
@@ -1133,12 +1209,12 @@ void RenderInterface(MGLDraw *mgl)
 					DrawSmallMeter(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value,1,mgl);
 				break;
 			case IV_NUMBER:
-				DrawNumber(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value,intf[i].valueLength,mgl);
+				DrawBigNumber(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value,intf[i].valueLength,mgl);
 				break;
 			case IV_TIME:
-				DrawNumber(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value % 60,intf[i].	valueLength,mgl, 2);
+				DrawSmallNumber(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value % 60,intf[i].valueLength,mgl, 2);
 				if(intf[i].value >=60)
-					DrawNumber(intf[i].x+intf[i].vOffX-intf[i].otherVal,intf[i].y+intf[i].vOffY,intf[i].value / 60,intf[i].	valueLength,mgl);
+					DrawSmallNumber(intf[i].x+intf[i].vOffX-intf[i].otherVal,intf[i].y+intf[i].vOffY,intf[i].value / 60,intf[i].valueLength, mgl);
 				break;
 			case IV_VERTMETER:
 				DrawVertMeter(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value,intf[i].valueLength,mgl);
@@ -1155,11 +1231,6 @@ void RenderInterface(MGLDraw *mgl)
 			case IV_LOCK:
 				DrawLock(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,mgl,intf[i].value);
 				break;
-		}
-		if(i==INTF_WEAPON)
-		{
-			if(player.weapon)
-				intfaceSpr->GetSprite(SPR_WPNNAME+player.weapon-1)->Draw(intf[i].x,intf[i].y,mgl);
 		}
 	}
 
@@ -1196,5 +1267,5 @@ void RenderCollectedStuff(int x,int y,MGLDraw *mgl)
 	if(p<0)
 		p=0;
 
-	DrawNumber(x+146,y+58,p,3,mgl);
+	DrawSmallNumber(x+146,y+58,p,3,mgl);
 }
