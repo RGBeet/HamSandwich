@@ -15,6 +15,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// TODO: MAKE WIDESCREEN
+
 const int SCRWID = 640;
 const int SCRHEI = 480;
 const int FIXSHIFT = 8;

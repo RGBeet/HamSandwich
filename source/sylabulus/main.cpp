@@ -97,37 +97,40 @@ TASK(int) main(int argc, char* argv[])
 	{
 		switch(AWAIT MainMenu(mainmgl))
 		{
-			case 255:	// quit
+			case 255: // QUIT
 				running = false;
 				break;
-			case 0:	// new game
+			case 0:	// PLAY
 				shopping=0;
-				AWAIT WorldSelectMenu(mainmgl);
+				AWAIT PlayMenu(mainmgl);
+				//AWAIT WorldSelectMenu(mainmgl);
 				break;
-			case 1:	// continue
+			case 1:	// PROFILE
 				shopping=0;
 				AWAIT ProfMenu(mainmgl);
 				break;
-			case 2:	// tutorial
+			case 2:	// SHOPPING
+				shopping=1;
+				ResetMoron();
+				AWAIT PlayWorld(mainmgl,"mall.dlw");
+				break;
+			case 3:	// EDITOR
+				shopping=0;
+				AWAIT LunaticEditor(mainmgl);
+				break;
+			case 4:	// EXTRAS (instructions, internet, etc)
+				AWAIT ExtrasMenu(mainmgl);
+				break;
+			case 11: // world select (play menu)
+				AWAIT WorldSelectMenu(mainmgl);
+			case 12: // tutorial (play menu)
 				shopping=0;
 				if(AWAIT PlayWorld(mainmgl,"tutorial.dlw"))
 					AWAIT WorldSelectMenu(mainmgl);
 				break;
-			case 3:	// instructions
-				AWAIT HelpScreens(mainmgl);
-				break;
-			case 6:	// shopping
-				shopping=1;
-				ResetMoron();
-				AWAIT PlayWorld(mainmgl,"spismall.zlw");
-				break;
-			case 5:	// internet
+			case 15:	// internet (extras)
 				shopping=0;
 				AWAIT NetMenu(mainmgl);
-				break;
-			case 7:	// editor
-				shopping=0;
-				AWAIT LunaticEditor(mainmgl);
 				break;
 			case 8:	// insta-play the last world you were on
 				shopping=0;

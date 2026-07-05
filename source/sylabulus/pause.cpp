@@ -6,6 +6,7 @@
 #include "shop.h"
 #include "dialogbits.h"
 #include "music.h"
+#include "game.h"
 #include <memory>
 
 #define PE_CONTINUE	0	// back to gameplay
@@ -44,7 +45,6 @@ static const pauseItem_t gamePause[]={
 	{PE_SNDVOL,""},
 	{PE_MUSIC,"Music Options"},
 	{PE_WPNLOCK,"Weapon Lock"},
-	{PE_HUDCHOICE,"HUD: Supreme"},
 	{PE_SHOP,"Quit & Shop"},
 	{PE_EXIT,"Exit Game"},
 	{PE_DONE,""}
@@ -67,7 +67,6 @@ static const pauseItem_t editPause[]={
 	{PE_MUSIC,"Music Options"},
 	{PE_CHEAT,"Cheats!!"},
 	{PE_WPNLOCK,"Weapon Lock"},
-	{PE_HUDCHOICE,"HUD: Supreme"},
 	{PE_EXIT,"Editor"},
 	{PE_DONE,""}
 };
@@ -130,13 +129,16 @@ namespace
 	char lastKey = 0;
 	byte menuMode;
 	std::unique_ptr<sprite_set_t> pauseSpr;
-	int pauseX, pauseY;
+	int pauseX, pauseY=480;
 	byte numItems;
 	pauseItem_t menu[15];
 	int msx, msy;
 	char msBright, msDBright;
 	byte oldc = 255;
 	dword oldGamepad = ~0;
+	char worldName[64];
+	int pauseClock = 0;
+	byte* backgd = NULL;
 
 	const byte volumeSpot[]={0,26,51,77,102,128,153,179,204,230,255};
 }
@@ -145,13 +147,16 @@ void RenderPauseButton(byte b,int x,int y,int wid,char *txt,MGLDraw *mgl)
 {
 	if(cursor==b)
 	{
-		mgl->Box(x,y,x+wid,y+19,32+31);
-		mgl->FillBox(x+1,y+1,x+wid-1,y+19-1,32+8);
+		mgl->Box(x,y,x+wid,y+19,32*7 + 31);
+		mgl->FillBox(x+1,y+1,x+wid-1,y+19-1,32*7 + 8);
+		PrintWavy(x + 2, y + 4, txt, 0, 2, pauseClock, 0.5, 0.25);
 	}
 	else
-		mgl->Box(x,y,x+wid,y+19,32+16);
+	{
+		mgl->Box(x,y,x+wid,y+19,32*3 + 16);
+		Print(x + 2, y + 4, txt, 0, 2);
+	}
 
-	PrintGlowLimited(x+2,y+2,x+wid-1,txt,0,2);
 }
 
 void RenderUnpaused(void)
@@ -164,68 +169,73 @@ void RenderPauseMenu(void)
 {
 	int i;
 	int msx2,msy2,cx,cy,cx2,cy2;
+	int xx=32, yy=32;
+	char msg[32];
 
-	if(!pauseSpr)
+	if (pauseY >= 480)
+		return;
+	pauseClock++;
+
+	// get background
+	if (backgd == NULL)
 	{
-		pauseX = GetDisplayMGL()->GetWidth();
-		pauseY = GetDisplayMGL()->GetHeight();
+		GetDisplayMGL()->LoadBMP("graphics/pause.bmp");
+		backgd = (byte*)malloc(640 * 480);
+		if (!backgd)
+			FatalError("Out of memory!");
+
+		for (i = 0;i < 480;i++)
+			memcpy(&backgd[i * 640], &GetDisplayMGL()->GetScreen()[i * GetDisplayMGL()->GetWidth()], 640);
+	}
+
+	for (i = 0;i < 480;i++)
+	{
+		if (pauseY + i >= 0 && pauseY + i < 480)
+			memcpy(&GetDisplayMGL()->GetScreen()[(pauseY + i) * GetDisplayMGL()->GetWidth()], &backgd[i * 640], 640);
+	}
+
+	// get pause sprites (cursor)
+	if (!pauseSpr)
+	{
 		pauseSpr = std::make_unique<sprite_set_t>("graphics/pause.jsp");
 	}
 
-	pauseSpr->GetSprite(3)->Draw(pauseX,pauseY,GetDisplayMGL());
+	//hello!!
 
-	for(i=0;i<numItems;i++)
+	// world name
+	if (curMap->flags&MAP_HUB)
 	{
-		RenderPauseButton(i,pauseX+20,pauseY+15+22*i,125,menu[i].text,GetDisplayMGL());
+		Print(pauseX + xx, pauseY+yy, curWorld.map[0]->name, 8, 0);
+		yy += 60;
+	}
+	else
+	{
+		Print(pauseX + xx, pauseY+yy, curMap->name, 8, 0);
+		yy += 60;
+		sprintf(worldName, curWorld.map[0]->name);
+		PrintSimpleShadow(pauseX+xx, pauseY + yy, worldName, 1);
+		yy += 8;
+	}
+	if (shopping)
+	{
+		sprintf(msg, "Shop 'til you drop!");
+		PrintSimpleShadow(pauseX + xx, pauseY + yy, msg, 1);
+		yy += 8;
 	}
 
-	RenderCollectedStuff(pauseX,pauseY,GetDisplayMGL());
+	for (i = 0;i < numItems;i++)
+	{
+		RenderPauseButton(i, pauseX+xx, pauseY+yy + 15 + 22*i, 64*3, menu[i].text, GetDisplayMGL());
+	}
 
-	// mouse cursor
-	cx=pauseX+13;
-	cy=pauseY+13;
-	cx2=pauseX+201;
-	cy2=pauseY+261;
-	if(cx>638)
-		cx=638;
-	if(cx2>639)
-		cx2=639;
-	if(cy>478)
-		cy=478;
-	if(cy2>479)
-		cy2=479;
-	if(msx<cx)
-	{
-		GetDisplayMGL()->SetMouse(cx,msy);
-		GetDisplayMGL()->GetMouse(&msx,&msy);
-	}
-	if(msx>cx2)
-	{
-		GetDisplayMGL()->SetMouse(cx2,msy);
-		GetDisplayMGL()->GetMouse(&msx,&msy);
-	}
-	if(msy<cy)
-	{
-		GetDisplayMGL()->SetMouse(msx,cy);
-		GetDisplayMGL()->GetMouse(&msx,&msy);
-	}
-	if(msy>cy2)
-	{
-		GetDisplayMGL()->SetMouse(msx,cy2);
-		GetDisplayMGL()->GetMouse(&msx,&msy);
-	}
-	SetSpriteConstraints(cx,cy,cx2,cy2);
-	msx2=msx;
-	msy2=msy;
-	if(msx2<pauseX+13)
-		msx2=pauseX+13;
-	if(msy2<pauseY+13)
-		msy2=pauseY+13;
-	if(msx2>pauseX+200)
-		msx2=pauseX+200;
-	if(msy2>pauseY+260)
-		msy2=pauseY+260;
-	pauseSpr->GetSprite(0)->DrawBright(msx2,msy2,GetDisplayMGL(),msBright/2);
+	yy = 92;
+	xx = 320; // half screen width?
+	if (!shopping)
+		RenderCollectedStuff(pauseX+xx, pauseY+yy, GetDisplayMGL());
+	else
+		RenderShoppingStuff(pauseX+xx, pauseY+yy, GetDisplayMGL());
+
+	pauseSpr->GetSprite(0)->DrawBright(msx,msy,GetDisplayMGL(),msBright/2);
 	ClearSpriteConstraints();
 }
 
@@ -332,43 +342,89 @@ void InitPauseMenu(void)
 	oldc = ~0;
 	oldGamepad = ~0;
 
-	if(!editing)
-	{
-		if(shopping)
-			FillPauseMenu(shopPause);
-		else if(ItemPurchased(SHOP_MAJOR,MAJOR_CHEATMENU))
-			FillPauseMenu(gameCheatPause);
-		else
-			FillPauseMenu(gamePause);
+	std::vector<pauseItem_t> menu;
 
+	menu.push_back({ PE_CONTINUE, "Continue" });
+
+	if (!shopping) // not shopping
+	{
+		menu.push_back({ PE_RETRY, "Retry" });
+		menu.push_back({ PE_GIVEUP, "Give Up" });
+	}
+
+	menu.push_back({ PE_SNDVOL, "" });
+	menu.push_back({ PE_MUSIC, "Music Options" });
+
+	if (editing || ItemPurchased(SHOP_MAJOR, MAJOR_CHEATMENU)) // editing OR cheats purchased
+		menu.push_back({ PE_CHEAT, "Cheats!!" });
+
+	if (!shopping)
+		menu.push_back({ PE_WPNLOCK, "Weapon Lock" });
+
+	if (editing) // editing: no shop option
+	{
+		menu.push_back({ PE_EXIT, "Editor" });
+	}
+	else if (shopping) // shopping: return to play game
+	{
+		menu.push_back({ PE_SHOP, "Quit & Play" });
+		menu.push_back({ PE_EXIT, "Main Menu" });
 	}
 	else
 	{
-		FillPauseMenu(editPause);
+		menu.push_back({ PE_SHOP, "Quit & Shop" });
+		menu.push_back({ PE_EXIT, "Exit Game" });
 	}
 
+	menu.push_back({ PE_DONE, "" });
+
+	FillPauseMenu(menu.data());
+
 	MakeNormalSound(SND_PAUSE);
-	if(!pauseSpr)
+
+	// cursor sprite
+	if (!pauseSpr)
 		pauseSpr = std::make_unique<sprite_set_t>("graphics/pause.jsp");
-	pauseX=GetDisplayMGL()->GetWidth();
-	pauseY=GetDisplayMGL()->GetHeight();
-	menuMode=0;
-	msBright=0;
-	msDBright=1;
+
+	// background
+	if (backgd == NULL)
+	{
+		GetDisplayMGL()->LoadBMP("graphics/pause.bmp");
+		backgd = (byte*)malloc(640 * 480);
+		if (!backgd)
+			FatalError("Out of memory!");
+
+		for (int i=0; i<480;i++)
+			memcpy(&backgd[i * 640], &GetDisplayMGL()->GetScreen()[i * GetDisplayMGL()->GetWidth()], 640);
+		GetDisplayMGL()->ClearScreen();
+	}
+
+	pauseX = 0;
+	pauseY = 480;
+	menuMode = 0;
+	msBright = 0;
+	msDBright = 1;
 	GetDisplayMGL()->MouseTap();
 }
 
 void ExitPauseMenu(void)
 {
+	pauseClock=0;
+	pauseY = 480;
+	if (backgd != NULL)
+	{
+		free(backgd);
+		backgd = NULL;
+	}
 	pauseSpr.reset();
 }
 
 void UpdateUnpaused(void)
 {
-	if(pauseX < GetDisplayMGL()->GetWidth())
-		pauseX += 15;
-	if(pauseY < GetDisplayMGL()->GetHeight())
-		pauseY += 20;
+	//if(pauseX<640)
+	//	pauseX+=15;
+	if (pauseY < 480)
+		pauseY += 40;
 }
 
 byte NextVolumeSpot(byte v)
@@ -385,6 +441,7 @@ byte NextVolumeSpot(byte v)
 
 	return 0;
 }
+
 byte PrevVolumeSpot(byte v)
 {
 	int i;
@@ -401,8 +458,11 @@ byte PrevVolumeSpot(byte v)
 
 PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 {
+	byte c;
 	int i;
-	static byte reptCounter=0;
+	static byte reptCounter = 0;
+	byte msOkay;
+	int yy=32;
 
 	int oldMsx = msx, oldMsy = msy;
 	mgl->GetMouse(&msx,&msy);
@@ -413,35 +473,32 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 	if(msBright<-2)
 		msDBright=1;
 
-	int destX = mgl->GetWidth() - 213;
-	if(pauseX > mgl->GetWidth() - 213)
+	pauseX = 0;
+	if (pauseY > 0)
 	{
-		pauseX-=15;
-		mgl->SetMouse(msx-15,msy);
-		mgl->GetMouse(&msx,&msy);
-		if(pauseX < destX)
-			pauseX = destX;
-	}
-	int destY = mgl->GetHeight() - 274;
-	if(pauseY > destY)
-	{
-		pauseY-=20;
-		mgl->SetMouse(msx,msy-20);
-		mgl->GetMouse(&msx,&msy);
-		if(pauseY < destY)
-			pauseY = destY;
+		pauseY -= 48;
+		if (pauseY < 0)
+			pauseY = 0;
 	}
 
-	if (msx != oldMsx || msy != oldMsy)
+	if (curMap->flags & MAP_HUB && !shopping)
+		yy += 60;
+	else
+		yy += 68;
+	msOkay = 0;
+
+	for (i = 0;i < numItems;i++)
 	{
-		for(i=0;i<numItems;i++)
+		int rx = pauseX + 42,
+			ry = pauseY + yy + 15 + 22*i;
+		if (PointInRect(msx, msy, rx, ry, rx + 64*3, ry+23)) // goto
 		{
-			if(PointInRect(msx,msy,pauseX+20,pauseY+15+22*i,pauseX+20+125,pauseY+15+22*i+19))
-				cursor=i;
+			cursor = i;
+			msOkay = 1;
 		}
 	}
 
-	byte c = GetControls() | GetArrows();
+	c = GetControls() | GetArrows();
 	dword gamepad = GetGamepadButtons();
 
 	reptCounter++;

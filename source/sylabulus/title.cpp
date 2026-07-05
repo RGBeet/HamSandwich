@@ -205,12 +205,22 @@ byte starColorTable[]={214,81,63,49,33,21,32,83,93};
 
 byte demoTextCounter;
 
+#define MENU_PLAY		0			// includes PLAY, TUTORIAL, ARENA
+#define MENU_PROFILE	1
+#define MENU_SHOP		2
+#define MENU_EDITOR		3
+#define MENU_EXTRAS		4			// includes unlockables
+#define MENU_EXIT		5
+
+
 static byte *backgd;
 static int titleRuns;
 static int msx,msy,msx2,msy2;
 static byte cursor;
 static byte sliceOut[8];
-static char menuTxt[][16]={"Play","Profile","Tutorial","Instructions","Exit","Internet","Shop","Editor"};
+
+static char menuTxt[][16]={"Play","Profile","Shop","Editor","Extras","Exit"};
+
 int igfX,igfY,igfDX,igfDY;
 
 void MainMenuDisplay(MGLDraw *mgl)
@@ -222,46 +232,41 @@ void MainMenuDisplay(MGLDraw *mgl)
 	for(i=0;i<480;i++)
 		memcpy(&mgl->GetScreen()[i*mgl->GetWidth()],&backgd[i*640],640);
 
+	x=0;
+	y=100;
+	for(i=0;i<6;i++)
+	{
+		if (cursor != i)
+		{
+			Print(x+100, y+i*60, menuTxt[i], 0, 0);
+		}
+		else
+		{
+			PrintWavy(x+100, y+i*60, menuTxt[i], 10, 0, titleClock, 2, 1);
+		}
+	}
+
 	// version #:
 	Print(SCRWID - GetStrLength(VERSION_NO, 1), 3, VERSION_NO, 1, 1);
-	Print(SCRWID - GetStrLength(VERSION_NO, 1) - 1, 3-1, VERSION_NO, 0, 1);
+	Print(SCRWID - GetStrLength(VERSION_NO, 1) - 1, 3 - 1, VERSION_NO, 0, 1);
+
 	// Copyright:
-	Print(3,467,"Copyright " COPYRIGHT_YEARS ", " COPYRIGHT_COMPANY,1,1);
-	Print(2,466,"Copyright " COPYRIGHT_YEARS ", " COPYRIGHT_COMPANY,0,1);
+	Print(3, 467, "Copyright " COPYRIGHT_YEARS ", " COPYRIGHT_COMPANY, 1, 1);
+	Print(2, 466, "Copyright " COPYRIGHT_YEARS ", " COPYRIGHT_COMPANY, 0, 1);
 	// Steam edition info
 	/*const char* edition = Steam()->DescribeEdition();
 	Print(SCRWID - GetStrLength(edition, 1), 20, edition, 1, 1);
 	Print(SCRWID - GetStrLength(edition, 1) - 1, 20-1, edition, 0, 1);*/
 	const char* workshopStatus = Steam()->DescribeWorkshopStatus();
 	Print(3, 3, workshopStatus, 1, 1);
-	Print(3-1, 3-1, workshopStatus, 0, 1);
+	Print(3 - 1, 3 - 1, workshopStatus, 0, 1);
 
-	for(i=0;i<8;i++)
-	{
-		x=((Cosine(ang[i])*sliceOut[i])/FIXAMT);
-		y=((Sine(ang[i])*sliceOut[i])/FIXAMT);
-		planetSpr->GetSprite(i)->Draw(320+x,280+y,mgl);
-	}
-
-	for(i=0;i<8;i++)
-	{
-		x=((Cosine(ang[i])*sliceOut[i])/FIXAMT);
-		y=((Sine(ang[i])*sliceOut[i])/FIXAMT);
-		x+=((Cosine(ang[i])*100)/FIXAMT);
-		y+=((Sine(ang[i])*70)/FIXAMT);
-		if(i<2 || i>5)
-			y-=40;
-		if(i>3)
-			x-=GetStrLength(menuTxt[i],0);
-		if(i==0 || i==7)
-			y-=30;
-		if(i==3 || i==4)
-			y+=30;
-		if(cursor!=i)
-			Print(320 + x, 280 + y, menuTxt[i], (cursor == i) * 10, 0);
-		else
-			PrintWavy(320+x,280+y,menuTxt[i],(cursor==i)*10,0, titleClock, 2, 1);
-	}
+	#ifdef DEMO
+		PrintSimpleShadow(2, 2, "DEMO Version", 1);
+	#endif
+	#ifndef NDEBUG
+		PrintSimpleShadow(2, 2, "DEBUG Version", 1);
+	#endif
 
 	titleClock++;
 	sprintf(s,"Profile: %s",profile.name);
@@ -269,12 +274,6 @@ void MainMenuDisplay(MGLDraw *mgl)
 	Print(638-GetStrLength(s,2)+1,460+1,s,-32,2);
 	Print(638-GetStrLength(s,2),460,s,0,2);
 	DrawMouseCursor(msx2,msy2);
-
-#ifdef IGF
-	CenterPrint(igfX-1,igfY-1,"IGF Judge Edition!  Do Not Distribute",-32,2);
-	CenterPrint(igfX+1,igfY+1,"IGF Judge Edition!  Do Not Distribute",-32,2);
-	CenterPrint(igfX,igfY,"IGF Judge Edition!  Do Not Distribute",0,2);
-#endif
 }
 
 TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
@@ -284,30 +283,13 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 	int i;
 	byte formerCursor;
 
-	if(*lastTime>TIME_PER_FRAME*5)
-		*lastTime=TIME_PER_FRAME*5;
-	while(*lastTime>=TIME_PER_FRAME)
+	while (*lastTime >= TIME_PER_FRAME)
 	{
-		igfX+=igfDX;
-		igfY+=igfDY;
-
-		if(igfX<30 || igfX>610)
-			igfDX=-igfDX;
-		if(igfY<0 || igfY>460)
-			igfDY=-igfDY;
-
 		titleRuns++;
-		for(i=0;i<8;i++)
-		{
-			if(cursor!=i && sliceOut[i]>0)
-				sliceOut[i]--;
-			else if(cursor==i && sliceOut[i]<20)
-				sliceOut[i]+=2;
-		}
 		reptCounter++;
 
 		mgl->Process();
-		*lastTime-=TIME_PER_FRAME;
+		*lastTime -= TIME_PER_FRAME;
 	}
 
 	formerCursor=cursor;
@@ -327,62 +309,21 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		msy2 = msy;
 	}
 
-	if (lsx*lsx + lsy*lsy > (INT16_MAX/2)*(INT16_MAX/2))
+	if (msx != oldmsx || msy != oldmsy)
 	{
-		double angle = atan2(lsy, lsx);
-		msx2 = 320 + cos(angle) * 200;
-		msy2 = 280 + sin(angle) * 200;
-		doMouse = true;
-	}
+		titleRuns = 0;
 
-	if(doMouse)
-	{
-		titleRuns=0;
-
-		if(msx2>320)
+		int yy;
+		// select stuff with cursor here
+		for (i = 0;i < 6;i++)
 		{
-			if(msy2<280)
-			{
-				// upper right quadrant
-				if(abs(msx2-320)>abs(msy2-280))
-					cursor=1;
-				else
-					cursor=0;
-			}
-			else
-			{
-				// lower right quadrant
-				if(abs(msx2-320)>abs(msy2-280))
-					cursor=2;
-				else
-					cursor=3;
-			}
-		}
-		else
-		{
-			if(msy2<280)
-			{
-				// upper left quadrant
-				if(abs(msx2-320)>abs(msy2-280))
-					cursor=6;
-				else
-				{
-					if(ItemPurchased(SHOP_MAJOR,MAJOR_EDITOR))
-						cursor=7;
-					else
-						cursor=6;
-				}
-			}
-			else
-			{
-				// lower left quadrant
-				if(abs(msx2-320)>abs(msy2-280))
-					cursor=5;
-				else
-					cursor=4;
-			}
+			yy = 100 + i * 60;
+			if (msx >= 100 && msx <= 500 && msy >= yy && msy <= yy+55)
+				cursor = i;
 		}
 	}
+	oldmsx = msx;
+	oldmsy = msy;
 
 	if((!oldc) || (reptCounter>10))
 		reptCounter=0;
@@ -391,21 +332,15 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 	{
 		cursor--;
 		if(cursor==255)
-			cursor=7;
-		if(cursor==7 && !ItemPurchased(SHOP_MAJOR,MAJOR_EDITOR))
-			cursor=6;
-
+			cursor=5;
 		titleRuns=0;
 		MakeNormalSound(SND_MENUCLICK);
 	}
 	if((c & ~oldc) & (CONTROL_DN|CONTROL_RT))
 	{
 		cursor++;
-		if(cursor==8)
+		if(cursor==6)
 			cursor=0;
-		if(cursor==7 && !ItemPurchased(SHOP_MAJOR,MAJOR_EDITOR))
-			cursor=0;
-
 		titleRuns=0;
 		MakeNormalSound(SND_MENUCLICK);
 	}
@@ -422,14 +357,14 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 	{
 		// ESC = Exit
 		MakeNormalSound(SND_MENUSELECT);
-		cursor=4;
+		cursor = MENU_EXIT;
 		CO_RETURN 1;
 	}
 	else if (c == 'e')
 	{
 		// e = Editor
 		MakeNormalSound(SND_MENUSELECT);
-		cursor = 7;
+		cursor = MENU_EDITOR;
 		CO_RETURN 1;
 	}
 
@@ -459,7 +394,7 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 		}
 	}
 
-	if(secretClicks>=16)
+	if(secretClicks>=99)
 	{
 		AWAIT TextGame(mgl);
 		secretClicks=0;
@@ -481,11 +416,6 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 	secretDir=0;
 	secretClicks=0;
 
-	if(ItemPurchased(SHOP_MAJOR,MAJOR_EDITOR))
-		strcpy(menuTxt[7],"Editor");
-	else
-		strcpy(menuTxt[7],"??????");
-
 	if(FirstTime())
 		AWAIT NameEntry(mgl,1);
 
@@ -495,7 +425,7 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 		if(shopping)
 			CO_RETURN 8;	// start playing the last level again
 		else
-			CO_RETURN 6;	// start shopping!
+			CO_RETURN MENU_SHOP;	// start shopping!
 	}
 
 	mgl->LoadBMP(Steam()->IsSteamEdition() ? "graphics/title_steam.bmp" : "graphics/title.bmp");
@@ -546,7 +476,7 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 	delete planetSpr;
 	free(backgd);
 
-	if(cursor==4)	// exit
+	if(cursor==MENU_EXIT)	// exit
 		CO_RETURN 255;
 	else
 		CO_RETURN cursor;

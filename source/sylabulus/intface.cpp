@@ -26,9 +26,9 @@ constexpr int SPR_ICN_SQUEEZY	= 95;
 constexpr int SPR_ICN_SPEEDY	= 96;
 constexpr int SPR_SCORE			= 107;
 constexpr int SPR_COINS			= 108;
+constexpr int SPR_BRAINOMETER	= 109;
 
 constexpr int SPR_WEAPONBOX   = 3;
-constexpr int SPR_BRAINOMETER = 4;
 constexpr int SPR_HAMMERBOX   = 5;
 constexpr int SPR_KEYBOX      = 6;
 constexpr int SPR_OXYGAUGE    = 8;
@@ -41,7 +41,7 @@ constexpr int SPR_CANDLE      = 51;
 constexpr int SPR_KEYCH       = 52;
 constexpr int SPR_BRAIN       = 56;
 constexpr int SPR_RAGE        = 57;
-constexpr int SPR_LOCK        = 65;
+constexpr int SPR_LOCK        = 110;
 constexpr int SPR_PORTRAIT    = 66;
 constexpr int SPR_HEAD		  = 67;
 
@@ -61,6 +61,7 @@ constexpr int KEYRINGY = 38;
 
 static std::unique_ptr<sprite_set_t> intfaceSpr;
 static std::unique_ptr<sprite_set_t> oldIntfaceSpr;
+
 static byte curLife=0;
 static byte curBrains=0;
 static byte monsAlive=0;
@@ -80,13 +81,14 @@ enum {
 	INTF_OXYGEN,
 	INTF_LIFE,
 	INTF_BRAINS,
-	INTF_LOCK,
 	INTF_WEAPON,
+	INTF_LOCK,
 	INTF_SCORE,
 	INTF_HAMMERS,
 	INTF_ENEMY,
 	INTF_COINS,
 	INTF_TIME,
+	INTF_STEALTH,
 	NUM_INTF,
 };
 
@@ -166,7 +168,7 @@ intface_t defaultSetup[NUM_INTF]={
 	 2,2,
 	 0,0,
 	 0},
-	{0,-50,0,38,	// keys
+	{1,-50,1,38,	// keys
 	 999,
 	 IV_KEYS,0,
 	 0,0,
@@ -175,7 +177,7 @@ intface_t defaultSetup[NUM_INTF]={
 	{56,-47,56,39,	// varbar
 	 SPR_VARBAR,
 	 IV_SMALLMETER,128,
-	 18,2,
+	 1,1,
 	 0,0,
 	 0},
 	{38,-39,38,31,	// rage meter
@@ -184,7 +186,7 @@ intface_t defaultSetup[NUM_INTF]={
 	 17,1,
 	 0,100,
 	 0},
-	{330,-50,330,-1,	// oxygen
+	{1,-50,1,-1,	// oxygen
 	 SPR_OXYGAUGE,
 	 IV_DIAL,192,
 	 14,12,
@@ -196,28 +198,28 @@ intface_t defaultSetup[NUM_INTF]={
 	 17,2,
 	 0,128,
 	 0},
-	{SCRWID-1,-102,SCRWID-1,25,	// brains
+	{SCRWID-1,-102,SCRWID-1,29,	// brains
 	 SPR_BRAINOMETER,
 	 IV_VERTMETER,64,
-	 -6,10,
+	 -8,9,
 	 0,50,
-	 0},
-	{SCRWID-79,-70,SCRWID-79,16,	// weapon lock
-	 SPR_LOCK,
-	 IV_LOCK,2,
-	 0,0,
-	 0,0,
-	 0},
+	 8},
 	{232,-70,232,10,	// weapon
 	 SPR_WPNBAR,
 	 IV_SMALLMETER,64,
 	 1,2,
 	 0,10,
 	 1},
-	{SCRWID-1,-50,SCRWID-1,-1,	// score
+	{290,-70,290,16,	// weapon lock
+	 SPR_LOCK,
+	 IV_LOCK,2,
+	 0,0,
+	 0,0,
+	 0},
+	{SCRWID-20,-50,SCRWID-20,1,	// score
 	 SPR_SCORE,
 	 IV_NUMBER,6,
-	 -54,3,
+	 20,8,
 	 0,1000,
 	 0},
 	{188,1,188,1,		// hammers
@@ -244,6 +246,12 @@ intface_t defaultSetup[NUM_INTF]={
 	 -19,3,
 	 0,0,
 	 20},
+	{1,-50,1,-1,	// stealth
+	 999, // render sprite specially
+	 IV_NONE,0,
+	 0,0,
+	 0,0,
+	 0},
 };
 
 static byte intfFlip;
@@ -252,8 +260,8 @@ static intface_t intf[NUM_INTF];
 
 void InitInterface(void)
 {
-	intfaceSpr = std::make_unique<sprite_set_t>("graphics/intface.jsp");
-	oldIntfaceSpr = std::make_unique<sprite_set_t>("graphics/intface_old.jsp");
+	intfaceSpr		= std::make_unique<sprite_set_t>("graphics/intface.jsp");
+	oldIntfaceSpr	= std::make_unique<sprite_set_t>("graphics/intface_old.jsp");
 	memcpy(intf,defaultSetup,sizeof(intface_t)*NUM_INTF);
 }
 
@@ -539,20 +547,37 @@ void DrawSmallMeter(int x,int y,int value,byte red,MGLDraw *mgl)
 	mgl->FillBox(x,y+4,x+value-1,y+4,c+7);
 }
 
-void DrawVertMeter(int x,int y,int value,int height,MGLDraw *mgl)
+void DrawVertMeter(int x, int y, int value, int height, MGLDraw* mgl, int width=5)
 {
-	byte c;
-
-	if(value==0)
+	if (value <= 0)
 		return;
 
-	c=32;
+	if (value > height)
+		value = height;
 
-	mgl->FillBox(x,y+height-(value-1),x,y+height,c+7);
-	mgl->FillBox(x+1,y+height-(value-1),x+1,y+height,c+12);
-	mgl->FillBox(x+2,y+height-(value-1),x+2,y+height,c+15);
-	mgl->FillBox(x+3,y+height-(value-1),x+3,y+height,c+12);
-	mgl->FillBox(x+4,y+height-(value-1),x+4,y+height,c+7);
+	byte c = 32;
+
+	int top = y + height - (value - 1);
+	int bottom = y + height;
+
+	for (int col = 0; col < width; col++)
+	{
+		float t = (width <= 1) ? 0.0f : (float)col / (float)(width - 1);
+
+		// 0 at center, 1 at edges
+		float d = fabsf(t - 0.5f) * 2.0f;
+
+		byte shade;
+
+		if (d < 0.25f)
+			shade = c + 15;
+		else if (d < 0.75f)
+			shade = c + 12;
+		else
+			shade = c + 7;
+
+		mgl->FillBox(x + col, top, x + col, bottom, shade);
+	}
 }
 
 void DrawNumber(int x,int y,int value,byte length,MGLDraw *mgl, int type, int chw, int strw = 0)
@@ -569,24 +594,43 @@ void DrawNumber(int x,int y,int value,byte length,MGLDraw *mgl, int type, int ch
 
 	if(strlen(s)<length)
 	{
-		x+=9*(length-strlen(s));
+		x+=chw*(length-strlen(s));
 		length=strlen(s);
 	}
 	for(i=0;i<length;i++)
 	{
-		intfaceSpr->GetSprite(s[i]-'0'+SPR_NUMBERS_SML)->Draw(x,y,mgl);
-		x+=9;
+		intfaceSpr->GetSprite(s[i]-'0'+type)->Draw(x,y,mgl);
+		x+=chw;
 	}
 }
 
 void DrawSmallNumber(int x, int y, int value, byte length, MGLDraw* mgl, int strw = 0)
 {
-	DrawNumber(x,y,value,length,mgl,SPR_NUMBERS_SML, strw);
+	DrawNumber(x,y,value,length,mgl,SPR_NUMBERS_SML, 9, strw);
 }
 
 void DrawBigNumber(int x, int y, int value, byte length, MGLDraw* mgl, int strw = 0)
 {
-	DrawNumber(x, y, value, length, mgl, SPR_NUMBERS_LRG, strw);
+	DrawNumber(x, y, value, length, mgl, SPR_NUMBERS_LRG, 16, strw);
+}
+
+int GetDigits(int number)
+{
+	int digits = 0;
+	if (number < 0) digits = 1; // Keep this line if '-' counts as a digit.
+	while (number) {
+		number /= 10;
+		digits++;
+	}
+	return digits;
+}
+
+void DrawNewScore(int x, int y, int value, byte length, MGLDraw* mgl, int strw = 0)
+{
+	int xx=0;
+	for (int i = 0; i < length; i++)
+		xx -= 16; // width of each digit
+	DrawNumber(x+xx, y, value, length, mgl, SPR_NUMBERS_LRG, 16, strw);
 }
 
 void DrawTime(int x,int y,int value,byte length,MGLDraw *mgl)
@@ -779,7 +823,7 @@ void DrawKeys(int x,int y,MGLDraw *mgl)
 			intfaceSpr->GetSprite(SPR_ICN_KEY + 3)->Draw(x + xx, y, mgl);
 			xx += 10;
 		}
-		yy+=10;
+		yy+=12;
 	}
 
 	xx=0;
@@ -827,15 +871,151 @@ void DrawHammers(int x,int y,MGLDraw *mgl)
 	}
 }
 
+void DrawStealth(int x, int y, MGLDraw* mgl)
+{
+	if (curMap && curMap->flags & MAP_STEALTH)
+	{
+		if (player.stealthy)
+			intfaceSpr->GetSprite(SPR_STEALTH)->Draw(x, y, mgl);
+		else // not so stealthy...
+			intfaceSpr->GetSprite(SPR_STEALTH)->DrawOffColor(x, y, mgl, 1, 5, 0);
+	}
+}
+
 void DrawLock(int x,int y,MGLDraw *mgl, int value)
 {
 	if(value)
-		intfaceSpr->GetSprite(67)->Draw(x,y,mgl);
+		intfaceSpr->GetSprite(SPR_LOCK)->Draw(x,y,mgl);
 }
 
 void UpdateInterface(Map *map)
 {
 	int i,j;
+	int xx=0,yy=1;
+
+	// don't show score on hub level (can't do squat with it anyways!)
+	if (map->flags & MAP_HUB)
+	{
+		intf[INTF_SCORE].tx = SCRWID-20;
+		intf[INTF_SCORE].ty = -50;
+	}
+	else
+	{
+		intf[INTF_SCORE].tx = SCRWID-20;
+		intf[INTF_SCORE].ty = yy;
+		yy += 28;
+	}
+
+	if (player.brains < map->numBrains) // not enough brains
+	{
+		intf[INTF_BRAINS].tx = SCRWID-1;
+		intf[INTF_BRAINS].ty = yy;
+	}
+	else
+	{
+		intf[INTF_BRAINS].tx = SCRWID - 1;
+		intf[INTF_BRAINS].ty = -102;
+	}
+
+	yy = 20;
+	// portrait + hp bar stays in place
+
+	// status bar comes first???
+	if (player.shield || player.garlic || player.speed || player.invisibility || player.ammoCrate || (goodguy && goodguy->poison) || player.cheesePower)
+	{
+		intf[INTF_POWERUP].tx = 56;
+		intf[INTF_POWERUP].ty = yy;
+		yy += 11;
+	}
+	else
+	{
+		intf[INTF_POWERUP].tx = 56;
+		intf[INTF_POWERUP].ty = -10;
+	}
+
+	// then rage bar
+	if (player.rage > 0 && player.ability[ABIL_RAGE])
+	{
+		intf[INTF_RAGE].tx = 38;
+		intf[INTF_RAGE].ty = yy;
+		yy += 8;
+	}
+	else
+	{
+		intf[INTF_RAGE].tx = 38;
+		intf[INTF_RAGE].ty = -10;
+	}
+
+	// then custom variable bar
+	if (player.varbarMax > 0)
+	{
+		intf[INTF_VARBAR].tx = 56;
+		intf[INTF_VARBAR].ty = yy;
+		yy += 8;
+	}
+	else
+	{
+		intf[INTF_VARBAR].tx = 56;
+		intf[INTF_VARBAR].ty = -10;
+	}
+
+	// KEYS / OXYGEN
+	yy=38;
+
+	// keys
+	if (player.keys[0] + player.keys[1] + player.keys[2] + player.keys[3]) // if keys, then...
+	{
+		intf[INTF_KEYS].tx = 1;
+		intf[INTF_KEYS].ty = yy;
+		yy += 23;
+	}
+	else
+	{
+		intf[INTF_KEYS].tx = -32;
+		intf[INTF_KEYS].ty = yy;
+	}
+
+	// oxygen
+	if (map->flags & (MAP_UNDERWATER | MAP_OXYGEN))
+	{
+		intf[INTF_OXYGEN].tx = 1;
+		intf[INTF_OXYGEN].ty = yy;
+		yy += 23;
+	}
+	else
+	{
+		intf[INTF_OXYGEN].tx = -32;
+		intf[INTF_OXYGEN].ty = yy;
+	}
+
+	// stealth
+	if (curMap && curMap->flags & MAP_STEALTH)
+	{
+		intf[INTF_STEALTH].tx = 1;
+		intf[INTF_STEALTH].ty = yy;
+		yy += 23;
+	}
+	else
+	{
+		intf[INTF_STEALTH].tx = -32;
+		intf[INTF_STEALTH].ty = yy;
+	}
+
+	if (player.weapon)
+	{
+		intf[INTF_WEAPON].tx	= 232;
+		intf[INTF_WEAPON].ty	= 10;
+		intf[INTF_LOCK].tx		= 290;
+		intf[INTF_LOCK].ty		= 16;
+	}
+	else
+	{
+		intf[INTF_WEAPON].tx	= 232;
+		intf[INTF_WEAPON].ty	= -70;
+		intf[INTF_LOCK].tx		= 290;
+		intf[INTF_LOCK].ty		= -64;
+	}
+
 
 	intfFlip=1-intfFlip;
 	for(i=0;i<NUM_INTF;i++)
@@ -1158,24 +1338,8 @@ void RenderInterface(MGLDraw *mgl)
 	//sprintf(combo,"%d:%02d:%02d",(profile.progress.totalTime/(30*60*60)),(profile.progress.totalTime/(30*60))%60,(profile.progress.totalTime/30)%60);
 	//PrintGlow(5,240,combo,0,2);
 
-	if(curMap && curMap->flags&MAP_STEALTH)
-	{
-		if (player.stealthy)
-			intfaceSpr->GetSprite(SPR_STEALTH)->Draw(625,460,mgl);
-		else
-			intfaceSpr->GetSprite(SPR_STEALTH)->DrawOffColor(625,460,mgl,1,5,0);
-	}
-
 	for(i=0;i<NUM_INTF;i++)
 	{
-		if (i == INTF_WEAPON && player.weapon) // has wepon
-		{
-			int xx = intf[i].x - 21;
-			int yy = intf[i].y - 8;
-			intfaceSpr->GetSprite(SPR_WPNICON)->Draw(xx, yy, mgl);
-			intfaceSpr->GetSprite(SPR_WPNNAME + player.weapon - 1)->Draw(intf[i].x+20, intf[i].y+1, mgl);
-		}
-
 		intfaceSpr->GetSprite(intf[i].spr)->Draw(intf[i].x,intf[i].y,mgl);
 
 		switch (i)
@@ -1185,6 +1349,16 @@ void RenderInterface(MGLDraw *mgl)
 				break;
 			case INTF_POWERUP:
 				DrawPowerupBar(intf[i].x + intf[i].vOffX, intf[i].y + intf[i].vOffY, mgl);
+				break;
+			case INTF_SCORE:
+				DrawNewScore(intf[i].x + intf[i].vOffX, intf[i].y + intf[i].vOffY, intf[i].value, intf[i].valueLength, mgl);
+				break;
+			case INTF_STEALTH:
+				DrawStealth(intf[i].x + intf[i].vOffX, intf[i].y + intf[i].vOffY, mgl);
+				break;
+			case INTF_WEAPON:
+				intfaceSpr->GetSprite(SPR_WPNICON)->Draw(intf[i].x-21, intf[i].y-8, mgl);
+				intfaceSpr->GetSprite(SPR_WPNNAME+player.weapon-1)->Draw(intf[i].x, intf[i].y-6, mgl);
 				break;
 		}
 
@@ -1208,16 +1382,13 @@ void RenderInterface(MGLDraw *mgl)
 				else
 					DrawSmallMeter(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value,1,mgl);
 				break;
-			case IV_NUMBER:
-				DrawBigNumber(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value,intf[i].valueLength,mgl);
-				break;
 			case IV_TIME:
 				DrawSmallNumber(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value % 60,intf[i].valueLength,mgl, 2);
 				if(intf[i].value >=60)
 					DrawSmallNumber(intf[i].x+intf[i].vOffX-intf[i].otherVal,intf[i].y+intf[i].vOffY,intf[i].value / 60,intf[i].valueLength, mgl);
 				break;
 			case IV_VERTMETER:
-				DrawVertMeter(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value,intf[i].valueLength,mgl);
+				DrawVertMeter(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value,intf[i].valueLength,mgl, intf[i].otherVal);
 				break;
 			case IV_KEYS:
 				DrawKeys(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,mgl);
@@ -1240,32 +1411,148 @@ void RenderInterface(MGLDraw *mgl)
 	PrintGlow(240,comboY,combo,0,2);
 }
 
+void DrawFancyLine(int x, int y, int color, int width, MGLDraw* mgl)
+{
+	int seg = width / 5;
+
+	DrawLine(x, y, x + seg - 1, y, 32 * color + 4);
+	DrawLine(x + seg, y, x + seg * 2 - 1, y, 32 * color + 8);
+	DrawLine(x + seg * 2, y, x + seg * 3 - 1, y, 32 * color + 16);
+	DrawLine(x + seg * 3, y, x + seg * 4 - 1, y, 32 * color + 8);
+	DrawLine(x + seg * 4, y, x + width - 1, y, 32 * color + 4);
+}
+
+void RenderShoppingStuff(int x, int y, MGLDraw *mgl)
+{
+	char combo[16];
+	int p;
+	int yy = 20;
+
+	sprintf(combo, "Shopping Info");
+	Print(x, y+yy, combo, 0, 2);
+	yy += 15;
+
+	DrawFancyLine(x, y+yy, 7, 100, mgl);
+	yy += 15;
+
+	InstaRenderItem(x, y+yy+6, ITM_COIN, 0, GetDisplayMGL());
+	sprintf(combo,"D$%u",profile.progress.totalCoins-profile.progress.coinsSpent);
+	PrintSimpleShadow(x+32, y+yy, combo, 1);
+
+	yy += 27;
+	InstaRenderItem(x, y+yy+4, ITM_LOONYKEY, 0, GetDisplayMGL());
+	sprintf(combo,"%u LoonyKeys",profile.progress.loonyKeys-profile.progress.loonyKeysUsed);
+	PrintSimpleShadow(x+32, y+yy, combo, 1);
+
+	yy += 27;
+	sprintf(combo, "%u/%u Shopped", NumPurchased(), NUMSHOPITEMS);
+	PrintSimpleShadow(x, y + yy, combo, 1);
+
+
+}
+
 void RenderCollectedStuff(int x,int y,MGLDraw *mgl)
 {
-	int p;
+	char msg[32];
+	float p;
+	int xx=0, yy=20;
+
+	// draw the level info (only if it's not a hub level)
+	if (curMap->flags & MAP_HUB)
+	{
+		// hub level
+	}
+	else
+	{
+		sprintf(msg, "Level Info");
+		Print(x+xx, y+yy, msg, 0, 2);
+		yy += 15;
+
+		DrawFancyLine(x+xx, y+yy, 7, 100, mgl);
+		yy += 5;
+
+		if (curMap->numBrains == 0)
+		{
+			sprintf(msg, "N/A");
+			intfaceSpr->GetSprite(SPR_CANDLE)->DrawOffColor(x + xx, y + yy, mgl, 1, 7, -8);
+			PrintSimpleShadow(x + xx + 21, y + yy, msg, 1);
+		}
+		else if ((player.levelProg->flags & LF_CANDLES))
+		{
+			sprintf(msg, "ALL Candles!");
+			intfaceSpr->GetSprite(SPR_CANDLE)->DrawOffColor(x+xx, y+yy, mgl, 1, 7, 0);
+			PrintSimpleShadow(x+xx+21, y + yy, msg, 1);
+		}
+		else
+		{
+			snprintf(msg, sizeof(msg), "%.2f%% Candles", 100.0f * player.candles / curMap->numCandles);
+			intfaceSpr->GetSprite(SPR_CANDLE)->DrawOffColor(x + xx, y + yy, mgl, 1, 0, 0);
+			PrintSimpleShadow(x+xx+21, y + yy, msg, 1);
+		}
+		yy += 20;
+
+		if (curMap->numBrains == 0)
+		{
+			sprintf(msg, "N/A");
+			intfaceSpr->GetSprite(SPR_BRAIN)->DrawOffColor(x + xx, y + yy, mgl, 1, 7, -8);
+			PrintSimpleShadow(x + xx + 21, y + yy, msg, 1);
+		}
+		else if (PlayerBrains() < curMap->numBrains)
+		{
+			snprintf(msg, sizeof(msg), "%.2f%% Brains", 100.0f * player.brains / curMap->numBrains);
+			intfaceSpr->GetSprite(SPR_BRAIN)->DrawOffColor(x + xx, y + yy, mgl, 1, 0, 0);
+			PrintSimpleShadow(x+xx+21, y+yy, msg, 1);
+		}
+		else
+		{
+			sprintf(msg, "ALL Brains!");
+			intfaceSpr->GetSprite(SPR_BRAIN)->DrawOffColor(x + xx, y + yy, mgl, 1, 7, 0);
+			PrintSimpleShadow(x+xx+21, y+yy, msg, 1);
+		}
+		yy += 20;
+	}
+
+	sprintf(msg, "World Info");
+	Print(x + xx, y + yy, msg, 0, 2);
+	yy += 15;
+
+	DrawFancyLine(x + xx, y + yy, 7, 100, mgl);
+	yy += 5;
+
+	// draw keychains
 
 	if((player.worldProg->keychains&KC_LOONY))
+	{
 		intfaceSpr->GetSprite(SPR_LOONYKEY)->Draw(x+183,y+57,mgl);
-	if((player.levelProg->flags&LF_CANDLES))
-		intfaceSpr->GetSprite(SPR_CANDLE)->Draw(x+181,y+20,mgl);
+	}
 
-	if(PlayerBrains()>=curMap->numBrains)
-		intfaceSpr->GetSprite(SPR_BRAIN)->Draw(x+144,y+1,mgl);
+	int keych = 0;
 
-	if(player.worldProg->keychains&KC_KEYCH1)
-		intfaceSpr->GetSprite(SPR_KEYCH+3)->Draw(x+171,y+29,mgl);
-	if(player.worldProg->keychains&KC_KEYCH2)
-		intfaceSpr->GetSprite(SPR_KEYCH)->Draw(x+150,y+42,mgl);
-	if(player.worldProg->keychains&KC_KEYCH3)
-		intfaceSpr->GetSprite(SPR_KEYCH+2)->Draw(x+161,y+29,mgl);
-	if(player.worldProg->keychains&KC_KEYCH4)
-		intfaceSpr->GetSprite(SPR_KEYCH+1)->Draw(x+160,y+42,mgl);
+	xx = 0;
+	for(int i=0;i<4;i++)
+	{
+		if (player.worldProg->keychains & (1 << i)) // check each keychain
+		{
+			keych++;
+			intfaceSpr->GetSprite(SPR_KEYCH + i)->DrawOffColor(x + xx, y + yy, mgl, 1, 7, 0);
+		}
+		else
+			intfaceSpr->GetSprite(SPR_KEYCH + i)->DrawOffColor(x + xx, y + yy, mgl, 1, 0, -4);
+		xx += 16;
+	}
+	yy += 12;
 
-	p=(int)player.worldProg->percentage;
+	xx=0;
+	snprintf(msg, sizeof(msg), "%d/4 Keychains", keych);
+	PrintSimpleShadow(x+xx, y+yy, msg, 1);
+
+	p=(float)player.worldProg->percentage;
 	if(p>100)
 		p=100;
 	if(p<0)
 		p=0;
+	yy += 15;
 
-	DrawSmallNumber(x+146,y+58,p,3,mgl);
+	snprintf(msg, sizeof(msg), "%.2f%% Complete",p);
+	PrintSimpleShadow(x + xx, y + yy, msg, 1);
 }

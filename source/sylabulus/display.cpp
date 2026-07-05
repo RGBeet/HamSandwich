@@ -371,6 +371,11 @@ void PrintLimited(int x,int y,int maxX,std::string_view s,char bright,byte font)
 			FontPrintStringSolidLimit(x,y,maxX,s,gameFont[font],0);
 }
 
+void PrintSimpleShadow(int x, int y, std::string_view s, byte font)
+{
+	FontPrintStringSolid(x+1, y+1, s, gameFont[font], 0);
+	FontPrintStringSolid(x, y, s, gameFont[font], 31);
+}
 
 void CenterPrint(int x,int y,std::string_view s,char bright,byte font)
 {

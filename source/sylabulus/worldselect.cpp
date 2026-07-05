@@ -411,7 +411,7 @@ TASK(void) InitWorldSelect(MGLDraw *mgl)
 	for(i=0;i<480;i++)
 		memcpy(&backgd[i*640],&mgl->GetScreen()[i*mgl->GetWidth()],640);
 
-	PrintGlow(20,20,"Loading...",0,2);
+	Print(20,20,"Loading...",0,2);
 	AWAIT mgl->Flip();
 
 	sortType=0;
@@ -1080,7 +1080,7 @@ void RenderWorldSelectButton(int x,int y,int wid,const char *txt,MGLDraw *mgl, B
 	else
 		mgl->Box(x,y,x+wid,y+WBTN_HEIGHT,32+16);
 
-	PrintGlow(x+2,y+2,txt,0,2);
+	Print(x+2,y+2,txt,0,2);
 }
 
 void RenderWorldSelect(MGLDraw *mgl)
@@ -1098,9 +1098,9 @@ void RenderWorldSelect(MGLDraw *mgl)
 	if (curButton == ButtonId::SortComplete)
 		mgl->FillBox(PERCENT_X-GetStrLength("Complete",2),20,PERCENT_X+4,37,32+8);
 
-	PrintGlow(NAME_X,20,"World",6,2);
-	PrintGlow(AUTH_X,20,"Author",6,2);
-	PrintGlow(PERCENT_X-GetStrLength("Complete",2),20,"Complete",6,2);
+	Print(NAME_X,20,"World",0,2);
+	Print(AUTH_X,20,"Author",0,2);
+	Print(PERCENT_X-GetStrLength("Complete",2),20,"Complete",0,2);
 
 	// lines to separate stuff
 	mgl->FillBox(20,37,620,37,32+16);
@@ -1132,8 +1132,8 @@ void RenderWorldSelect(MGLDraw *mgl)
 			if (showFilenames)
 			{
 				// Debug/WTG mode: show name, fname, author
-				PrintGlow(NAME_X,40+i*GAP_HEIGHT,list[i+listPos].name,b,1);
-				PrintGlow(AUTH_X-70,40+i*GAP_HEIGHT,list[i+listPos].fname,b,1);
+				Print(NAME_X,40+i*GAP_HEIGHT,list[i+listPos].name,b,1);
+				Print(AUTH_X-70,40+i*GAP_HEIGHT,list[i+listPos].fname,b,1);
 
 				if (choice == i+listPos)
 				{
@@ -1150,28 +1150,28 @@ void RenderWorldSelect(MGLDraw *mgl)
 					{
 						sprintf(msg, "V: %d of %d maps", numMapsVerified, tmpWorld.numMaps);
 					}
-					PrintGlow(AUTH_X+120,40+i*GAP_HEIGHT,msg,0,1);
+					Print(AUTH_X+120,40+i*GAP_HEIGHT,msg,0,1);
 				}
 				else
 				{
-					PrintGlow(AUTH_X+120,40+i*GAP_HEIGHT,list[i+listPos].author,b,1);
+					Print(AUTH_X+120,40+i*GAP_HEIGHT,list[i+listPos].author,b,1);
 				}
 			}
 			else
 #endif
 			{
 				// Normal mode: show name, author, and % completion
-				PrintGlow(NAME_X,40+i*GAP_HEIGHT,list[i+listPos].name,b,2);
+				Print(NAME_X,40+i*GAP_HEIGHT,list[i+listPos].name,b,2);
 				// Shift over the author if the world name is a little long
 				int endX = NAME_X + GetStrLength(list[i+listPos].name, 2) + 8;
-				PrintGlow(std::max(AUTH_X, endX),40+i*GAP_HEIGHT,list[i+listPos].author,b,2);
+				Print(std::max(AUTH_X, endX),40+i*GAP_HEIGHT,list[i+listPos].author,b,2);
 				if(list[i+listPos].percentage==0.0f)
 					strcpy(s,"0%");
 				else if(list[i+listPos].percentage==100.0f)
 					strcpy(s,"100%");
 				else
 					sprintf(s,"%0.1f%%",list[i+listPos].percentage);
-				PrintGlow(PERCENT_X-GetStrLength(s,2),40+i*GAP_HEIGHT,s,b,2);
+				Print(PERCENT_X-GetStrLength(s,2),40+i*GAP_HEIGHT,s,b,2);
 			}
 		}
 		else
@@ -1191,7 +1191,7 @@ void RenderWorldSelect(MGLDraw *mgl)
 
 	if(list[choice].dimmed)
 	{
-		PrintGlow(200,411,"You need to buy this world in the SpisMall to play it!",0,2);
+		Print(200,411,"You need to buy this world in the mall to play it!",0,2);
 	}
 	else
 	{
@@ -1204,7 +1204,7 @@ void RenderWorldSelect(MGLDraw *mgl)
 		if(!noScoresAtAll)
 		{
 			RenderWorldSelectButton(335,371,20,"<<",mgl, ButtonId::PrevLevel);
-			PrintGlowLimited(359,373,590,tmpWorld.map[level]->name,0,2);
+			PrintLimited(359,373,590,tmpWorld.map[level]->name,0,2);
 			RenderWorldSelectButton(592,371,20,">>",mgl, ButtonId::NextLevel);
 
 			// now the scores themselves
@@ -1213,11 +1213,11 @@ void RenderWorldSelect(MGLDraw *mgl)
 				s[2]='\0';
 				s[1]='.';
 				s[0]=i+'1';	// equivalent to sprintf(s,"%d.",i);
-				PrintGlow(335,395+i*20,s,0,2);
+				Print(335,395+i*20,s,0,2);
 				if(i>=numScores)
-					PrintGlow(350,395+i*20,"?????",0,2);
+					Print(350,395+i*20,"?????",0,2);
 				else
-					PrintGlow(350,395+i*20,top3[i].name,0,2);
+					Print(350,395+i*20,top3[i].name,0,2);
 				if(scoreMode==1)
 				{
 					if(i>=numScores)
@@ -1232,7 +1232,7 @@ void RenderWorldSelect(MGLDraw *mgl)
 					else
 						sprintf(s,"%u",top3[i].score);
 				}
-				PrintGlow(615-GetStrLength(s,2),395+i*20,s,0,2);
+				Print(615-GetStrLength(s,2),395+i*20,s,0,2);
 			}
 		}
 
@@ -1256,10 +1256,10 @@ void RenderWorldSelect(MGLDraw *mgl)
 		mgl->FillBox(40,150,600,300,32*1+4);
 		mgl->Box(40,150,600,300,32*1+16);
 		if(mode==MODE_CONFIRM_ERASE_PROGRESS)
-			PrintGlowRect(50,160,590,250,18,"Are you sure you want to reset this world?  That will erase all of your progress "
+			PrintRect(50,160,590,250,18,"Are you sure you want to reset this world?  That will erase all of your progress "
 										   "in the world, but leave high scores unchanged.",2);
 		else
-			PrintGlowRect(50,160,590,250,18,"Are you sure you want to reset the high scores for this world?  That will erase "
+			PrintRect(50,160,590,250,18,"Are you sure you want to reset the high scores for this world?  That will erase "
 										   "the high scores, but keep your progress in the world.",2);
 		RenderWorldSelectButton(70,270,50,"Yes",mgl, ButtonId::Yes);
 		RenderWorldSelectButton(600-30-50,270,50,"No",mgl, ButtonId::No);

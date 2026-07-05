@@ -101,4 +101,7 @@ void RenderShopping(MGLDraw *mgl);
 
 float ShopPercent(void);
 
+#define NUMSHOPITEMS		(158)
+#define NUMBUILTINWORLDS	(79)
+
 #endif

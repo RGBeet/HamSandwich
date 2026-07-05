@@ -95,6 +95,7 @@ void PrintUnGlowRect(int x,int y,int x2,int y2,int height,std::string_view s,byt
 void PrintLimited(int x,int y,int maxX,std::string_view s,char bright,byte font);
 void PrintGlowLimited(int x,int y,int maxX,std::string_view s,char bright,byte font);
 
+void PrintSimpleShadow(int x, int y, std::string_view s, byte font); // use for verdana only!
 void PrintWavy(int x, int y, std::string_view s, char bright, byte font, int clock, int vert, int hori);
 void PrintWavyGlow(int x, int y, std::string_view s, char bright, byte font, int clock, int vert, int hori);
 

@@ -13,5 +13,6 @@ void ShowEnemyLife(char *name,byte formerLife,byte life,byte alive);
 void UpdateInterface(Map *map);
 void RenderInterface(MGLDraw *mgl);
 void RenderCollectedStuff(int x,int y,MGLDraw *mgl);
+void RenderShoppingStuff(int x, int y, MGLDraw* mgl);
 
 #endif

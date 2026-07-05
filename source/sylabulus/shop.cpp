@@ -10,9 +10,6 @@
 #include "gallery.h"
 #include "goal.h"
 
-#define NUMSHOPITEMS		(158)
-#define NUMBUILTINWORLDS	(79)
-
 word moneyAmts[11]={25,75,1500,5000,2222,250,17,300,2,716,42};
 
 struct ShopItem
@@ -1679,29 +1676,32 @@ TASK(byte) UpdateShopping(MGLDraw *mgl)
 
 void RenderShopButton(byte on,int x,int y,int wid,const char *txt,MGLDraw *mgl)
 {
-	if(on)
+	if(!on)
 	{
 		mgl->Box(x,y,x+wid,y+19,32+31);
-		mgl->FillBox(x+1,y+1,x+wid-1,y+19-1,32+8);
+		mgl->FillBox(x+1,y+1,x+wid-1,y+19-1,32*3+4);
+		Print(x + 2, y + 3, txt, 0, 2);
 	}
 	else
-		mgl->Box(x,y,x+wid,y+19,32+16);
-
-	PrintGlow(x+2,y+3,txt,0,2);
+	{
+		mgl->Box(x,y,x+wid,y+19,32+31);
+		mgl->FillBox(x+1,y+1,x+wid-1,y+19-1,32*7+8);
+		PrintWavy(x + 2, y + 3, txt, 0, 2, timeGetTime()/10, 1, 0.5);
+	}
 }
 
 void RenderShopping(MGLDraw *mgl)
 {
-	mgl->FillBox(320-shopSize,240-shopSize/2,320+shopSize,240+shopSize/2,32*1+4);
+	mgl->FillBox(320-shopSize,240-shopSize/2,320+shopSize,240+shopSize/2,32*3+4);
 
 	if(shopSize>2)
-		mgl->Box(320-shopSize+1,240-shopSize/2+1,320+shopSize-1,240+shopSize/2-1,32*1+16);
+		mgl->Box(320-shopSize+1,240-shopSize/2+1,320+shopSize-1,240+shopSize/2-1,32*3+16);
 
 	if(buyMode==0)
 	{
 		if(shopSize>=150)
 		{
-			PrintGlowRect(320-shopSize+4,240-shopSize/2+4,320+shopSize-4,240+shopSize/2-4,18,shopTxt,2);
+			PrintRect(320-shopSize+4,240-shopSize/2+4,320+shopSize-4,240+shopSize/2-4,18,shopTxt,2);
 
 			RenderShopButton((cursor==0),320-shopSize+10,240+shopSize/2-27,95,"No Thanks!",mgl);
 			RenderShopButton((cursor==1),320+shopSize-105,240+shopSize/2-27,95,"Yes Please!",mgl);
@@ -1711,7 +1711,7 @@ void RenderShopping(MGLDraw *mgl)
 	{
 		if(shopSize>=150)
 		{
-			PrintGlowRect(320-shopSize+4,240-shopSize/2+4,320+shopSize-4,240+shopSize/2-4,18,shopTxt,2);
+			PrintRect(320-shopSize+4,240-shopSize/2+4,320+shopSize-4,240+shopSize/2-4,18,shopTxt,2);
 			RenderShopButton(1,320-48,240+shopSize/2-27,95,"Thank you!",mgl);
 		}
 	}
