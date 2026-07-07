@@ -62,6 +62,7 @@ constexpr int WORLDS_PER_SCREEN = 18;
 constexpr int CLICK_SCROLL_AMT = WORLDS_PER_SCREEN * 3 / 4;
 
 constexpr int WBTN_HEIGHT = 19;
+constexpr int WS_COLOR = 32*3;
 
 struct worldDesc_t
 {
@@ -262,7 +263,7 @@ TASK(void) ScanWorlds(void)
 		if (now - start > 50)  // 50 ms = 20 fps
 		{
 			start = now;
-			GetDisplayMGL()->FillBox(20,440,20+(done*600)/count,450,32*1+16);
+			GetDisplayMGL()->FillBox(20,440,20+(done*600)/count,450, WS_COLOR+16);
 			AWAIT GetDisplayMGL()->Flip();
 		}
 	}
@@ -1074,11 +1075,11 @@ void RenderWorldSelectButton(int x,int y,int wid,const char *txt,MGLDraw *mgl, B
 {
 	if(curButton == id)
 	{
-		mgl->Box(x,y,x+wid,y+WBTN_HEIGHT,32+31);
-		mgl->FillBox(x+1,y+1,x+wid-1,y+WBTN_HEIGHT-1,32+8);
+		mgl->Box(x,y,x+wid,y+WBTN_HEIGHT,WS_COLOR+31);
+		mgl->FillBox(x+1,y+1,x+wid-1,y+WBTN_HEIGHT-1,WS_COLOR+8);
 	}
 	else
-		mgl->Box(x,y,x+wid,y+WBTN_HEIGHT,32+16);
+		mgl->Box(x,y,x+wid,y+WBTN_HEIGHT,WS_COLOR+16);
 
 	Print(x+2,y+2,txt,0,2);
 }
@@ -1092,19 +1093,19 @@ void RenderWorldSelect(MGLDraw *mgl)
 		memcpy(&mgl->GetScreen()[i*mgl->GetWidth()],&backgd[i*640],640);
 
 	if (curButton == ButtonId::SortName)
-		mgl->FillBox(NAME_X,20,AUTH_X-20,37,32+8);
+		mgl->FillBox(NAME_X,20,AUTH_X-20,37,WS_COLOR+8);
 	if (curButton == ButtonId::SortAuthor)
-		mgl->FillBox(AUTH_X,20,PERCENT_X-GetStrLength("Complete",2)-20,37,32+8);
+		mgl->FillBox(AUTH_X,20,PERCENT_X-GetStrLength("Complete",2)-20,37,WS_COLOR+8);
 	if (curButton == ButtonId::SortComplete)
-		mgl->FillBox(PERCENT_X-GetStrLength("Complete",2),20,PERCENT_X+4,37,32+8);
+		mgl->FillBox(PERCENT_X-GetStrLength("Complete",2),20,PERCENT_X+4,37,WS_COLOR+8);
 
 	Print(NAME_X,20,"World",0,2);
 	Print(AUTH_X,20,"Author",0,2);
 	Print(PERCENT_X-GetStrLength("Complete",2),20,"Complete",0,2);
 
 	// lines to separate stuff
-	mgl->FillBox(20,37,620,37,32+16);
-	mgl->FillBox(20,364,620,364,32+16);
+	mgl->FillBox(20,37,620,37,WS_COLOR+16);
+	mgl->FillBox(20,364,620,364,WS_COLOR+16);
 
 	// the world list
 	for(i=0;i<18;i++)
@@ -1114,14 +1115,14 @@ void RenderWorldSelect(MGLDraw *mgl)
 			if(choice==i+listPos)
 			{
 				if (mouseMode || curButton == ButtonId::WorldList)
-					mgl->FillBox(17,39+i*GAP_HEIGHT,599,39+GAP_HEIGHT+i*GAP_HEIGHT-1,32+8);
+					mgl->FillBox(17,39+i*GAP_HEIGHT,599,39+GAP_HEIGHT+i*GAP_HEIGHT-1,WS_COLOR+8);
 				else
-					mgl->Box(17,39+i*GAP_HEIGHT,599,39+GAP_HEIGHT+i*GAP_HEIGHT-1,32+16);
+					mgl->Box(17,39+i*GAP_HEIGHT,599,39+GAP_HEIGHT+i*GAP_HEIGHT-1,WS_COLOR+16);
 			}
 
 			if(mouseMode && PointInRect(msx,msy,17,39+i*GAP_HEIGHT,599,39+GAP_HEIGHT+i*GAP_HEIGHT-1))
 			{
-				mgl->Box(17,39+i*GAP_HEIGHT,599,39+GAP_HEIGHT+i*GAP_HEIGHT-1,32+16);
+				mgl->Box(17,39+i*GAP_HEIGHT,599,39+GAP_HEIGHT+i*GAP_HEIGHT-1,WS_COLOR+16);
 			}
 			if(list[i+listPos].dimmed)
 				b=-10;
@@ -1179,9 +1180,9 @@ void RenderWorldSelect(MGLDraw *mgl)
 	}
 
 	// the scrollbar
-	mgl->Box(605,39,620,39+3+SCROLLBAR_HEIGHT,32+16);
-	mgl->FillBox(606,40,619,39+2+SCROLLBAR_HEIGHT,32+6);
-	mgl->FillBox(607,41+scrollY,618,41+scrollY+scrollHeight,32+20);
+	mgl->Box(605,39,620,39+3+SCROLLBAR_HEIGHT,WS_COLOR+16);
+	mgl->FillBox(606,40,619,39+2+SCROLLBAR_HEIGHT,WS_COLOR+6);
+	mgl->FillBox(607,41+scrollY,618,41+scrollY+scrollHeight,WS_COLOR+20);
 
 	// buttons
 	RenderWorldSelectButton(20,371,150,"Play This World",mgl, ButtonId::PlayThisWorld);
@@ -1191,7 +1192,8 @@ void RenderWorldSelect(MGLDraw *mgl)
 
 	if(list[choice].dimmed)
 	{
-		Print(200,411,"You need to buy this world in the mall to play it!",0,2);
+		PrintRect(200, 411, SCRWID-16, SCRHEI-16, 18, "You need to buy this world in the Hamumu Mall "
+			"to play it!", 2);
 	}
 	else
 	{
@@ -1253,8 +1255,8 @@ void RenderWorldSelect(MGLDraw *mgl)
 
 	if(mode==MODE_CONFIRM_ERASE_PROGRESS || mode==MODE_CONFIRM_ERASE_SCORES)
 	{
-		mgl->FillBox(40,150,600,300,32*1+4);
-		mgl->Box(40,150,600,300,32*1+16);
+		mgl->FillBox(40,150,600,300,WS_COLOR+4);
+		mgl->Box(40,150,600,300,WS_COLOR+16);
 		if(mode==MODE_CONFIRM_ERASE_PROGRESS)
 			PrintRect(50,160,590,250,18,"Are you sure you want to reset this world?  That will erase all of your progress "
 										   "in the world, but leave high scores unchanged.",2);

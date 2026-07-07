@@ -200,7 +200,7 @@ void InitProfMenu(MGLDraw *mgl)
 	msBright=0;
 	msDBright=1;
 
-	mgl->LoadBMP("graphics/profmenu.bmp");
+	mgl->LoadBMP("graphics/pause.bmp");
 	backgd=(byte *)malloc(640*480);
 	plSpr = std::make_unique<sprite_set_t>("graphics/pause.jsp");
 

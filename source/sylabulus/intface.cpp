@@ -2,6 +2,7 @@
 #include "intface.h"
 #include "player.h"
 #include "shop.h"
+#include <algorithm>
 
 constexpr int SPR_LIFEMETER		= 68;
 constexpr int SPR_POWERUP		= 69;
@@ -27,12 +28,15 @@ constexpr int SPR_ICN_SPEEDY	= 96;
 constexpr int SPR_SCORE			= 107;
 constexpr int SPR_COINS			= 108;
 constexpr int SPR_BRAINOMETER	= 109;
+constexpr int SPR_COLON			= 112;
+constexpr int SPR_COMBO			= 114;
+constexpr int SPR_STICKMAN		= 115;
 
 constexpr int SPR_WEAPONBOX   = 3;
 constexpr int SPR_HAMMERBOX   = 5;
 constexpr int SPR_KEYBOX      = 6;
 constexpr int SPR_OXYGAUGE    = 8;
-constexpr int SPR_ENEMYLIFE   = 11;
+constexpr int SPR_ENEMYLIFE   = 111;
 constexpr int SPR_COINBOX     = 62;
 constexpr int SPR_STEALTH     = 63;
 constexpr int SPR_WPNNAME     = 22;
@@ -89,6 +93,7 @@ enum {
 	INTF_COINS,
 	INTF_TIME,
 	INTF_STEALTH,
+	INTF_COMBO,
 	NUM_INTF,
 };
 
@@ -123,6 +128,7 @@ enum {
 	IV_EVILMETER,
 	IV_TIME,
 	IV_LOCK,
+	IV_COMBO
 };
 
 static const byte weaponToItem[] = {
@@ -234,13 +240,13 @@ intface_t defaultSetup[NUM_INTF]={
 	 2,-16,
 	 0,196,
 	 0},
-	{SCRWID-1,SCRHEI+40,SCRWID-1,SCRHEI-1,	// coins
-	 SPR_COINBOX,
-	 IV_NUMBER,2,
-	 -18,-14,
+	{SCRWID-1,-50,SCRWID-1,-50,	// coins
+	 SPR_COINS,
+	 IV_NUMBER,3,
+	 -27,7,
 	 0,0,
 	 0},
-	{SCRWID - 79,-50,SCRWID - 79,-1,	// time
+	{SCRWID - 100,-50,SCRWID - 100,-1,	// time
 	 SPR_TIME,
 	 IV_TIME,2,
 	 -19,3,
@@ -250,6 +256,12 @@ intface_t defaultSetup[NUM_INTF]={
 	 999, // render sprite specially
 	 IV_NONE,0,
 	 0,0,
+	 0,0,
+	 0},
+	{1,SCRHEI + 40,1,SCRHEI + 40,	// c-c-c-combo!!!
+	 SPR_COMBO, // render sprite specially
+	 IV_COMBO,0,
+	 76,-20,
 	 0,0,
 	 0},
 };
@@ -903,7 +915,20 @@ void UpdateInterface(Map *map)
 	{
 		intf[INTF_SCORE].tx = SCRWID-20;
 		intf[INTF_SCORE].ty = yy;
-		yy += 28;
+		yy += 29;
+	}
+
+	// have at least 1 coin
+	if (!player.coins)
+	{
+		intf[INTF_COINS].tx = SCRWID - 1;
+		intf[INTF_COINS].ty = -50;
+	}
+	else
+	{
+		intf[INTF_COINS].tx = SCRWID - 1;
+		intf[INTF_COINS].ty = yy;
+		yy += 17;
 	}
 
 	if (player.brains < map->numBrains) // not enough brains
@@ -1016,6 +1041,18 @@ void UpdateInterface(Map *map)
 		intf[INTF_LOCK].ty		= -64;
 	}
 
+	yy = intf[INTF_ENEMY].ty;
+	if (yy > SCRHEI - 30)
+		yy = SCRHEI - 30;
+
+
+	if (player.comboClock && player.combo > 1)
+	{
+		intf[INTF_COMBO].ty = yy;
+		curCombo = player.combo;
+	}
+	else
+		intf[INTF_COMBO].ty = SCRHEI + 50;
 
 	intfFlip=1-intfFlip;
 	for(i=0;i<NUM_INTF;i++)
@@ -1025,9 +1062,9 @@ void UpdateInterface(Map *map)
 			case INTF_LIFE:
 				intf[i].vDesired = player.life*128/goodguy->maxHP;
 				if(intf[i].value<intf[i].vDesired-10)
-					intf[i].value += 3;
+					intf[i].value += 4;
 				if(intf[i].value>intf[i].vDesired+10)
-					intf[i].value -= 3;
+					intf[i].value -= 4;
 				if(intf[i].value>128)
 					intf[i].value = 128;
 				break;
@@ -1063,6 +1100,9 @@ void UpdateInterface(Map *map)
 				break;
 			case INTF_LOCK:
 				intf[i].vDesired = bool(profile.progress.wpnLock) ^ bool(GetControls() & CONTROL_B3);
+				break;
+			case INTF_COMBO:
+				intf[i].vDesired = player.combo;
 				break;
 			case INTF_BRAINS:
 				int b;
@@ -1129,179 +1169,6 @@ void UpdateInterface(Map *map)
 	}
 }
 
-// Option to use classic Dr. L interface, with these differences:
-// - Pause menu is still Supreme's. Options too different, impractical to replace.
-// - Weapons will use item appearance instead of baked sprite if edited from base.
-// - New oxygen meter in between the reflect indicator and the hammer icons.
-// Missing elements of Supreme's interface:
-// - No powerup meter, since classic Dr. L had 5 powerups of Supreme's 7 and no meter.
-// - No combo indicator.
-// - No coin meter.
-// - TODO: No stealth indicator.
-// - TODO: No varbar.
-static void RenderInterfaceOld(MGLDraw *mgl)
-{
-	byte life = player.life*128/goodguy->maxHP;
-	byte rage = player.rage / 256;
-	byte hmrFlags = player.hammerFlags;
-	byte hammers = player.hammers;
-	int brains = curMap->numBrains ? 128 - (player.brains * 128 / curMap->numBrains) : 0;
-	int score = player.score;
-	byte wpn = player.weapon;
-	int ammo = player.ammo;
-	byte hamSpeed = player.hamSpeed;
-
-	int i;
-	static byte flip = 0;
-	char s[16];
-
-	flip++;
-
-	for (i = 0; i < 2; i++)
-	{
-		if (life > curLife)
-			curLife++;
-		else if (life < curLife)
-			curLife--;
-		if (life > curLife)
-			curLife++;
-		else if (life < curLife)
-			curLife--;
-
-		if (brains > curBrains)
-			curBrains++;
-		else if (brains < curBrains)
-			curBrains--;
-	}
-
-	oldIntfaceSpr->GetSprite(OLD_SPR_LIFEMETER)->Draw(5, 3, mgl);
-	DrawLifeMeter(7, 8, curLife);
-	oldIntfaceSpr->GetSprite(OLD_SPR_RAGEGAUGE)->Draw(5, 3, mgl);
-	DrawRageMeter(7, 29, (rage >= life), rage);
-
-	// hammer speed gauge
-	oldIntfaceSpr->GetSprite(OLD_SPR_MINIGAUGE)->Draw(139, 3, mgl);
-	DrawHammerSpeed(141, 8, hamSpeed * 2);
-
-	// hammer reverse indicator
-	oldIntfaceSpr->GetSprite(OLD_SPR_MINIGAUGE)->Draw(148, 3, mgl);
-	if (hmrFlags & 1)
-		DrawLitGauge(150, 8, 112);
-
-	// hammer reflect indicator
-	oldIntfaceSpr->GetSprite(OLD_SPR_MINIGAUGE)->Draw(157, 3, mgl);
-	if (hmrFlags & 2)
-		DrawLitGauge(159, 8, 175);
-
-	// oxygen indicator
-	int x = 167;
-	if (curMap->flags & (MAP_UNDERWATER | MAP_OXYGEN))
-	{
-		oldIntfaceSpr->GetSprite(OLD_SPR_MINIGAUGE)->Draw(x - 1, 3, mgl);
-		if (player.oxygen==0)
-		{
-			if (intfFlip)
-				DrawSmallGauge(x + 1, 8, 13, 4*32+16);
-		}
-		else if (player.oxygen<127*256/4)
-			DrawSmallGauge(x + 1, 8, 14*player.oxygen/(127*256+1), 4*32+16);
-		else if (player.oxygen<127*256/2)
-			DrawSmallGauge(x + 1, 8, 14*player.oxygen/(127*256+1), 5*32+16);
-		else
-			DrawSmallGauge(x + 1, 8, 14*player.oxygen/(127*256+1), 1*32+16);
-		x += 9;
-	}
-
-	// number of hammers
-	for (i = 0; i < hammers; i++)
-		oldIntfaceSpr->GetSprite(OLD_SPR_IFHAMMER)->Draw(x + i * 19, 3, mgl);
-
-	DrawScore(432, 2, score, mgl);
-
-	// Enemy life gauge
-	if (monsTimer)
-	{
-		monsTimer--;
-		if (curMonsLife < monsHP)
-		{
-			curMonsLife += 4;
-			if (curMonsLife > monsHP)
-				curMonsLife = monsHP;
-		}
-		if (curMonsLife > monsHP)
-		{
-			curMonsLife -= 4;
-			if (curMonsLife < monsHP)
-				curMonsLife = monsHP;
-		}
-
-		oldIntfaceSpr->GetSprite(OLD_SPR_LIFEMETER)->Draw(6, 453, mgl);
-		DrawLifeMeter(8, 458, curMonsLife);
-		// if the monster is dead, the name blinks
-		Print(11, 461, monsName, 1, 1);
-		if (monsAlive || (flip & 2) == 0)
-			Print(10, 460, monsName, 0, 1);
-	}
-
-	// secondary weapons
-	if (wpn)
-	{
-		// Use the frame in intface_old.jsp if it exists and the item isn't modified.
-		// Many of these would match anyways, but e.g. Zap Wand is at a different offset.
-		byte item = weaponToItem[wpn];
-		if (wpn <= WPN_SWAPGUN && memcmp(GetItem(item), GetBaseItem(item), sizeof(item_t)) == 0)
-			oldIntfaceSpr->GetSprite(OLD_SPR_WEAPONS - 1 + wpn)->Draw(595, 30, mgl);
-		else
-		{
-			oldIntfaceSpr->GetSprite(OLD_SPR_WEAPONS + WPN_SWAPGUN)->Draw(595, 30, mgl);
-			InstaRenderItem(595+22, 30+22, item, 0, mgl);
-		}
-
-		if (wpn != WPN_PWRARMOR && wpn != WPN_MINISUB)
-		{
-			sprintf(s, "%02d", ammo);
-			Print(621, 61, s, 1, 1);
-			Print(620, 60, s, 0, 1);
-		}
-		else
-		{
-			sprintf(s, "%3d", ammo / 10);
-			Print(601, 61, s, 1, 1);
-			Print(600, 60, s, 0, 1);
-		}
-	}
-
-	// the almighty keyring
-	oldIntfaceSpr->GetSprite(OLD_SPR_KEYRING)->Draw(KEYRINGX, KEYRINGY, mgl);
-	if (PlayerKeys(3))
-		oldIntfaceSpr->GetSprite(OLD_SPR_KEYRING + 1)->Draw(KEYRINGX, KEYRINGY, mgl);
-	if (PlayerKeys(1))
-		oldIntfaceSpr->GetSprite(OLD_SPR_KEYRING + 2)->Draw(KEYRINGX, KEYRINGY, mgl);
-	if (PlayerKeys(2))
-		oldIntfaceSpr->GetSprite(OLD_SPR_KEYRING + 3)->Draw(KEYRINGX, KEYRINGY, mgl);
-	i = PlayerKeys(0);
-	if (i)
-		oldIntfaceSpr->GetSprite(OLD_SPR_KEYRING + 4)->Draw(KEYRINGX, KEYRINGY, mgl);
-	if (i > 1)
-		oldIntfaceSpr->GetSprite(OLD_SPR_KEYRING + 5)->Draw(KEYRINGX, KEYRINGY, mgl);
-	if (i > 2)
-		oldIntfaceSpr->GetSprite(OLD_SPR_KEYRING + 6)->Draw(KEYRINGX, KEYRINGY, mgl);
-
-	if (PlayerKeyChain(0))
-		oldIntfaceSpr->GetSprite(OLD_SPR_KEYRING + 7)->Draw(KEYRINGX, KEYRINGY, mgl);
-	if (PlayerKeyChain(1))
-		oldIntfaceSpr->GetSprite(OLD_SPR_KEYRING + 8)->Draw(KEYRINGX, KEYRINGY, mgl);
-	if (PlayerKeyChain(2))
-		oldIntfaceSpr->GetSprite(OLD_SPR_KEYRING + 9)->Draw(KEYRINGX, KEYRINGY, mgl);
-	if (PlayerKeyChain(3))
-		oldIntfaceSpr->GetSprite(OLD_SPR_KEYRING + 10)->Draw(KEYRINGX, KEYRINGY, mgl);
-
-	// the brainometer
-	oldIntfaceSpr->GetSprite(OLD_SPR_BRAINOMETER)->Draw(617, 342, mgl);
-	if (curBrains)
-		DrawFillBox(620, 347 + 127 - (curBrains - 1), 635, 347 + 127, 96 + 13 + (curBrains / 8));
-	oldIntfaceSpr->GetSprite(OLD_SPR_BRAINOMETER + 1)->Draw(617, 342, mgl);
-}
 
 // special mutant interface when shopping
 void RenderInterfaceShopping(MGLDraw *mgl)
@@ -1314,7 +1181,7 @@ void RenderInterfaceShopping(MGLDraw *mgl)
 	Print(639-TILE_WIDTH-GetStrLength(combo,2)+1,479-18,combo,-32,2);
 	Print(639-TILE_WIDTH-GetStrLength(combo,2),479-18+1,combo,-32,2);
 	Print(639-TILE_WIDTH-GetStrLength(combo,2),479-18-1,combo,-32,2);
-	PrintGlow(639-TILE_WIDTH-GetStrLength(combo,2),479-18,combo,0,2);
+	Print(639-TILE_WIDTH-GetStrLength(combo,2),479-18,combo,0,2);
 
 	InstaRenderItem(639-TILE_WIDTH/2,479-38,ITM_LOONYKEY,0,mgl);
 	sprintf(combo,"%u",profile.progress.loonyKeys-profile.progress.loonyKeysUsed);
@@ -1322,15 +1189,13 @@ void RenderInterfaceShopping(MGLDraw *mgl)
 	Print(639-TILE_WIDTH-GetStrLength(combo,2)+1,479-38,combo,-32,2);
 	Print(639-TILE_WIDTH-GetStrLength(combo,2),479-38+1,combo,-32,2);
 	Print(639-TILE_WIDTH-GetStrLength(combo,2),479-38-1,combo,-32,2);
-	PrintGlow(639-TILE_WIDTH-GetStrLength(combo,2),479-38,combo,0,2);
+	Print(639-TILE_WIDTH-GetStrLength(combo,2),479-38,combo,0,2);
 }
 
 void RenderInterface(MGLDraw *mgl)
 {
 	if (shopping)
 		return RenderInterfaceShopping(mgl);
-	if (profile.progress.hudChoice == HudChoice::Classic)
-		return RenderInterfaceOld(mgl);
 
 	int i;
 	char combo[16];
@@ -1367,7 +1232,7 @@ void RenderInterface(MGLDraw *mgl)
 			case IV_EVILMETER:
 				DrawEvilMeter(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value,intf[i].valueLength,mgl);
 				if(monsAlive || intfFlip)
-					PrintGlow(intf[i].x+intf[i].vOffX+2,intf[i].y+intf[i].vOffY-1,monsName,0,2);
+					PrintSimpleShadow(intf[i].x+intf[i].vOffX+2,intf[i].y+intf[i].vOffY,monsName,1);
 				break;
 			case IV_SMALLMETER:
 				if(i!=INTF_RAGE || player.rage/256>=player.life)
@@ -1382,10 +1247,14 @@ void RenderInterface(MGLDraw *mgl)
 				else
 					DrawSmallMeter(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value,1,mgl);
 				break;
+			case IV_NUMBER:
+				DrawSmallNumber(intf[i].x + intf[i].vOffX, intf[i].y + intf[i].vOffY, intf[i].value, intf[i].valueLength, mgl);
+				break;
 			case IV_TIME:
-				DrawSmallNumber(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value % 60,intf[i].valueLength,mgl, 2);
-				if(intf[i].value >=60)
-					DrawSmallNumber(intf[i].x+intf[i].vOffX-intf[i].otherVal,intf[i].y+intf[i].vOffY,intf[i].value / 60,intf[i].valueLength, mgl);
+				intfaceSpr->GetSprite(SPR_COLON+1)->Draw(intf[i].x+intf[i].vOffX-21, intf[i].y+intf[i].vOffY, mgl);
+				DrawSmallNumber(intf[i].x+intf[i].vOffX-21, intf[i].y+intf[i].vOffY, intf[i].value/60, intf[i].valueLength, mgl);
+				intfaceSpr->GetSprite(SPR_COLON)->Draw(intf[i].x+intf[i].vOffX, intf[i].y+intf[i].vOffY, mgl);
+				DrawSmallNumber(intf[i].x+intf[i].vOffX+7,intf[i].y+intf[i].vOffY, intf[i].value%60,intf[i].valueLength,mgl, 2);
 				break;
 			case IV_VERTMETER:
 				DrawVertMeter(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value,intf[i].valueLength,mgl, intf[i].otherVal);
@@ -1402,13 +1271,20 @@ void RenderInterface(MGLDraw *mgl)
 			case IV_LOCK:
 				DrawLock(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,mgl,intf[i].value);
 				break;
+			case IV_COMBO:
+				int comboClock = player.comboClock;
+				int frame = (comboClock > 0)
+					? SPR_STICKMAN + ((comboClock / 4) % 2)
+					: 117;
+				sprintf(combo, "x%d", curCombo);
+				PrintWavy(intf[i].x + intf[i].vOffX, intf[i].y + intf[i].vOffY, combo, 0, 2, player.clock, 1, 1);
+				DrawSmallNumber(intf[i].x + intf[i].vOffX, intf[i].y + intf[i].vOffY, intf[i].value, intf[i].valueLength, mgl);
+				intfaceSpr->GetSprite(frame)->Draw(intf[i].x + intf[i].vOffX + ((comboClock > 0) ? comboClock : 0), intf[i].y + intf[i].vOffY, mgl);
+				break;
 		}
 	}
 
 	DrawPortrait(0, 0, mgl); // nice lil portrait
-
-	sprintf(combo,"Combo x%d",curCombo);
-	PrintGlow(240,comboY,combo,0,2);
 }
 
 void DrawFancyLine(int x, int y, int color, int width, MGLDraw* mgl)

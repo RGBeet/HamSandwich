@@ -21,6 +21,7 @@
 #include "monster.h"
 #include "title.h"
 #include "profmenu.h"
+#include "playmenu.h"
 #include "worldselect.h"
 #include "playlist.h"
 #include "hiscore.h"
@@ -97,7 +98,7 @@ TASK(int) main(int argc, char* argv[])
 	{
 		switch(AWAIT MainMenu(mainmgl))
 		{
-			case 255: // QUIT
+			default: // QUIT
 				running = false;
 				break;
 			case 0:	// PLAY
@@ -119,18 +120,7 @@ TASK(int) main(int argc, char* argv[])
 				AWAIT LunaticEditor(mainmgl);
 				break;
 			case 4:	// EXTRAS (instructions, internet, etc)
-				AWAIT ExtrasMenu(mainmgl);
-				break;
-			case 11: // world select (play menu)
-				AWAIT WorldSelectMenu(mainmgl);
-			case 12: // tutorial (play menu)
-				shopping=0;
-				if(AWAIT PlayWorld(mainmgl,"tutorial.dlw"))
-					AWAIT WorldSelectMenu(mainmgl);
-				break;
-			case 15:	// internet (extras)
-				shopping=0;
-				AWAIT NetMenu(mainmgl);
+				//AWAIT ExtrasMenu(mainmgl);
 				break;
 			case 8:	// insta-play the last world you were on
 				shopping=0;

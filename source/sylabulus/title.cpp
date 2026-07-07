@@ -242,7 +242,7 @@ void MainMenuDisplay(MGLDraw *mgl)
 		}
 		else
 		{
-			PrintWavy(x+100, y+i*60, menuTxt[i], 10, 0, titleClock, 2, 1);
+			PrintWavy(x+100, y+i*60, menuTxt[i], 16, 0, titleClock, 2, 1);
 		}
 	}
 
@@ -458,7 +458,7 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 
 		if(!mgl->Process())
 		{
-			cursor=4;
+			cursor=255;
 			cmd=1;
 		}
 

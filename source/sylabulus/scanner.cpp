@@ -295,9 +295,10 @@ void RenderScan(MGLDraw *mgl)
 	}
 	ClearSpriteConstraints();
 
-	PrintGlowRect(20,20,620,60,20,groupTxt,2);
-	PrintGlow(20,80,nameTxt,0,2);
-	PrintGlowRect(20,120,400,460,20,MonsterNotes(scanQueue[firstScan]),2);
+	PrintRect(20,20,620,60,20,groupTxt,2);
+	Print(20,80,nameTxt,0,2);
+	PrintRect(20,120,400,460,20,MonsterNotes(scanQueue[firstScan]),1);
+	PrintUnGlowRect(21, 121, 400, 460, 20, MonsterNotes(scanQueue[firstScan]), 1);
 }
 
 //-----------------------------------------------
@@ -575,8 +576,8 @@ void RenderBestiary(MGLDraw *mgl)
 			mgl->Box(x,y,x+145,y+18,32*1+16);
 		}
 
-		PrintGlowLimited(x+2,y+2,x+143,themeNames[i],0,2);
-		PrintGlowLimited(x+143-GetStrLength(txt,2),y+2,x+143,txt,0,2);
+		PrintLimited(x+2,y+2,x+143,themeNames[i],0,2);
+		PrintLimited(x+143-GetStrLength(txt,2),y+2,x+143,txt,0,2);
 
 		x+=150;
 		if(x>629-145)
@@ -587,11 +588,11 @@ void RenderBestiary(MGLDraw *mgl)
 	}
 	mgl->FillBox(14,185,640-14,185,32*1+16);
 	strcpy(txt,"Supreme Monster Database");
-	PrintGlow(14,187,txt,0,2);
+	Print(14,187,txt,0,2);
 	mgl->FillBox(14,205,640-14,205,32*1+16);
 
 	sprintf(txt,"Total scanned: %d%%",totalScanned*100/totalTotal);
-	PrintGlow(628-GetStrLength(txt,2),187,txt,0,2);
+	Print(628-GetStrLength(txt,2),187,txt,0,2);
 	x=21;
 	y=207;
 
@@ -622,7 +623,7 @@ void RenderBestiary(MGLDraw *mgl)
 			strcpy(txt,MonsterName(monsList[i+monsListPos]));
 		else
 			strcpy(txt,"? ? ? ? ? ?");
-		PrintGlowLimited(x+2,y+2,x+143,txt,0,2);
+		PrintLimited(x+2,y+2,x+143,txt,0,2);
 		y+=21;
 		if(i+monsListPos>=monsListLen-1)
 			break;
@@ -653,16 +654,17 @@ void RenderBestiary(MGLDraw *mgl)
 	}
 	ClearSpriteConstraints();
 
-	PrintGlowRect(170,208,500,453,16,MonsterNotes(curMons),2);
+	PrintUnGlowRect(171, 209, 500, 453, 16, MonsterNotes(curMons), 1);
+	PrintGlowRect(170, 208, 500, 453, 16, MonsterNotes(curMons), 1);
 
 	sprintf(txt,"Defeated: %d",profile.progress.kills[curMons]);
-	PrintGlow(170,455,txt,0,2);
+	Print(170,455,txt,0,2);
 
 	if(MonsterFlags(curMons,curMons)&(MF_NOHIT|MF_INVINCIBLE))
 		strcpy(txt,"Life: N/A");
 	else
 		sprintf(txt,"Life: %d",MonsterHP(curMons));
-	PrintGlow(500-GetStrLength(txt,2),455,txt,0,2);
+	Print(500-GetStrLength(txt,2),455,txt,0,2);
 
 	SetSpriteConstraints(13,13,627,467);
 	msx2=msx;

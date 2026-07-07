@@ -80,7 +80,6 @@ static const pauseItem_t gameCheatPause[]={
 	{PE_MUSIC,"Music Options"},
 	{PE_CHEAT,"Cheats!!"},
 	{PE_WPNLOCK,"Weapon Lock"},
-	{PE_HUDCHOICE,"HUD: Supreme"},
 	{PE_SHOP,"Quit & Shop"},
 	{PE_EXIT,"Exit Game"},
 	{PE_DONE,""}
@@ -138,7 +137,6 @@ namespace
 	dword oldGamepad = ~0;
 	char worldName[64];
 	int pauseClock = 0;
-	byte* backgd = NULL;
 
 	const byte volumeSpot[]={0,26,51,77,102,128,153,179,204,230,255};
 }
@@ -176,29 +174,12 @@ void RenderPauseMenu(void)
 		return;
 	pauseClock++;
 
-	// get background
-	if (backgd == NULL)
-	{
-		GetDisplayMGL()->LoadBMP("graphics/pause.bmp");
-		backgd = (byte*)malloc(640 * 480);
-		if (!backgd)
-			FatalError("Out of memory!");
-
-		for (i = 0;i < 480;i++)
-			memcpy(&backgd[i * 640], &GetDisplayMGL()->GetScreen()[i * GetDisplayMGL()->GetWidth()], 640);
-	}
-
-	for (i = 0;i < 480;i++)
-	{
-		if (pauseY + i >= 0 && pauseY + i < 480)
-			memcpy(&GetDisplayMGL()->GetScreen()[(pauseY + i) * GetDisplayMGL()->GetWidth()], &backgd[i * 640], 640);
-	}
-
 	// get pause sprites (cursor)
 	if (!pauseSpr)
 	{
 		pauseSpr = std::make_unique<sprite_set_t>("graphics/pause.jsp");
 	}
+	pauseSpr->GetSprite(11)->Draw(pauseX, pauseY, GetDisplayMGL()); // draw background
 
 	//hello!!
 
@@ -342,6 +323,9 @@ void InitPauseMenu(void)
 	oldc = ~0;
 	oldGamepad = ~0;
 
+	if (!pauseSpr)
+		pauseSpr = std::make_unique<sprite_set_t>("graphics/pause.jsp");
+
 	std::vector<pauseItem_t> menu;
 
 	menu.push_back({ PE_CONTINUE, "Continue" });
@@ -386,19 +370,6 @@ void InitPauseMenu(void)
 	if (!pauseSpr)
 		pauseSpr = std::make_unique<sprite_set_t>("graphics/pause.jsp");
 
-	// background
-	if (backgd == NULL)
-	{
-		GetDisplayMGL()->LoadBMP("graphics/pause.bmp");
-		backgd = (byte*)malloc(640 * 480);
-		if (!backgd)
-			FatalError("Out of memory!");
-
-		for (int i=0; i<480;i++)
-			memcpy(&backgd[i * 640], &GetDisplayMGL()->GetScreen()[i * GetDisplayMGL()->GetWidth()], 640);
-		GetDisplayMGL()->ClearScreen();
-	}
-
 	pauseX = 0;
 	pauseY = 480;
 	menuMode = 0;
@@ -411,11 +382,6 @@ void ExitPauseMenu(void)
 {
 	pauseClock=0;
 	pauseY = 480;
-	if (backgd != NULL)
-	{
-		free(backgd);
-		backgd = NULL;
-	}
 	pauseSpr.reset();
 }
 

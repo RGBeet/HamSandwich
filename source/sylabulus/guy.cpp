@@ -1086,14 +1086,14 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world, bool bypass
 			if(player.combo==0 || player.comboClock==0)
 			{
 				player.combo=1;
-				player.comboClock=60;
+				player.comboClock=80;
 			}
 			else
 			{
 				player.combo++;
 				if(player.combo>9999)
 					player.combo=9999;
-				player.comboClock=60;
+				player.comboClock=80;
 				if(player.combo>player.bestCombo)
 					player.bestCombo=player.combo;
 			}

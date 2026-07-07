@@ -509,12 +509,15 @@ void PlayerGetCandle(int amt)
 
 void PlayerGetCoin(int amt)
 {
-	player.coins+=amt;
+	player.coins += amt;
+
 	if(player.coins<0)
 		player.coins=0;
-	if(player.coins>99)
-		player.coins=99;
-	if(player.coins>=20)
+
+	if(player.coins>999)
+		player.coins=999;
+
+	if(player.coins>=50)
 		CompleteGoal(80);
 }
 
