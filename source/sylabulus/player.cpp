@@ -2028,3 +2028,33 @@ const char* GetWeaponName(byte weapon)
 		return wpnName[weapon];
 	return "???";
 }
+
+static const char afflictName[][16] = {
+	"None",
+	"Poison",
+	"Freeze",
+};
+static_assert(std::size(afflictName) == 3, "Must give new affliction a name");
+
+const char* GetAfflictName(byte afflict)
+{
+	if (afflict < 3)
+		return afflictName[afflict];
+	return "???";
+}
+
+static const char keychainName[][16] = {
+	"Hammer Key",
+	"Rocket Key",
+	"Squash Key",
+	"Pumpkin Key",
+	"Key of Lunacy"
+};
+static_assert(std::size(keychainName) == 5, "Must give new keychain a name");
+
+const char* GetKeychainName(byte keychain)
+{
+	if (keychain < 5)
+		return keychainName[keychain];
+	return "???";
+}

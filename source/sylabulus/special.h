@@ -48,18 +48,17 @@
 #define TRG_HURT		34	// true if monster of type N at X,Y is hurt (has taken damage) or not
 #define TRG_AFFLICT		35	// true if monster of type N at X,Y is afflicted with status effect M or not
 #define TRG_RAGEBAR		36	// true if the rage bar is less/more/exactly N percent full
-#define TRG_HASRAGED	37	// true if player has raged or not
-#define TRG_MONSAGE		38	// true if monster of type N at X,Y is N seconds old or less/more/exactly
+#define TRG_HASRAGED	37	// true if player has raged
 
-#define TRG_PROXIMITY	39	// true if monster of type N at X,Y is within N tiles of player or not
-#define TRG_LINESIGHT	40	// true if monster of type N at X,Y is within line of sight of player or not
+#define TRG_PROXIMITY	38	// true if monster of type N at X,Y is within M tiles of player or not
+#define TRG_LINESIGHT	39	// true if monster of type N at X,Y is within line of sight of player or not
 
 // cross-world triggers
-#define TRG_WRLDKEY		41	// true if player has earned loonykey from world M
-#define TRG_WRLDPRC		42	// true if player has completed %N of world M or less/more/exactly
-#define TRG_CAMCHECK	43	// true if camera is focused on X,Y or not -- used to sync camera with events
+#define TRG_WRLDKEY		40	// true if player has earned loonykey from world M
+#define TRG_WRLDPRC		41	// true if player has completed %N of world M or less/more/exactly
+#define TRG_CHAINCOLOR	42	// true if any/all of adjacent specials of color M are triggered
 
-#define MAX_TRIGGER		44
+#define MAX_TRIGGER		43
 
 // effects
 #define EFF_NONE		0
@@ -108,13 +107,14 @@
 #define EFF_TIMER			39	// set the timer to (or change the timer by) N. The timer is at the bottom of the screen, like Pizza Tower
 
 // camera stuff!
-#define EFF_CAMERAFOCUS		40	// focus camera on a specific point/entity
-#define EFF_CAMERASCROLL	41	// scroll camera by X tiles and/or Y tiles (0 means no scroll in that direction) - overwrites previous scroll special
+#define EFF_CAMERAFOCUS		40	// focus camera on a specific point
+#define EFF_CAMERAGUY		41	// focus camera on a specific entity
+#define EFF_CAMERASCROLL	42	// scroll camera by X tiles and/or Y tiles (0 means no scroll in that direction) - overwrites previous scroll special
 
-#define EFF_MARKASBOSS		42	// mark a monster as a boss, which means its HP contributes to the boss bar and it will be treated as a boss for other purposes (like the "boss" trigger)
-#define EFF_AFFLICT			43	// afflict a monster with a status effect for N frames (like poison, burn, etc.)
+#define EFF_MARKASBOSS		43	// mark a monster as a boss, which means its HP contributes to the boss bar and it will be treated as a boss for other purposes (like the "boss" trigger)
+#define EFF_AFFLICT			44	// afflict a monster with a status effect for N frames (like poison, burn, etc.)
 
-#define EFF_MAX				44
+#define EFF_MAX				45
 
 #define OLD_MAX_TRIGGERS	33
 #define OLD_MAX_EFFECTS		38
@@ -172,15 +172,18 @@ struct effect_t
 	byte x,y;
 	int value;
 	int value2;
-	char  text[32];
+	char text[32];
 };
 
 struct special_t
 {
-	byte x,y;	// where this special is actually kept
+	byte x,y;							// the coordinates where this special is kept
 	byte uses;
 	trigger_t trigger[NUM_TRIGGERS];
 	effect_t effect[NUM_EFFECTS];
+
+	// TODO: implement
+	byte color;							// for more specific chaining, grouping, what have you!
 };
 
 class Guy;
@@ -226,7 +229,7 @@ void CheckSpecials(Map *map);
 void EventOccur(byte type,int value,int x,int y,Guy *victim);
 void RenderSpecialXes(Map *map);
 void AdjustSpecialCoords(special_t *me,int dx,int dy);
-void AdjustSpecialEffectCoords(special_t *me,int dx,int dy);
+void AdjustSpecialEffectCoords(special_t* me, int dx, int dy);
 Guy *TaggedMonster(void);
 
 #endif

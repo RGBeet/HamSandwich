@@ -35,14 +35,14 @@ float CalcPlayPercent(void)
 	worlds=0;
 
 	score=0.0f;
-	auto files = ListDirectory("worlds", ".dlw", 32);
+	auto files = ListDirectory("worlds", ".psw", 32);
 	for (const auto& str : files)
 	{
 		const char* name = str.c_str();
 		// rule out the backup worlds, so they don't show up
-		if((strcmp(name,"backup_load.dlw")) &&
-		   (strcmp(name,"backup_exit.dlw")) &&
-		   (strcmp(name,"backup_save.dlw")))
+		if((strcmp(name,"backup_load.psw")) &&
+		   (strcmp(name,"backup_exit.psw")) &&
+		   (strcmp(name,"backup_save.psw")))
 		{
 			tmp=GetWorldProgressNoCreate(name);
 			if(tmp)

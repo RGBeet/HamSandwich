@@ -26,4 +26,6 @@ void TriggerEffectPick_Update(int mouseX, int mouseY, int scroll, MGLDraw* mgl, 
 void TriggerEffectPick_Render(int mouseX, int mouseY, MGLDraw* mgl, byte mode);
 char* SpecialEditNotes(byte mode, byte type);
 
+float GetWorldPercentage(const char text[32]);
+
 #endif

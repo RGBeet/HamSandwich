@@ -32,6 +32,7 @@ namespace
 	int tileX,tileY;
 	int rectX1,rectX2,rectY1,rectY2;
 	int pickerWid,pickerHei;
+	static std::unique_ptr<sprite_set_t> spclSprite;
 
 	dword gameStartTime,updFrameCount;
 	word numRunsToMakeUp;
@@ -73,6 +74,8 @@ byte InitEditor(void)
 	ChangeOffColor(MONS_SHARK,2,4);
 	ChangeOffColor(MONS_SNKYSHRK2,2,4);
 
+	spclSprite = std::make_unique<sprite_set_t>("graphics/special.jsp");
+
 	editmgl->MouseTap();
 	editmgl->RMouseTap();
 	editmgl->LastKeyPressed();
@@ -107,11 +110,13 @@ void ExitEditor(void)
 	ExitFileDialog();
 	ToolExit();
 
-	EditorSaveWorld("worlds/backup_exit.dlw");
+	EditorSaveWorld("worlds/backup_exit.psw");
 
 	// change monsters back to normal
 	ChangeOffColor(MONS_SHARK,255,255);
 	ChangeOffColor(MONS_SNKYSHRK2,255,255);
+
+	spclSprite.reset();
 
 	StopSong();
 	ExitGuys();
@@ -157,7 +162,7 @@ void BackupWorld(const char *name)
 	int bytes;
 
 	sprintf(inName,"worlds/%s",name);
-	sprintf(outName,"worlds/backup_save.dlw");
+	sprintf(outName,"worlds/backup_save.psw");
 
 	auto inF = AppdataOpen(inName);
 	if(!inF)
@@ -298,7 +303,7 @@ TASK(void) UpdateMouse(void)
 			switch(FileDialogCommand())
 			{
 				case FM_NEW:
-					EditorSaveWorld("worlds/backup_load.dlw");
+					EditorSaveWorld("worlds/backup_load.psw");
 					FreeWorld(&world);
 					NewWorld(&world,editmgl);
 					EditorSelectMap(0);
@@ -317,7 +322,7 @@ TASK(void) UpdateMouse(void)
 				case FM_LOAD:
 					if(GetFilename("")[0])	// don't do any of this if the filename is blank!
 					{
-						EditorSaveWorld("worlds/backup_load.dlw");
+						EditorSaveWorld("worlds/backup_load.psw");
 						ToolSetFilename();
 						FreeWorld(&world);
 						if(!LoadWorld(&world,GetFilename("worlds/")))
@@ -333,7 +338,7 @@ TASK(void) UpdateMouse(void)
 					editMode = EDITMODE_EDIT;
 					if(GetFilename("")[0])	// don't do any of this if the filename is blank!
 					{
-						if(strlen(GetFilename(""))<4 || strcmp(&GetFilename("")[strlen(GetFilename(""))-4],".dlw"))
+						if(strlen(GetFilename(""))<4 || strcmp(&GetFilename("")[strlen(GetFilename(""))-4],".psw"))
 						{
 							AddDLWToFilename();
 						}
@@ -516,10 +521,11 @@ TASK(byte) EditorRun(int *lastTime)
 	CO_RETURN CONTINUE;
 }
 
-void ShowSpecials(void)
+void ShowSpecials(MGLDraw* mgl)
 {
 	if(!(displayFlags&MAP_SHOWSPECIALS))
 		return;
+
 
 	auto [sx, sy] = GetCamera();
 	for (int i=0;i<MAX_SPECIAL;i++)
@@ -527,27 +533,21 @@ void ShowSpecials(void)
 		const special_t &special = editorMap->special[i];
 		if (special.x!=255)
 		{
-			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2-1,
-				  special.y*TILE_HEIGHT-sy+editmgl->GetHeight()/2-1,
-				  "Spcl",-32,1);
-			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2+1,
-				  special.y*TILE_HEIGHT-sy+editmgl->GetHeight()/2+1,
-				  "Spcl",-32,1);
-			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2,
-				  special.y*TILE_HEIGHT-sy+editmgl->GetHeight()/2,
-				  "Spcl",0,1);
+			int xx = special.x * TILE_WIDTH + 2 - sx + editmgl->GetWidth() / 2;
+			int yy = special.y * TILE_HEIGHT - sy + editmgl->GetHeight() / 2;
 
-			char s[8];
-			sprintf(s,"%03d",i);
-			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2-1,
-				  special.y*TILE_HEIGHT+12-sy+editmgl->GetHeight()/2-1,
-				  s,-32,1);
-			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2+1,
-				  special.y*TILE_HEIGHT+12-sy+editmgl->GetHeight()/2+1,
-				  s,-32,1);
-			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2,
-				  special.y*TILE_HEIGHT+12-sy+editmgl->GetHeight()/2,
-				  s,0,1);
+			spclSprite->GetSprite(0)->Draw(xx,yy, mgl);
+
+			int i1	= (i/100) % 10;
+			int i2	= (i/10) % 10;
+			int i3	= i%10;
+
+			// draw number
+			spclSprite->GetSprite(2+i1)->Draw(xx+15, yy, mgl);
+			spclSprite->GetSprite(2+i2)->Draw(xx+22, yy, mgl);
+			spclSprite->GetSprite(2+i3)->Draw(xx+29, yy, mgl);
+
+			spclSprite->GetSprite(12 + (special.color))->Draw(xx + 17, yy + 18, mgl);
 		}
 	}
 }
@@ -592,7 +592,7 @@ static void ApplyZoom()
 	}
 }
 
-void EditorDraw(void)
+void EditorDraw(MGLDraw* mgl)
 {
 	char s[16];
 
@@ -603,7 +603,7 @@ void EditorDraw(void)
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
-			ShowSpecials();
+			ShowSpecials(editmgl);
 			ToolShowTarget();
 			if(editMenu)
 				ToolRender(mouseX,mouseY,editmgl);
@@ -615,7 +615,7 @@ void EditorDraw(void)
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
-			ShowSpecials();
+			ShowSpecials(editmgl);
 			ToolShowTarget();
 			Print(3,editmgl->GetHeight()-480+466,"Click on a location!",-32,1);
 			Print(1,editmgl->GetHeight()-480+464,"Click on a location!",-32,1);
@@ -630,7 +630,7 @@ void EditorDraw(void)
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
-			ShowSpecials();
+			ShowSpecials(editmgl);
 			rectX1=tileX;
 			rectY1=tileY;
 			rectX2=tileX+pickerWid;
@@ -649,7 +649,7 @@ void EditorDraw(void)
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
-			ShowSpecials();
+			ShowSpecials(editmgl);
 			ToolShowTarget();
 			Print(3,editmgl->GetHeight()-480+466,"Click a corner of your rectangle!",-32,1);
 			Print(1,editmgl->GetHeight()-480+464,"Click a corner of your rectangle!",-32,1);
@@ -664,7 +664,7 @@ void EditorDraw(void)
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
-			ShowSpecials();
+			ShowSpecials(editmgl);
 			EditorShowRect();
 			Print(3,editmgl->GetHeight()-480+466,"Click the other corner of your rectangle!",-32,1);
 			Print(1,editmgl->GetHeight()-480+464,"Click the other corner of your rectangle!",-32,1);
@@ -679,7 +679,7 @@ void EditorDraw(void)
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
-			ShowSpecials();
+			ShowSpecials(editmgl);
 			ToolShowTarget();
 			if(editMenu)
 				ToolRender(mouseX,mouseY,editmgl);
@@ -715,7 +715,7 @@ void EditorDraw(void)
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
-			ShowSpecials();
+			ShowSpecials(editmgl);
 			RenderFileDialog(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_EXIT:
@@ -723,7 +723,7 @@ void EditorDraw(void)
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
-			ShowSpecials();
+			ShowSpecials(editmgl);
 			RenderYesNoDialog(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_MAPMENU:
@@ -731,7 +731,7 @@ void EditorDraw(void)
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
-			ShowSpecials();
+			ShowSpecials(editmgl);
 			RenderMapDialog(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_LEVELMENU:
@@ -739,7 +739,7 @@ void EditorDraw(void)
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
-			ShowSpecials();
+			ShowSpecials(editmgl);
 			RenderLevelDialog(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_EXPORT:
@@ -747,7 +747,7 @@ void EditorDraw(void)
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
-			ShowSpecials();
+			ShowSpecials(editmgl);
 			RenderExportDialog(editmgl, mouseX, mouseY);
 			break;
 		case EDITMODE_PICKTRG:
@@ -842,11 +842,11 @@ static TASK(void) HandleKeyPresses(void)
 			case 'f':
 			case 'F':
 				editMode=EDITMODE_FILE;
-				InitFileDialog("worlds",".dlw",FM_NEW|FM_LOAD|FM_SAVE|FM_SAVEPACK|FM_ASKLOAD,ToolGetFilename());
+				InitFileDialog("worlds",".psw",FM_NEW|FM_LOAD|FM_SAVE|FM_SAVEPACK|FM_ASKLOAD,ToolGetFilename());
 				break;
 			case 'M':
 				editMode=EDITMODE_FILE;
-				InitFileDialog("worlds",".dlw",FM_LOAD|FM_ASKLOAD|FM_MERGE,ToolGetFilename());
+				InitFileDialog("worlds",".psw",FM_LOAD|FM_ASKLOAD|FM_MERGE,ToolGetFilename());
 				break;
 			case 'l':
 			case 'L':
@@ -1090,7 +1090,7 @@ TASK(byte) LunaticEditor(MGLDraw *mgl)
 		StartClock();
 		AWAIT HandleKeyPresses();
 		exitcode=AWAIT EditorRun(&lastTime);
-		EditorDraw();
+		EditorDraw(editmgl);
 		AWAIT editmgl->Flip();
 
 		if(editMode==EDITMODE_EXITYES)
@@ -1126,7 +1126,7 @@ void PickedTile(int t)
 	lastPick=t;
 }
 
-world_t *EditorGetWorld(void)
+world_t* EditorGetWorld(void)
 {
 	return &world;
 }

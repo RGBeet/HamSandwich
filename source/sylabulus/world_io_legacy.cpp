@@ -398,6 +398,10 @@ static void SpecialConvert(old_special_t *old,special_t *me,Map *map)
 	me->uses=1;
 	me->x=old->x;
 	me->y=old->y;
+
+	// new stuff
+	me->color=0;
+
 	if(old->trigger==0)
 	{
 		me->x=255;

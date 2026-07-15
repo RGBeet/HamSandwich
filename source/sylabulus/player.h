@@ -50,6 +50,9 @@ enum : byte
 	VE_YUGO,
 };
 
+const char* GetAfflictName(byte weapon);
+const char* GetKeychainName(byte keychain);
+
 struct player_t
 {
 	// per-world value
@@ -76,6 +79,7 @@ struct player_t
 	int candles;
 	byte pushPower;	// for pushing pushy blocks
 	HammerFlags hammerFlags;
+
 	byte vehicle;
 	byte garlic;
 	byte speed;	// accelerated
@@ -93,8 +97,10 @@ struct player_t
 	byte torch;
 	byte cheesePower;
 	byte gotRecords;
+
 	bool pendingLeaderboardUpload;
 	byte spotted;
+
 	int oxygen;
 	int comboClock;
 	int clock;
@@ -104,6 +110,7 @@ struct player_t
 	int combo;
 	int totalEnemies;
 	int enemiesSlain;
+
 	byte cheated;
 	dword score;
 	int var[8];	// local vars, cleared each new level

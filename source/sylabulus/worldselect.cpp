@@ -64,15 +64,6 @@ constexpr int CLICK_SCROLL_AMT = WORLDS_PER_SCREEN * 3 / 4;
 constexpr int WBTN_HEIGHT = 19;
 constexpr int WS_COLOR = 32*3;
 
-struct worldDesc_t
-{
-	char fname[64];
-	char name[64];
-	char author[64];
-	float percentage;
-	bool dimmed;
-};
-
 static char curName[64];
 static Mode mode;
 static std::vector<worldDesc_t> list;
@@ -91,6 +82,14 @@ static vanilla::VfsMeta worldMeta;
 static int mouseZ;
 static int oldGamepad = ~0;
 static bool mouseMode = false;
+
+static const std::string doNotCount[32] = {
+	"backup_load",
+	"backup_exit",
+	"backup_save",
+	"tutorial", // tutorial world
+	"mall", // mall world
+};
 
 static ButtonId curButton;
 
@@ -241,14 +240,20 @@ void InputWorld(const char *fname)
 	profile.progress.totalWorlds = list.size();
 }
 
+bool Scannable(const std::string& name)
+{
+	for (const auto& file : doNotCount)
+	{
+		if (name == std::string(file) + ".psw")
+			return false;
+	}
+	return true;
+}
+
 TASK(void) ScanWorlds(void)
 {
-	std::vector<std::string> files = ListDirectory("worlds", ".dlw", 32);
-	std::erase_if(files, [](const std::string& name) {
-		return name == "backup_load.dlw"
-			|| name == "backup_exit.dlw"
-			|| name == "backup_save.dlw";
-	});
+	std::vector<std::string> files = ListDirectory("worlds", ".psw", 32);
+	std::erase_if(files, [](const std::string& name) { return !Scannable(name); }); // now references a list of "non-scannable" worlds
 
 	int count = files.size();
 	int done = 0;
@@ -1328,4 +1333,16 @@ TASK(byte) WorldSelectMenu(MGLDraw *mgl)
 const char *WorldFName(void)
 {
 	return curName;
+}
+
+float GetWorldPercentage(const char text[32])
+{
+	float percentage = 0.0f;
+	worldDesc_t newItem;
+	SDL_strlcpy(newItem.fname, text, std::size(newItem.fname));
+
+	worldData_t* w = GetWorldProgressNoCreate(newItem.fname);
+	percentage = w ? w->percentage : 0.0f;
+	std::memset(&newItem, 0, sizeof(worldDesc_t));
+	return percentage;
 }

@@ -19,6 +19,7 @@ enum FileDialogFlags : word
 	FM_MERGE        = 1 << 7,
 	FM_SAVEPACK     = 1 << 8,
 	FM_SOUNDS       = 1 << 9,
+	FM_WORLD		= 1 << 10,
 };
 BITFLAGS(FileDialogFlags)
 

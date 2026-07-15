@@ -16,6 +16,7 @@
 #include "shop.h"
 #include "player.h"
 #include "spclnotes.h"
+#include "worldselect.h"
 
 // Originally 14
 #define TRGPICKER_HEIGHT 12
@@ -69,6 +70,8 @@
 #define ID_EFF2		800
 #define ID_EFF3		900
 #define ID_EFF4		1000
+
+#define	ID_COLOR	1100
 
 #define OFS_NOT		0
 #define OFS_ANDOR	1
@@ -133,12 +136,12 @@ static const char trigName[][32]={
 	"Has Status Effect",
 	"Rage Bar Value",
 	"Player Has Raged",
-	"Entity Clock",
 	"Entity Proximity",
 	"Entity Line of Sight",
 	"Key From Other World",
 	"Other World Percentage",
-	"Camera Coordinate Check"
+	"Camera Coordinate Check",
+	"Adjacent Color Special"
 };
 
 static const char effName[][32]={
@@ -182,6 +185,7 @@ static const char effName[][32]={
 	"Change Bullet",
 	"Initiate Chat Dialogue",
 	"Set Countdown Clock",
+	"Focus Camera on Point",
 	"Focus Camera on Entity",
 	"Scroll Camera",
 	"Mark Entity as Boss",
@@ -265,7 +269,7 @@ static void ChooseTriggerClick(int id)
 	SetEditMode(EDITMODE_PICKTRG);
 	spclPartMode = 0;
 	TriggerEffectPick_Init(id);
-	MakeNormalSound(SND_BOMBBOOM);
+	MakeNormalSound(SND_TELEPORT);
 }
 
 static void ChooseEffectClick(int id)
@@ -1200,6 +1204,23 @@ static void ColorClick2(int id)
 	SetupEffectButtons(t-effStart,(t-effStart)*38+264);
 }
 
+static void SpclColorClick(int id)
+{
+	MakeNormalSound(SND_PAINTSPLAT);
+
+	char s[2];
+	ClearButtons(ID_COLOR, ID_COLOR);
+
+	spcl.color++;
+	if (spcl.color > 7)
+		spcl.color = 0;
+
+	s[1] = '\0';
+	s[0] = spcl.color;
+
+	MakeButton(BTN_COLOR, ID_COLOR, 0, 390, 5, 14, 14, s, SpclColorClick);
+}
+
 static void PicNameClick(int id)
 {
 	curEff=effStart + (id-ID_EFF0)/100;
@@ -1207,6 +1228,18 @@ static void PicNameClick(int id)
 	mode=SMODE_PICKBMP;
 	InitFileDialog("user",nullptr,FM_LOAD|FM_EXIT|FM_PICMOVIE,spcl.effect[curEff].text);
 }
+
+static void WorldNameClick(int id)
+{
+	if (id < ID_EFF0)
+		curEff = trgStart + (id - ID_TRIG0) / 100;
+	else
+		curEff = effStart + (id - ID_EFF0) / 100;
+
+	mode = SMODE_PICKBMP;
+	InitFileDialog("worlds",nullptr,FM_LOAD|FM_EXIT|FM_WORLD, spcl.effect[curEff].text);
+}
+
 
 static void JspNameClick(int id)
 {
@@ -1272,6 +1305,37 @@ static void WeaponClick(int id)
 	SetupEffectButtons(curEff-effStart,(curEff-effStart)*38+264);
 }
 
+// burn, poison, freeze
+static void AfflictClick(int id)
+{
+	byte t;
+	MakeNormalSound(SND_MENUCLICK);
+
+	t = trgStart + id / 100 - 1;
+	ClearButtons(id, id);
+
+	spcl.trigger[t].value++;
+	if (spcl.trigger[t].value > 3)
+		spcl.trigger[t].value = 0;
+
+	SetupTriggerButtons(t - trgStart, (t - trgStart) * 38 + 30);
+}
+
+static void KeychainClick(int id)
+{
+	byte t;
+	MakeNormalSound(SND_MENUCLICK);
+
+	t = trgStart + id / 100 - 1;
+	ClearButtons(id, id);
+
+	spcl.trigger[t].value++;
+	if (spcl.trigger[t].value >= 5) // loonykey
+		spcl.trigger[t].value = 0;
+
+	SetupTriggerButtons(t - trgStart, (t - trgStart) * 38 + 30);
+}
+
 static void Toggle2Click(int id)
 {
 	curEff=effStart+(id-ID_EFF0)/100;
@@ -1305,6 +1369,23 @@ static void Bullet1Click(int id)
 	mode = SMODE_PICKBULLET1;
 	SetEditMode(EDITMODE_PICKBULLET);
 	BulletEdit_Init(EDITMODE_SPECIAL, effMode);
+}
+
+static char *GetWorldTitle(char text[32])
+{
+	worldDesc_t newItem;
+	SDL_strlcpy(newItem.fname, text, std::size(newItem.fname));
+
+	char fullname[64];
+	snprintf(fullname, std::size(fullname), "worlds/%s", text);
+	GetWorldName(fullname, newItem.name, newItem.author);
+
+	char wrldName[64];
+	// Assuming newItem.name is a const char* or std::string
+	strncpy(wrldName, newItem.name, sizeof(wrldName));
+	wrldName[sizeof(wrldName) - 1] = '\0'; // Ensure null-termination
+	std::memset(&newItem, 0, sizeof(worldDesc_t));
+	return wrldName;
 }
 
 static void SetupTriggerButtons(int t,int y)
@@ -1662,6 +1743,124 @@ static void SetupTriggerButtons(int t,int y)
 			MakeButton(BTN_STATIC,ID_TRIG0+OFS_CUSTOM+2+100*t,0,235,y+17,1,1,"are in the area: ",NULL);
 			sprintf(s,"(%d,%d)-(%d,%d)",trigger.x,trigger.y,((word)trigger.value2)%256,((word)trigger.value2)/256);
 			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_CUSTOM+3+100*t,0,370,y+17,150,14,s,RectClick);
+			break;
+		case TRG_TIMER:
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "If the timer has", NULL);
+			sprintf(s, "%d", trigger.value);
+			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 1 + 100 * t, 0, 174, y + 17, 40, 14, s, NumberClick);
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 2 + 100 * t, 0, 214, y + 17, 1, 1, "seconds left", NULL);
+			if (trigger.flags & TF_LESS)
+				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 4 + 100 * t, 0, 294 + 24, y + 17, 80, 14, "Or Less", LessMoreClick);
+			else if (trigger.flags & TF_MORE)
+				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 4 + 100 * t, 0, 294 + 24, y + 17, 80, 14, "Or More", LessMoreClick);
+			else
+				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 4 + 100 * t, 0, 294 + 24, y + 17, 80, 14, "Exactly", LessMoreClick);
+			break;
+		case TRG_HURT: //Hurt
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "If", NULL);
+			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 1 + 100 * t, 0, 60, y + 17, 140, 14, MonsterName(trigger.value), MonsterClick);
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 2 + 100 * t, 0, 204, y + 17, 1, 1, "at", NULL);
+			if (trigger.x == 255)
+				sprintf(s, "Anywhere");
+			else
+				sprintf(s, "%d, %d", trigger.x, trigger.y);
+			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 3 + 100 * t, 0, 230, y + 17, 70, 14, s, XY3Click);
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 4 + 100 * t, 0, 304, y + 17, 1, 1, "is hurt", NULL);
+			break;
+		case TRG_RAGEBAR:
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "If the player rage bar is at", NULL);
+			sprintf(s, "%d", trigger.value);
+			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 1 + 100 * t, 0, 170, y + 17, 40, 14, s, NumberClick);
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 2 + 100 * t, 0, 215, y + 17, 1, 1, "%", NULL);
+			if (trigger.flags & TF_LESS)
+				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 4 + 100 * t, 0, 300, y + 17, 80, 14, "Or Less", LessMoreClick);
+			else if (trigger.flags & TF_MORE)
+				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 4 + 100 * t, 0, 300, y + 17, 80, 14, "Or More", LessMoreClick);
+			else
+				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 4 + 100 * t, 0, 300, y + 17, 80, 14, "Exactly", LessMoreClick);
+			break;
+		case TRG_HASRAGED:
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "If the player is in RAGE! Mode", NULL);
+			break;
+		case TRG_CHAINCOLOR:
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "If adjacent special of color", NULL);
+			s[1] = '\0';
+			s[0] = trigger.value2;
+			MakeButton(BTN_COLOR, ID_TRIG0 + OFS_CUSTOM + 1 + 100 * t, 0, 210, y + 17, 14, 14, s, ColorClick1);
+
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 2 + 100 * t, 0, 228, y + 17, 1, 1, "is triggered", NULL);
+			break;
+		case TRG_PROXIMITY:
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "If", NULL);
+			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 1 + 100 * t, 0, 60, y + 17, 140, 14, MonsterName(trigger.value), MonsterClick);
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 2 + 100 * t, 0, 204, y + 17, 1, 1, "at", NULL);
+			if (trigger.x == 255)
+				sprintf(s, "Anywhere");
+			else
+				sprintf(s, "%d, %d", trigger.x, trigger.y);
+
+			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 3 + 100 * t, 0, 230, y + 17, 70, 14, s, XY3Click);
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 4 + 100 * t, 0, 304, y + 17, 1, 1, "is within", NULL);
+
+			sprintf(s, "%d", effect.value2);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 5 + 100 * t, 0, 350, y + 17, 40, 14, s, Number2Click);
+
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 6 + 100 * t, 0, 400, y + 17, 1, 1, "tiles of the player", NULL);
+
+			if (trigger.flags & TF_LESS)
+				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 7 + 100 * t, 0, 580, y + 17, 80, 14, "Or Less", LessMoreClick);
+			else if (trigger.flags & TF_MORE)
+				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 7 + 100 * t, 0, 580, y + 17, 80, 14, "Or More", LessMoreClick);
+			else
+				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 7 + 100 * t, 0, 580, y + 17, 80, 14, "Exactly", LessMoreClick);
+			break;
+		case TRG_LINESIGHT:
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "If", NULL);
+			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 1 + 100 * t, 0, 60, y + 17, 140, 14, MonsterName(trigger.value), MonsterClick);
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 2 + 100 * t, 0, 204, y + 17, 1, 1, "at", NULL);
+			if (trigger.x == 255)
+				sprintf(s, "Anywhere");
+			else
+				sprintf(s, "%d, %d", trigger.x, trigger.y);
+
+			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 3 + 100 * t, 0, 230, y + 17, 70, 14, s, XY3Click);
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 4 + 100 * t, 0, 304, y + 17, 1, 1, "is within the player's line of sight", NULL);
+			break;
+		case TRG_WRLDKEY: // to do: add keychain compatability?
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "If the player has a ", NULL);
+			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 1 + 100 * t, 0, 200, y + 17, 140, 14, GetKeychainName(trigger.value), KeychainClick);
+
+			if (effect.text[0] != '\0')
+				sprintf(s, "%s", GetWorldTitle(effect.text));
+			else
+				sprintf(s, "??????");
+
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 2 + 100 * t, 0, 360, y + 17, 1, 1, "from", NULL);
+			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 3 + 100 * t, 0, 400, y + 17, 250, 14, s, WorldNameClick);
+			break;
+		case TRG_WRLDPRC:
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "If", NULL);
+
+			if (effect.text[0] != '\0')
+				sprintf(s, "%s", GetWorldTitle(effect.text));
+			else
+				sprintf(s, "??????");
+
+			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 1 + 100 * t, 0, 60, y + 17, 250, 14, s, WorldNameClick);
+
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 2 + 100 * t, 0, 313, y + 17, 1, 1, "is", NULL);
+
+			sprintf(s, "%d%%", trigger.value);
+			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 3 + 100 * t, 0, 333, y + 17, 40, 14, s, NumberClick);
+
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 4 + 100 * t, 0, 360, y + 17, 1, 1, "complete", NULL);
+
+			if (trigger.flags & TF_LESS)
+				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 5 + 100 * t, 0, 413, y + 17, 80, 14, "Or Less", LessMoreClick);
+			else if (trigger.flags & TF_MORE)
+				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 5 + 100 * t, 0, 413, y + 17, 80, 14, "Or More", LessMoreClick);
+			else
+				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 5 + 100 * t, 0, 413, y + 17, 80, 14, "Exactly", LessMoreClick);
 			break;
 	}
 }
@@ -2249,7 +2448,7 @@ static void SetupEffectButtons(int t,int y)
 			else
 				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+6+100*t,0,520,y+17,65,14,"Play FX",NoFXClick);
 			break;
-
+		// NEW EFFECTS
 		case EFF_CHAT:
 			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "Start chat", NULL);
 			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 140, y + 17, 250, 14, effect.text, PicNameClick);
@@ -2260,6 +2459,57 @@ static void SetupEffectButtons(int t,int y)
 			else
 				MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 8 + 100 * t, 0, 520, y + 17, 65, 14, "Play FX", NoFXClick);
 			break;
+		case EFF_TIMER: // todo: make it like delayed
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "Add", NULL);
+			sprintf(s, "%d", effect.value);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 5 + 100 * t, 0, 80, y + 17, 40, 14, s, NumberClick);
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 128, y + 17, 1, 1, "second(s) to the timer", NULL);
+			break;
+		case EFF_CAMERAFOCUS:
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 60, 14, "Focus camera on", NULL);
+			sprintf(s, "%d, %d", effect.x, effect.y);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 258, y + 17, 70, 14, s, XY3Click);
+			break;
+		case EFF_CAMERAGUY:
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 60, 14, "Focus camera on", NULL);;
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 94, y + 17, 140, 14, MonsterName(effect.value), MonsterClick);
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 2 + 100 * t, 0, 238, y + 17, 1, 1, "at", NULL);
+			if (effect.x == 255)
+				strcpy(s, "Anywhere");
+			else
+				sprintf(s, "%d, %d", effect.x, effect.y);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 3 + 100 * t, 0, 258, y + 17, 70, 14, s, XY3Click);
+			break;
+		case EFF_CAMERASCROLL:
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 60, 14, "Focus camera on", NULL);
+			sprintf(s, "%d, %d", effect.x, effect.y);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 199, y + 17, 70, 14, s, XY3Click);
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 2 + 100 * t, 0, 249, y + 17, 60, 14, "at speed", NULL);
+			sprintf(s, "%d", effect.value);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 3 + 100 * t, 0, 309, y + 17, 70, 14, s, NumberClick);
+			break;
+		case EFF_MARKASBOSS:
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "Mark", NULL);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 104, y + 17, 140, 14, MonsterName(effect.value), MonsterClick);
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 2 + 100 * t, 0, 248, y + 17, 1, 1, "at", NULL);
+			if (effect.x == 255)
+				strcpy(s, "Anywhere");
+			else
+				sprintf(s, "%d, %d", effect.x, effect.y);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 3 + 100 * t, 0, 268, y + 17, 70, 14, s, XY3Click);
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 4 + 100 * t, 0, 343, y + 17, 1, 1, "as boss", NULL);
+			break;
+		case EFF_AFFLICT:
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 50, y + 17, 1, 1, "Afflict", NULL);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 124, y + 17, 140, 14, GetAfflictName(effect.value), AfflictClick);
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 2 + 100 * t, 0, 228, y + 17, 1, 1, "at", NULL);
+			if (effect.x == 255)
+				strcpy(s, "Anywhere");
+			else
+				sprintf(s, "%d, %d", effect.x, effect.y);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 3 + 100 * t, 0, 248, y + 17, 75, 14, s, XY3Click);
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 4 + 100 * t, 0, 327, y + 17, 1, 1, "with", NULL);
+
 	}
 }
 
@@ -2278,6 +2528,13 @@ static void SpecialEditSetupButtons(void)
 	MakeButton(BTN_NORMAL,ID_TRGDN,0,50,224,40,14,"Down",PageClick);
 	MakeButton(BTN_NORMAL,ID_EFFUP,0,5,460,40,14,"Up",PageClick);
 	MakeButton(BTN_NORMAL,ID_EFFDN,0,50,460,40,14,"Down",PageClick);
+
+	// color
+	char s[2];
+
+	s[1] = '\0';
+	s[0] = spcl.color;
+	MakeButton(BTN_COLOR, ID_COLOR, 0, 390, 5, 14, 14, s, SpclColorClick);
 
 	for(i=0;i<5;i++)
 	{
@@ -2636,10 +2893,14 @@ void SpecialEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 
 	Print(2,2,"Triggers",0,1);
 	Print(2,242,"Effects",0,1);
-	Print(500,2,"SPECIAL EDIT",0,1);
+	Print(100,2,"SPECIAL EDIT",0,1);
 	sprintf(s,"#%03d",specialNum);
-	Print(600,2,s,0,1);
+	Print(200,2,s,0,1);
 	DrawFillBox(0,240,639,240,31);
+
+	Print(230, 2, "Color", 0, 1);
+	//sprintf(s, "#%d", spcl.color%256);
+	//Print(280, 2, s, 0, 1);
 
 	// # of uses
 	if(spcl.uses>0)
@@ -2808,6 +3069,7 @@ void SetSpecialCoords(int x,int y)
 	}
 }
 
+// returns to main special window
 static void ReturnToSpecialClick(int id)
 {
 	if (rightClick)
@@ -2819,6 +3081,7 @@ static void ReturnToSpecialClick(int id)
 	SpecialEditSetupButtons();
 }
 
+// sets up the return button
 static void TriggerEffectPickSetupButtons(byte mode)
 {
 	ClearButtons();
@@ -2840,13 +3103,21 @@ static void PickOptionClick(int id)
 			if (prevType != spcl.trigger[curTrig].type)
 			{
 				DefaultTrigger(&spcl.trigger[curTrig], spcl.x, spcl.y);
-				if (spcl.trigger[curTrig].type == TRG_EQUATION || spcl.trigger[curTrig].type == TRG_EQUVAR)
+				if (spcl.effect[curTrig].type != EFF_MESSAGE && spcl.effect[curTrig].type != EFF_SONG &&
+					spcl.effect[curTrig].type != EFF_PICTURE && spcl.effect[curTrig].type != EFF_VAR &&
+					spcl.effect[curTrig].type != EFF_NAME && spcl.effect[curTrig].type != EFF_MONSGRAPHICS &&
+					spcl.effect[curTrig].type != EFF_ITEMGRAPHICS)
 				{
-					if (spcl.effect[curTrig].type != EFF_MESSAGE && spcl.effect[curTrig].type != EFF_SONG &&
-						spcl.effect[curTrig].type != EFF_PICTURE && spcl.effect[curTrig].type != EFF_VAR &&
-						spcl.effect[curTrig].type != EFF_NAME && spcl.effect[curTrig].type != EFF_MONSGRAPHICS &&
-						spcl.effect[curTrig].type != EFF_ITEMGRAPHICS)
+					if (spcl.trigger[curTrig].type == TRG_WRLDKEY
+						|| spcl.trigger[curTrig].type == TRG_WRLDPRC)
+					{
 						spcl.effect[curTrig].text[0] = '\0';
+					}
+					else if (spcl.trigger[curTrig].type == TRG_EQUATION
+						|| spcl.trigger[curTrig].type == TRG_EQUVAR)
+					{
+						spcl.effect[curTrig].text[0] = '\0';
+					}
 				}
 			}
 		}
@@ -3001,6 +3272,10 @@ void TriggerEffectPick_Render(int mouseX, int mouseY, MGLDraw* mgl, byte mode)
 
 	const char (*listy)[32] = (spclPartMode == 0) ? trigName : effName;
 	CenterPrint(317, 270, listy[currentPick], 0, 1); // print the name
+
+	sprintf(s, "#%03d", currentPick);
+	Print(387, 270, s, 0, 1); // print the name
+
 	PrintRect(164, 290, 470, 479, 13, SpecialEditNotes(spclPartMode, currentPick), 1); // prints an easy little description.
 
 	if(spclPartMode == 0)

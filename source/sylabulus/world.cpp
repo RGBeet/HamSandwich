@@ -8,6 +8,7 @@
 #include "world_io_legacy.h"
 #include "world_io_supreme.h"
 #include "world_io_ham1.h"
+#include "world_io_sylabulus.h"
 
 byte keyChainInLevel[MAX_MAPS];
 
@@ -53,7 +54,7 @@ bool LoadWorld(world_t *world,const char *fname)
 	if(!strcmp(code, "HAMSWCH!"))
 	{
 		f.reset();
-		return Ham_LoadWorld(world, fname);
+		return Syl_LoadWorld(world, fname); // project sylabulus
 	}
 	else if (!strcmp(code, "SUPREME!"))
 	{
@@ -73,9 +74,10 @@ bool SaveWorld(const world_t *world, const char *fname)
 	std::string namebuf;
 	if (!Supreme_CanSaveWorld(world))
 	{
-		// Save HamSandwich world.
-		printf("Saving HamSandwich world: %s\n", fname);
-		Ham_SaveWorld(world, fname);
+		// Save Project Sylabulus world.
+		printf("Saving Project Sylabulus world: %s\n", fname);
+		Syl_SaveWorld(world, fname);
+
 		// Save old world as backup.
 		namebuf = fname;
 		namebuf.append("_old");
@@ -109,7 +111,7 @@ bool GetWorldName(const char *fname, StringDestination name, StringDestination a
 	if(!strcmp(code,"HAMSWCH!"))
 	{
 		f.reset();
-		return Ham_GetWorldName(fname, name, author);
+		return Syl_GetWorldName(fname, name, author); // sylabulus get world
 	}
 	else if(!strcmp(code,"SUPREME!"))
 	{

@@ -7,6 +7,7 @@
 #include "game.h"
 #include "filedialog.h"
 #include "mapdialog.h"
+#include "mgldraw.h"
 
 // editor modes
 enum : byte

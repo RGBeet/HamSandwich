@@ -14,6 +14,7 @@
 #include "goal.h"
 #include "palettes.h"
 #include "chat.h"
+#include "worldselect.h"
 
 static std::span<special_t> spcl;  // Full special storage array.
 static int numSpecials;  // Specials >= this aren't set.
@@ -56,6 +57,7 @@ int NewSpecial(byte x,byte y)
 			spcl[i].x=x;
 			spcl[i].y=y;
 			spcl[i].uses=1;
+			spcl[i].color=0; // set to gray
 			if(i>=numSpecials)
 				numSpecials=i+1;
 			return i;
@@ -209,6 +211,35 @@ void DefaultTrigger(trigger_t *trig,int x,int y)
 			trig->value=BLT_HAMMER;
 			trig->value2=0;
 			break;
+		case TRG_TIMER:
+			trig->value = 0;
+			break;
+		case TRG_HURT:
+			trig->value = MONS_BOUAPHA;
+			trig->value2 = 0;
+			trig->x = 255;
+			break;
+		case TRG_AFFLICT:
+			trig->value = MONS_BOUAPHA;
+			trig->value2 = 0;
+			trig->x = 255;
+			break;
+		case TRG_RAGEBAR:
+			trig->value = 0;
+			break;
+		case TRG_PROXIMITY:
+			trig->value = MONS_BOUAPHA;
+			trig->value2 = 0;
+			trig->x = 255;
+			break;
+		case TRG_LINESIGHT:
+			trig->value = MONS_BOUAPHA;
+			trig->x = 255;
+			break;
+		case TRG_CHAINCOLOR:
+			trig->value = 0;
+			trig->value2 = 0;
+			break;
 	}
 }
 
@@ -350,6 +381,17 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 		case EFF_CHAT:
 			eff->value=TEXTFILE_NORMAL;
 			strcpy(eff->text,"");
+			break;
+		case EFF_CAMERAFOCUS:
+			eff->x = 255;
+			eff->y = 255;
+			break;
+		case EFF_CAMERAGUY:
+			eff->value = MONS_ANYBODY;
+			break;
+		case EFF_CAMERASCROLL:
+			eff->value		= 0;
+			eff->value2		= 0;
 			break;
 		default:
 			break;
@@ -1269,6 +1311,45 @@ byte TriggerYes(special_t *me,trigger_t *t,Map *map)
 			else
 				answer=0;
 			break;
+		case TRG_CHAINCOLOR:
+			for (i = 0;i < nextEvent;i++)
+			{
+				if (events[i].type == EVT_SPECIAL)
+				{
+					if (abs(events[i].x - me->x) <= 1
+						&& abs(events[i].y - me->y) <= 1 &&
+						curMap->special[GetSpecial(events[i].x,events[i].y)].color == (byte)t->value2)
+					{
+						answer = 1;
+					}
+				}
+			}
+			break;
+		case TRG_WRLDKEY:
+			effNum = 0;
+			for (i = 0;i < NUM_TRIGGERS;i++)
+				if (t == &me->trigger[i])
+					effNum = i;
+			if (GetWorldProgress(me->effect[effNum].text)->keychains & (1 << t->value))
+				answer = 1;
+			else
+				answer = 0;
+			break;
+		case TRG_WRLDPRC:
+			effNum = 0;
+			for (i = 0;i < NUM_TRIGGERS;i++)
+				if (t == &me->trigger[i])
+					effNum = i;
+			float worldPercentage = (float)GetWorldProgress(me->effect[effNum].text)->percentage;
+			if (t->value == worldPercentage)
+				answer = 1;
+			else if (t->value < worldPercentage && (t->flags & TF_MORE))
+				answer = 1;
+			else if (t->value > worldPercentage && (t->flags & TF_LESS))
+				answer = 1;
+			else
+				answer = 0;
+			break;
 	}
 
 	if(t->flags&TF_NOT)
@@ -1652,6 +1733,15 @@ void SpecialEffect(special_t *me,Map *map)
 				break;
 			case EFF_CHAT:
 				coro::launch(std::bind(ShowImageOrFlic, me->effect[i].text, (me->effect[i].flags & EF_NOFX), me->effect[i].value));
+				break;
+			case EFF_CAMERAFOCUS:
+				//FocusCameraOnPoint(me->effect[i].x, me->effect[i].y);
+				break;
+			case EFF_CAMERAGUY:
+				//FocusOnMonster(!(me->effect[i].flags & EF_NOFX), me->effect[i].x, me->effect[i].y, me->effect[i].value);
+				break;
+			case EFF_CAMERASCROLL:
+				//SetCameraScroll(me->effect[i].value, me->effect[i].value2);
 				break;
 		}
 	}

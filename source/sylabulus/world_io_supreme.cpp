@@ -762,7 +762,7 @@ bool Supreme_SaveWorld(const world_t *world, SDL_IOStream *f)
 #define NO_IF(X) if(X) { return false; }
 // Checks for if a world *must* be saved as a HamSandwich format world.
 // The intent is to prefer the Supreme format when possible, and use the
-// newer HamSandwich format only for worlds which absolutely require it.
+// newer [Project Sylabulus] format only for worlds which absolutely require it.
 // It might take a little work, but worlds which do not exceed the limits of
 // the relevant integer types should still "fit" in the Supreme format.
 
@@ -802,13 +802,15 @@ static bool Supreme_CanSaveMap(const Map *map)
 			NO_IF(spcl.y > UINT8_MAX);
 			NO_IF(spcl.uses > UINT8_MAX);
 
+			NO_IF(spcl.color != 0) // if a special uses the color thing
+
 			int j = 0;
 			for (const trigger_t &trg : spcl.trigger)
 			{
 				++j;
 				if (trg.type)
 				{
-					NO_IF(j > 7);
+					NO_IF(j > 7 || trg.type >= OLD_MAX_TRIGGERS);
 				}
 			}
 			j = 0;
@@ -817,7 +819,7 @@ static bool Supreme_CanSaveMap(const Map *map)
 				++j;
 				if (eff.type)
 				{
-					NO_IF(j > 31);
+					NO_IF(j > 31 || eff.type >= OLD_MAX_EFFECTS);
 				}
 			}
 

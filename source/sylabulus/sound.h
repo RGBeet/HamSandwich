@@ -391,13 +391,16 @@
 #define SND_MINIWACKODIE	328
 #define SND_JACKATTACK	329
 #define SND_JACKDIE		330
-
 #define NUM_ORIG_SOUNDS	331
 
-#define MAX_SOUNDS		512		// absolute maximum
-#define MAX_CUSTOM_SOUNDS 64
+#define CUSTOM_SND_START 385
+#define MAX_CUSTOM_SOUNDS 128
 
-#define CUSTOM_SND_START (MAX_SOUNDS-MAX_CUSTOM_SOUNDS)
+#define NEW_SOUND_START		512
+#define SND_LYNXPOINT		512
+#define SND_PAINTSPLAT		513
+
+#define MAX_SOUNDS		1024
 
 //--------------------------------
 
