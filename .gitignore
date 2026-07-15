@@ -23,3 +23,31 @@ Thumbs.db
 # Needs to be downloaded from behind the authentication and unzipped manually.
 # https://partner.steamgames.com/downloads/steamworks_sdk.zip
 /external/steamworks_sdk
+assets/sylabulus/music/SP-HH7-Boss.ogg
+assets/sylabulus/music/SP-HH7-DimensionalSkies.ogg
+assets/sylabulus/music/SP-HH7-DimensionofMysteries.ogg
+assets/sylabulus/music/SP-HH7-FinalBoss.ogg
+assets/sylabulus/music/SP-HH7-HarvesterofSpirits.ogg
+assets/sylabulus/music/SP-HH7-Hub.ogg
+assets/sylabulus/music/SP-HH7-OldFriend.ogg
+assets/sylabulus/music/SP-HH7-StrangeBells.ogg
+assets/sylabulus/music/SP-HH7-TheEnd.ogg
+assets/sylabulus/music/SP-HH7-TheFinale.ogg
+assets/sylabulus/music/SP-HH7-TheUnexpected.ogg
+assets/sylabulus/music/SP-HH7-WarpTunnel.ogg
+assets/sylabulus/worlds/halloween7pm.dlw
+assets/sylabulus/user/HH7PM-Yerfdogofthe2.txt
+assets/sylabulus/user/HH7PM-Yerfdogofthe.txt
+assets/sylabulus/user/HH7PM-WarpTunnel.txt
+assets/sylabulus/user/HH7PM-Trickor1337.txt
+assets/sylabulus/user/HH7PM-Trick4.txt
+assets/sylabulus/user/HH7PM-Trick3.txt
+assets/sylabulus/user/HH7PM-Trick2.txt
+assets/sylabulus/user/HH7PM-Trick1.txt
+assets/sylabulus/user/HH7PM-TheGraveyardShift.txt
+assets/sylabulus/user/HH7PM-TheEctoPlaza.txt
+assets/sylabulus/user/HH7PM-TheCrimeMachine.txt
+assets/sylabulus/user/HH7PM-Intro.txt
+assets/sylabulus/user/HH7PM-CrashTestMummies.txt
+assets/sylabulus/user/HH7PM-BobbingforBoomkins.txt
+assets/sylabulus/graphics/items.aseprite

@@ -42,7 +42,24 @@
 #define TRG_EQUATION	30	// true if N is EQUATION or less/more/exactly (equation is stored in corresponding effect slot!)
 #define TRG_EQUVAR		31	// true if var V1 is EQUATION or less/more/exactly (equation is stored in corresponding effect slot!)
 #define TRG_BULLETRECT  32  // true if there are any of bullet X in rect
-#define MAX_TRIGGER		33
+
+// new stuff, anything past this line is not added yet
+#define TRG_TIMER		33	// true if timer is less/more/exactly N seconds
+#define TRG_HURT		34	// true if monster of type N at X,Y is hurt (has taken damage) or not
+#define TRG_AFFLICT		35	// true if monster of type N at X,Y is afflicted with status effect M or not
+#define TRG_RAGEBAR		36	// true if the rage bar is less/more/exactly N percent full
+#define TRG_HASRAGED	37	// true if player has raged or not
+#define TRG_MONSAGE		38	// true if monster of type N at X,Y is N seconds old or less/more/exactly
+
+#define TRG_PROXIMITY	39	// true if monster of type N at X,Y is within N tiles of player or not
+#define TRG_LINESIGHT	40	// true if monster of type N at X,Y is within line of sight of player or not
+
+// cross-world triggers
+#define TRG_WRLDKEY		41	// true if player has earned loonykey from world M
+#define TRG_WRLDPRC		42	// true if player has completed %N of world M or less/more/exactly
+#define TRG_CAMCHECK	43	// true if camera is focused on X,Y or not -- used to sync camera with events
+
+#define MAX_TRIGGER		44
 
 // effects
 #define EFF_NONE		0
@@ -66,24 +83,41 @@
 #define EFF_LIGHTRECT	18	// light up rectangle (x,y-value/,value%) to value2
 #define EFF_LEVELFLAG	19	// change level flags
 #define EFF_OLDTOGGLE	20	// toggle the old Dr. L way - just picking a wall/floor tile to swap to
-#define EFF_LIFE		21	// set monster of type N at X,Y life to Z (maximum life, or current life)
+#define EFF_LIFE		21	// set monster of type N at X,Y life to Z (maximum life, or current life) -- TODO: consolidate with EFF_LIFEAMT, which is more flexible
 #define EFF_WEAPON		22	// force weapon to N
 #define EFF_TAGTARGET	23	// tag the target
 #define EFF_TAGMONS		24	// tag the monster of type N at X,Y
 #define EFF_MONSITEM	25	// change monster of type N at X,Y to be holding item Z
 #define EFF_TILEVAR		26	// change single/contiguous/allsame tile at X,Y to floor V, where V is a variable.
 #define EFF_LIFEAMT		27	// change life of monster type N at X,Y by N (+ or -)
+
 #define EFF_AI			28	// change monster on type N at X,Y to AI of monster M
 #define EFF_NAME		29	// change monster of type N at X,Y name to S
 #define EFF_COLOR		30	// change monster of type N at X,Y coloration
 #define EFF_MONSBRIGHT	31	// change monster of type N at X,Y to brightness M
-#define EFF_PLAYAS		32	// set the player's Play As for this level only
+
+#define EFF_PLAYAS			32	// set the player's Play As for this level only
 #define EFF_MONSGRAPHICS	33	// change monster of type N at X,Y to graphics M
 #define EFF_ITEMGRAPHICS	34	// set the current custom item graphics to the given jsp
-#define EFF_VARBAR		35	// edit the varbar below the rage bar
-#define EFF_MAKEBULLET	36	// summon a bullet at a location
+#define EFF_VARBAR			35	// edit the varbar below the rage bar
+#define EFF_MAKEBULLET		36	// summon a bullet at a location
 #define EFF_CHANGEBULLET	37	// change bullet of type N at X,Y (or any X,Y) to type Z, N can be any or specific, Z must be specific
-#define EFF_MAX			38
+
+// new stuff, anything past this line is not added yet
+#define EFF_CHAT			38	// do a chat thing
+#define EFF_TIMER			39	// set the timer to (or change the timer by) N. The timer is at the bottom of the screen, like Pizza Tower
+
+// camera stuff!
+#define EFF_CAMERAFOCUS		40	// focus camera on a specific point/entity
+#define EFF_CAMERASCROLL	41	// scroll camera by X tiles and/or Y tiles (0 means no scroll in that direction) - overwrites previous scroll special
+
+#define EFF_MARKASBOSS		42	// mark a monster as a boss, which means its HP contributes to the boss bar and it will be treated as a boss for other purposes (like the "boss" trigger)
+#define EFF_AFFLICT			43	// afflict a monster with a status effect for N frames (like poison, burn, etc.)
+
+#define EFF_MAX				44
+
+#define OLD_MAX_TRIGGERS	33
+#define OLD_MAX_EFFECTS		38
 
 // trigger flags
 enum TriggerFlags : byte
@@ -152,13 +186,17 @@ struct special_t
 class Guy;
 
 void InitSpecials(std::span<special_t> list);
+
 void GetSpecialsFromMap(std::span<special_t> list);
+void GetSpecialsFromWorld(std::span<special_t> list);
+
 int NewSpecial(byte x,byte y);
 void DefaultTrigger(trigger_t *trig,int x,int y);
 void DefaultEffect(effect_t *eff,int x,int y,byte savetext);
 
 int GetSpecial(byte x,byte y);
 special_t *GetSpecial(int i);
+special_t *GetGlobalSpecial(int i);
 void DeleteSpecial(int i);
 
 class Map;

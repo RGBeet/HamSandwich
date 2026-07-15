@@ -1271,7 +1271,7 @@ void RenderInterface(MGLDraw *mgl)
 			case IV_LOCK:
 				DrawLock(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,mgl,intf[i].value);
 				break;
-			case IV_COMBO:
+			case IV_COMBO: // new thing
 				int comboClock = player.comboClock;
 				int frame = (comboClock > 0)
 					? SPR_STICKMAN + ((comboClock / 4) % 2)

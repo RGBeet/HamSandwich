@@ -24,22 +24,23 @@
 #define TIME_PER_FRAME (1000/30)
 
 #define GAMEMODE_PLAY  0
-#define GAMEMODE_MENU  1
-#define GAMEMODE_PIC   2
-#define GAMEMODE_RAGE  3
-#define GAMEMODE_SCAN  4
-#define GAMEMODE_SHOP  5
+#define GAMEMODE_MENU  1 // level menu
+#define GAMEMODE_PIC   2 // showing am BMP/FLC file
+#define GAMEMODE_RAGE  3 // rage activate
+#define GAMEMODE_SCAN  4 // using the scanner?
+#define GAMEMODE_SHOP  5 // SHOPPING!
+#define GAMEMODE_CHAT  5 // chat dialogue
 
 // these are the messages you can send to the game
-#define MSG_NONE	  0
-#define MSG_GOTOMAP	  1
-#define MSG_WINLEVEL  2
-#define MSG_RESET	  3
-#define MSG_LOADGAME  4
-#define MSG_WINGAME	  5
-#define MSG_NEWFEATURE 6
-#define MSG_SCANMONSTER 7
-#define MSG_SHOPNOW		8
+#define MSG_NONE	  		0
+#define MSG_GOTOMAP	  		1
+#define MSG_WINLEVEL  		2
+#define MSG_RESET	  		3
+#define MSG_LOADGAME  		4
+#define MSG_WINGAME	  		5
+#define MSG_NEWFEATURE 		6
+#define MSG_SCANMONSTER 	7
+#define MSG_SHOPNOW			8
 
 // these are the possible outcomes of a level
 // if you die, the level just starts over, so that isn't included
@@ -51,12 +52,12 @@
 #define LEVEL_LOADING 4
 
 // these are world outcomes
-#define WORLD_ABORT 5
-#define WORLD_WIN	6
-#define WORLD_PLAYING 7
-#define WORLD_LOAD	8
-#define WORLD_QUITGAME 9
-#define WORLD_SHOP	10
+#define WORLD_ABORT 	5
+#define WORLD_WIN		6
+#define WORLD_PLAYING 	7
+#define WORLD_LOAD		8
+#define WORLD_QUITGAME 	9
+#define WORLD_SHOP		10
 
 extern Map *curMap;
 extern world_t curWorld;

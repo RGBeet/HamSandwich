@@ -11,6 +11,7 @@
 #include "textgame.h"
 #include "steam.h"
 #include "softjoystick.h"
+#include "plasma.h"
 
 // special codes in the credits:
 // @ = use GirlsRWeird font
@@ -428,7 +429,8 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 			CO_RETURN MENU_SHOP;	// start shopping!
 	}
 
-	mgl->LoadBMP(Steam()->IsSteamEdition() ? "graphics/title_steam.bmp" : "graphics/title.bmp");
+	//Steam()->IsSteamEdition()
+	mgl->LoadBMP("graphics/title.bmp");
 	backgd=(byte *)malloc(640*480);
 	if(!backgd)
 		FatalError("Out of memory!");
@@ -543,8 +545,10 @@ TASK(void) Credits(MGLDraw *mgl)
 		{
 			lastTime-=TIME_PER_FRAME;
 			y++;
+			UpdatePlasma();
 		}
 		mgl->ClearScreen();
+		RenderPlasma(mgl,0);
 		CreditsRender(y);
 		AWAIT mgl->Flip();
 		if(!mgl->Process())

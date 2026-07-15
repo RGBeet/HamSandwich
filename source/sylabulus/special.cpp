@@ -13,6 +13,7 @@
 #include "shop.h"
 #include "goal.h"
 #include "palettes.h"
+#include "chat.h"
 
 static std::span<special_t> spcl;  // Full special storage array.
 static int numSpecials;  // Specials >= this aren't set.
@@ -345,6 +346,10 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 			eff->value=BLT_NONE;
 			eff->value2=BLT_HAMMER;
 			eff->x=255;
+			break;
+		case EFF_CHAT:
+			eff->value=TEXTFILE_NORMAL;
+			strcpy(eff->text,"");
 			break;
 		default:
 			break;
@@ -1644,6 +1649,9 @@ void SpecialEffect(special_t *me,Map *map)
 				break;
 			case EFF_CHANGEBULLET:
 				ChangeBullet(!(me->effect[i].flags&EF_NOFX),me->effect[i].x,me->effect[i].y,me->effect[i].value,me->effect[i].value2);
+				break;
+			case EFF_CHAT:
+				coro::launch(std::bind(ShowImageOrFlic, me->effect[i].text, (me->effect[i].flags & EF_NOFX), me->effect[i].value));
 				break;
 		}
 	}

@@ -1,6 +1,7 @@
 #include "game.h"
 #include "title.h"
 #include "jamulfmv.h"
+#include "chat.h"
 #include "rage.h"
 #include "special.h"
 #include "progress.h"
@@ -399,6 +400,14 @@ TASK(byte) LunaticRun(int *lastTime)
 		else if(gameMode==GAMEMODE_SHOP)
 		{
 			if(!AWAIT UpdateShopping(gamemgl))
+			{
+				gameMode=GAMEMODE_PLAY;
+				RestoreGameplayGfx();
+			}
+		}
+		else if(gameMode==GAMEMODE_CHAT)
+		{
+			if(!AWAIT UpdateChat(gamemgl))
 			{
 				gameMode=GAMEMODE_PLAY;
 				RestoreGameplayGfx();

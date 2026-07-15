@@ -15,40 +15,41 @@
 #include "viewdialog.h"
 #include "shop.h"
 #include "player.h"
+#include "spclnotes.h"
 
 // Originally 14
 #define TRGPICKER_HEIGHT 12
 #define EFFPICKER_HEIGHT 12
 
-#define SMODE_NORMAL	0
-#define SMODE_USES		1
-#define SMODE_PICKTRIG	2
-#define SMODE_PICKGUY	3
-#define SMODE_VALUE		4
-#define SMODE_VALUE2	5
-#define SMODE_PICKXY	6
-#define SMODE_PICKRECT	7
-#define SMODE_PICKRECT2	8
-#define SMODE_PICKITEM	9
-#define SMODE_FVALUE	10
-#define SMODE_PICKFLOOR	11
-#define SMODE_PICKEFF	12
-#define SMODE_MESSAGE	13
-#define SMODE_PICKSOUND	14
-#define SMODE_PICKXY2	15
-#define SMODE_PICKFLOOR2 16
-#define SMODE_PICKBMP	17
-#define SMODE_PICKITEM2	18
-#define SMODE_PICKRECT3	19
-#define SMODE_PICKGUY2	20
-#define SMODE_FVALUE2	21
-#define SMODE_PICKSONG	22
-#define SMODE_FVALUE3	23
-#define SMODE_PICKITEM3	24
-#define SMODE_HELP		25
-#define SMODE_PICKRECT3T 26
-#define SMODE_PICKBULLET 27
-#define SMODE_PICKBULLET1 28
+#define SMODE_NORMAL		0	// normal editing mode
+#define SMODE_USES			1	// entering # of uses for special
+#define SMODE_PICKTRIG		2	// picking a trigger type
+#define SMODE_PICKGUY		3	// picking a monster type
+#define SMODE_VALUE			4	// entering a number for value
+#define SMODE_VALUE2		5
+#define SMODE_PICKXY		6	// picking a target spot (x,y)
+#define SMODE_PICKRECT		7	// picking a target rectangle
+#define SMODE_PICKRECT2		8
+#define SMODE_PICKITEM		9	// picking an item type
+#define SMODE_FVALUE		10
+#define SMODE_PICKFLOOR		11
+#define SMODE_PICKEFF		12
+#define SMODE_MESSAGE		13
+#define SMODE_PICKSOUND		14
+#define SMODE_PICKXY2		15
+#define SMODE_PICKFLOOR2	16
+#define SMODE_PICKBMP		17
+#define SMODE_PICKITEM2		18
+#define SMODE_PICKRECT3		19
+#define SMODE_PICKGUY2		20
+#define SMODE_FVALUE2		21
+#define SMODE_PICKSONG		22
+#define SMODE_FVALUE3		23
+#define SMODE_PICKITEM3		24
+#define SMODE_HELP			25
+#define SMODE_PICKRECT3T	26
+#define SMODE_PICKBULLET	27
+#define SMODE_PICKBULLET1	28
 
 #define ID_EXIT		1
 #define ID_USES		2
@@ -84,81 +85,107 @@ static byte previousMap;
 static byte helpRemember;
 static byte trgStart,effStart;
 
-static const char trigName[][16]={
+#define ID_EXIT				1
+#define ID_MORE				2
+#define ID_OPTIONS			100
+static std::vector<dword>	spclPartList;
+static word spclPartsInList, spclPartStart, spclPartShown;
+static constexpr int		SPCL_PARTS_PER_PAGE = 18;
+static byte					spclPartMode, currentPick;
+static byte realClick;
+
+static const char trigName[][32]={
 	"Unused",
-	"Step On/Near",
-	"Step In Rect",
+	"Step On/Near Coordinate",
+	"Step In Rectangle",
 	"Have Item",
 	"Shoot Item/Wall",
-	"Monsters Alive",
-	"Kill Monster",
+	"Entities Alive",
+	"Defeat Entity",
 	"Floor Is Tile",
 	"Passed Levels",
-	"Passed Level",
-	"Variables",
+	"Passed Specific Level",
+	"Variable Check",
 	"Timed",
-	"Delayed",
-	"Random",
-	"Chain Off Other",
-	"Tiles In Rect",
-	"Monster Life",
+	"Check Frames",
+	"Random Chance",
+	"Chain Off Special",
+	"Tiles in Rectangle",
+	"Entity Life",
 	"Step On Tile",
 	"Get Item At",
-	"Item On Map",
-	"Monster Awake",
+	"Item At Coordinate",
+	"Entity Awake",
 	"Items In Level",
 	"Compare Areas",
 	"Compare Vars",
-	"Monster In Rect",
-	"Item In Rect",
-	"Difficulty",
-	"Keypress",
-	"Playing As",
-	"Monster Color",
+	"Entity in Rectangle",
+	"Item In Rectangle",
+	"Game Difficulty",
+	"Key Press",
+	"Playable Character",
+	"Entity Color",
 	"Equation",
-	"Var Equation",
-	"Bullet In Rect"
+	"Variable Equation",
+	"Bullet In Rectangle",
+	"Countdown Timer",
+	"Entity Hurt",
+	"Has Status Effect",
+	"Rage Bar Value",
+	"Player Has Raged",
+	"Entity Clock",
+	"Entity Proximity",
+	"Entity Line of Sight",
+	"Key From Other World",
+	"Other World Percentage",
+	"Camera Coordinate Check"
 };
 
-static const char effName[][16]={
+static const char effName[][32]={
 	"Unused",
-	"Message",
-	"Sound",
-	"Song",
+	"Show Message",
+	"Play Sound",
+	"Play Song",
 	"Win Level",
-	"Goto Level",
+	"Go To Level",
 	"Teleport",
 	"Change Tiles",
-	"Summon Monster",
-	"Light/Dark",
-	"Show Pic/Movie",
+	"Summon Entity",
+	"Change Light Value",
+	"Show Picture or Movie",
 	"Change Items",
-	"Copy Map",
-	"Kill Monsters",
-	"Change Monsters",
-	"Change Teams",
-	"Delete Special",
+	"Copy Map Tiles",
+	"Kill Entities",
+	"Change Entites",
+	"Change Entity Team",
+	"Disable Special",
 	"Set Variable",
-	"Light Rect",
-	"Level Flags",
+	"Light Rectangle",
+	"Toggle Level Flags",
 	"Old Toggle",
-	"Set Life",
-	"Force Weapon",
-	"Tag Target",
-	"Tag Monster",
-	"Monster Item",
-	"Tile Var",
-	"Change Life",
-	"Monster AI",
-	"Monster Name",
-	"Monster Color",
-	"Monster Bright",
-	"Play As",
-	"Monster Sprites",
-	"Item Sprites",
-	"Variable Bar",
+	"Set Entity Life",
+	"Force Player Weapon",
+	"Tag Target Entity",
+	"Tag Entity",
+	"Set Entity Item",
+	"Change Tile to Variable",
+	"Change Entity Life",
+	"Set Entity AI",
+	"Set Entity Name",
+	"Set Entity Color",
+	"Set Entity Bright",
+	"Force Playable Character",
+	"Set Entity Graphics",
+	"Set Item Graphics",
+	"Set Variable Bar",
 	"Summon Bullet",
-	"Change Bullet"
+	"Change Bullet",
+	"Initiate Chat Dialogue",
+	"Set Countdown Clock",
+	"Focus Camera on Entity",
+	"Scroll Camera",
+	"Mark Entity as Boss",
+	"Set Entity Status Effect"
 };
 
 static void SetupTriggerButtons(int t,int y);
@@ -227,41 +254,36 @@ static void ChooseTriggerClick(int id)
 {
 	if(rightClick)
 	{
-		spcl.trigger[trgStart + id/100-1].type=TRG_NONE;
+		spcl.trigger[id].type=TRG_NONE;
 		MakeNormalSound(SND_MENUCLICK);
 		return;
 	}
-
-	MakeNormalSound(SND_MENUCLICK);
-	mode=SMODE_PICKTRIG;
-	curTrig=(trgStart + id/100)-1;
-	prevType=spcl.trigger[curTrig].type;
-	selectY=(curTrig*38+30)-(TRGPICKER_HEIGHT*MAX_TRIGGER)/2;
-	if(selectY<0)
-		selectY=0;
-	if(selectY+TRGPICKER_HEIGHT*MAX_TRIGGER>475)
-		selectY=475-TRGPICKER_HEIGHT*MAX_TRIGGER;
+	
+	//mode=SMODE_PICKTRIG;
+	curTrig=(trgStart+id/100)-1;
+	//prevType=spcl.trigger[curTrig].type;
+	SetEditMode(EDITMODE_PICKTRG);
+	spclPartMode = 0;
+	TriggerEffectPick_Init(id);
+	MakeNormalSound(SND_BOMBBOOM);
 }
 
 static void ChooseEffectClick(int id)
 {
 	if(rightClick)
 	{
-		spcl.effect[effStart + (id-ID_EFF0)/100].type=EFF_NONE;
+		spcl.effect[id].type=EFF_NONE;
 		MakeNormalSound(SND_MENUCLICK);
 		return;
 	}
-
-	MakeNormalSound(SND_MENUCLICK);
-	mode=SMODE_PICKEFF;
-	curEff=effStart + (id-ID_EFF0)/100;
-	prevType=spcl.effect[curEff].type;
-
-	selectY=(curEff*38+264)-(EFFPICKER_HEIGHT*EFF_MAX)/2;
-	if(selectY<0)
-		selectY=0;
-	if(selectY+EFFPICKER_HEIGHT*EFF_MAX>475)
-		selectY=475-EFFPICKER_HEIGHT*EFF_MAX;
+	
+	//mode=SMODE_PICKEFF;
+	curEff=effStart+(id-ID_EFF0)/100;
+	//prevType=spcl.effect[curEff].type;
+	SetEditMode(EDITMODE_PICKEFF);
+	spclPartMode = 1;
+	TriggerEffectPick_Init(id);
+	MakeNormalSound(SND_TELEPORT);
 }
 
 static void MonsterClick(int id)
@@ -2227,6 +2249,17 @@ static void SetupEffectButtons(int t,int y)
 			else
 				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+6+100*t,0,520,y+17,65,14,"Play FX",NoFXClick);
 			break;
+
+		case EFF_CHAT:
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "Start chat", NULL);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 140, y + 17, 250, 14, effect.text, PicNameClick);
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 2 + 100 * t, 0, 394, y + 17, 1, 1, "mode", NULL);
+
+			if (effect.flags & EF_NOFX)
+				MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 8 + 100 * t, 0, 520, y + 17, 65, 14, "No FX", NoFXClick);
+			else
+				MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 8 + 100 * t, 0, 520, y + 17, 65, 14, "Play FX", NoFXClick);
+			break;
 	}
 }
 
@@ -2400,6 +2433,7 @@ void SpecialEdit_Update(int mouseX,int mouseY,int scroll,MGLDraw *mgl)
 			}
 			break;
 		case SMODE_PICKTRIG:
+			/*
 			if(mgl->MouseDown())
 			{
 				if((mouseY-selectY)/TRGPICKER_HEIGHT>=MAX_TRIGGER)
@@ -2422,15 +2456,17 @@ void SpecialEdit_Update(int mouseX,int mouseY,int scroll,MGLDraw *mgl)
 						if(spcl.effect[curTrig].type!=EFF_MESSAGE && spcl.effect[curTrig].type!=EFF_SONG &&
 								spcl.effect[curTrig].type!=EFF_PICTURE && spcl.effect[curTrig].type!=EFF_VAR &&
 								spcl.effect[curTrig].type!=EFF_NAME && spcl.effect[curTrig].type!=EFF_MONSGRAPHICS &&
-								spcl.effect[curTrig].type!=EFF_ITEMGRAPHICS)
+								spcl.effect[curTrig].type!=EFF_ITEMGRAPHICS && spcl.effect[curTrig].type!=EFF_CHAT)
 							spcl.effect[curTrig].text[0]='\0';
 					}
 				}
 				SetupTriggerButtons(curTrig-trgStart,(curTrig-trgStart)*38+30);
 				MakeNormalSound(SND_MENUSELECT);
 			}
+			*/
 			break;
 		case SMODE_PICKEFF:
+			/*
 			if(mgl->MouseDown())
 			{
 				if((mouseY-selectY)/EFFPICKER_HEIGHT>=EFF_MAX || (mouseY-selectY)/EFFPICKER_HEIGHT<0)
@@ -2450,6 +2486,7 @@ void SpecialEdit_Update(int mouseX,int mouseY,int scroll,MGLDraw *mgl)
 				SetupEffectButtons(curEff-effStart,(curEff-effStart)*38+264);
 				MakeNormalSound(SND_MENUSELECT);
 			}
+			*/
 			break;
 		case SMODE_PICKGUY:
 			if(effMode==0)
@@ -2769,6 +2806,246 @@ void SetSpecialCoords(int x,int y)
 			}
 		}
 	}
+}
+
+static void ReturnToSpecialClick(int id)
+{
+	if (rightClick)
+		return;
+
+	SetEditMode(EDITMODE_SPECIAL);
+	MakeNormalSound(SND_MENUCLICK);
+	ClearButtons();
+	SpecialEditSetupButtons();
+}
+
+static void TriggerEffectPickSetupButtons(byte mode)
+{
+	ClearButtons();
+	MakeButton(BTN_NORMAL, ID_EXIT, 0, 480, 460, 158, 14, "Return to Special", ReturnToSpecialClick);
+}
+
+static void PickOptionClick(int id)
+{
+	RadioOn(id, ID_OPTIONS, ID_OPTIONS + 50);
+	currentPick = spclPartList[spclPartStart + (id - ID_OPTIONS)];
+	//SetupMonsterDisplay();
+
+	if (realClick)
+	{
+		if (spclPartMode == 0) // trigger
+		{
+			spcl.trigger[curTrig].type = currentPick;
+			mode = SMODE_NORMAL;
+			if (prevType != spcl.trigger[curTrig].type)
+			{
+				DefaultTrigger(&spcl.trigger[curTrig], spcl.x, spcl.y);
+				if (spcl.trigger[curTrig].type == TRG_EQUATION || spcl.trigger[curTrig].type == TRG_EQUVAR)
+				{
+					if (spcl.effect[curTrig].type != EFF_MESSAGE && spcl.effect[curTrig].type != EFF_SONG &&
+						spcl.effect[curTrig].type != EFF_PICTURE && spcl.effect[curTrig].type != EFF_VAR &&
+						spcl.effect[curTrig].type != EFF_NAME && spcl.effect[curTrig].type != EFF_MONSGRAPHICS &&
+						spcl.effect[curTrig].type != EFF_ITEMGRAPHICS)
+						spcl.effect[curTrig].text[0] = '\0';
+				}
+			}
+		}
+		else //effect
+		{
+			spcl.effect[curEff].type = currentPick;
+			mode = SMODE_NORMAL;
+			if (prevType != spcl.effect[curEff].type)
+			{
+				DefaultEffect(&spcl.effect[curEff], spcl.x, spcl.y, (byte)(spcl.trigger[curEff].type == TRG_EQUATION || spcl.trigger[curEff].type == TRG_EQUVAR));
+			}
+		}
+		ReturnToSpecialClick(-1);
+	}
+}
+
+static void MoreOptionsClick(int id)
+{
+	int i, pos;
+
+	spclPartStart += spclPartShown;
+	if (spclPartStart >= spclPartsInList)
+		spclPartStart = 0;
+
+	ClearButtons(ID_OPTIONS, ID_OPTIONS + 50);
+
+	const char (*listy)[32] = (spclPartMode == 0) ? trigName : effName;
+
+	// now make buttons for the first N, which is however many fit on the screen
+	pos = 130;
+	spclPartShown = 0;
+	for (i = 0;i < spclPartsInList - spclPartStart;i++)
+	{
+		MakeButton(BTN_RADIO, ID_OPTIONS+ i, 0, 2, pos, 156, 16, listy[i + spclPartStart], PickOptionClick);
+		spclPartShown++;
+		pos += 18;
+		if (pos > 480 - 30)
+			break;
+	}
+
+	ClearButtons(ID_MORE, ID_MORE);
+	char buf[32];
+	ham_sprintf(buf, "Page %d/%d", spclPartStart / SPCL_PARTS_PER_PAGE + 1, (spclPartsInList - 1) / SPCL_PARTS_PER_PAGE + 1);
+	MakeButton(BTN_NORMAL, ID_MORE, 0, 2, 454, 156, 16, buf, MoreOptionsClick);
+}
+
+static void MakeOptionList(void)
+{
+	int i,pos;
+
+	ClearButtons(ID_OPTIONS, ID_OPTIONS + 50);
+	ClearButtons(ID_MORE, ID_MORE);
+
+	spclPartStart = 0;
+	pos = 0;
+	spclPartsInList = 0;
+	spclPartList.clear();
+
+	byte maxStuff = (spclPartMode==0) ? MAX_TRIGGER : EFF_MAX;
+
+	// get the trigger/effect values
+	for (i = 0;i < maxStuff;i++)
+	{
+		spclPartList.push_back(i);
+		spclPartsInList = pos + 1;
+		pos++;
+	}
+
+	const char (*listy)[32] = (spclPartMode==0) ? trigName : effName;
+
+	pos = 130;
+	spclPartShown = 0;
+	for (i = 0;i < spclPartsInList - spclPartStart;i++)
+	{
+		if (pos > 480 - 30)
+		{
+			char buf[32];
+			ham_sprintf(buf, "Page %d/%d", spclPartStart / SPCL_PARTS_PER_PAGE + 1, (spclPartsInList - 1) / SPCL_PARTS_PER_PAGE + 1);
+			MakeButton(BTN_NORMAL, ID_MORE, 0, 2, pos, 156, 16, buf, MoreOptionsClick);
+			break;
+		}
+		MakeButton(BTN_RADIO, ID_OPTIONS + i, 0, 2, pos, 156, 16, listy[i + spclPartStart], PickOptionClick);
+		spclPartShown++;
+		pos += 18;
+	}
+}
+
+// NEW! user selects trigger/effect from THIS menu instead
+void TriggerEffectPick_Init(int id)
+{
+	GetDisplayMGL()->MouseTap();
+	TriggerEffectPickSetupButtons(mode);
+	MakeOptionList();
+}
+
+void TriggerEffectPick_Exit(void)
+{
+}
+
+#define SPCLMODE_NORMAL		0
+#define SPCLMODE_HELP		1
+
+void TriggerEffectPick_Update(int mouseX, int mouseY, int scroll, MGLDraw* mgl, byte mode)
+{
+	int i;
+
+	// just hovering on any monster buttons 'selects' the monster
+	realClick = 0;
+
+	for (i = 0;i < 50;i++)
+		CheckButton(mouseX, mouseY, ID_OPTIONS + i);
+
+	if (mgl->MouseTap())
+	{
+		realClick = 1;
+		if (mode == SPCLMODE_HELP)
+		{
+			if (EditHelpClick(mouseX, mouseY))
+				mode = helpRemember;
+		}
+		else
+			CheckButtons(mouseX, mouseY);
+	}
+
+	if (mgl->RMouseTap())
+	{
+		//CheckButtonCallback(mouseX, mouseY, ID_PICKTHEME + i, PickThemeRightClick);
+	}
+}
+
+void TriggerEffectPick_Render(int mouseX, int mouseY, MGLDraw* mgl, byte mode)
+{
+	char s[32];
+
+	mgl->ClearScreen();
+
+	mgl->FillBox(161, 129, 639, 479, 32 * 3 + 6);
+
+	//SetSpriteConstraints(161, 130, 639, 479);
+	//ClearSpriteConstraints();
+
+	// todo: revise this to look less like the monster editor?
+	mgl->FillBox(161, 268, 470, 479, 32 * 1 + 4);
+	mgl->Box(160, 268, 470, 479, 32 * 1 + 16);
+
+	mgl->FillBox(0, 128, 639, 128, 31);
+	mgl->FillBox(160, 129, 160, 479, 31);
+	mgl->FillBox(0, 129, 159, 479, 32 * 1 + 4);
+
+	mgl->FillBox(170, 286, 460, 286, 31);
+
+
+	const char (*listy)[32] = (spclPartMode == 0) ? trigName : effName;
+	CenterPrint(317, 270, listy[currentPick], 0, 1); // print the name
+	PrintRect(164, 290, 470, 479, 13, SpecialEditNotes(spclPartMode, currentPick), 1); // prints an easy little description.
+
+	if(spclPartMode == 0)
+	{
+		Print(500, 2, "TRIGGER EDIT", 0, 1);
+		sprintf(s, "#%03d", (spclPartMode == 0) ? curTrig : curEff);
+	}
+	else
+	{
+		Print(500, 2, "EFFECT EDIT", 0, 1);
+		sprintf(s, "#%03d", (spclPartMode == 0) ? curTrig : curEff);
+	}
+	Print(600, 2, s, 0, 1);
+	
+
+	int i;
+	if (mode == EDITMODE_PICKTRG)
+	{
+		/*
+		DrawFillBox(40, selectY, 200, selectY + MAX_TRIGGER * TRGPICKER_HEIGHT + 2, 0);
+		DrawBox(40, selectY, 200, selectY + MAX_TRIGGER * TRGPICKER_HEIGHT + 2, 31);
+		for (i = 0;i < MAX_TRIGGER;i++)
+		{
+			if (spcl.trigger[curTrig].type == i)
+				DrawFillBox(41, selectY + 1 + i * TRGPICKER_HEIGHT, 199, selectY + 1 + i * TRGPICKER_HEIGHT + TRGPICKER_HEIGHT, 32 * 1 + 8);
+			Print(42, selectY + 2 + i * TRGPICKER_HEIGHT, trigName[i], 0, 1);
+		}
+		*/
+	}
+			
+	else if (mode == EDITMODE_PICKEFF)
+	{
+		/*
+		DrawFillBox(40, selectY, 200, selectY + EFF_MAX * EFFPICKER_HEIGHT + 2, 0);
+		DrawBox(40, selectY, 200, selectY + EFF_MAX * EFFPICKER_HEIGHT + 2, 31);
+		for (i = 0;i < EFF_MAX;i++)
+		{
+			if (spcl.effect[curEff].type == i)
+				DrawFillBox(41, selectY + 1 + i * EFFPICKER_HEIGHT, 199, selectY + 1 + i * EFFPICKER_HEIGHT + EFFPICKER_HEIGHT, 32 * 1 + 8);
+			Print(42, selectY + 2 + i * EFFPICKER_HEIGHT, effName[i], 0, 1);
+		}
+		*/
+	}
+	
+	RenderButtons(mouseX, mouseY, mgl);
 }
 
 void SetSpecialRect(int x,int y,int x2,int y2)

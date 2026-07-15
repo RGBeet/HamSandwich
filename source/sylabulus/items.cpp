@@ -545,7 +545,7 @@ static const item_t baseItems[]={
 		IF_PICKUP,
 		IT_PICKUP|IT_WEAPON,
 		ITR_GET,IE_WEAPON,WPN_SWAPGUN,"Swapgun!",SND_WEAPON},
-	{"Radioactive Chinese",0,0,38,4,1,0,
+	{"Radioactive Chinese",0,0,178,0,0,0, // new !!!
 		5,
 		IF_PICKUP,
 		IT_PICKUP|IT_FOOD,

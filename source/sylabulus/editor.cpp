@@ -474,6 +474,10 @@ TASK(void) UpdateMouse(void)
 			if(scroll)
 				ExportDialogScroll(scroll);
 			break;
+		case EDITMODE_PICKTRG:
+		case EDITMODE_PICKEFF:
+			TriggerEffectPick_Update(mouseX, mouseY, scroll, editmgl, editMode);
+			break;
 	}
 }
 
@@ -745,6 +749,11 @@ void EditorDraw(void)
 			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials();
 			RenderExportDialog(editmgl, mouseX, mouseY);
+			break;
+		case EDITMODE_PICKTRG:
+		case EDITMODE_PICKEFF:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
+			TriggerEffectPick_Render(mouseX,mouseY,editmgl,editMode);
 			break;
 	}
 

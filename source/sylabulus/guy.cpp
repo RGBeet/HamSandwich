@@ -7,6 +7,7 @@
 #include "hiscore.h"
 #include "shop.h"
 #include "goal.h"
+#include "plasma.h"
 
 static std::unique_ptr<Guy[]> guys;
 static std::unique_ptr<bool[]> changed;

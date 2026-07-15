@@ -166,7 +166,7 @@
 #define NUM_ORIGINAL_ITEMS	150
 #define MAX_ITEMS	255
 
-#define ITM_RANDOM	255		// the item number for random item drops
+#define ITM_RANDOM	MAX_ITEMS		// the item number for random item drops
 
 // item flags
 enum ItemFlags : word
