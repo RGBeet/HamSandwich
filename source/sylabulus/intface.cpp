@@ -94,6 +94,7 @@ enum {
 	INTF_TIME,
 	INTF_STEALTH,
 	INTF_COMBO,
+	INTF_COUNTDOWN,
 	NUM_INTF,
 };
 
@@ -264,6 +265,12 @@ intface_t defaultSetup[NUM_INTF]={
 	 76,-20,
 	 0,0,
 	 0},
+	{SCRWID/2 - 50,SCRHEI+20,SCRWID/2 - 50,SCRHEI - 20,	// time
+	 SPR_TIME,
+	 IV_TIME,2,
+	 -19,3,
+	 0,0,
+	 20},
 };
 
 static byte intfFlip;
@@ -1088,6 +1095,9 @@ void UpdateInterface(Map *map)
 				break;
 			case INTF_TIME:
 				intf[i].vDesired= (int)(player.clock/30);
+				break;
+			case INTF_COUNTDOWN:
+				intf[i].vDesired = (int)(player.timer);
 				break;
 			case INTF_COINS:
 				intf[i].vDesired=player.coins;

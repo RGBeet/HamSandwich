@@ -131,17 +131,21 @@ static const char trigName[][32]={
 	"Equation",
 	"Variable Equation",
 	"Bullet In Rectangle",
+
 	"Countdown Timer",
 	"Entity Hurt",
 	"Has Status Effect",
+
 	"Rage Bar Value",
 	"Player Has Raged",
+
 	"Entity Proximity",
 	"Entity Line of Sight",
+
 	"Key From Other World",
 	"Other World Percentage",
-	"Camera Coordinate Check",
-	"Adjacent Color Special"
+	"Adjacent Color Special",
+	"Monster Age"
 };
 
 static const char effName[][32]={
@@ -1204,6 +1208,8 @@ static void ColorClick2(int id)
 	SetupEffectButtons(t-effStart,(t-effStart)*38+264);
 }
 
+#define ID_COLOR_X	300
+
 static void SpclColorClick(int id)
 {
 	MakeNormalSound(SND_PAINTSPLAT);
@@ -1791,52 +1797,50 @@ static void SetupTriggerButtons(int t,int y)
 			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 2 + 100 * t, 0, 228, y + 17, 1, 1, "is triggered", NULL);
 			break;
 		case TRG_PROXIMITY:
-			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "If", NULL);
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "If any", NULL);
 			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 1 + 100 * t, 0, 60, y + 17, 140, 14, MonsterName(trigger.value), MonsterClick);
-			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 2 + 100 * t, 0, 204, y + 17, 1, 1, "at", NULL);
-			if (trigger.x == 255)
-				sprintf(s, "Anywhere");
-			else
-				sprintf(s, "%d, %d", trigger.x, trigger.y);
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 2 + 100 * t, 0, 210, y + 17, 1, 1, "is within", NULL);
 
-			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 3 + 100 * t, 0, 230, y + 17, 70, 14, s, XY3Click);
-			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 4 + 100 * t, 0, 304, y + 17, 1, 1, "is within", NULL);
+			sprintf(s, "%d", trigger.value2);
+			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 3 + 100 * t, 0, 278, y + 17, 40, 14, s, Number2Click);
 
-			sprintf(s, "%d", effect.value2);
-			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 5 + 100 * t, 0, 350, y + 17, 40, 14, s, Number2Click);
-
-			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 6 + 100 * t, 0, 400, y + 17, 1, 1, "tiles of the player", NULL);
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 4 + 100 * t, 0, 328, y + 17, 1, 1, "tiles of the player", NULL);
 
 			if (trigger.flags & TF_LESS)
-				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 7 + 100 * t, 0, 580, y + 17, 80, 14, "Or Less", LessMoreClick);
+				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 5 + 100 * t, 0, 420, y + 17, 80, 14, "Or Less", LessMoreClick);
 			else if (trigger.flags & TF_MORE)
-				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 7 + 100 * t, 0, 580, y + 17, 80, 14, "Or More", LessMoreClick);
+				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 5 + 100 * t, 0, 420, y + 17, 80, 14, "Or More", LessMoreClick);
 			else
-				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 7 + 100 * t, 0, 580, y + 17, 80, 14, "Exactly", LessMoreClick);
+				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 5 + 100 * t, 0, 420, y + 17, 80, 14, "Exactly", LessMoreClick);
 			break;
 		case TRG_LINESIGHT:
 			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "If", NULL);
 			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 1 + 100 * t, 0, 60, y + 17, 140, 14, MonsterName(trigger.value), MonsterClick);
-			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 2 + 100 * t, 0, 204, y + 17, 1, 1, "at", NULL);
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 2 + 100 * t, 0, 210, y + 17, 1, 1, "at", NULL);
 			if (trigger.x == 255)
 				sprintf(s, "Anywhere");
 			else
 				sprintf(s, "%d, %d", trigger.x, trigger.y);
 
 			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 3 + 100 * t, 0, 230, y + 17, 70, 14, s, XY3Click);
-			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 4 + 100 * t, 0, 304, y + 17, 1, 1, "is within the player's line of sight", NULL);
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 4 + 100 * t, 0, 324, y + 17, 1, 1, "is within LOS and ", NULL);
+
+			sprintf(s, "%d", trigger.value2);
+			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 5 + 100 * t, 0, 400, y + 17, 40, 14, s, Number2Click);
+
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 6 + 100 * t, 0, 450, y + 17, 1, 1, "tiles of Player", NULL);
 			break;
 		case TRG_WRLDKEY: // to do: add keychain compatability?
 			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "If the player has a ", NULL);
-			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 1 + 100 * t, 0, 200, y + 17, 140, 14, GetKeychainName(trigger.value), KeychainClick);
+			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 1 + 100 * t, 0, 193, y + 17, 140, 14, GetKeychainName(trigger.value), KeychainClick);
 
 			if (effect.text[0] != '\0')
 				sprintf(s, "%s", GetWorldTitle(effect.text));
 			else
 				sprintf(s, "??????");
 
-			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 2 + 100 * t, 0, 360, y + 17, 1, 1, "from", NULL);
-			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 3 + 100 * t, 0, 400, y + 17, 250, 14, s, WorldNameClick);
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 2 + 100 * t, 0, 244, y + 17, 1, 1, "from", NULL);
+			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 3 + 100 * t, 0, 293, y + 17, 140, 14, s, WorldNameClick);
 			break;
 		case TRG_WRLDPRC:
 			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "If", NULL);
@@ -1846,7 +1850,7 @@ static void SetupTriggerButtons(int t,int y)
 			else
 				sprintf(s, "??????");
 
-			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 1 + 100 * t, 0, 60, y + 17, 250, 14, s, WorldNameClick);
+			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 1 + 100 * t, 0, 60, y + 17, 140, 14, s, WorldNameClick);
 
 			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 2 + 100 * t, 0, 313, y + 17, 1, 1, "is", NULL);
 
@@ -1861,6 +1865,38 @@ static void SetupTriggerButtons(int t,int y)
 				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 5 + 100 * t, 0, 413, y + 17, 80, 14, "Or More", LessMoreClick);
 			else
 				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 5 + 100 * t, 0, 413, y + 17, 80, 14, "Exactly", LessMoreClick);
+			break;
+		case TRG_AFFLICT:
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 0 + 100 * t, 0, 50, y + 17, 1, 1, "Afflict", NULL);
+			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 1 + 100 * t, 0, 124, y + 17, 140, 14, GetAfflictName(trigger.value), AfflictClick);
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 2 + 100 * t, 0, 228, y + 17, 1, 1, "at", NULL);
+			if (trigger.x == 255)
+				strcpy(s, "Anywhere");
+			else
+				sprintf(s, "%d, %d", effect.x, effect.y);
+			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 3 + 100 * t, 0, 248, y + 17, 75, 14, s, XY3Click);
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 4 + 100 * t, 0, 327, y + 17, 1, 1, "with", NULL);
+			break;
+		case TRG_MONSAGE:
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "If", NULL);
+			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 1 + 100 * t, 0, 60, y + 17, 140, 14, MonsterName(trigger.value), MonsterClick);
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 2 + 100 * t, 0, 204, y + 17, 1, 1, "at", NULL);
+			if (trigger.x == 255)
+				sprintf(s, "Anywhere");
+			else
+				sprintf(s, "%d, %d", trigger.x, trigger.y);
+			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 3 + 100 * t, 0, 230, y + 17, 70, 14, s, XY3Click);
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 4 + 100 * t, 0, 304, y + 17, 1, 1, "is", NULL);
+			sprintf(s, "%0.2f", (float)trigger.value2 / 30.0f);
+			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 5 + 100 * t, 0, 330, y + 17, 40, 14, s, Float3Click);
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 6 + 100 * t, 0, 374, y + 17, 1, 1, "seconds", NULL);
+
+			if (trigger.flags & TF_LESS)
+				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 7 + 100 * t, 0, 462, y + 17, 80, 14, "Or Less", LessMoreClick);
+			else if (trigger.flags & TF_MORE)
+				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 7 + 100 * t, 0, 462, y + 17, 80, 14, "Or More", LessMoreClick);
+			else
+				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 7 + 100 * t, 0, 462, y + 17, 80, 14, "Exactly", LessMoreClick);
 			break;
 	}
 }
@@ -2462,8 +2498,13 @@ static void SetupEffectButtons(int t,int y)
 		case EFF_TIMER: // todo: make it like delayed
 			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "Add", NULL);
 			sprintf(s, "%d", effect.value);
-			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 5 + 100 * t, 0, 80, y + 17, 40, 14, s, NumberClick);
-			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 128, y + 17, 1, 1, "second(s) to the timer", NULL);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 80, y + 17, 40, 14, s, NumberClick);
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 2 + 100 * t, 0, 128, y + 17, 1, 1, "second(s) to the timer", NULL);
+
+			if(effect.flags&EF_NOFX)
+				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,520,y+17,65,14,"No FX",NoFXClick);
+			else
+				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,520,y+17,65,14,"Play FX",NoFXClick);
 			break;
 		case EFF_CAMERAFOCUS:
 			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 60, 14, "Focus camera on", NULL);
@@ -2509,6 +2550,7 @@ static void SetupEffectButtons(int t,int y)
 				sprintf(s, "%d, %d", effect.x, effect.y);
 			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 3 + 100 * t, 0, 248, y + 17, 75, 14, s, XY3Click);
 			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 4 + 100 * t, 0, 327, y + 17, 1, 1, "with", NULL);
+			break;
 
 	}
 }
@@ -2534,7 +2576,7 @@ static void SpecialEditSetupButtons(void)
 
 	s[1] = '\0';
 	s[0] = spcl.color;
-	MakeButton(BTN_COLOR, ID_COLOR, 0, 390, 5, 14, 14, s, SpclColorClick);
+	MakeButton(BTN_COLOR, ID_COLOR, 0, ID_COLOR_X, 5, 14, 14, s, SpclColorClick);
 
 	for(i=0;i<5;i++)
 	{
@@ -2898,7 +2940,7 @@ void SpecialEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 	Print(200,2,s,0,1);
 	DrawFillBox(0,240,639,240,31);
 
-	Print(230, 2, "Color", 0, 1);
+	Print(275, 2, "Color", 0, 1);
 	//sprintf(s, "#%d", spcl.color%256);
 	//Print(280, 2, s, 0, 1);
 

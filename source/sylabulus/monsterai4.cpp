@@ -5326,7 +5326,7 @@ void AI_Patrol(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			me->dx=0;
 			me->dy=0;
 			me->reload=0;
-			if(goodguy->aiType==MONS_BOUAPHA)
+			if(goodguy->aiType==MONS_BOUAPHA) // this is the player
 				player.spotted=30*8;
 			me->mind=2;	// start clapping!
 		}

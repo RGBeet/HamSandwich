@@ -1157,7 +1157,14 @@ void UpdateGuys(Map *map,world_t *world)
 
 	speedClock++;
 
-	player.clock++;
+	if (++player.clock % 30 == 0)
+	{
+		player.timer--;
+		if (player.timer < 0)
+			player.timer = 0;
+		else if (player.timer > 999)
+			player.timer = 999;
+	}
 
 	if(player.ability[ABIL_BRAIN] && profile.brainRadar && goodguy)
 	{
@@ -2954,6 +2961,55 @@ byte CheckMonsterLife(int x,int y,int type,int life,byte flags)
 	return 0;
 }
 
+byte CheckMonsterAge(int x, int y, int type, int frames, byte flags)
+{
+	int i;
+
+	for(i=0;i<maxGuys;i++)
+	{
+		if(guys[i].type!=MONS_NONE && guys[i].type!=MONS_NOBODY && (x==255 || (guys[i].mapx==x && guys[i].mapy==y)))
+		{
+			switch(type)
+			{
+				case MONS_ANYBODY:
+					break;
+				case MONS_GOODGUY:
+					if(!guys[i].friendly)
+						continue;
+					break;
+				case MONS_BADGUY:
+					if(guys[i].friendly)
+						continue;
+					break;
+				case MONS_NONPLAYER:
+					if(guys[i].aiType==MONS_BOUAPHA)
+						continue;
+					break;
+				case MONS_PLAYER:
+					if(guys[i].aiType!=MONS_BOUAPHA)
+						continue;
+					break;
+				case MONS_TAGGED:
+					if(&guys[i]!=TaggedMonster())
+						continue;
+					break;
+				default:
+					if(guys[i].type!=type)
+						continue;
+					break;
+			}
+
+			if(guys[i].age==frames)
+				return 1;
+			else if((flags&TF_MORE) && (guys[i].age>frames))
+				return 1;
+			else if((flags&TF_LESS) && (guys[i].age<frames))
+				return 1;
+		}
+	}
+	return 0;
+}
+
 byte CheckMonsterAwake(int x,int y,int type,byte flags)
 {
 	int i;
@@ -3050,6 +3106,180 @@ byte CheckMonsterColor(int x,int y,int type,byte color)
 
 			if(guys[i].toColor==color)
 				return 1;
+		}
+	}
+	return 0;
+}
+
+
+
+byte CheckMonsterOuch(int x, int y, int type, byte flags)
+{
+	int i;
+
+	for (i = 0;i < maxGuys;i++)
+	{
+		switch (type)
+		{
+		case MONS_ANYBODY:
+			break;
+		case MONS_GOODGUY:
+			if (!guys[i].friendly)
+				continue;
+			break;
+		case MONS_BADGUY:
+			if (guys[i].friendly)
+				continue;
+			break;
+		case MONS_NONPLAYER:
+			if (guys[i].aiType == MONS_BOUAPHA)
+				continue;
+			break;
+		case MONS_PLAYER:
+			if (guys[i].aiType != MONS_BOUAPHA)
+				continue;
+			break;
+		case MONS_TAGGED:
+			if (&guys[i] != TaggedMonster())
+				continue;
+			break;
+		default:
+			if (guys[i].type != type)
+				continue;
+			break;
+		}
+
+		if (guys[i].ouch == 4)
+			return 1;
+	}
+	return 0;
+}
+
+byte CheckMonsterProximity(int type, int proximity)
+{
+	int i;
+	for (i = 0;i < maxGuys;i++)
+	{
+		if (guys[i].type != MONS_NONE
+			&& guys[i].type != MONS_NOBODY)
+		{
+			switch (type)
+			{
+			case MONS_ANYBODY:
+				break;
+			case MONS_GOODGUY:
+				if (!guys[i].friendly)
+					continue;
+				break;
+			case MONS_BADGUY:
+				if (guys[i].friendly)
+					continue;
+				break;
+			case MONS_NONPLAYER:
+				if (guys[i].aiType == MONS_BOUAPHA)
+					continue;
+				break;
+			case MONS_PLAYER:
+				if (guys[i].aiType != MONS_BOUAPHA)
+					continue;
+				break;
+			case MONS_TAGGED:
+				if (&guys[i] != TaggedMonster())
+					continue;
+				break;
+			default:
+				if (guys[i].type != type)
+					continue;
+				break;
+			}
+
+			if (goodguy->mapx < guys[i].mapx && -goodguy->mapx + guys[i].mapx < proximity)
+			{
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+byte StealthyCheck(Guy* goodguy)
+{
+	// TODO: fix stealth check so ANYONE can be stealthy
+	if (goodguy->aiType == MONS_BOUAPHA and player.stealthy and !player.spotted) // player cannot be recently spottted
+		return 1;
+	else
+		return 0;
+}
+
+// is the good guy in sight?!
+byte GoodguyInSight(Guy* me, Guy* goodguy, byte facing)
+{
+	if (!goodguy || goodguy->type == MONS_NOBODY or StealthyCheck(goodguy))
+		return 0;
+
+	static const int dirX[8] = { 1, 1, 0,-1,-1,-1, 0, 1 };
+	static const int dirY[8] = { 0, 1, 1, 1, 0,-1,-1,-1 };
+
+	int dx = goodguy->mapx - me->mapx;
+	int dy = goodguy->mapy - me->mapy;
+
+	int forward = dx * dirX[facing] + dy * dirY[facing];
+
+	// Behind us or too far away
+	if (forward <= 0 || forward >= 12)
+		return 0;
+
+	// Perpendicular distance from the center line
+	int sideways = abs(dx * dirY[facing] - dy * dirX[facing]);
+
+	// Cone gets wider with distance
+	if (sideways > 2 + forward / 2)
+		return 0;
+
+	return curMap->FindGuy(me->mapx, me->mapy, 8, goodguy);
+}
+
+byte CheckMonsterLOS(int x, int y, int type, int radius)
+{
+	int i;
+	for (i = 0;i < maxGuys;i++)
+	{
+		if (guys[i].type != MONS_NONE && guys[i].type != MONS_NOBODY)
+		{
+			switch (type)
+			{
+			case MONS_ANYBODY:
+				break;
+			case MONS_GOODGUY:
+				if (!guys[i].friendly)
+					continue;
+				break;
+			case MONS_BADGUY:
+				if (guys[i].friendly)
+					continue;
+				break;
+			case MONS_NONPLAYER:
+				if (guys[i].aiType == MONS_BOUAPHA)
+					continue;
+				break;
+			case MONS_PLAYER:
+				if (guys[i].aiType != MONS_BOUAPHA)
+					continue;
+				break;
+			case MONS_TAGGED:
+				if (&guys[i] != TaggedMonster())
+					continue;
+				break;
+			default:
+				if (guys[i].type != type)
+					continue;
+				break;
+			}
+			if (GoodguyInSight(&guys[i],goodguy,guys[i].facing))
+			{
+				if (curMap->FindGuy(guys[i].mapx, guys[i].mapy, 8, goodguy))
+					return 1;
+			}
 		}
 	}
 	return 0;

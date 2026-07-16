@@ -240,6 +240,11 @@ void DefaultTrigger(trigger_t *trig,int x,int y)
 			trig->value = 0;
 			trig->value2 = 0;
 			break;
+		case TRG_MONSAGE:
+			trig->value = MONS_BOUAPHA;
+			trig->value2 = 0;
+			trig->x = 255;
+			break;
 	}
 }
 
@@ -381,6 +386,9 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 		case EFF_CHAT:
 			eff->value=TEXTFILE_NORMAL;
 			strcpy(eff->text,"");
+			break;
+		case EFF_TIMER:
+			eff->value = 1;
 			break;
 		case EFF_CAMERAFOCUS:
 			eff->x = 255;
@@ -565,6 +573,18 @@ void RepairSpecialToTile(std::span<special_t> list, const SwapTable &table)
 			}
 		}
 	}
+}
+
+byte CheckTimer(int seconds, byte flags)
+{
+	if (player.timer == seconds)
+		return 1;
+	else if ((flags & TF_LESS) && player.timer < seconds)
+		return 1;
+	else if ((flags & TF_MORE) && player.timer > seconds)
+		return 1;
+	else
+		return 0;
 }
 
 
@@ -1304,12 +1324,42 @@ byte TriggerYes(special_t *me,trigger_t *t,Map *map)
 			else
 				answer=0;
 			break;
+		case TRG_TIMER:
+			answer = CheckTimer(t->value, t->flags);
+			break;
+		case TRG_HURT:
+			answer = CheckMonsterOuch(t->x, t->y, t->value, t->flags);
+			break;
+		case TRG_AFFLICT:
+			break;
 		case TRG_BULLETRECT:
 			i=CountBulletsInRect(t->value,t->x,t->y,(t->value2%256),(t->value2/256));	// count how many of this type there are in the rect
 			if(i>0)
 				answer=1;
 			else
 				answer=0;
+			break;
+		case TRG_RAGEBAR:
+			if (i == player.rage)
+				answer = 1;
+			else if (i < player.rage)
+				answer = 1;
+			else if (i > player.rage)
+				answer = 1;
+			else
+				answer = 0;
+			break;
+		case TRG_HASRAGED: // TODO: make it so it only activates at START of rage
+			if (GetGameMode() == GAMEMODE_RAGE)
+				answer = 1;
+			else
+				answer = 0;
+			break;
+		case TRG_PROXIMITY:
+			answer = CheckMonsterProximity(t->value, t->value2);
+			break;
+		case TRG_LINESIGHT:
+			answer = CheckMonsterLOS(t->x, t->y, t->value, t->value2);
 			break;
 		case TRG_CHAINCOLOR:
 			for (i = 0;i < nextEvent;i++)
@@ -1340,15 +1390,18 @@ byte TriggerYes(special_t *me,trigger_t *t,Map *map)
 			for (i = 0;i < NUM_TRIGGERS;i++)
 				if (t == &me->trigger[i])
 					effNum = i;
-			float worldPercentage = (float)GetWorldProgress(me->effect[effNum].text)->percentage;
-			if (t->value == worldPercentage)
+			i = (float)GetWorldProgress(me->effect[effNum].text)->percentage;
+			if (t->value == i)
 				answer = 1;
-			else if (t->value < worldPercentage && (t->flags & TF_MORE))
+			else if (t->value < i && (t->flags & TF_MORE))
 				answer = 1;
-			else if (t->value > worldPercentage && (t->flags & TF_LESS))
+			else if (t->value > i && (t->flags & TF_LESS))
 				answer = 1;
 			else
 				answer = 0;
+			break;
+		case TRG_MONSAGE:
+			answer = CheckMonsterAge(t->x, t->y, t->value, t->value2, t->flags);
 			break;
 	}
 
@@ -1733,6 +1786,9 @@ void SpecialEffect(special_t *me,Map *map)
 				break;
 			case EFF_CHAT:
 				coro::launch(std::bind(ShowImageOrFlic, me->effect[i].text, (me->effect[i].flags & EF_NOFX), me->effect[i].value));
+				break;
+			case EFF_TIMER:
+				player.timer += me->effect[i].value;
 				break;
 			case EFF_CAMERAFOCUS:
 				//FocusCameraOnPoint(me->effect[i].x, me->effect[i].y);

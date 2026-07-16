@@ -55,10 +55,15 @@ class Guy final
 		byte friendly;
 
 		word mindControl;
+
 		Guy *target;
 		Guy *parent;
+		Guy *lastAttacker; // last guy to have attacked
+
 		int hp,maxHP;
 		int type;
+		int age;		// # of frames
+
 		int rectx,recty,rectx2,recty2;	// for collision checks
 		word ID;	// just a copy of the guy's number
 		byte item;	// what item you're carrying
@@ -81,7 +86,9 @@ void EditorUpdateGuys(Map *map);
 void RenderGuys(byte light);
 Guy *AddGuy(int x,int y,int z,int type,byte friendly);
 Guy *AddBaby(int x,int y,int z,int type,Guy *me);
+
 Guy *GetGuy(word w);
+
 void DeleteGuy(int x,int y,int type);
 void AddMapGuys(Map *map);
 Guy *FindVictim(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t *world,byte friendly);
@@ -126,7 +133,15 @@ void SetMonsterName(byte fx,int x,int y,int type,char *name);
 void SetMonsterGraphics(byte fx,int x,int y,int type,char *name);
 void SetMonsterColor(byte fx,int x,int y,int type,int colCode);
 void SetMonsterBright(byte fx,int x,int y,int type,int bright);
+
 byte CheckMonsterColor(int x,int y,int type,byte color);
+byte CheckMonsterProximity(int type,int proximity);
+byte CheckMonsterLOS(int x, int y, int type, int radius);
+byte CheckMonsterOuch(int x, int y, int type, byte flags);
+byte CheckMonsterAge(int x, int y, int type, int frames, byte flags);
+
+byte GoodguyInSight(Guy* me, Guy* goodguy, byte facing);
+
 Guy *GetGuyOfAIType(int type);
 
 void FindMonsterBrain(int myx,int myy);

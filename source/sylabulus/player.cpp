@@ -104,6 +104,7 @@ void InitPlayer(byte level,const char *fname)
 	player.cheated=0;
 	player.bestCombo=0;
 	player.cheesePower=0;
+	player.timer=0;
 
 	for(i=1;i<6;i++)
 	{
@@ -2033,8 +2034,11 @@ static const char afflictName[][16] = {
 	"None",
 	"Poison",
 	"Freeze",
+	"Burn",			// new
+	"Weakened",
+	"Strength"
 };
-static_assert(std::size(afflictName) == 3, "Must give new affliction a name");
+static_assert(std::size(afflictName) == 6, "Must give new affliction a name");
 
 const char* GetAfflictName(byte afflict)
 {
@@ -2043,11 +2047,11 @@ const char* GetAfflictName(byte afflict)
 	return "???";
 }
 
-static const char keychainName[][16] = {
-	"Hammer Key",
-	"Rocket Key",
-	"Squash Key",
-	"Pumpkin Key",
+static const char keychainName[][24] = {
+	"Pumpkin Keychain",
+	"Hammer Keychain",
+	"Rocket Keychain",
+	"Squash Keychain",
 	"Key of Lunacy"
 };
 static_assert(std::size(keychainName) == 5, "Must give new keychain a name");

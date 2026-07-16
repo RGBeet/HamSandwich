@@ -73,10 +73,13 @@ struct player_t
 	int  ammo;
 	byte reload;
 	byte wpnReload;
+
 	int life;
 	int brains;
 	int coins;
 	int candles;
+	int timer;
+
 	byte pushPower;	// for pushing pushy blocks
 	HammerFlags hammerFlags;
 
