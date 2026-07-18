@@ -777,6 +777,30 @@ int BlowSmoke(int x,int y,int z,int dz)
 	return -1;
 }
 
+int BlowColorSmoke(int x,int y,int z,int dz, byte color)
+{
+	int i;
+
+	for(i=0;i<maxParticles;i++)
+	{
+		if(!particleList[i].Alive())
+		{
+			particleList[i].x=x;
+			particleList[i].y=y;
+			particleList[i].z=z;
+			particleList[i].dx=0;
+			particleList[i].dy=0;
+			particleList[i].dz=dz;
+			particleList[i].life=6*4-Random(8);
+			particleList[i].size=6;
+			particleList[i].color=64;
+			particleList[i].type=PART_SMOKE;
+			return i;
+		}
+	}
+	return -1;
+}
+
 void SmokeTile(int x,int y)
 {
 	int i,j;
@@ -1345,4 +1369,118 @@ int CountParticles()
 		if (particleList[i].Alive())
 			++n;
 	return n;
+}
+
+/*
+	PART_RAIN,
+	PART_SNOW,
+	PART_DIRT,
+	PART_HAMMER,
+	PART_SLIME,
+	PART_SMOKE,
+	PART_BOOM,
+	PART_WATER,
+	PART_LIGHTNING,
+	PART_STINKY,
+	PART_GLASS,
+	PART_BUBBLE,
+	PART_COLOR,
+	PART_RADAR,
+*/
+
+static const byte particleVals[] = {
+	PART_RAIN,
+	PART_SNOW,
+	PART_DIRT,
+	PART_HAMMER,
+	PART_SLIME,
+	PART_SMOKE,
+	PART_BOOM,
+	PART_WATER,
+	PART_LIGHTNING,
+	PART_STINKY,
+	PART_GLASS,
+	PART_BUBBLE,
+	PART_COLOR,
+	PART_RADAR,
+};
+
+void MakeParticle(int x, int y, int z, int dx, int dy, int dz, int type, int size, int life)
+{
+	int i;
+
+	for (i = 0;i < maxParticles;i++)
+	{
+		if (!particleList[i].Alive())
+		{
+
+			particleList[i].x = x;
+			particleList[i].y = y;
+			particleList[i].z = z; //(10 + Random(20)) << FIXSHIFT;
+			particleList[i].dx = dx;
+			particleList[i].dy = dy;
+			particleList[i].dz = dz;
+			particleList[i].size = size; // 2
+			particleList[i].life = life; 20 + Random(30); // 20+Random(30)
+			particleList[i].type = type;
+			break;
+		}
+	}
+}
+
+void DoParticleEffect(int x, int y, byte type)
+{
+	int xx = x*FIXAMT;
+	int yy = y*FIXAMT;
+	int z = (Random(4) + 8)*FIXAMT;
+
+	switch (particleVals[type])
+	{
+		case PART_RAIN:
+			ExplodeParticles2(PART_RAIN, xx, yy, z + FIXAMT * 40, 10, 8);
+			break;
+		case PART_SNOW:
+			ExplodeParticles2(PART_SNOW, xx, yy, z + FIXAMT*40, 10, 8);
+			break;
+		case PART_DIRT:
+			ExplodeParticles2(PART_DIRT, xx, yy, z, 12, 6);
+			break;
+		case PART_HAMMER:
+			ExplodeParticles(PART_HAMMER, xx, yy, z, 6);
+			break;
+		case PART_SLIME:
+			ExplodeParticles(PART_SLIME, xx, yy, z, 6);
+			break;
+		case PART_SMOKE:
+			BlowColorSmoke(xx, yy, z, FIXAMT / 16, 96);
+			break;
+		case PART_BOOM:
+			BlowUpGuy((xx >> FIXSHIFT) - 32, (yy >> FIXSHIFT) - 24,
+				(xx >> FIXSHIFT) + 32, (yy >> FIXSHIFT) + 24, 0, 1);
+			break;
+		case PART_WATER:
+			ExplodeParticles(PART_WATER, xx, yy, z, 6);
+			break;
+		case PART_LIGHTNING: // idk how to work this yet
+			break;
+		case PART_STINKY:
+			StinkySteam(xx - FIXAMT * 20 + Random(FIXAMT * 40),
+				yy - FIXAMT * 20 + Random(FIXAMT * 40),
+				z + FIXAMT * 40, FIXAMT * 2);
+			break;
+		case PART_GLASS:
+			GlassShatter(xx - 40, yy - 30, xx + 40, yy + 30, z, 50);
+			break;
+		case PART_BUBBLE:
+			BlowBubble(xx, yy, z, FIXAMT / 16);
+			break;
+		case PART_COLOR:
+			ColorRing(8, xx, yy, z + FIXAMT*5, 16, 4);
+			break;
+		case PART_RADAR: // needs fixing
+			TrackParticle(1, xx, yy + Random(40) - 20, xx, yy + Random(30)-20);
+			break;
+		default:
+			break;
+	}
 }

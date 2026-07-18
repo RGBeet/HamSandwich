@@ -52,6 +52,7 @@ enum : byte
 
 const char* GetAfflictName(byte weapon);
 const char* GetKeychainName(byte keychain);
+const char* GetParticleName(byte particle);
 
 struct player_t
 {

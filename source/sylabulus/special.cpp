@@ -15,6 +15,7 @@
 #include "palettes.h"
 #include "chat.h"
 #include "worldselect.h"
+#include "particle.h"
 
 static std::span<special_t> spcl;  // Full special storage array.
 static int numSpecials;  // Specials >= this aren't set.
@@ -1799,6 +1800,12 @@ void SpecialEffect(special_t *me,Map *map)
 			case EFF_CAMERASCROLL:
 				//SetCameraScroll(me->effect[i].value, me->effect[i].value2);
 				break;
+			case EFF_PARTICLE:
+				if (me->effect[i].value > 14)
+					continue;
+				else
+					DoParticleEffect(me->effect[i].x * TILE_WIDTH + TILE_WIDTH / 2, me->effect[i].y * TILE_HEIGHT + TILE_HEIGHT / 2,me->effect[i].value);
+				
 		}
 	}
 	if(me->uses>0)
@@ -2005,6 +2012,8 @@ void AdjustSpecialCoords(special_t *me,int dx,int dy)
 				break;
 			case TRG_PLAYAS:
 				break;
+			case TRG_AFFLICT:
+			case TRG_MONSAGE:
 			case TRG_MONSCOLOR:
 				me->trigger[i].x+=dx;
 				me->trigger[i].y+=dy;
@@ -2188,12 +2197,18 @@ void AdjustSpecialEffectCoords(special_t *me,int dx,int dy)
 				me->effect[i].x+=dx;
 				me->effect[i].y+=dy;
 				break;
+			case EFF_MARKASBOSS:
+			case EFF_AFFLICT:
 			case EFF_CHANGEBULLET:
 				if(me->effect[i].x!=255)
 				{
 					me->effect[i].x+=dx;
 					me->effect[i].y+=dy;
 				}
+				break;
+			case EFF_PARTICLE:
+				me->effect[i].x += dx;
+				me->effect[i].y += dy;
 				break;
 		}
 	}

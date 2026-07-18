@@ -265,10 +265,10 @@ intface_t defaultSetup[NUM_INTF]={
 	 76,-20,
 	 0,0,
 	 0},
-	{SCRWID/2 - 50,SCRHEI+20,SCRWID/2 - 50,SCRHEI - 20,	// time
+	{SCRWID/2-50,SCRHEI+20,SCRWID/2-50,SCRHEI+20,	// COUNTDOWN
 	 SPR_TIME,
 	 IV_TIME,2,
-	 -19,3,
+	 12,3,
 	 0,0,
 	 20},
 };
@@ -1052,6 +1052,14 @@ void UpdateInterface(Map *map)
 	if (yy > SCRHEI - 30)
 		yy = SCRHEI - 30;
 
+	if (player.timer > 0)
+	{
+		intf[INTF_COUNTDOWN].ty = SCRHEI-20;
+	}
+	else
+	{
+		intf[INTF_COUNTDOWN].ty = SCRHEI+20;
+	}
 
 	if (player.comboClock && player.combo > 1)
 	{
@@ -1207,7 +1215,7 @@ void RenderInterface(MGLDraw *mgl)
 	if (shopping)
 		return RenderInterfaceShopping(mgl);
 
-	int i;
+	int i,j,k;
 	char combo[16];
 
 	//sprintf(combo,"%d:%02d:%02d",(profile.progress.totalTime/(30*60*60)),(profile.progress.totalTime/(30*60))%60,(profile.progress.totalTime/30)%60);
@@ -1261,10 +1269,20 @@ void RenderInterface(MGLDraw *mgl)
 				DrawSmallNumber(intf[i].x + intf[i].vOffX, intf[i].y + intf[i].vOffY, intf[i].value, intf[i].valueLength, mgl);
 				break;
 			case IV_TIME:
-				intfaceSpr->GetSprite(SPR_COLON+1)->Draw(intf[i].x+intf[i].vOffX-21, intf[i].y+intf[i].vOffY, mgl);
-				DrawSmallNumber(intf[i].x+intf[i].vOffX-21, intf[i].y+intf[i].vOffY, intf[i].value/60, intf[i].valueLength, mgl);
-				intfaceSpr->GetSprite(SPR_COLON)->Draw(intf[i].x+intf[i].vOffX, intf[i].y+intf[i].vOffY, mgl);
-				DrawSmallNumber(intf[i].x+intf[i].vOffX+7,intf[i].y+intf[i].vOffY, intf[i].value%60,intf[i].valueLength,mgl, 2);
+				if (i != INTF_COUNTDOWN)
+				{
+					intfaceSpr->GetSprite(SPR_COLON + 1)->Draw(intf[i].x + intf[i].vOffX - 21, intf[i].y + intf[i].vOffY, mgl);
+					DrawSmallNumber(intf[i].x + intf[i].vOffX - 21, intf[i].y + intf[i].vOffY, intf[i].value / 60, intf[i].valueLength, mgl);
+					intfaceSpr->GetSprite(SPR_COLON)->Draw(intf[i].x + intf[i].vOffX, intf[i].y + intf[i].vOffY, mgl);
+					DrawSmallNumber(intf[i].x + intf[i].vOffX + 7, intf[i].y + intf[i].vOffY, intf[i].value % 60, intf[i].valueLength, mgl, 2);
+				}
+				else // countdown gets its own one
+				{
+					DrawBigNumber(intf[i].x + intf[i].vOffX, intf[i].y + intf[i].vOffY, (intf[i].value / 60), intf[i].valueLength, mgl);
+					intfaceSpr->GetSprite(118)->Draw(intf[i].x + intf[i].vOffX + 35, intf[i].y + intf[i].vOffY, mgl);
+					//intfaceSpr->GetSprite(SPR_COLON + 1)->Draw(intf[i].x + intf[i].vOffX + 40, intf[i].y + intf[i].vOffY, mgl);
+					DrawBigNumber(intf[i].x + intf[i].vOffX + 48, intf[i].y + intf[i].vOffY, intf[i].value % 60, intf[i].valueLength, mgl, 2);
+				}
 				break;
 			case IV_VERTMETER:
 				DrawVertMeter(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value,intf[i].valueLength,mgl, intf[i].otherVal);

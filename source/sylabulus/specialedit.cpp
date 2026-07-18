@@ -188,12 +188,13 @@ static const char effName[][32]={
 	"Summon Bullet",
 	"Change Bullet",
 	"Initiate Chat Dialogue",
-	"Set Countdown Clock",
+	"Adjust Countdown Clock",
 	"Focus Camera on Point",
 	"Focus Camera on Entity",
 	"Scroll Camera",
 	"Mark Entity as Boss",
-	"Set Entity Status Effect"
+	"Set Entity Status Effect",
+	"Create Particle"
 };
 
 static void SetupTriggerButtons(int t,int y);
@@ -1339,7 +1340,21 @@ static void KeychainClick(int id)
 	if (spcl.trigger[t].value >= 5) // loonykey
 		spcl.trigger[t].value = 0;
 
-	SetupTriggerButtons(t - trgStart, (t - trgStart) * 38 + 30);
+	SetupEffectButtons(curEff - effStart, (curEff - effStart) * 38 + 264);
+}
+
+static void ParticleClick(int id)
+{
+	curEff = effStart + (id - ID_EFF0) / 100;
+
+	spcl.effect[curEff].value++;
+	if (spcl.effect[curEff].value >= 14)
+		spcl.effect[curEff].value = 0;
+
+	if (rightClick)
+		spcl.effect[curEff].value = 0;
+
+	SetupEffectButtons(curEff - effStart, (curEff - effStart) * 38 + 264);
 }
 
 static void Toggle2Click(int id)
@@ -2542,7 +2557,7 @@ static void SetupEffectButtons(int t,int y)
 			break;
 		case EFF_AFFLICT:
 			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 50, y + 17, 1, 1, "Afflict", NULL);
-			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 124, y + 17, 140, 14, GetAfflictName(effect.value), AfflictClick);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 94, y + 17, 140, 14, MonsterName(effect.value), MonsterClick);
 			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 2 + 100 * t, 0, 228, y + 17, 1, 1, "at", NULL);
 			if (effect.x == 255)
 				strcpy(s, "Anywhere");
@@ -2550,8 +2565,18 @@ static void SetupEffectButtons(int t,int y)
 				sprintf(s, "%d, %d", effect.x, effect.y);
 			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 3 + 100 * t, 0, 248, y + 17, 75, 14, s, XY3Click);
 			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 4 + 100 * t, 0, 327, y + 17, 1, 1, "with", NULL);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 5 + 100 * t, 0, 464, y + 17, 140, 14, GetAfflictName(effect.value2), AfflictClick);
 			break;
-
+		case EFF_PARTICLE:
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 50, y + 17, 1, 1, "Make particle of type", NULL);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 274, y + 17, 70, 14, GetParticleName(effect.value), ParticleClick);
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 2 + 100 * t, 0, 378, y + 17, 1, 1, "at", NULL);
+			if (effect.x == 255)
+				strcpy(s, "Anywhere");
+			else
+				sprintf(s, "%d, %d", effect.x, effect.y);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 3 + 100 * t, 0, 450, y + 17, 75, 14, s, XY3Click);
+			break;
 	}
 }
 

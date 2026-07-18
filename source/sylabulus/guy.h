@@ -2,10 +2,12 @@
 #define GUY_H
 
 #include <memory>
+#include <vector>
 #include "map.h"
 #include "monster.h"
 #include "jamulspr.h"
 #include "display.h"
+#include "pathfinding.h"
 
 #define ACTION_IDLE	0
 #define ACTION_BUSY 1

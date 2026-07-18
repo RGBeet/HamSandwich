@@ -2062,3 +2062,28 @@ const char* GetKeychainName(byte keychain)
 		return keychainName[keychain];
 	return "???";
 }
+
+static const char particleName[][24] = {
+	"Rain",
+	"Snow",
+	"Dirt",
+	"Hammer Bits",
+	"Slime",
+	"Smoke",
+	"Explosion",
+	"Water",
+	"Lightning",
+	"Garlic Stink",
+	"Stained Glass",
+	"Bubble",
+	"Colorful",
+	"Radar"
+};
+static_assert(std::size(particleName) == 14, "Must give new particle a name");
+
+const char* GetParticleName(byte particle)
+{
+	if (particle < 14)
+		return particleName[particle];
+	return "???";
+}

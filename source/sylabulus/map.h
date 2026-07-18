@@ -7,6 +7,7 @@
 #include "special.h"
 #include "string_extras.h"
 #include "bitflags.h"
+#include "pathfinding.h"
 
 constexpr int MAX_LIGHT = 16;
 constexpr int MIN_LIGHT = -32;
@@ -156,6 +157,7 @@ class Map
 		word itemDrops;	// how often items drop, a fixshifted percent
 		std::array<mapBadguy_t, MAX_MAPMONS> badguy;
 		std::array<special_t, MAX_SPECIAL> special;
+
 	private:
 		void LOSPoints(int x,int y,int curx,int cury,int *p1x,int *p1y,int *p2x,int *p2y);
 		void RenderStars(int camX, int camY);

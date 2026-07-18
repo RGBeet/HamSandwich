@@ -48,9 +48,9 @@ Map::Map(byte width, byte height, const char *name)
 }
 
 Map::Map(const Map *m)
+	: width(m->width)
+	, height(m->height)
 {
-	width=m->width;
-	height=m->height;
 	ham_strcpy(song,m->song);
 	flags=m->flags;
 	numBrains=m->numBrains;
@@ -60,6 +60,7 @@ Map::Map(const Map *m)
 
 	map=(mapTile_t *)calloc(sizeof(mapTile_t)*width*height,1);
 	memcpy(map,m->map,sizeof(mapTile_t)*width*height);
+
 	badguy = m->badguy;
 	special = m->special;
 }

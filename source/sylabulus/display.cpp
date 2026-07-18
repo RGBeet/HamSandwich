@@ -118,7 +118,7 @@ void LoadText(const char *nm,byte mode)
 			y=26;
 			while(stream.getline(line, std::size(line)) && y<270-18)
 			{
-				PrintUnGlow(27,y,VariableMsg(line),2);
+				PrintUnGlow(27,y,VariableMsg(line),1);
 				y+=18;
 			}
 			break;

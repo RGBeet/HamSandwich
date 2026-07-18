@@ -115,7 +115,9 @@
 #define EFF_MARKASBOSS		43	// mark a monster as a boss, which means its HP contributes to the boss bar and it will be treated as a boss for other purposes (like the "boss" trigger)
 #define EFF_AFFLICT			44	// afflict a monster with a status effect for N frames (like poison, burn, etc.)
 
-#define EFF_MAX				45
+#define EFF_PARTICLE		45	// summon particle type N at X,Y
+
+#define EFF_MAX				46
 
 #define OLD_MAX_TRIGGERS	33
 #define OLD_MAX_EFFECTS		38

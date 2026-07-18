@@ -85,6 +85,8 @@ void TrackParticle(byte color,int x,int y,int tx,int ty);
 void HealRing(byte color,int x,int y,int z,byte num,byte force);
 void TeamChangeRing(byte color,int x,int y,int z,byte num,byte force);
 
+void DoParticleEffect(int x,int y, byte type);
+
 void SmokeTile(int x,int y);
 void JackFrostWeather(int x,int y);
 
