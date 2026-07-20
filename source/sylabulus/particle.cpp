@@ -371,6 +371,23 @@ void Particle::Update(Map *map)
 				// get dimmer with each frame
 				color/=2;
 				break;
+			case PART_FIRE: // loonyland
+				dz+=FIXAMT+Random(FIXAMT/4);
+				Dampen(&dx,FIXAMT/8);
+				Dampen(&dy,FIXAMT/8);
+				dx=dx-FIXAMT/8+Random(FIXAMT/4);
+				dy=dy-FIXAMT/8+Random(FIXAMT/4);
+				if(size>0)
+					size--;
+				else
+					life=0;
+				if(life>40)
+					color=191;
+				else if(life>20)
+					color=160+(life-20);
+				else
+					color=128+life;
+				break;
 		}
 
 
@@ -745,6 +762,12 @@ void RenderParticles(void)
 						particleList[i].z>>FIXSHIFT,
 						255,particleList[i].life*4-8,
 						GetMonsterSprite(MONS_COUNTESS,ANIM_IDLE,0,0),DISPLAY_DRAWME|DISPLAY_GLOW);
+			else if(particleList[i].type==PART_FIRE)
+			{
+				ParticleDraw(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
+							 particleList[i].z>>FIXSHIFT,particleList[i].color,particleList[i].size/4,
+							 DISPLAY_DRAWME|DISPLAY_PARTICLE|DISPLAY_GLOW);
+			}
 			else
 				ParticleDraw(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
 							 particleList[i].z>>FIXSHIFT,particleList[i].color,particleList[i].size,
@@ -1339,6 +1362,33 @@ void JackFrostWeather(int x,int y)
 	}
 }
 
+void Burn(int x, int y, int z)
+{
+	int i;
+	byte num;
+
+	num = (byte)Random(8) + 1;
+	for (i = 0;i < maxParticles;i++)
+	{
+		if (!particleList[i].Alive())
+		{
+			particleList[i].x = x - FIXAMT * 2 + Random(FIXAMT * 4);
+			particleList[i].y = y;
+			particleList[i].z = z - FIXAMT * 2 + Random(FIXAMT * 4);
+			particleList[i].dx = -FIXAMT * 2 + Random(FIXAMT * 4);
+			particleList[i].dy = 0;
+			particleList[i].dz = Random(FIXAMT * 2);
+			particleList[i].color = 191;
+			particleList[i].life = 10 + Random(30);
+			particleList[i].size = 8 * 4 + (byte)Random(4 * 4);
+			particleList[i].type = PART_FIRE;
+			if (--num == 0)
+				break;
+		}
+	}
+}
+
+
 void TrackParticle(byte color,int x,int y,int tx,int ty)
 {
 	int i;
@@ -1370,24 +1420,6 @@ int CountParticles()
 			++n;
 	return n;
 }
-
-/*
-	PART_RAIN,
-	PART_SNOW,
-	PART_DIRT,
-	PART_HAMMER,
-	PART_SLIME,
-	PART_SMOKE,
-	PART_BOOM,
-	PART_WATER,
-	PART_LIGHTNING,
-	PART_STINKY,
-	PART_GLASS,
-	PART_BUBBLE,
-	PART_COLOR,
-	PART_RADAR,
-*/
-
 static const byte particleVals[] = {
 	PART_RAIN,
 	PART_SNOW,
@@ -1403,6 +1435,7 @@ static const byte particleVals[] = {
 	PART_BUBBLE,
 	PART_COLOR,
 	PART_RADAR,
+	PART_FIRE,
 };
 
 void MakeParticle(int x, int y, int z, int dx, int dy, int dz, int type, int size, int life)
@@ -1479,6 +1512,9 @@ void DoParticleEffect(int x, int y, byte type)
 			break;
 		case PART_RADAR: // needs fixing
 			TrackParticle(1, xx, yy + Random(40) - 20, xx, yy + Random(30)-20);
+			break;
+		case PART_FIRE:
+			Burn(xx, yy, z + FIXAMT * 20);
 			break;
 		default:
 			break;

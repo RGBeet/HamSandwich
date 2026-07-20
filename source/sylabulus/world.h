@@ -56,6 +56,8 @@ struct world_t
 	std::span<Map *const> Maps() const { return std::span{map, numMaps}; }
 	std::span<terrain_t> Terrain() { return std::span{terrain, numTiles}; }
 	std::span<terrain_t const> Terrain() const { return std::span{terrain, numTiles}; }
+
+	std::array<special_t, 128> special; // testing! global specials
 };
 
 extern byte keyChainInLevel[MAX_MAPS];

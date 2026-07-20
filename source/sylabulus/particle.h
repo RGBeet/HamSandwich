@@ -27,7 +27,10 @@ enum : byte
 	PART_LUNA,
 	PART_RADAR, // used for the radars
 	PART_FX, // accelerates upward, shrinks as it dies, for effects
+	PART_FIRE, // from LL1, used for torches
 };
+
+#define MAX_PARTICLES	15
 
 class Particle
 {
@@ -89,6 +92,7 @@ void DoParticleEffect(int x,int y, byte type);
 
 void SmokeTile(int x,int y);
 void JackFrostWeather(int x,int y);
+void Burn(int x, int y, int z);
 
 int CountParticles();
 

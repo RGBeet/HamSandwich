@@ -1348,7 +1348,7 @@ static void ParticleClick(int id)
 	curEff = effStart + (id - ID_EFF0) / 100;
 
 	spcl.effect[curEff].value++;
-	if (spcl.effect[curEff].value >= 14)
+	if (spcl.effect[curEff].value >= MAX_PARTICLES)
 		spcl.effect[curEff].value = 0;
 
 	if (rightClick)

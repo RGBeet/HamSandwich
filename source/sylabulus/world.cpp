@@ -9,6 +9,7 @@
 #include "world_io_supreme.h"
 #include "world_io_ham1.h"
 #include "world_io_sylabulus.h"
+#include "map.h"
 
 byte keyChainInLevel[MAX_MAPS];
 
@@ -34,6 +35,12 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 
 	ExitItems();
 	InitItems();
+
+	// global specials
+	world->special.fill({}); // testing!
+	InitSpecials(world->special); // testing!
+	printf("Initialized Global Specials\n");
+
 	if(!world->map[0])
 		return 0;
 	return 1;

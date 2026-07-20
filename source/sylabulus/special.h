@@ -56,10 +56,14 @@
 // cross-world triggers
 #define TRG_WRLDKEY		40	// true if player has earned loonykey from world M
 #define TRG_WRLDPRC		41	// true if player has completed %N of world M or less/more/exactly
+
 #define TRG_CHAINCOLOR	42	// true if any/all of adjacent specials of color M are triggered
 #define TRG_MONSAGE		43	// true if monster of type N at X,Y is M seconds old (float)
 
-#define MAX_TRIGGER		44
+// variable shenanigans
+#define TRG_STPVARTILE	44	// true if creature step on tile N (variable!)
+
+#define MAX_TRIGGER		45
 
 // effects
 #define EFF_NONE		0

@@ -2077,13 +2077,15 @@ static const char particleName[][24] = {
 	"Stained Glass",
 	"Bubble",
 	"Colorful",
-	"Radar"
+	"Radar",
+	"Fire",
 };
-static_assert(std::size(particleName) == 14, "Must give new particle a name");
+
+static_assert(std::size(particleName) == MAX_PARTICLES, "Must give new particle a name");
 
 const char* GetParticleName(byte particle)
 {
-	if (particle < 14)
+	if (particle < MAX_PARTICLES)
 		return particleName[particle];
 	return "???";
 }

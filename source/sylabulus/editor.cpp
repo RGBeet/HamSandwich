@@ -366,7 +366,7 @@ TASK(void) UpdateMouse(void)
 		case EDITMODE_MAPMENU:
 			if(editmgl->MouseTap())
 			{
-				if(!MapDialogClick(mouseX,mouseY))
+				if(!MapDialogClick(mouseX,mouseY,editmgl))
 				{
 					editMode=EDITMODE_EDIT;
 				}
