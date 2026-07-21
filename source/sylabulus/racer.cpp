@@ -358,7 +358,7 @@ static byte UpdateGameOver(int *lastTime,MGLDraw *mgl)
 	if(mgl->LastKeyPressed() && gameOverClock==0)
 		return 1;
 
-	if((GetTaps()&(CONTROL_B1|CONTROL_B2)) && gameOverClock==0)
+	if((GetTaps()&ANY_BUTTONS) && gameOverClock==0)
 		return 1;
 
 	return 0;

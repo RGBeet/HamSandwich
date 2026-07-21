@@ -134,6 +134,7 @@ static const itemEff_t itemEff[]={
 	{"Increment","Variable",0,15,IEBTN_VAR},
 	{"Decrement","Variable",0,15,IEBTN_VAR},
 	{"Move","Direction",0,3,IEBTN_DIR},
+	{"Give Item Slots","Number",-8,8,IEBTN_NUM} // NEW!
 };
 
 static const char colorName[8][16]={
@@ -143,7 +144,7 @@ static const char colorName[8][16]={
 	"Blue",
 	"Red",
 	"Yellow",
-	"Purple",
+	"Fucshia",
 	"Aqua",
 };
 

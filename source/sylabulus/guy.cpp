@@ -342,22 +342,22 @@ byte Guy::CanWalk(int xx,int yy,Map *map,world_t *world)
 
 void Guy::SeqFinished(void)
 {
-	if((seq==ANIM_DIE) || (seq==ANIM_A3 && aiType==MONS_BOUAPHA && player.weapon!=WPN_PWRARMOR && player.weapon!=WPN_MINISUB))
+	if((seq==ANIM_DIE) || (seq==ANIM_A3 && aiType==MONS_BOUAPHA && GetCurrentWeaponType()!=WPN_PWRARMOR && GetCurrentWeaponType()!=WPN_MINISUB))
 	{
 		if(aiType==MONS_BOUAPHA)
 		{
-			if(player.weapon==WPN_PWRARMOR)
+			if(GetCurrentWeaponType()==WPN_PWRARMOR)
 			{
-				player.weapon=0;
+				RemoveCurrentWeapon();
 				seq=ANIM_IDLE;
 				frm=0;
 				frmAdvance=128;
 				action=ACTION_IDLE;
 				return;
 			}
-			else if(player.weapon==WPN_MINISUB)
+			else if(GetCurrentWeaponType()==WPN_MINISUB)
 			{
-				player.weapon=0;
+				RemoveCurrentWeapon();
 				seq=ANIM_IDLE;
 				frm=0;
 				frmAdvance=128;
@@ -395,9 +395,9 @@ void Guy::NextFrame(void)
 
 	tp=type;
 
-	if(aiType==MONS_BOUAPHA && player.weapon==WPN_PWRARMOR)
+	if(aiType==MONS_BOUAPHA && GetCurrentWeaponType()==WPN_PWRARMOR)
 		anim=MonsterAnim(MONS_PWRBOUAPHA, seq);
-	else if(aiType==MONS_BOUAPHA && player.weapon==WPN_MINISUB)
+	else if(aiType==MONS_BOUAPHA && GetCurrentWeaponType()==WPN_MINISUB)
 		anim=MonsterAnim(MONS_MINISUB, seq);
 	else
 		anim=MonsterAnim(type,seq);
@@ -438,9 +438,9 @@ void Guy::CalculateRect(void)
 	}
 	else	// normal method
 	{
-		if(aiType==MONS_BOUAPHA && player.weapon==WPN_PWRARMOR)
+		if(aiType==MONS_BOUAPHA && GetCurrentWeaponType()==WPN_PWRARMOR)
 			s=MonsterSize(MONS_PWRBOUAPHA);
-		if(aiType==MONS_BOUAPHA && player.weapon==WPN_MINISUB)
+		if(aiType==MONS_BOUAPHA && GetCurrentWeaponType()==WPN_MINISUB)
 			s=MonsterSize(MONS_MINISUB);
 		else
 			s=MonsterSize(type);
@@ -695,14 +695,14 @@ void Guy::Update(Map *map,world_t *world)
 
 		// standing on water!!!!!!!  DROWN!!!!
 		if((hp>0) && (z==0) && (GetTerrain(world,map->GetTile(mapx,mapy)->floor)->flags&TF_WATER)
-			&& (!PlayerCanWaterwalk()) && (!(player.vehicle==VE_RAFT)) && (!(player.weapon==WPN_MINISUB)) &&
+			&& (!PlayerCanWaterwalk()) && (!(player.vehicle==VE_RAFT)) && (!(GetCurrentWeaponType()==WPN_MINISUB)) &&
 			(!(player.vehicle==VE_YUGO)) && ((MonsterFlags(goodguy->type,goodguy->aiType)&(MF_AQUATIC|MF_FLYING))==0))
 		{
 			// if there's a raft, hop on instead of dying
 			if(!RaftNearby())
 			{
-				if(player.weapon==WPN_PWRARMOR)
-					player.weapon=0;
+				if (GetCurrentWeaponType() == WPN_PWRARMOR)
+					RemoveCurrentWeapon();
 				facing=(4+facing)&7;
 				hp=0;
 				SetPlayerHP(hp);
@@ -723,7 +723,7 @@ void Guy::Update(Map *map,world_t *world)
 		}
 		// standing on lava, OW!
 		if((hp>0) && (z==0) && (GetTerrain(world,map->GetTile(mapx,mapy)->floor)->flags&TF_LAVA)
-			&& (!PlayerCanWaterwalk()) && (!(player.vehicle==VE_RAFT)) && (!(player.vehicle==VE_YUGO)) && (!(player.weapon==WPN_PWRARMOR || player.weapon==WPN_MINISUB))
+			&& (!PlayerCanWaterwalk()) && (!(player.vehicle==VE_RAFT)) && (!(player.vehicle==VE_YUGO)) && (!(GetCurrentWeaponType()==WPN_PWRARMOR || GetCurrentWeaponType()==WPN_MINISUB))
 			 && ((MonsterFlags(goodguy->type,goodguy->aiType)&(MF_AQUATIC|MF_FLYING))==0))
 		{
 			if(!RaftNearby())
@@ -804,18 +804,18 @@ void Guy::Render(byte light)
 		else
 			t=MONS_BOUAPHA;
 
-		if(player.weapon==WPN_PWRARMOR)
+		if(GetCurrentWeaponType()==WPN_PWRARMOR)
 			t=MONS_PWRBOUAPHA;
-		if(player.weapon==WPN_MINISUB)
+		if(GetCurrentWeaponType()==WPN_MINISUB)
 			t=MONS_MINISUB;
 	}
 
 	bool isBouapha = aiType == MONS_BOUAPHA;
 	if(isBouapha)
 	{
-		if(player.weapon==WPN_PWRARMOR)
+		if(GetCurrentWeaponType()==WPN_PWRARMOR)
 			t2=MONS_PWRBOUAPHA;
-		else if(player.weapon==WPN_MINISUB)
+		else if(GetCurrentWeaponType()==WPN_MINISUB)
 			t2=MONS_MINISUB;
 		else if(type==MONS_BOUAPHA)
 		{
@@ -952,14 +952,10 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world, bool bypass
 		if(damage==0)
 			damage=1;
 	}
-	if(aiType==MONS_BOUAPHA && (player.weapon==WPN_PWRARMOR || player.weapon==WPN_MINISUB))
+	if(aiType==MONS_BOUAPHA && PlayerUsingMechWeapon()) // ammo is HP
 	{
 		// damage is done to the armor instead
-		if(player.ammo>damage)
-			player.ammo-=damage;
-		else
-			player.ammo=0;
-
+		ReduceCurrentWeaponAmmo(damage);
 		ouch=4;	// still do the ouch so you can see it
 		return;
 	}
@@ -1072,7 +1068,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world, bool bypass
 		}
 
 		ScoreEvent(SE_KILL,1);
-		if(player.rage<127*256-512 && player.rageClock==0 && (player.weapon!=WPN_PWRARMOR && player.weapon!=WPN_MINISUB) &&
+		if(player.rage<127*256-512 && player.rageClock==0 && (GetCurrentWeaponType()!=WPN_PWRARMOR && GetCurrentWeaponType()!=WPN_MINISUB) &&
 			player.ability[ABIL_RAGE])
 			player.rage+=512;	// and crank up the rage
 		if(!editing && !player.cheated && verified)
@@ -1222,7 +1218,7 @@ void UpdateGuys(Map *map,world_t *world)
 	}
 	if(map->flags&MAP_LAVA)
 	{
-		if(player.weapon!=WPN_MINISUB && player.weapon!=WPN_PWRARMOR && player.vehicle!=VE_YUGO)
+		if(GetCurrentWeaponType()!=WPN_MINISUB && GetCurrentWeaponType()!=WPN_PWRARMOR && player.vehicle!=VE_YUGO)
 		{
 			player.lavaTimer--;
 			if(!player.lavaTimer)

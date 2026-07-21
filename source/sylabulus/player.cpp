@@ -9,6 +9,7 @@
 #include "editor.h"
 #include "goal.h"
 #include "log.h"
+#include "pickmenu.h"
 
 #define PLYR_ACCEL	(FIXAMT)
 #define PLYR_DECEL	(FIXAMT*3/4)
@@ -76,9 +77,18 @@ void InitPlayer(byte level,const char *fname)
 	player.boredom=0;
 	player.hammers=0;
 	player.hamSpeed=16;
-	player.weapon=WPN_NONE;
+
+	player.wpnSlots=1;
+	player.activeSlot=255; // hammer
+
 	player.lastWeapon=WPN_NONE;
-	player.ammo=0;
+
+	for(i=0;i<player.wpnSlots;i++)
+	{
+		player.weapons[i]		= 0;
+		player.ammunition[i]	= 0;
+	}
+
 	player.reload=10;
 	player.wpnReload=10;
 	player.hammerFlags={};
@@ -225,22 +235,21 @@ byte PlayerGetWeapon(byte wpn,int x,int y)
 	cx<<=FIXSHIFT;
 	cy<<=FIXSHIFT;
 
-	bool wpnLock = bool(profile.progress.wpnLock) ^ bool(GetControls() & CONTROL_B3);
-	if(player.weapon && wpn!=player.weapon && wpnLock)
+	bool wpnLock = bool(profile.progress.wpnLock) ^ bool(GetControls() & CONTROL_B4);
+	if(GetCurrentWeaponType() && wpn != GetCurrentWeaponType() && wpnLock)
 		return 0;	// can't pick up weapons while armed!
 
-	if((player.weapon==WPN_PWRARMOR || player.weapon==WPN_MINISUB) && (wpn!=player.weapon))
+	if(PlayerUsingMechWeapon() && wpn != GetCurrentWeaponType())
 	{
 		return 0;	// can't pick up other weapons
 	}
 
-	if(player.weapon==wpn && player.ammo==maxAmmo[wpn])
+	if(GetCurrentWeaponType() == wpn && GetCurrentWeaponAmmo() == maxAmmo[wpn])
 		return 0;	// don't pick it up if you've already got it
 
 	if(wpn==WPN_PWRARMOR)
 	{
-		player.weapon=WPN_PWRARMOR;
-		player.ammo=maxAmmo[wpn];
+		TakeWeapon(WPN_PWRARMOR, maxAmmo[wpn]);
 		goodguy->seq=ANIM_A2;
 		goodguy->frm=0;
 		goodguy->frmTimer=0;
@@ -249,8 +258,7 @@ byte PlayerGetWeapon(byte wpn,int x,int y)
 	}
 	else if(wpn==WPN_MINISUB)
 	{
-		player.weapon=WPN_MINISUB;
-		player.ammo=maxAmmo[wpn];
+		TakeWeapon(WPN_MINISUB, maxAmmo[wpn]);
 		goodguy->seq=ANIM_A2;
 		goodguy->frm=0;
 		goodguy->frmTimer=0;
@@ -259,13 +267,10 @@ byte PlayerGetWeapon(byte wpn,int x,int y)
 	}
 	else
 	{
+		TakeWeapon(wpn, maxAmmo[wpn]);
 		player.lastWeapon=wpn;
-		player.weapon=wpn;
-		player.ammo=maxAmmo[wpn];
 	}
-
-	ScoreEvent(SE_PICKUP,1);
-
+	ScoreEvent(SE_PICKUP,10);
 	return 1;
 }
 
@@ -294,16 +299,14 @@ byte PlayerPowerup(int powerup)
 				player.invisibility=255;
 				break;
 			case PU_AMMO:
-				if(player.weapon==0)
+				if(GetCurrentWeaponType()==0)
 					return 0;
 				player.ammoCrate=255;
 				break;
 			case PU_AMMO2:
-				if((player.weapon==0 && player.lastWeapon==0) || player.ammo==maxAmmo[player.weapon])
+				if((GetCurrentWeaponType()==0 && player.lastWeapon==0) || GetCurrentWeaponAmmo()==maxAmmo[GetCurrentWeaponType()])
 					return 0;
-				if(player.weapon==0)
-					player.weapon=player.lastWeapon;
-				player.ammo=maxAmmo[player.weapon];
+				TakeWeapon(player.lastWeapon,maxAmmo[player.lastWeapon]);
 				break;
 			case PU_CHEESE:
 				player.cheesePower=255;
@@ -342,8 +345,7 @@ byte PlayerPowerup(int powerup)
 				player.ammoCrate=0;
 				break;
 			case PU_AMMO2:
-				player.ammo=0;
-				player.weapon=0;
+				RemoveCurrentWeapon();
 				break;
 			case PU_POISON:
 				goodguy->poison=0;
@@ -695,37 +697,37 @@ void PlayerFireWeapon(Guy *me)
 	if(player.life==0)
 		return;	// no shooting when you're dead
 
-	switch(player.weapon)
+	switch(GetCurrentWeaponType())
 	{
 		case WPN_MISSILES:
-			if(player.ammo)
+			if(GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT,1);
 				FireBullet(me->x,me->y,me->facing,BLT_MISSILE,1);
-				player.ammo--;
+				ReduceCurrentWeaponAmmo(1);
 				if(!editing && !player.cheated && verified)
 					profile.progress.shotsFired++;
 			}
 			player.wpnReload=2;
 			break;
 		case WPN_BOMBS:
-			if(player.ammo)
+			if(GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT,1);
 				FireBullet(me->x,me->y,me->facing*32,BLT_BOMB,1);
 				MakeSound(SND_BOMBTHROW,me->x,me->y,SND_CUTOFF,1200);
-				player.ammo--;
+				ReduceCurrentWeaponAmmo(1);
 				if(!editing && !player.cheated && verified)
 					profile.progress.shotsFired++;
 			}
 			player.wpnReload=15;
 			break;
 		case WPN_AK8087:
-			if(player.ammo)
+			if(GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT,1);
 				FireBullet(me->x,me->y,me->facing,BLT_LASER,1);
-				player.ammo--;
+				ReduceCurrentWeaponAmmo(1);
 				if(!editing && !player.cheated && verified)
 					profile.progress.shotsFired++;
 			}
@@ -745,7 +747,7 @@ void PlayerFireWeapon(Guy *me)
 			DoPlayerFacing(c,me);
 			break;
 		case WPN_FLAME:
-			if(player.ammo)
+			if(GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT,1);
 				if(curMap->flags&MAP_UNDERWATER)
@@ -758,7 +760,7 @@ void PlayerFireWeapon(Guy *me)
 				}
 				else
 					FireBullet(me->x,me->y,me->facing,BLT_FLAME,1);
-				player.ammo--;
+				ReduceCurrentWeaponAmmo(1);
 				if(!editing && !player.cheated && verified)
 					profile.progress.shotsFired++;
 			}
@@ -773,35 +775,35 @@ void PlayerFireWeapon(Guy *me)
 			DoPlayerFacing(c,me);
 			break;
 		case WPN_BIGAXE:
-			if(player.ammo)
+			if(GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT,1);
 				FireBullet(me->x,me->y,me->facing,BLT_BIGAXE,1);
 				MakeSound(SND_BOMBTHROW,me->x,me->y,SND_CUTOFF,1200);
-				player.ammo--;
+				ReduceCurrentWeaponAmmo(1);
 				if(!editing && !player.cheated && verified)
 					profile.progress.shotsFired++;
 			}
 			player.wpnReload=10;
 			break;
 		case WPN_FREEZE:
-			if(player.ammo)
+			if(GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT,1);
 				FireBullet(me->x,me->y,me->facing*32,BLT_FREEZE,1);
-				player.ammo--;
+				ReduceCurrentWeaponAmmo(1);
 				if(!editing && !player.cheated && verified)
 					profile.progress.shotsFired++;
 			}
 			player.wpnReload=10;
 			break;
 		case WPN_LIGHTNING:
-			if(player.ammo)
+			if(GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT,1);
 				// fire lightning
 				FireBullet(me->x,me->y,me->facing,BLT_LIGHTNING,1);
-				player.ammo--;
+				ReduceCurrentWeaponAmmo(1);
 				if(!editing && !player.cheated && verified)
 					profile.progress.shotsFired++;
 			}
@@ -818,45 +820,45 @@ void PlayerFireWeapon(Guy *me)
 			DoPlayerFacing(c,me);
 			break;
 		case WPN_SPEAR:
-			if(player.ammo)
+			if(GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT,1);
 				MakeSound(SND_BOMBTHROW,me->x,me->y,SND_CUTOFF,1200);
 				FireBullet(me->x,me->y,me->facing,BLT_SPEAR,1);
-				player.ammo--;
+				ReduceCurrentWeaponAmmo(1);
 				if(!editing && !player.cheated && verified)
 					profile.progress.shotsFired++;
 			}
 			player.wpnReload=5;
 			break;
 		case WPN_MACHETE:
-			if(player.ammo)
+			if(GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT,1);
 				MakeSound(SND_SLASH,me->x,me->y,SND_CUTOFF,1200);
 				FireBullet(me->x+Cosine(me->facing*32)*32,me->y+Sine(me->facing*32)*32,
 					me->facing,BLT_SLASH,1);
-				player.ammo--;
+				ReduceCurrentWeaponAmmo(1);
 				if(!editing && !player.cheated && verified)
 					profile.progress.shotsFired++;
 			}
 			player.wpnReload=2;
 			break;
 		case WPN_MINES:
-			if(player.ammo)
+			if(GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT,1);
 				MakeSound(SND_MINELAY,me->x,me->y,SND_CUTOFF,1200);
 				FireBullet(me->x-Cosine(me->facing*32)*32,me->y-Sine(me->facing*32)*32,
 					me->facing,BLT_MINE,1);
-				player.ammo--;
+				ReduceCurrentWeaponAmmo(1);
 				if(!editing && !player.cheated && verified)
 					profile.progress.shotsFired++;
 			}
 			player.wpnReload=15;
 			break;
 		case WPN_TURRET:
-			if(player.ammo)
+			if(GetCurrentWeaponAmmo())
 			{
 				Guy *g;
 
@@ -872,7 +874,7 @@ void PlayerFireWeapon(Guy *me)
 				else
 				{
 					MakeSound(SND_MINELAY,me->x,me->y,SND_CUTOFF,1200);
-					player.ammo--;
+					ReduceCurrentWeaponAmmo(1);
 					if(!editing && !player.cheated && verified)
 						profile.progress.shotsFired++;
 				}
@@ -880,25 +882,25 @@ void PlayerFireWeapon(Guy *me)
 			}
 			break;
 		case WPN_MINDCONTROL:
-			if(player.ammo)
+			if(GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT,1);
 				MakeSound(SND_MINDWIPE,me->x,me->y,SND_CUTOFF,1200);
 				FireBullet(me->x+Cosine(me->facing*32)*32,me->y+Sine(me->facing*32)*32,
 					me->facing,BLT_MINDWIPE,1);
-				player.ammo--;
+				ReduceCurrentWeaponAmmo(1);
 				player.wpnReload=15;
 				if(!editing && !player.cheated && verified)
 					profile.progress.shotsFired++;
 			}
 			break;
 		case WPN_REFLECTOR:
-			if(player.ammo)
+			if(GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT,1);
 				MakeSound(SND_LIGHTSON,me->x,me->y,SND_CUTOFF,1200);
 				FireBullet(me->x,me->y,me->facing,BLT_REFLECT,1);
-				player.ammo--;
+				ReduceCurrentWeaponAmmo(1);
 				if(!editing && !player.cheated && verified)
 					profile.progress.shotsFired++;
 				c=GetControls();
@@ -914,34 +916,34 @@ void PlayerFireWeapon(Guy *me)
 			}
 			break;
 		case WPN_JETPACK:
-			if(player.ammo)
+			if(GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT,1);
 				player.jetting=5;
-				player.ammo--;
+				ReduceCurrentWeaponAmmo(1);
 				if(!editing && !player.cheated && verified)
 					profile.progress.shotsFired++;
 				player.wpnReload=3;
 			}
 			break;
 		case WPN_SWAPGUN:
-			if(player.ammo)
+			if(GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT,1);
 				MakeSound(SND_LIGHTSON,me->x,me->y,SND_CUTOFF,1200);
 				FireBullet(me->x,me->y,me->facing,BLT_SWAP,1);
-				player.ammo--;
+				ReduceCurrentWeaponAmmo(1);
 				if(!editing && !player.cheated && verified)
 					profile.progress.shotsFired++;
 				player.wpnReload=10;
 			}
 			break;
 		case WPN_TORCH:
-			if(player.ammo)
+			if(GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT,1);
 				MakeSound(SND_FLAMEGO,me->x,me->y,SND_CUTOFF,1200);
-				player.ammo--;
+				ReduceCurrentWeaponAmmo(1);
 				if(!editing && !player.cheated && verified)
 					profile.progress.shotsFired++;
 				player.wpnReload=3;
@@ -950,23 +952,23 @@ void PlayerFireWeapon(Guy *me)
 			}
 			break;
 		case WPN_SCANNER:
-			if(player.ammo)
+			if(GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT,1);
 				MakeSound(SND_LIGHTSON,me->x,me->y,SND_CUTOFF,1200);
 				FireBullet(me->x,me->y,me->facing,BLT_SCANNER,1);
-				player.ammo--;
+				ReduceCurrentWeaponAmmo(1);
 				if(!editing && !player.cheated && verified)
 					profile.progress.shotsFired++;
 				player.wpnReload=20;
 			}
 			break;
 		case WPN_STOPWATCH:
-			if(player.ammo && !player.timeStop)	// can't use it when time is already stopped
+			if(GetCurrentWeaponAmmo() && !player.timeStop)	// can't use it when time is already stopped
 			{
 				ScoreEvent(SE_SHOOT,1);
 				MakeSound(SND_LIGHTSON,me->x,me->y,SND_CUTOFF,1200);
-				player.ammo--;
+				ReduceCurrentWeaponAmmo(1);
 				if(!editing && !player.cheated && verified)
 					profile.progress.shotsFired++;
 				player.wpnReload=20;
@@ -975,10 +977,9 @@ void PlayerFireWeapon(Guy *me)
 			break;
 	}
 	if(player.ammoCrate)
-		player.ammo=maxAmmo[player.weapon];
-
-	if(!player.ammo)
-		player.weapon=0;
+		player.ammunition[player.activeSlot] = maxAmmo[GetCurrentWeaponType()]; // ammo crate keeps ammunition FULL!
+	else if(!GetCurrentWeaponAmmo())
+		RemoveCurrentWeapon();
 	GoalFire();
 }
 
@@ -1002,18 +1003,17 @@ void PlayerFirePowerArmor(Guy *me,byte mode)
 			x2=x-Cosine(f)*32;
 			y2=y-Sine(f)*32;
 			FireBullet(x2,y2,me->facing*32-8+Random(17),BLT_BIGSHELL,1);
-			if(player.ammo>2)
-				player.ammo-=2;
+
+			ReduceCurrentWeaponAmmo(1);
 			if(!editing && !player.cheated && verified)
 				profile.progress.shotsFired++;
+
 			break;
 		case 2:
 			ScoreEvent(SE_SHOOT,4);
 			QuadMissile(me->x,me->y,me->facing,1);
-			if(player.ammo>25)
-				player.ammo-=25;
-			else
-				player.ammo=0;
+			ReduceCurrentWeaponAmmo(5);
+
 			if(!editing && !player.cheated && verified)
 				profile.progress.shotsFired++;
 			break;
@@ -1030,6 +1030,9 @@ void PlayerFirePowerArmor(Guy *me,byte mode)
 			x2=x-Cosine(f)*8;
 			y2=y-Sine(f)*8;
 			FireBullet(x2,y2,me->facing,BLT_TORPEDO,1);
+
+			ReduceCurrentWeaponAmmo(1);
+
 			if(!editing && !player.cheated && verified)
 				profile.progress.shotsFired++;
 			break;
@@ -1042,6 +1045,9 @@ void PlayerFirePowerArmor(Guy *me,byte mode)
 			FireBullet(x,y,me->facing,BLT_MINE,1);
 			if(!editing && !player.cheated && verified)
 				profile.progress.shotsFired++;
+
+			ReduceCurrentWeaponAmmo(5);
+
 			break;
 	}
 	GoalFire();
@@ -1076,8 +1082,8 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	if(player.ammoCrate)
 	{
 		player.ammoCrate--;
-		if(player.weapon)
-			player.ammo=maxAmmo[player.weapon];
+		if (GetCurrentWeaponType())
+			SetCurrentWeaponAmmo(maxAmmo[GetCurrentWeaponType()]);
 	}
 
 	if(player.rageClock && GetGameMode()!=GAMEMODE_RAGE)
@@ -1114,12 +1120,12 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		player.jetting--;
 	}
 
-	if(player.weapon==WPN_PWRARMOR)
+	if(GetCurrentWeaponType()==WPN_PWRARMOR)
 	{
 		PlayerControlPowerArmor(me,mapTile,world);
 		return;
 	}
-	if(player.weapon==WPN_MINISUB)
+	if(GetCurrentWeaponType()==WPN_MINISUB)
 	{
 		PlayerControlMiniSub(me,mapTile,world);
 		return;
@@ -1460,7 +1466,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	if(!player.jetting)
 		DoPlayerFacing(c,me);
 
-	if((c&(CONTROL_B1|CONTROL_B2))==(CONTROL_B1|CONTROL_B2) && (player.rage/256)>=player.life && player.ability[ABIL_RAGE])
+	if((c&ATK_BUTTONS)==ATK_BUTTONS && (player.rage/256)>=player.life && player.ability[ABIL_RAGE])
 	{
 		// RAGE!!!!!!!
 		ScoreEvent(SE_RAGE,1);
@@ -1472,7 +1478,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			player.shield=30;
 		EnterRage();
 	}
-	if((c&CONTROL_B1) && player.reload==0)	// pushed hammer throw button
+	if((c&CONTROL_B1) && PlayerCanThrowHammers())	// pushed hammer throw button
 	{
 		if(me->type!=MONS_BOUAPHA || (player.ability[ABIL_MOVESHOOT] && profile.moveNShoot))
 		{
@@ -1501,19 +1507,26 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			return;
 		}
 	}
-	if((c&CONTROL_B2) && player.wpnReload==0 && player.weapon)	// pushed wpn use button
+
+	if ((c & CONTROL_B3))	// pushed magic
 	{
-		if(player.weapon==WPN_TORCH)
+		EnterPickMenu();
+		return;
+	}
+
+	if((c&CONTROL_B2) && player.wpnReload==0 && GetCurrentWeaponType())	// pushed wpn use button
+	{
+		if(GetCurrentWeaponType() ==WPN_TORCH)
 		{
-			if(player.ammo)
+			if(GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT,1);
 				MakeSound(SND_FLAMEGO,me->x,me->y,SND_CUTOFF,1200);
-				player.ammo--;
+				ReduceCurrentWeaponAmmo(1);
 				player.wpnReload=17;
 				player.torch=30;
-				if(player.ammo==0 && !player.ammoCrate)
-					player.weapon=0;
+				if(!GetCurrentWeaponType() && !player.ammoCrate)
+					RemoveCurrentWeapon(); // todo
 			}
 		}
 		else
@@ -1659,10 +1672,7 @@ void PlayerControlPowerArmor(Guy *me,mapTile_t *mapTile,world_t *world)
 	me->mind1=0;
 	player.boredom=0;
 
-	if(player.ammo)
-		player.ammo--;
-
-	if(player.ammo==0 && me->seq!=ANIM_DIE)
+	if(ReduceCurrentWeaponAmmo(1) == 2 && me->seq!=ANIM_DIE)
 	{
 		me->seq=ANIM_DIE;
 		me->frm=0;
@@ -1705,7 +1715,7 @@ void PlayerControlPowerArmor(Guy *me,mapTile_t *mapTile,world_t *world)
 		{
 			PlayerFirePowerArmor(me,1);
 		}
-		if(me->seq==ANIM_ATTACK && me->frm==4 && player.ammo>0)
+		if(me->seq==ANIM_ATTACK && me->frm==4 && GetCurrentWeaponAmmo())
 		{
 			if(c&CONTROL_B1)
 			{
@@ -1835,10 +1845,7 @@ void PlayerControlMiniSub(Guy *me,mapTile_t *mapTile,world_t *world)
 	// ice is not slippery for sub
 	player.boredom=0;
 
-	if(player.ammo)
-		player.ammo--;
-
-	if(player.ammo==0 && me->seq!=ANIM_DIE)
+	if(ReduceCurrentWeaponAmmo(1) == 2 && me->seq!=ANIM_DIE)
 	{
 		me->seq=ANIM_DIE;
 		me->frm=0;
@@ -1897,19 +1904,11 @@ void PlayerControlMiniSub(Guy *me,mapTile_t *mapTile,world_t *world)
 	if((c&CONTROL_B1) && player.reload==0)	// pushed fire button
 	{
 		PlayerFirePowerArmor(me,3);
-		if(player.ammo>2)
-			player.ammo-=2;
-		else
-			player.ammo=0;
 		player.reload=4;
 	}
 	if((c&CONTROL_B2) && player.wpnReload==0)	// pushed mine button
 	{
 		PlayerFirePowerArmor(me,4);
-		if(player.ammo>20)
-			player.ammo-=20;
-		else
-			player.ammo=0;
 		player.wpnReload=30;
 	}
 
@@ -2021,13 +2020,49 @@ static const char wpnName[][32] = {
 	"Freeze Ray",
 	"Stopwatch",
 };
+
+static const int wpnIcons[] = {
+	8,		// none
+	6,		// missiles
+	33,		// ak-8087
+	35,		// bombs
+	34,		// flamethrower
+	43,		// power armor
+	44,		// big axe
+	46,		// zap wand
+	45,		// spears
+	47,		// machete
+	48,		// mines
+	68,		// turrets
+	69,		// mind control ray,
+	67,		// reflect shield
+	71,		// jetpack
+	70,		// swapgun
+	96,		// torch
+	113,	// scanner
+	104,	// minisub,
+	112,	// freeze ray
+	129		// stopwatch
+};
+
 static_assert(std::size(wpnName) == MAX_WEAPONS, "Must give new weapon a name");
 
 const char* GetWeaponName(byte weapon)
 {
 	if (weapon < MAX_WEAPONS)
 		return wpnName[weapon];
-	return "???";
+	else if (weapon == 255)
+		return "Hammer Up!";
+	return "Nothing.";
+}
+
+const int GetWeaponIcon(byte weapon)
+{
+	if (weapon < MAX_WEAPONS)
+		return wpnIcons[weapon];
+	else if (weapon == 255)
+		return 0;
+	return 8;
 }
 
 static const char afflictName[][16] = {
@@ -2088,4 +2123,177 @@ const char* GetParticleName(byte particle)
 	if (particle < MAX_PARTICLES)
 		return particleName[particle];
 	return "???";
+}
+
+byte PlayerUsingMechWeapon()
+{
+	return GetCurrentWeaponType() == WPN_PWRARMOR || GetCurrentWeaponType() == WPN_MINISUB;
+}
+
+byte GetCurrentWeaponType()
+{
+	if (player.activeSlot < 5)
+		return player.weapons[player.activeSlot];
+	else
+		return 0; // no weapon here!
+}
+
+int GetCurrentWeaponAmmo()
+{
+	if (player.activeSlot < 5 && player.weapons[player.activeSlot] > 0)
+		return player.ammunition[player.activeSlot];
+	else
+		return 0; // no ammo
+}
+
+byte SetCurrentWeaponAmmo(int amt)
+{
+	if (player.activeSlot < 5 && player.weapons[player.activeSlot] > 0)
+	{
+		player.weapons[player.activeSlot] = amt;
+		return 1;
+	}
+	else
+		return 0; // no weapon to set ammo for?!
+}
+
+void SetWeaponAmmo(byte slot, byte wpn, int ammo)
+{
+	player.weapons[slot] = wpn;
+	player.ammunition[slot] = ammo;
+}
+
+byte GetFirstEmptyWeaponSlot()
+{
+	byte slot = 255;
+	for (int i = 0; i < player.wpnSlots; i++)
+	{
+		if (player.weapons[i] == 0) // has a weapon with ammo
+		{
+			player.ammunition[i]=0;
+			return i;
+		}
+	}
+	return 255; // no slot available?!
+}
+
+byte TakeWeapon(byte wpn, int ammo)
+{
+	byte slot	= 0;
+	byte refill = 0;
+	for(int i=0; i<player.wpnSlots; i++)
+	{
+		if (player.weapons[i] == wpn || player.weapons[i] == 0)
+		{
+			slot = i;
+			if (player.weapons[i] == wpn) // same weapon type? we're done
+			{
+				refill = true;
+				break;
+			}
+		}
+	}
+	if(!player.hammers and !GetCurrentWeaponType())
+	{
+		player.activeSlot = GetFirstEmptyWeaponSlot();
+	}
+	SetWeaponAmmo(slot,wpn,ammo);
+	return refill;
+}
+
+byte GetFirstAvailableWeaponSlot()
+{
+	byte slot = 255;
+	for(int i=0; i<player.wpnSlots; i++)
+	{
+		if (player.weapons[i] > 0 && player.ammunition[i] > 0) // has a weapon with ammo
+		{
+			return i;
+		}
+	}
+	return 255; // no slot available?!
+}
+
+byte RemoveCurrentWeapon()
+{
+	int elements = player.wpnSlots - player.activeSlot - 1;
+	if (elements > 0) {
+		// Shift raw blocks of memory to the left
+		std::memmove(&player.weapons[player.activeSlot],
+			&player.weapons[player.activeSlot + 1],
+			elements * sizeof(player.weapons[0]));
+
+		std::memmove(&player.ammunition[player.activeSlot],
+			&player.ammunition[player.activeSlot + 1],
+			elements * sizeof(player.ammunition[0]));
+	}
+	// Clear the last slot
+	player.weapons[player.wpnSlots - 1] = 0;
+	player.ammunition[player.wpnSlots - 1] = 0;
+
+	// goes until finding an active weapon or rolling over to 255 (which means there are no weapons)
+	while (player.weapons[player.activeSlot] > 0 || player.activeSlot < player.wpnSlots)
+		player.activeSlot--;
+
+	return (player.activeSlot < player.wpnSlots) ? 1 : 0; // 1 if has weapon, 0 if NOT
+}
+
+bool PlayerCanFireWeapon()
+{
+	if (player.weapons[player.activeSlot] > 0 && player.ammunition[player.activeSlot] > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+byte ReduceCurrentWeaponAmmo(int amt)
+{
+	if (!(player.activeSlot < player.wpnSlots) || !GetCurrentWeaponType() || !GetCurrentWeaponAmmo())
+		return 0;
+	player.ammunition[player.activeSlot] -= amt;
+	if (player.ammunition[player.activeSlot] > 0)
+		return 1;
+	player.ammunition[player.activeSlot] = 0;
+	return 2;
+}
+
+byte PlayerAddPockets(int amt)
+{
+	int i;
+	if (amt < 1) // negative
+	{
+		if (player.wpnSlots == 0)
+			return 0;
+		else
+		{
+			int old = player.wpnSlots;
+			player.wpnSlots += amt;
+
+			for(i=player.wpnSlots;i<old;i++)
+			{
+				player.weapons[i]=0;
+				player.ammunition[i]=0;
+			}
+			return 1;
+		}
+	}
+	else // positive
+	{
+		if (player.wpnSlots > 8)
+			return 0;
+		else
+		{
+			player.wpnSlots += amt;
+			if (player.wpnSlots > 8)
+				player.wpnSlots = 8;
+			return 1;
+		}
+	}
+}
+
+byte PlayerCanThrowHammers()
+{
+	return player.activeSlot == 255 && !player.reload;
 }

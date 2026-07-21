@@ -255,6 +255,7 @@ BITFLAGS(ItemTriggers)
 #define IE_INCVAR	26	// increment variable N
 #define IE_DECVAR	27	// decrement variable N
 #define IE_MOVE		28	// move up/down/left/right (only if it could move there as a pushable item)
+#define IE_POCKET	29 	// gives N slots (player can have max of 8, starts with 1) 
 
 #define IE_MAX		29	// max # of effects
 
@@ -344,5 +345,7 @@ struct ItemRenderExtents
 };
 ItemRenderExtents GetItemRenderExtents();
 void CalculateItemRenderExtents();
+
+sprite_t* GetItemSprite(int spr);
 
 #endif

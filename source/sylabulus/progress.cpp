@@ -218,10 +218,10 @@ void LoadProfile(const char *name)
 
 	if (profile.progress.moreJoyCtrl[0] == 0)
 	{
-		profile.progress.moreControl[0][0]=SDL_SCANCODE_TAB;  // wpnlock
-		profile.progress.moreControl[0][1]=0;  // reserved
-		profile.progress.moreControl[1][0]=0;  // wpnlock
-		profile.progress.moreControl[1][1]=0;  // reserved
+		profile.progress.moreControl[0][0]=SDL_SCANCODE_TAB;	// wpnlock
+		profile.progress.moreControl[0][1]=SDL_SCANCODE_LALT;	// reserved
+		profile.progress.moreControl[1][0]=0;					// wpnlock
+		profile.progress.moreControl[1][1]=SDL_SCANCODE_C;		// reserved
 		profile.progress.moreJoyCtrl[0]=2;
 		profile.progress.moreJoyCtrl[1]=3;
 	}
@@ -334,10 +334,10 @@ void DefaultControls(void)
 	profile.control[1][4]=SDL_SCANCODE_Z;
 	profile.control[1][5]=SDL_SCANCODE_X;
 
-	profile.progress.moreControl[0][0]=SDL_SCANCODE_TAB;  // wpnlock
-	profile.progress.moreControl[0][1]=0;  // reserved
-	profile.progress.moreControl[1][0]=0;  // wpnlock
-	profile.progress.moreControl[1][1]=0;  // reserved
+	profile.progress.moreControl[0][0]=SDL_SCANCODE_TAB;	// wpnlock
+	profile.progress.moreControl[0][1]=SDL_SCANCODE_LALT;	// switch
+	profile.progress.moreControl[1][0]=0;					
+	profile.progress.moreControl[1][1]=SDL_SCANCODE_C;
 
 	profile.joyCtrl[0]=0;
 	profile.joyCtrl[1]=1;

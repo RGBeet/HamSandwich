@@ -7,4 +7,6 @@ int Sine(int angle);
 void Dampen(int *value,int amt);
 void Clamp(int *value,int amt);
 
+byte TurnToward(byte faceNow, byte newFace, byte spd);
+
 #endif

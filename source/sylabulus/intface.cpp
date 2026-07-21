@@ -32,22 +32,23 @@ constexpr int SPR_COLON			= 112;
 constexpr int SPR_COMBO			= 114;
 constexpr int SPR_STICKMAN		= 115;
 
-constexpr int SPR_WEAPONBOX   = 3;
-constexpr int SPR_HAMMERBOX   = 5;
-constexpr int SPR_KEYBOX      = 6;
-constexpr int SPR_OXYGAUGE    = 8;
-constexpr int SPR_ENEMYLIFE   = 111;
-constexpr int SPR_COINBOX     = 62;
-constexpr int SPR_STEALTH     = 63;
-constexpr int SPR_WPNNAME     = 22;
-constexpr int SPR_LOONYKEY    = 50;
-constexpr int SPR_CANDLE      = 51;
-constexpr int SPR_KEYCH       = 52;
-constexpr int SPR_BRAIN       = 56;
-constexpr int SPR_RAGE        = 57;
-constexpr int SPR_LOCK        = 110;
-constexpr int SPR_PORTRAIT    = 66;
-constexpr int SPR_HEAD		  = 67;
+constexpr int SPR_WEAPONBOX		= 3;
+constexpr int SPR_HAMMERBOX		= 5;
+constexpr int SPR_KEYBOX		= 6;
+constexpr int SPR_OXYGAUGE		= 8;
+constexpr int SPR_ENEMYLIFE		= 111;
+constexpr int SPR_COINBOX		= 62;
+constexpr int SPR_STEALTH		= 63;
+constexpr int SPR_WPNNAME		= 22;
+constexpr int SPR_LOONYKEY		= 50;
+constexpr int SPR_CANDLE		= 51;
+constexpr int SPR_KEYCH			= 52;
+constexpr int SPR_BRAIN			= 56;
+constexpr int SPR_RAGE			= 57;
+constexpr int SPR_LOCK			= 110;
+constexpr int SPR_PORTRAIT		= 66;
+constexpr int SPR_HEAD			= 67;
+constexpr int SPR_POCKET		= 184;
 
 constexpr int SPR_TIME = 999;
 
@@ -1033,7 +1034,7 @@ void UpdateInterface(Map *map)
 		intf[INTF_STEALTH].ty = yy;
 	}
 
-	if (player.weapon)
+	if (GetCurrentWeaponType()>0 && GetCurrentWeaponAmmo()>0)
 	{
 		intf[INTF_WEAPON].tx	= 232;
 		intf[INTF_WEAPON].ty	= 10;
@@ -1111,13 +1112,13 @@ void UpdateInterface(Map *map)
 				intf[i].vDesired=player.coins;
 				break;
 			case INTF_WEAPON:
-				if(player.weapon>0)
-					intf[i].vDesired=player.ammo*intf[i].valueLength/WeaponMaxAmmo(player.weapon);
+				if(GetCurrentWeaponType()>0)
+					intf[i].vDesired=GetCurrentWeaponAmmo()*intf[i].valueLength/WeaponMaxAmmo(GetCurrentWeaponType());
 				else
 					intf[i].vDesired=0;
 				break;
 			case INTF_LOCK:
-				intf[i].vDesired = bool(profile.progress.wpnLock) ^ bool(GetControls() & CONTROL_B3);
+				intf[i].vDesired = bool(profile.progress.wpnLock) ^ bool(GetControls() & CONTROL_B4);
 				break;
 			case INTF_COMBO:
 				intf[i].vDesired = player.combo;
@@ -1241,7 +1242,9 @@ void RenderInterface(MGLDraw *mgl)
 				break;
 			case INTF_WEAPON:
 				intfaceSpr->GetSprite(SPR_WPNICON)->Draw(intf[i].x-21, intf[i].y-8, mgl);
-				intfaceSpr->GetSprite(SPR_WPNNAME+player.weapon-1)->Draw(intf[i].x, intf[i].y-6, mgl);
+				//GetItemSprite(GetWeaponIcon(GetCurrentWeaponType()))->Draw(intf[i].x - 21, intf[i].y - 8, mgl);
+				Print(intf[i].x, intf[i].y - 6, GetWeaponName(GetCurrentWeaponType()), 31, 1);
+				Print(intf[i].x+1, intf[i].y - 5, GetWeaponName(GetCurrentWeaponType()), 0, 1);
 				break;
 		}
 
@@ -1313,6 +1316,11 @@ void RenderInterface(MGLDraw *mgl)
 	}
 
 	DrawPortrait(0, 0, mgl); // nice lil portrait
+}
+
+sprite_t* GetIntfaceSprite(int spr)
+{
+	return intfaceSpr->GetSprite(spr);
 }
 
 void DrawFancyLine(int x, int y, int color, int width, MGLDraw* mgl)

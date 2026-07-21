@@ -90,18 +90,18 @@ const byte *MonsterAnim(dword type,byte anim)
 
 MonsterFlags_ MonsterFlags(dword type,dword aiType)
 {
-	if(aiType==MONS_BOUAPHA && player.weapon==WPN_PWRARMOR)
+	if(aiType==MONS_BOUAPHA && GetCurrentWeaponType()==WPN_PWRARMOR)
 		return monsType[MONS_PWRBOUAPHA].flags;
-	if(aiType==MONS_BOUAPHA && player.weapon==WPN_MINISUB)
+	if(aiType==MONS_BOUAPHA && GetCurrentWeaponType()==WPN_MINISUB)
 		return monsType[MONS_MINISUB].flags;
 	return monsType[type].flags;
 }
 
 byte MonsterFrames(dword type,dword aiType)
 {
-	if(aiType==MONS_BOUAPHA && player.weapon==WPN_PWRARMOR)
+	if(aiType==MONS_BOUAPHA && GetCurrentWeaponType()==WPN_PWRARMOR)
 		return monsType[MONS_PWRBOUAPHA].framesPerDir;
-	if(aiType==MONS_BOUAPHA && player.weapon==WPN_MINISUB)
+	if(aiType==MONS_BOUAPHA && GetCurrentWeaponType()==WPN_MINISUB)
 		return monsType[MONS_MINISUB].framesPerDir;
 	return monsType[type].framesPerDir;
 }
@@ -229,10 +229,10 @@ const sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing)
 
 	if(type==MONS_BOUAPHA)
 	{
-		if(player.weapon==WPN_PWRARMOR)
+		if(GetCurrentWeaponType()==WPN_PWRARMOR)
 			type=MONS_PWRBOUAPHA;
-		else if(player.weapon==WPN_MINISUB)
-			type=MONS_PWRBOUAPHA;
+		else if(GetCurrentWeaponType()==WPN_MINISUB)
+			type=MONS_MINISUB; // is this ok???
 		else if(type==MONS_BOUAPHA)
 		{
 			if(player.playAs==PLAY_LUNATIC)

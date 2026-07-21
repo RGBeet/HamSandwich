@@ -466,7 +466,7 @@ byte UpdateShowGoal(int *lastTime,MGLDraw *mgl)
 		if(k==27)
 			return 1;
 
-		if(t&(CONTROL_B1|CONTROL_B2))
+		if(t&ANY_BUTTONS)
 			return 1;
 	}
 

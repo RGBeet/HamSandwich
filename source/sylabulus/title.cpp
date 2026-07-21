@@ -661,7 +661,7 @@ TASK(byte) SpeedSplash(MGLDraw *mgl,const char *fname)
 			mode=2;
 
 		c=GetControls()|GetArrows();
-		if((c & ~oldc) & (CONTROL_B1 | CONTROL_B2))
+		if((c & ~oldc) & ANY_BUTTONS)
 			mode=2;
 		oldc=c;
 

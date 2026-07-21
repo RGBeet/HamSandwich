@@ -16,6 +16,7 @@
 #include "chat.h"
 #include "worldselect.h"
 #include "particle.h"
+#include "display.h"
 
 static std::span<special_t> spcl;  // Full special storage array.
 static int numSpecials;  // Specials >= this aren't set.
@@ -705,8 +706,8 @@ byte CheckForItem(byte item,int count,byte flags)
 			amt=player.life;
 			break;
 		case IE_WEAPON:	// weapons
-			if(player.weapon==GetItem(item)->effectAmt)
-				amt=player.ammo;
+			if(GetCurrentWeaponType()==GetItem(item)->effectAmt)
+				amt=GetCurrentWeaponAmmo();
 			else
 				amt=0;
 			break;
@@ -1700,9 +1701,9 @@ void SpecialEffect(special_t *me,Map *map)
 							(v2*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF|SND_ONE,1300);
 				break;
 			case EFF_WEAPON:
-				if(me->effect[i].value2==0 && player.weapon==me->effect[i].value)	// don't reload if already using
+				if(me->effect[i].value2==0 && GetCurrentWeaponType()==me->effect[i].value)	// don't reload if already using
 					break;
-				player.weapon=0;
+				RemoveCurrentWeapon();
 				if(me->effect[i].value!=0)
 					PlayerGetWeapon(me->effect[i].value,0,0);
 				break;
@@ -1858,11 +1859,19 @@ void InitSpecialsForPlay(void)
 	tagged=NULL;
 }
 
+byte outXes = 0, lastSpecialShown = 33;
 void RenderSpecialXes(Map *map)
 {
 	auto [camx, camy] = GetCamera();
 	camx -= GetDisplayMGL()->GetWidth() / 2;
 	camy -= GetDisplayMGL()->GetHeight() / 2;
+
+	bool outOfRange = false;
+	bool showName	= false;
+	byte closest	= 255;
+	int squareDist	= 999 * 999;
+
+	// check specials
 	for(int i=0;i<numSpecials;i++)
 	{
 		const special_t &special = spcl[i];
@@ -1870,8 +1879,29 @@ void RenderSpecialXes(Map *map)
 		{
 			for(const effect_t &effect : special.effect)
 			{
+				if(effect.type==EFF_GOTOMAP)
+				{
+					showName = true;
+				}
 				if(effect.type==EFF_GOTOMAP || effect.type==EFF_WINLEVEL)
 				{
+					if (goodguy) // player exists
+					{
+						int myDist = (abs(goodguy->x / (TILE_WIDTH * FIXAMT) - map->special[i].x) * abs(goodguy->x / (TILE_WIDTH * FIXAMT) - map->special[i].x)) +
+							(abs(goodguy->y / (TILE_HEIGHT * FIXAMT) - map->special[i].y) * abs(goodguy->y / (TILE_HEIGHT * FIXAMT) - map->special[i].y));
+
+						if (abs(goodguy->x / (TILE_WIDTH * FIXAMT) - map->special[i].x) <= 6 &&
+							abs(goodguy->y / (TILE_HEIGHT * FIXAMT) - map->special[i].y) <= 6)	// when player is close, add details
+						{
+							outOfRange = false;
+							if (closest == 255 || myDist < squareDist)
+							{
+								closest = (byte)i;
+								squareDist = myDist;
+							}
+						}
+					}
+					// if level is passed
 					if(LevelIsPassed(player.worldProg,effect.value))
 					{
 						byte c=0;
@@ -1892,11 +1922,43 @@ void RenderSpecialXes(Map *map)
 						else
 							DrawRedX(special.x*TILE_WIDTH-camx+TILE_WIDTH/2,
 									 special.y*TILE_HEIGHT-camy+TILE_HEIGHT/2,c,GetDisplayMGL());
-
 						break;
 					}
 				}
 			}
+		}
+	}
+	// Yoinked from Kid Mystic: Enchanted Edition. Shows destination level name
+	if (outOfRange)
+	{
+		if (outXes > 0)
+			outXes--;
+		else
+			lastSpecialShown = 33;	// after they full recede, stop showing it
+	}
+	else if (closest != 255)
+	{
+		if (lastSpecialShown != closest)
+		{
+			lastSpecialShown = closest;
+			outXes = 0;
+		}
+		else if (outXes < 40)
+		{
+			outXes += 2;
+			if (outXes > 40) outXes = 40;
+		}
+	}
+	if (showName && lastSpecialShown < 33)
+	{
+		if (!(map->special[lastSpecialShown].effect[0].flags & EF_NOFX))
+		{
+			byte mNum = map->special[lastSpecialShown].effect[0].value;
+			int cx = map->special[lastSpecialShown].x * TILE_WIDTH - camx + TILE_WIDTH / 2;
+			int cy = map->special[lastSpecialShown].y * TILE_HEIGHT - camy + TILE_HEIGHT / 2;
+			Map* m = curWorld.map[mNum];
+			CenterPrintCompressed(cx + 1, cy - outXes + 1, m->name, outXes * 100 / 40, -31, 1);
+			CenterPrintCompressed(cx, cy - outXes, m->name, outXes * 100 / 40, 0, 1);
 		}
 	}
 }

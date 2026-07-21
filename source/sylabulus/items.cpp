@@ -715,7 +715,11 @@ static const item_t baseItems[]={
 		IF_PICKUP,
 		IT_PICKUP|IT_WEAPON|IT_POWERUP,
 		ITR_GET,IE_POWERUP,PU_CHEESE,"Supreme Squeezy Cheese!",SND_WEAPON},
-	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused2
+	{ "Pocket",0,0,184,0,0,0,
+		0,
+		IF_PICKUP,
+		IT_PICKUP | IT_POWERUP,
+		ITR_GET,IE_POCKET,1,"Pocket!",SND_SHOPBELL},
 	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused3
 	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused4
 	{"New Item",0,0,0,0,0,0,0,{},{},ITR_NONE,IE_NONE,0,"",0},	// unused5
@@ -762,6 +766,11 @@ void InitItems(void)
 
 	ham_strcpy(customSpriteFilename, "");
 	CalculateItemRenderExtents();
+}
+
+sprite_t* GetItemSprite(int spr)
+{
+	return itmSpr->GetSprite(spr);
 }
 
 void ExitItems(void)
@@ -1523,6 +1532,9 @@ byte TriggerItem(Guy *me,mapTile_t *m,int x,int y)
 		case IE_MOVE:
 			curMap->GetTile(x, y)->opaque = 1;
 			return 0;
+			break;
+		case IE_POCKET:
+			return PlayerAddPockets(items[m->item].effectAmt);
 			break;
 	}
 	return 0;

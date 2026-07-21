@@ -145,13 +145,10 @@ void RenderMapDialog(int msx, int msy, MGLDraw* mgl)
 	// Right hand buttons.
 	const int buttonX = left + 330;
 	const int buttonY = top + 12;
-
-	RenderButtonImage(msx, msy, buttonX, buttonY + 0 * 17, 56, 15, "New");
-	RenderButtonImage(msx, msy, buttonX, buttonY + 1 * 17, 56, 15, "Copy");
-	RenderButtonImage(msx, msy, buttonX, buttonY + 2 * 17, 56, 15, "Rename");
-	RenderButtonImage(msx, msy, buttonX, buttonY + 3 * 17, 56, 15, "Delete");
-	RenderButtonImage(msx, msy, buttonX, buttonY + 4 * 17, 56, 15, "Move Up");
-	RenderButtonImage(msx, msy, buttonX, buttonY + 5 * 17, 56, 15, "Move Dn");
+	for(i=0;i<6;i++)
+	{
+		RenderButtonImage(msx, msy, buttonX, buttonY + i * 17, 56, 15, mapDialogueButton[i]);
+	}
 
 	RenderButtonImage(msx, msy, buttonX, top + 300, 56, 15, "Exit");
 

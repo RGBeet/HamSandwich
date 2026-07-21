@@ -15,4 +15,6 @@ void RenderInterface(MGLDraw *mgl);
 void RenderCollectedStuff(int x,int y,MGLDraw *mgl);
 void RenderShoppingStuff(int x, int y, MGLDraw* mgl);
 
+sprite_t* GetIntfaceSprite(int spr);
+
 #endif

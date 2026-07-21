@@ -233,7 +233,7 @@ byte UpdateScan(MGLDraw *mgl)
 		return 1;	// can't quit scanning in the first second
 	}
 
-	if((GetTaps()&(CONTROL_B1|CONTROL_B2)) || (mgl->LastKeyPressed()) || (mgl->MouseTap()))
+	if((GetTaps()&ANY_BUTTONS) || (mgl->LastKeyPressed()) || (mgl->MouseTap()))
 	{
 		firstScan++;
 		if(firstScan==MAX_SCAN)

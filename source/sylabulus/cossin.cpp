@@ -52,3 +52,39 @@ void Clamp(int *value,int amt)
 	if(*value<-amt)
 		*value=-amt;
 }
+
+// from LL2
+byte TurnToward(byte faceNow, byte newFace, byte spd)
+{
+	int diff, dir;
+
+	if (newFace == faceNow)
+		return faceNow;
+
+	if (newFace > faceNow)
+	{
+		diff = newFace - faceNow;
+		if (diff > 128)
+		{
+			dir = -1;
+			diff = 256 - diff;
+		}
+		else
+			dir = 1;
+	}
+	else
+	{
+		diff = faceNow - newFace;
+		if (diff > 128)
+		{
+			dir = 1;
+			diff = 256 - diff;
+		}
+		else
+			dir = -1;
+	}
+	if (diff <= spd)
+		return newFace;	// close enough
+	else
+		return ((faceNow + spd * dir) & 255);
+}

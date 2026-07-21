@@ -140,17 +140,17 @@ void DoCheat(byte w)
 			player.hamSpeed=0;
 			player.cheesePower=255;
 			player.hammerFlags|=HMR_REVERSE|HMR_REFLECT;
-			MakeNormalSound(SND_HAMMERUP);
+			MakeNormalSound(SND_CHEATWIN);
 			NewMessage("ULTRA HAMMER UP!!",30,0);
 			break;
 		case CHEAT_LIFE:
 			PlayerHeal(128);
 			NewMessage("Aaaaah",30,0);
-			MakeNormalSound(SND_HEALTHCHEAT);
+			MakeNormalSound(SND_CHEATWIN);
 			break;
 		case CHEAT_SHIELD:
 			player.shield=255;
-			MakeNormalSound(SND_SHIELD);
+			MakeNormalSound(SND_CHEATWIN);
 			break;
 		case CHEAT_BOOM:
 		{
@@ -171,24 +171,23 @@ void DoCheat(byte w)
 		case CHEAT_BRAINS:
 			player.brains=curMap->numBrains;
 			SetPlayerGlow(128);
-			MakeNormalSound(SND_KOOLKAT);
+			MakeNormalSound(SND_CHEATWIN);
 			break;
 		case CHEAT_KEYS:
 			player.keys[0]=3;
 			player.keys[1]=1;
 			player.keys[2]=1;
 			player.keys[3]=1;
-			MakeNormalSound(SND_GETKEY);
+			MakeNormalSound(SND_CHEATWIN);
 			NewMessage("I am the keymaster!",30,0);
 			break;
 		case CHEAT_SCANNER:
-			player.weapon=WPN_SCANNER;
-			player.ammo=5;
+			TakeWeapon(WPN_SCANNER, 5); // gimme scanner
 			NewMessage("Scanner!",30,0);
 			break;
 		case CHEAT_AMMO:
-			if(player.weapon==0 || player.ammo==0)
-				player.weapon=WPN_AK8087;
+			if(GetFirstAvailableWeaponSlot() == 255) // give a gun if you have no weapon
+				TakeWeapon(WPN_AK8087,1);
 			player.ammoCrate=255;
 			NewMessage("Ammo Crate!",30,0);
 			break;
@@ -215,7 +214,7 @@ void DoCheat(byte w)
 			break;
 		case CHEAT_RAGE:
 			player.rage=127*256;
-			MakeNormalSound(SND_RAGE);
+			MakeNormalSound(SND_CHEATWIN);
 			break;
 	}
 }

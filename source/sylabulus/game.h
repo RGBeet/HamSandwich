@@ -23,13 +23,14 @@
 
 #define TIME_PER_FRAME (1000/30)
 
-#define GAMEMODE_PLAY  0
-#define GAMEMODE_MENU  1 // level menu
-#define GAMEMODE_PIC   2 // showing am BMP/FLC file
-#define GAMEMODE_RAGE  3 // rage activate
-#define GAMEMODE_SCAN  4 // using the scanner?
-#define GAMEMODE_SHOP  5 // SHOPPING!
-#define GAMEMODE_CHAT  5 // chat dialogue
+#define GAMEMODE_PLAY	0
+#define GAMEMODE_MENU	1	// level menu
+#define GAMEMODE_PIC	2	// showing am BMP/FLC file
+#define GAMEMODE_RAGE	3	// rage activate
+#define GAMEMODE_SCAN	4	// using the scanner?
+#define GAMEMODE_SHOP	5	// SHOPPING!
+#define GAMEMODE_CHAT	6	// chat dialogue
+#define GAMEMODE_PWPN	7	// pick weapon
 
 // these are the messages you can send to the game
 #define MSG_NONE	  		0
@@ -93,5 +94,7 @@ void RestoreGameplayGfx(void);
 byte GetGameMode(void);
 
 bool VerifyLevel(Map* map);
+
+void EnterPickMenu(void);
 
 #endif

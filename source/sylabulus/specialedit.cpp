@@ -668,9 +668,10 @@ static const char* KeypressName(int value)
 		case CONTROL_DN: return "Down";
 		case CONTROL_LF: return "Left";
 		case CONTROL_RT: return "Right";
-		case CONTROL_B1: return "Fire";
+		case CONTROL_B1: return "Attack";
 		case CONTROL_B2: return "Special";
-		case CONTROL_B3: return "Wpn Lock";
+		case CONTROL_B3: return "Switch";
+		case CONTROL_B4: return "Wpn Lock";
 		default: return "???";
 	}
 }
@@ -680,7 +681,7 @@ static void KeypressClick(int id)
 	curTrig=trgStart + id/100-1;
 
 	spcl.trigger[curTrig].value*=2;
-	if(spcl.trigger[curTrig].value>CONTROL_B3)
+	if(spcl.trigger[curTrig].value>CONTROL_B4)
 		spcl.trigger[curTrig].value=1;
 
 	MakeNormalSound(SND_MENUCLICK);

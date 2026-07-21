@@ -18,6 +18,7 @@
 #include "appdata.h"
 #include "winpch.h"
 #include "steam.h"
+#include "pickmenu.h"
 
 byte showStats=0;
 dword gameStartTime,visFrameCount,updFrameCount;
@@ -187,8 +188,15 @@ void ExitLevel(void)
 	ExitParticles();
 
 	player.vehicle=0;
-	player.weapon=0;
 	player.hammers=0;
+
+	for(int i=0;i<5;i++)
+	{
+		player.weapons[i]		= 0;
+		player.ammunition[i]	= 0;
+	}
+	player.activeSlot	= 255; // back to empty slot
+	player.wpnSlots		= 1;
 
 	delete curMap;
 	curMap = nullptr;
@@ -266,7 +274,7 @@ TASK(byte) LunaticRun(int *lastTime)
 			if(!editing && !player.cheated && verified)
 			{
 				profile.progress.totalTime++;
-				if((curMap->flags&(MAP_UNDERWATER|MAP_LAVA)) && player.weapon!=WPN_MINISUB)
+				if((curMap->flags&(MAP_UNDERWATER|MAP_LAVA)) && GetCurrentWeaponType()!=WPN_MINISUB)
 					profile.progress.underwaterTime++;
 			}
 
@@ -374,13 +382,21 @@ TASK(byte) LunaticRun(int *lastTime)
 					break;
 			}
 		}
+		else if (gameMode == GAMEMODE_PWPN)
+		{
+			if (UpdatePickMenu(gamemgl) == 0)
+			{
+				lastKey = 0;
+				gameMode = GAMEMODE_PLAY;
+			}
+		}
 		else if(gameMode==GAMEMODE_PIC)	// gamemode_pic
 		{
 			if(pictureNoKey)
 				pictureNoKey--;
 			else
 			{
-				if(GetTaps()&(CONTROL_B1|CONTROL_B2))
+				if(GetTaps()&ANY_BUTTONS)
 				{
 					gameMode=GAMEMODE_PLAY;
 					// restore the palette
@@ -505,7 +521,10 @@ TASK(void) LunaticDraw(void)
 			RenderPauseMenu();
 		else
 			RenderUnpaused();
-		if(gameMode==GAMEMODE_RAGE)
+
+		if (gameMode == GAMEMODE_PWPN)
+			RenderPickMenu(gamemgl);
+		else if(gameMode==GAMEMODE_RAGE)
 			ShowRage(gamemgl);
 		else if(gameMode==GAMEMODE_SHOP)
 		{
@@ -840,4 +859,12 @@ TASK(void) TestLevel(world_t *world,byte level)
 	InitGuys(256);
 	GetSpecialsFromMap(EditorGetMap()->special);
 	editing=1;
+}
+
+// enter the pick menu
+void EnterPickMenu(void)
+{
+	player.reload = 5;
+	gameMode = GAMEMODE_PWPN;
+	InitPickMenu();
 }

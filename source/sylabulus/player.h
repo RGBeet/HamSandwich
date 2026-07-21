@@ -40,6 +40,7 @@ enum : byte
 	MAX_WEAPONS
 };
 const char* GetWeaponName(byte weapon);
+const int GetWeaponIcon(byte weapon);
 
 // vehicles you could be on
 enum : byte
@@ -74,6 +75,13 @@ struct player_t
 	int  ammo;
 	byte reload;
 	byte wpnReload;
+
+
+	// wepaon stuff
+	byte weapons[8];
+	int	ammunition[8];
+	byte activeSlot;
+	byte wpnSlots;	// number of weapons slots (1-5)
 
 	int life;
 	int brains;
@@ -154,6 +162,12 @@ void SetTportClock(byte tp);
 byte GetTportClock(void);
 byte StealWeapon(void);
 
+byte GetCurrentWeaponType();
+int GetCurrentWeaponAmmo();
+bool PlayerCanFireWeapon();
+byte ReduceCurrentWeaponAmmo(int amt);
+byte SetCurrentWeaponAmmo(int amt);
+
 int WeaponMaxAmmo(byte wpn);
 byte PlayerGetWeapon(byte wpn,int x,int y);
 byte PlayerPowerup(int powerup);
@@ -170,5 +184,20 @@ void PutPlayerAtStart(Guy *g);
 byte ControlCheck(byte c);
 
 void ShouldCheckControls(byte n);
+
+byte GetCurrentWeaponType(void);
+int GetCurrentWeaponAmmo(void);
+
+void SetWeaponAmmo(byte slot, byte wpn, int ammo);
+byte TakeWeapon(byte wpn, int ammo);
+byte GetFirstAvailableWeaponSlot(void);
+byte RemoveCurrentWeapon(void);
+
+byte PlayerUsingMechWeapon(void);
+byte PlayerAddPockets(int amt);
+byte PlayerCanThrowHammers(void);
+
+#define ANY_BUTTONS		(CONTROL_B1|CONTROL_B2|CONTROL_B3|CONTROL_B4)
+#define ATK_BUTTONS		(CONTROL_B1|CONTROL_B2)
 
 #endif
