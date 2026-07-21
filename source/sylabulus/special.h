@@ -111,7 +111,7 @@
 #define EFF_CHAT			38	// do a chat thing
 #define EFF_TIMER			39	// set the timer to (or change the timer by) N. The timer is at the bottom of the screen, like Pizza Tower
 
-// camera stuff!
+// camera stuff (TODO: ADD CAMERA)
 #define EFF_CAMERAFOCUS		40	// focus camera on a specific point
 #define EFF_CAMERAGUY		41	// focus camera on a specific entity
 #define EFF_CAMERASCROLL	42	// scroll camera by X tiles and/or Y tiles (0 means no scroll in that direction) - overwrites previous scroll special
@@ -120,8 +120,10 @@
 #define EFF_AFFLICT			44	// afflict a monster with a status effect for N frames (like poison, burn, etc.)
 
 #define EFF_PARTICLE		45	// summon particle type N at X,Y
+#define EFF_MOVESPCL		46	// move special At X,Y by N,M (affects coordinates)
+#define EFF_VARTILE			47	// set var N to tile at X,Y
 
-#define EFF_MAX				46
+#define EFF_MAX				48
 
 #define OLD_MAX_TRIGGERS	33
 #define OLD_MAX_EFFECTS		38

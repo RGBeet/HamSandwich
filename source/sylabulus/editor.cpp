@@ -16,6 +16,7 @@
 #include "appdata.h"
 #include "exportdialog.h"
 #include "steam.h"
+#include "spclglobal.h"
 
 byte editing = 0;
 
@@ -483,6 +484,9 @@ TASK(void) UpdateMouse(void)
 		case EDITMODE_PICKEFF:
 			TriggerEffectPick_Update(mouseX, mouseY, scroll, editmgl, editMode);
 			break;
+		case EDITMODE_SPCLGLOBAL:
+			UpdateGlobalSpecialMenu(&world, mouseX, mouseY, editmgl);
+			break;
 	}
 }
 
@@ -754,6 +758,10 @@ void EditorDraw(MGLDraw* mgl)
 		case EDITMODE_PICKEFF:
 			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			TriggerEffectPick_Render(mouseX,mouseY,editmgl,editMode);
+			break;
+		case EDITMODE_SPCLGLOBAL:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
+			RenderGlobalSpecialMenu(&world, mouseX, mouseY, editmgl);
 			break;
 	}
 

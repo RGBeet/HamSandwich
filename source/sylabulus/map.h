@@ -128,6 +128,7 @@ class Map
 		byte FindGuy(int x,int y,byte size,Guy *g);
 
 		byte Keychains(void);	// return bitflags for which keychains are in this level
+		byte PushSpecials(int x, int y, int width, int height);
 
 		// Returns true if the coordinate are valid.
 		bool InRange(int x, int y) const { return x >= 0 && y >= 0 && x < width && y < height; }

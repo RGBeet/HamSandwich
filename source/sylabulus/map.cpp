@@ -1540,3 +1540,49 @@ const char* MapFlagName(int flagIndex)
 		return lvlFlagName[flagIndex];
 	return "???";
 }
+
+byte DoThePushing(special_t* spcl, int dx, int dy)
+{
+	int n = GetSpecial(spcl->x,spcl->y);
+	special_t* other = GetSpecial(n);
+	byte good = 1;
+
+	if (other && other != spcl)
+	{
+		good = DoThePushing(other, dx, dy); // push other specials with it
+	}
+
+	if (spcl->x + dx <= 0)
+		dx = -spcl->x;
+
+	if (spcl->x + dx >= (curMap->width - 1))
+		dx = curMap->width - 1 - spcl->x;
+
+	if (spcl->y + dy <= 0)
+		dy = -spcl->y;
+
+	if (spcl->y + dy >= (curMap->height - 1))
+		dy = curMap->height - 1 - spcl->y;
+
+	if (!good || (dx == 0 && dy == 0)) // cannot push further
+		return 0;
+
+	spcl->x += dx;
+	spcl->y += dy;
+	return 1;
+}
+
+byte Map::PushSpecials(int x, int y, int dx, int dy)
+{
+	int i;
+	for (special_t &spcl : special)
+	{
+		if (spcl.x == x && spcl.y == y)
+		{
+			AdjustSpecialCoords(&spcl, dx, dy);
+			AdjustSpecialEffectCoords(&spcl, dx, dy);
+			return DoThePushing(&spcl,dx,dy); // only works if i put it in a function!?
+		}
+	}
+	return 1;
+}

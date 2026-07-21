@@ -8,7 +8,7 @@
 #include "tool_eraser.h"
 #include "tool_special.h"
 #include "tool_select.h"
-#include "dialogbits.h"
+#include "spclglobal.h"
 #include "terrainedit.h"
 #include "soundedit.h"
 #include "monsteredit.h"
@@ -20,6 +20,7 @@
 #include "viewdialog.h"
 #include "appdata.h"
 #include "owned_stdio.h"
+#include "dialogbits.h"
 
 // Begin JspEdit crap
 #if defined(_WIN32)
@@ -115,7 +116,7 @@ static const char toolName[NUM_TOOLS][16]={
 	"Floor","Wall","Item","Badguy","Light","Special","Select","Eraser"
 };
 static const char menuName[NUM_MENUS][16]={
-	"File","World","TEST!","Level","View","Tiles","Items","Sound","JspEdit","Exit"
+	"File","World","TEST!","Level","View","Tiles","Items","Sound","Spcls","Exit"
 };
 static std::vector<byte> visMenus;
 
@@ -145,8 +146,8 @@ void ToolInit(void)
 	visMenus.clear();
 	for (int i = 0; i < NUM_MENUS; ++i)
 		visMenus.push_back(i);
-	if (!CheckJspEdit())
-		visMenus.erase(visMenus.begin() + MENU_JSPEDIT);
+	//if (!CheckJspEdit())
+	//	visMenus.erase(visMenus.begin() + MENU_JSPEDIT);
 }
 
 void ToolExit(void)
@@ -283,8 +284,10 @@ TASK(void) ToolUpdate(int msx,int msy,byte editMenu,MGLDraw *mgl)
 							InitYesNoDialog("Exit the editor?","Yes","No");
 							SetEditMode(EDITMODE_EXIT);
 							break;
-						case MENU_JSPEDIT:
-							LaunchJspEdit();
+						case MENU_SPCLGLOBAL:
+							InitGlobalSpecialMenu(EditorGetWorld());
+							SetEditMode(EDITMODE_SPCLGLOBAL);
+							//LaunchJspEdit();
 							break;
 					}
 				}

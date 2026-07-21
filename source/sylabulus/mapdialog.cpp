@@ -2,6 +2,7 @@
 #include "editor.h"
 #include "dialogbits.h"
 #include "textdialog.h"
+#include "specialedit.h"
 #include "repair.h"
 #include <algorithm>
 
@@ -130,17 +131,6 @@ void RenderMapDialog(int msx, int msy, MGLDraw* mgl)
 	}
 	mgl->Box(moreLeft, moreTop, moreRight, moreBottom, 31);
 	Print(moreLeft + 2, moreTop + 2, "More Levels...", 0, 1);
-
-	// Global Specials
-	if (msx >= moreLeft+205 &&
-		msx <= moreRight+205 &&
-		msy >= moreTop &&
-		msy <= moreBottom)
-	{
-		mgl->FillBox(moreLeft+205, moreTop, moreRight+205, moreBottom, dialogueColor+8);
-	}
-	mgl->Box(moreLeft+205, moreTop, moreRight+205, moreBottom, 31);
-	Print(moreLeft + 207, moreTop + 2, "Global Specials", 0, 1);
 
 	// Right hand buttons.
 	const int buttonX = left + 330;
@@ -393,17 +383,6 @@ byte MapDialogClick(int msx, int msy, MGLDraw* mgl)
 		left + 2,
 		top + 278,
 		left + 117,
-		top + 292))
-	{
-		MapDialogMoreMaps();
-		return 1;
-	}
-
-	// Global Specials
-	if (PointInRect(msx, msy,
-		left + 207,
-		top + 278,
-		left + 322,
 		top + 292))
 	{
 		MapDialogMoreMaps();

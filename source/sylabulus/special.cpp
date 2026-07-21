@@ -84,6 +84,11 @@ special_t *GetSpecial(int i)
 	return (i >= 0 && i < numSpecials) ? &spcl[i] : NULL;
 }
 
+special_t* GetGlobalSpecial(int i)
+{
+	return (i >= 0 && i < numSpecials) ? &EditorGetWorld()->special[i] : NULL;
+}
+
 void DeleteSpecial(int i)
 {
 	int j;
@@ -393,8 +398,8 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 			eff->value = 1;
 			break;
 		case EFF_CAMERAFOCUS:
-			eff->x = 255;
-			eff->y = 255;
+			eff->x = 0;
+			eff->y = 0;
 			break;
 		case EFF_CAMERAGUY:
 			eff->value = MONS_ANYBODY;
@@ -402,6 +407,12 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 		case EFF_CAMERASCROLL:
 			eff->value		= 0;
 			eff->value2		= 0;
+			break;
+		case EFF_MOVESPCL:
+			eff->x			= 0;
+			eff->y			= 0;
+			eff->value		= 1;
+			eff->value2		= 1;
 			break;
 		default:
 			break;
@@ -1405,6 +1416,63 @@ byte TriggerYes(special_t *me,trigger_t *t,Map *map)
 		case TRG_MONSAGE:
 			answer = CheckMonsterAge(t->x, t->y, t->value, t->value2, t->flags);
 			break;
+		case TRG_STPVARTILE:
+			for(i=0;i<nextEvent;i++)
+			{
+				if(events[i].type==EVT_STEP && map->GetTile(events[i].x,events[i].y)->floor==GetVar(t->value2))
+				{
+					switch(t->value)
+					{
+						case MONS_ANYBODY:
+							answer=1;
+							victim=GetGuy(events[i].value);
+							break;
+						case MONS_GOODGUY:
+							if(events[i].guyFriendly==1)
+							{
+								victim=GetGuy(events[i].value);
+								answer=1;
+							}
+							break;
+						case MONS_BADGUY:
+							if(events[i].guyFriendly==0)
+							{
+								victim=GetGuy(events[i].value);
+								answer=1;
+							}
+							break;
+						case MONS_NONPLAYER:
+							if(events[i].guyType!=MONS_BOUAPHA)
+							{
+								victim=GetGuy(events[i].value);
+								answer=1;
+							}
+							break;
+						case MONS_PLAYER:
+							if(GetGuy(events[i].value)!=NULL && GetGuy(events[i].value)->aiType==MONS_BOUAPHA)
+							{
+								victim=GetGuy(events[i].value);
+								answer=1;
+							}
+							break;
+						case MONS_TAGGED:
+							if(GetGuy(events[i].value)==tagged)
+							{
+								victim=GetGuy(events[i].value);
+								answer=1;
+							}
+							break;
+						default:
+							if(events[i].guyType==t->value)
+							{
+								victim=GetGuy(events[i].value);
+								answer=1;
+							}
+							break;
+					}
+				}
+			}
+			break;
 	}
 
 	if(t->flags&TF_NOT)
@@ -1806,7 +1874,15 @@ void SpecialEffect(special_t *me,Map *map)
 					continue;
 				else
 					DoParticleEffect(me->effect[i].x * TILE_WIDTH + TILE_WIDTH / 2, me->effect[i].y * TILE_HEIGHT + TILE_HEIGHT / 2,me->effect[i].value);
-				
+				break;
+			case EFF_MOVESPCL:
+				curMap->PushSpecials(me->effect[i].x,me->effect[i].y,me->effect[i].value,me->effect[i].value2);
+				break;
+			case EFF_VARTILE:
+				v = map->GetTile(me->effect[i].x, me->effect[i].y)->floor;
+				SetVar(me->effect[i].value, v);
+				//v2 = map->GetTile(me->effect[i].x, me->effect[i].y)->wall;
+				break;
 		}
 	}
 	if(me->uses>0)
@@ -2269,8 +2345,16 @@ void AdjustSpecialEffectCoords(special_t *me,int dx,int dy)
 				}
 				break;
 			case EFF_PARTICLE:
-				me->effect[i].x += dx;
-				me->effect[i].y += dy;
+				me->effect[i].x			+= dx;
+				me->effect[i].y			+= dy;
+				break;
+			case EFF_MOVESPCL:
+				me->effect[i].x			+= dx;
+				me->effect[i].y			+= dy;
+				break;
+			case EFF_VARTILE:
+				me->effect[i].x			+= dx;
+				me->effect[i].y			+= dy;
 				break;
 		}
 	}

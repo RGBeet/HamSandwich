@@ -87,6 +87,7 @@ static int selectY;
 static byte previousMap;
 static byte helpRemember;
 static byte trgStart,effStart;
+static byte global;
 
 #define ID_EXIT				1
 #define ID_MORE				2
@@ -145,7 +146,8 @@ static const char trigName[][32]={
 	"Key From Other World",
 	"Other World Percentage",
 	"Adjacent Color Special",
-	"Monster Age"
+	"Monster Age",
+	"Step On Tile Var."
 };
 
 static const char effName[][32]={
@@ -194,7 +196,9 @@ static const char effName[][32]={
 	"Scroll Camera",
 	"Mark Entity as Boss",
 	"Set Entity Status Effect",
-	"Create Particle"
+	"Create Particle",
+	"Move Special Along Grid",
+	"Set Var. to Tile Value"
 };
 
 static void SetupTriggerButtons(int t,int y);
@@ -2570,13 +2574,33 @@ static void SetupEffectButtons(int t,int y)
 			break;
 		case EFF_PARTICLE:
 			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 50, y + 17, 1, 1, "Make particle of type", NULL);
-			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 274, y + 17, 70, 14, GetParticleName(effect.value), ParticleClick);
-			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 2 + 100 * t, 0, 378, y + 17, 1, 1, "at", NULL);
-			if (effect.x == 255)
-				strcpy(s, "Anywhere");
-			else
-				sprintf(s, "%d, %d", effect.x, effect.y);
-			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 3 + 100 * t, 0, 450, y + 17, 75, 14, s, XY3Click);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 216, y + 17, 140, 14, GetParticleName(effect.value), ParticleClick);
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 2 + 100 * t, 0, 367, y + 17, 1, 1, "at", NULL);
+
+			sprintf(s, "%d, %d", effect.x, effect.y); // cannot be "anywhere"
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 3 + 100 * t, 0, 384, y + 17, 75, 14, s, XY3Click);
+			break;
+		case EFF_MOVESPCL:
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 50, y + 17, 1, 1, "Try to move special at", NULL);
+
+			sprintf(s, "%d, %d", effect.x, effect.y);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 228, y + 17, 70, 14, s, XY3Click);
+
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 2 + 100 * t, 0, 300, y + 17, 1, 1, "by", NULL);
+
+			sprintf(s, "%d", effect.value);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 3 + 100 * t, 0, 319, y + 17, 40, 14, s, NumberClick);
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 4 + 100 * t, 0, 351, y + 17, 1, 1, "x", NULL);
+
+			sprintf(s, "%d", effect.value2);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 5 + 100 * t, 0, 343, y + 17, 40, 14, s, Number2Click);
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 6 + 100 * t, 0, 386, y + 17, 1, 1, "tiles", NULL);
+			break;
+		case EFF_VARTILE:
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "Set variable", NULL);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 130, y + 17, 30, 14, VarName(effect.value), VarClick);
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 2 + 100 * t, 0, 194, y + 17, 1, 1, "to tile at", NULL);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 3 + 100 * t, 0, 214, y + 17, 70, 14, s, XY3Click);
 			break;
 	}
 }
