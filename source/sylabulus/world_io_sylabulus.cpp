@@ -218,6 +218,112 @@ static void LoadMapSpecial(hamworld::Section* f, special_t* spcl)
 	f->read_varint();  // ignore extension flags
 }
 
+static void SaveGlobalSpecial(hamworld::Section* f, const special_t* spcl)
+{
+	f->write_varint(spcl->x);
+	f->write_varint(spcl->y);
+	f->write_varint(spcl->uses);
+
+	// new stuff
+	f->write_varint(spcl->color);
+
+	// triggers
+	size_t trigger_count = 0;
+	for (size_t i = 0; i < NUM_TRIGGERS; ++i)
+		if (spcl->trigger[i].type)
+			++trigger_count;
+
+	f->write_varint(trigger_count);
+	for (size_t i = 0; i < NUM_TRIGGERS; ++i)
+	{
+		const trigger_t* elem = &spcl->trigger[i];
+		if (!elem->type)
+			continue;
+		f->write_varint(elem->flags);
+		f->write_varint(elem->type);
+		f->write_varint(elem->x);
+		f->write_varint(elem->y);
+		f->write_varint((uint32_t)elem->value);
+		f->write_varint((uint32_t)elem->value2);
+
+		// Pull trigger text from effect array.
+		if (elem->type == TRG_EQUATION || elem->type == TRG_EQUVAR)
+			f->write_string(spcl->effect[i].text);
+		else
+			f->write_string("");
+	}
+
+	// effects
+	size_t effect_count = 0;
+	for (size_t i = 0; i < NUM_EFFECTS; ++i)
+		if (spcl->effect[i].type)
+			++effect_count;
+
+	f->write_varint(effect_count);
+	for (size_t i = 0; i < NUM_EFFECTS; ++i)
+	{
+		const effect_t* elem = &spcl->effect[i];
+		if (!elem->type)
+			continue;
+		f->write_varint(elem->flags);
+		f->write_varint(elem->type);
+		f->write_varint(elem->x);
+		f->write_varint(elem->y);
+		f->write_varint((uint32_t)(elem->type == EFF_SOUND ? SoundToDescIndex(elem->value) : elem->value));
+		f->write_varint((uint32_t)elem->value2);
+		f->write_string(elem->text);
+	}
+
+	f->write_varint(0);  // no extension flags
+}
+
+static void LoadGlobalSpecial(hamworld::Section* f, special_t* spcl)
+{
+	spcl->x = f->read_varint();
+	spcl->y = f->read_varint();
+	spcl->uses = f->read_varint();
+
+	// new stuff
+	spcl->color = f->read_varint();
+
+	// triggers
+	size_t trigger_count = f->read_varint();
+	for (size_t i = 0; i < trigger_count; ++i)
+	{
+		trigger_t* elem = &spcl->trigger[i];
+		elem->flags = (TriggerFlags)f->read_varint();
+		elem->type = f->read_varint();
+		elem->x = f->read_varint();
+		elem->y = f->read_varint();
+		elem->value = (uint32_t)f->read_varint();
+		elem->value2 = (uint32_t)f->read_varint();
+
+		// Put trigger text into effect array.
+		if (elem->type == TRG_EQUATION || elem->type == TRG_EQUVAR)
+			f->read_string(spcl->effect[i].text);
+		else
+			f->read_string(nullptr);
+	}
+
+	// effects
+	size_t effect_count = f->read_varint();
+	for (size_t i = 0; i < effect_count; ++i)
+	{
+		effect_t* elem = &spcl->effect[i];
+		elem->flags = (EffectFlags)f->read_varint();
+		elem->type = f->read_varint();
+		elem->x = f->read_varint();
+		elem->y = f->read_varint();
+		elem->value = (uint32_t)f->read_varint();
+		if (elem->type == EFF_SOUND)
+			elem->value = DescIndexToSound(elem->value);
+		elem->value2 = (uint32_t)f->read_varint();
+		f->read_string(elem->text);
+	}
+
+	f->read_varint();  // ignore extension flags
+}
+
 static void SaveMapTile(hamworld::Section* f, const big_savetile* t)
 {
 	f->write_varint(t->floor);
@@ -449,6 +555,19 @@ byte Syl_SaveWorld(const world_t* world, const char* fname)
 		maps.push_back(std::move(mapsec));
 	}
 
+	// global specials
+	hamworld::Section global_specials;
+	size_t global_special_count = 0;
+	for (const special_t& spcl : world->special)
+	{
+		if (spcl.x != 255)
+			++global_special_count;
+	}
+	global_specials.write_varint(global_special_count);
+	for (const special_t& spcl : world->special)
+		if (spcl.trigger[0].type != 0)
+			SaveMapSpecial(&global_specials, &spcl);
+
 	hamworld::Save save(fname);
 	save.header(world->author, world->map[0]->name, APPNAME);
 
@@ -469,6 +588,12 @@ byte Syl_SaveWorld(const world_t* world, const char* fname)
 		save.section("map", map.save());
 	}
 
+	// new: save global specials
+	if (global_special_count > 0)
+	{
+		printf("SAVING GLOBAL SPECIALS SECTION - SIZE %d/128.\n", global_special_count);
+		save.section("global_specials", global_specials.save());
+	}
 	return 1;
 }
 
@@ -568,6 +693,14 @@ byte Syl_LoadWorld(world_t* world, const char* fname)
 			LoadMapData(&section, map);
 
 			section.read_varint();  // ignore extension flags
+		}
+		else if (section_name == "global_specials")
+		{
+			printf("FOUND GLOBAL SPECIALS.");
+			InitGlobalSpecials(world->special);
+			size_t special_count = section.read_varint();
+			for (size_t i = 0; i < special_count; ++i)
+				LoadMapSpecial(&section, &world->special[i]);
 		}
 		else
 		{

@@ -1177,6 +1177,8 @@ byte TriggerItem(Guy *me,mapTile_t *m,int x,int y)
 				player.hammers=0;
 			else
 				player.hammers+=items[m->item].effectAmt;
+			if (!GetCurrentWeaponAmmo() && !GetCurrentWeaponType()) // if player has no weapon, switch to hammer
+				player.activeSlot = 255;
 			return 1;
 			break;
 		case IE_PANTS:

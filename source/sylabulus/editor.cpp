@@ -98,6 +98,7 @@ byte InitEditor(void)
 		(zoom == 1 ? MapRenderFlags{} : MAP_ZOOMOUT);
 
 	InitSpecials(world.map[0]->special);
+	InitGlobalSpecials(world.special);
 	StopSong();
 	SetPlayerStart(-1,-1);
 	InitStars();

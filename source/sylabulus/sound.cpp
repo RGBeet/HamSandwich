@@ -8,7 +8,9 @@
 #include "appdata.h"
 #include "string_extras.h"
 
-static SoundDesc soundInfo[MAX_SOUNDS]={
+// TODO: ADD NEW SOUND COMPATABILITY FOR SOUNDINFO
+
+static SoundDesc soundInfo[512]={
 	{/*SND_NONE,*/ "No Sound At All!!",ST_EFFECT},
 	{/*SND_MENUSELECT,*/ "Menu Select",ST_INTFACE},
 	{/*SND_PAUSE,*/ "Pause Game",ST_INTFACE},
@@ -342,6 +344,14 @@ static SoundDesc soundInfo[MAX_SOUNDS]={
 	{/*SND_JACKDIE,*/ "Jack Frost Die",ST_MONSTER},
 };
 
+static SoundDesc soundInfo2[512] = { // starts from index 512, doing this for now until i can redefine custom sound indexes
+	{/*SND_NONE,*/ "My Name Jeff",ST_EFFECT},
+	{/*SND_LYNXPOINT*/ "Lynx Point Theme",ST_INTFACE},
+	{/*SND_PAINTSPLAT*/ "Paint Splat",ST_INTFACE},
+	{/*SND_TIMESTOP*/ "Stopwatch Activate",ST_EFFECT},
+	{/*SND_TIMEWARN*/ "Stopwatch Warn",ST_EFFECT},
+};
+
 static int numCustom;
 static byte *customSound[MAX_CUSTOM_SOUNDS];
 static uint32_t customLength[MAX_CUSTOM_SOUNDS];
@@ -448,7 +458,10 @@ int SoundToDescIndex(int sound)
 
 SoundDesc *GetSoundInfo(int snd)
 {
-	return &soundInfo[snd];
+	if (snd < 512)
+		return &soundInfo[snd];
+	else
+		return &soundInfo2[snd-511]; // new sounds have ID of 512:
 }
 
 int GetNumSounds(void)

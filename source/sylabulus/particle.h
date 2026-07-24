@@ -8,7 +8,7 @@
 enum : byte
 {
 	PART_NONE,
-	PART_SNOW2, // speedy snow particles, just like hammer particles but white
+	PART_SNOW2,			// speedy snow particles, just like hammer particles but white
 	PART_SNOW,
 	PART_DIRT,
 	PART_HAMMER,
@@ -17,20 +17,23 @@ enum : byte
 	PART_BOOM,
 	PART_WATER,
 	PART_LIGHTNING,
-	PART_STINKY, // stinky lines for garlic
-	PART_GLASS, // multicolored stained glass
-	PART_COUNTESS, // glowing image of the countess for when she charges
+	PART_STINKY,		// stinky lines for garlic
+	PART_GLASS,			// multicolored stained glass
+	PART_COUNTESS,		// glowing image of the countess for when she charges
 	PART_BUBBLE,
 	PART_MINDCONTROL,
-	PART_COLOR, // colored particles
-	PART_RAIN, // raindrops, keep falling on my head
+	PART_COLOR,			// colored particles
+	PART_RAIN,			// raindrops, keep falling on my head
 	PART_LUNA,
-	PART_RADAR, // used for the radars
-	PART_FX, // accelerates upward, shrinks as it dies, for effects
-	PART_FIRE, // from LL1, used for torches
+	PART_RADAR,			// used for the radars
+	PART_FX,			// accelerates upward, shrinks as it dies, for effects
+	PART_FIRE,			// (from LL1) used for torches
+	PART_AKSPLAT,		// used for ak-8087 bullets
+	PART_SHRAPNEL,		// used for cherry bomb explosions
+	PART_LIGHT,
+	PART_SWAP,			// used to spice up swapguns a little
+	MAX_PARTICLES		// MAX PARTICLES
 };
-
-#define MAX_PARTICLES	15
 
 class Particle
 {
@@ -87,6 +90,8 @@ void ColorDrop(byte color,int x,int y,int z);
 void TrackParticle(byte color,int x,int y,int tx,int ty);
 void HealRing(byte color,int x,int y,int z,byte num,byte force);
 void TeamChangeRing(byte color,int x,int y,int z,byte num,byte force);
+
+void StopwatchRing(int x, int y, int z, byte num, byte force);
 
 void DoParticleEffect(int x,int y, byte type);
 

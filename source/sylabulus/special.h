@@ -62,8 +62,9 @@
 
 // variable shenanigans
 #define TRG_STPVARTILE	44	// true if creature step on tile N (variable!)
+#define TRG_FORCESTART	45	// true always - fires once at start of level
 
-#define MAX_TRIGGER		45
+#define MAX_TRIGGER		46
 
 // effects
 #define EFF_NONE		0
@@ -198,9 +199,11 @@ struct special_t
 class Guy;
 
 void InitSpecials(std::span<special_t> list);
+void InitGlobalSpecials(std::span<special_t> list);
 
 void GetSpecialsFromMap(std::span<special_t> list);
 void GetSpecialsFromWorld(std::span<special_t> list);
+void GetSpecialsFromMapAndWorld(std::span<special_t> mapList, std::span<special_t> worldList);
 
 int NewSpecial(byte x,byte y);
 void DefaultTrigger(trigger_t *trig,int x,int y);
@@ -210,6 +213,8 @@ int GetSpecial(byte x,byte y);
 special_t *GetSpecial(int i);
 special_t *GetGlobalSpecial(int i);
 void DeleteSpecial(int i);
+
+void FillGlobalSpecialUseData(std::span<special_t> list);
 
 class Map;
 
@@ -239,6 +244,7 @@ void EventOccur(byte type,int value,int x,int y,Guy *victim);
 void RenderSpecialXes(Map *map);
 void AdjustSpecialCoords(special_t *me,int dx,int dy);
 void AdjustSpecialEffectCoords(special_t* me, int dx, int dy);
+void CheckSpecialsAtInit(Map* map); // fires once at level start
 Guy *TaggedMonster(void);
 
 #endif

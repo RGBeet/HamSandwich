@@ -79,15 +79,20 @@
 #define OFS_CUSTOM	10
 
 static byte mode;
+
 static special_t spcl;
+
 static byte curTrig,curEff,effMode;
 static byte rightClick,prevType;
+
 static byte specialNum;
+
 static int selectY;
 static byte previousMap;
 static byte helpRemember;
 static byte trgStart,effStart;
 static byte global;
+static byte disableUsesButton;
 
 #define ID_EXIT				1
 #define ID_MORE				2
@@ -147,7 +152,8 @@ static const char trigName[][32]={
 	"Other World Percentage",
 	"Adjacent Color Special",
 	"Monster Age",
-	"Step On Tile Var."
+	"Step On Tile Var.",
+	"Force Activate At Start"
 };
 
 static const char effName[][32]={
@@ -200,6 +206,11 @@ static const char effName[][32]={
 	"Move Special Along Grid",
 	"Set Var. to Tile Value"
 };
+
+void SetGlobalState(byte tf)
+{
+	global = tf;
+}
 
 static void SetupTriggerButtons(int t,int y);
 static void SetupEffectButtons(int t,int y);
@@ -1420,16 +1431,27 @@ static void SetupTriggerButtons(int t,int y)
 	trigger_t trigger = spcl.trigger[t+trgStart];
 	effect_t effect = spcl.effect[t+trgStart];
 
+	byte disableNot		= 0;
+	byte disableAndOr	= 0;
+
+	switch (trigger.type)
+	{
+		case TRG_FORCESTART:
+			disableAndOr = disableNot = 1; // only fires on its own
+			break;
+	}
+
 	ClearButtons(ID_TRIG0+100*t,ID_TRIG0+100*t+99);
 	// not button
-	MakeButton(BTN_RADIO,ID_TRIG0+OFS_NOT+100*t,((trigger.flags&TF_NOT)!=0)*CHECK_ON,
-				   4,y+10,30,14,"NOT",NotClick);
+
+	if (!disableNot)
+		MakeButton(BTN_RADIO,ID_TRIG0+OFS_NOT+100*t,((trigger.flags&TF_NOT)!=0)*CHECK_ON, 4,y+10,30,14,"NOT",NotClick);
 
 	// select trigger button
 	MakeButton(BTN_NORMAL,ID_TRIG0+OFS_SELECT+100*t,0,40,y,50,14,"Select",ChooseTriggerClick);
 
 	// and/or button
-	if(trgStart+t<NUM_TRIGGERS-1)	// last one has no button for this
+	if(!disableAndOr && trgStart+t<NUM_TRIGGERS-1)	// last one has no button for this
 	{
 		if(trigger.flags&TF_AND)
 			MakeButton(BTN_NORMAL,ID_TRIG0+OFS_ANDOR+100*t,0,600,y+10,30,14,"AND",AndOrClick);
@@ -1917,6 +1939,11 @@ static void SetupTriggerButtons(int t,int y)
 				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 7 + 100 * t, 0, 462, y + 17, 80, 14, "Or More", LessMoreClick);
 			else
 				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 7 + 100 * t, 0, 462, y + 17, 80, 14, "Exactly", LessMoreClick);
+			break;
+		case TRG_FORCESTART:
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "Force ONCE @ level start *", NULL);
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 1 + 100 * t, 0, 369, y - 3, 1, 1, "* Activates first!", NULL);
+			disableUsesButton=1; // no use button for you!
 			break;
 	}
 }
@@ -2609,11 +2636,11 @@ static void SpecialEditSetupButtons(void)
 {
 	int i;
 
+	disableUsesButton = 0;
 	ClearButtons();
 
 	// delete, move, and exit
 	MakeButton(BTN_NORMAL,ID_EXIT,0,480,460,158,14,"Exit Special Editor",ExitClick);
-	MakeButton(BTN_NORMAL,ID_USES,0,480,224,40,14,"Uses",UsesClick);
 
 	// trigger/effect pages
 	MakeButton(BTN_NORMAL,ID_TRGUP,0,5,224,40,14,"Up",PageClick);
@@ -2633,21 +2660,48 @@ static void SpecialEditSetupButtons(void)
 		SetupTriggerButtons(i,30+i*38);
 		SetupEffectButtons(i,264+i*38);
 	}
+
+	MakeButton(BTN_NORMAL, ID_USES, 0, 480, 224, 40, 14, "Uses", !disableUsesButton ? UsesClick : NULL);
 }
 
 void SpecialEdit_Init(int spclNum)
 {
 	GetDisplayMGL()->MouseTap();
 	mode=SMODE_NORMAL;
-	memcpy(&spcl,GetSpecial(spclNum),sizeof(special_t));
-	trgStart=effStart=0;
+
+	special_t* target;
+
+	if(global==0)
+	{
+		printf("GETTING LOCAL SPECIAL #%03d\n", spclNum);
+		target = GetSpecial(spclNum);
+	}
+	else
+	{
+		printf("GETTING GLOBAL SPECIAL #%03d\n",spclNum);
+		target = GetGlobalSpecial(spclNum);
+		if (target && target->x == 255)
+			target->x = spclNum;
+	}
+
+	if (target != NULL)
+	{
+		printf("TARGET FOUND!\n");
+		memcpy(&spcl, target, sizeof(special_t));
+		trgStart = effStart = 0;
+		specialNum = spclNum;
+	}
+	else
+	{
+		printf("TARGET NOT FOUND.\n");
+	}
 	SpecialEditSetupButtons();
-	specialNum=spclNum;
 }
 
 void SpecialEdit_Exit(void)
 {
-	memcpy(GetSpecial(specialNum),&spcl,sizeof(special_t));
+	special_t *target = !global ? GetSpecial(specialNum) : GetGlobalSpecial(specialNum);
+	memcpy(target,&spcl,sizeof(special_t));
 }
 
 void SpecialEdit_Update(int mouseX,int mouseY,int scroll,MGLDraw *mgl)
@@ -2781,62 +2835,6 @@ void SpecialEdit_Update(int mouseX,int mouseY,int scroll,MGLDraw *mgl)
 				mode=SMODE_NORMAL;
 			}
 			break;
-		case SMODE_PICKTRIG:
-			/*
-			if(mgl->MouseDown())
-			{
-				if((mouseY-selectY)/TRGPICKER_HEIGHT>=MAX_TRIGGER)
-					spcl.trigger[curTrig].type=TRG_NONE;
-				else
-					spcl.trigger[curTrig].type=(mouseY-selectY)/TRGPICKER_HEIGHT;
-			}
-			else
-			{
-				if((mouseY-selectY)/TRGPICKER_HEIGHT>=MAX_TRIGGER)
-					spcl.trigger[curTrig].type=TRG_NONE;
-				else
-					spcl.trigger[curTrig].type=(mouseY-selectY)/TRGPICKER_HEIGHT;
-				mode=SMODE_NORMAL;
-				if(prevType!=spcl.trigger[curTrig].type)
-				{
-					DefaultTrigger(&spcl.trigger[curTrig],spcl.x,spcl.y);
-					if(spcl.trigger[curTrig].type==TRG_EQUATION || spcl.trigger[curTrig].type==TRG_EQUVAR)
-					{
-						if(spcl.effect[curTrig].type!=EFF_MESSAGE && spcl.effect[curTrig].type!=EFF_SONG &&
-								spcl.effect[curTrig].type!=EFF_PICTURE && spcl.effect[curTrig].type!=EFF_VAR &&
-								spcl.effect[curTrig].type!=EFF_NAME && spcl.effect[curTrig].type!=EFF_MONSGRAPHICS &&
-								spcl.effect[curTrig].type!=EFF_ITEMGRAPHICS && spcl.effect[curTrig].type!=EFF_CHAT)
-							spcl.effect[curTrig].text[0]='\0';
-					}
-				}
-				SetupTriggerButtons(curTrig-trgStart,(curTrig-trgStart)*38+30);
-				MakeNormalSound(SND_MENUSELECT);
-			}
-			*/
-			break;
-		case SMODE_PICKEFF:
-			/*
-			if(mgl->MouseDown())
-			{
-				if((mouseY-selectY)/EFFPICKER_HEIGHT>=EFF_MAX || (mouseY-selectY)/EFFPICKER_HEIGHT<0)
-					spcl.effect[curEff].type=EFF_NONE;
-				else
-					spcl.effect[curEff].type=(mouseY-selectY)/EFFPICKER_HEIGHT;
-			}
-			else
-			{
-				if((mouseY-selectY)/EFFPICKER_HEIGHT>=EFF_MAX || (mouseY-selectY)/EFFPICKER_HEIGHT<0)
-					spcl.effect[curEff].type=EFF_NONE;
-				else
-					spcl.effect[curEff].type=(mouseY-selectY)/EFFPICKER_HEIGHT;
-				mode=SMODE_NORMAL;
-				if(prevType!=spcl.effect[curEff].type)
-					DefaultEffect(&spcl.effect[curEff],spcl.x,spcl.y,(byte)(spcl.trigger[curEff].type==TRG_EQUATION || spcl.trigger[curEff].type==TRG_EQUVAR));
-				SetupEffectButtons(curEff-effStart,(curEff-effStart)*38+264);
-				MakeNormalSound(SND_MENUSELECT);
-			}
-			*/
-			break;
 		case SMODE_PICKGUY:
 			if(effMode==0)
 			{
@@ -2950,7 +2948,23 @@ void SpecialEdit_Key(char k)
 				SetEditMode(EDITMODE_EDIT);
 				if(!CheckSpecial(spcl))
 					spcl.x=255;
-				memcpy(GetSpecial(specialNum),&spcl,sizeof(special_t));
+
+				if (&spcl)
+				{
+					special_t *target;
+					if (!global)
+					{
+						target = GetSpecial(specialNum);
+					}
+					else
+					{
+						target = GetGlobalSpecial(specialNum);
+					}
+					if (target)
+					{
+						memcpy(target, &spcl, sizeof(special_t));
+					}
+				}
 				PickedTile(-1);
 				return;
 			}
@@ -2985,16 +2999,30 @@ void SpecialEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 
 	Print(2,2,"Triggers",0,1);
 	Print(2,242,"Effects",0,1);
-	Print(100,2,"SPECIAL EDIT",0,1);
-	sprintf(s,"#%03d",specialNum);
-	Print(200,2,s,0,1);
-	DrawFillBox(0,240,639,240,31);
 
-	Print(275, 2, "Color", 0, 1);
+	sprintf(s, "#%03d", specialNum);
+	if (global)
+	{
+		Print(100, 2, "GLOBAL SPECIAL EDIT", 0, 1);
+		Print(240, 2, s, 0, 1);
+	}
+	else
+	{
+
+		Print(100, 2, "SPECIAL EDIT", 0, 1);
+		Print(200, 2, s, 0, 1);
+		Print(275, 2, "Color", 0, 1);
+	}
 	//sprintf(s, "#%d", spcl.color%256);
 	//Print(280, 2, s, 0, 1);
 
+	DrawFillBox(0, 240, 639, 240, 31);
+	sprintf(s, "X: %03d, Y: %03d", spcl.x, spcl.y);
+	Print(500, 2, s, 0, 1);
+
 	// # of uses
+	if(disableUsesButton)
+		strcpy(s, "Once");
 	if(spcl.uses>0)
 		sprintf(s,"%d",spcl.uses);
 	else

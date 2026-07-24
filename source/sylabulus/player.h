@@ -36,6 +36,18 @@ enum : byte
 	WPN_MINISUB,
 	WPN_FREEZE,
 	WPN_STOPWATCH,
+	// new stuff goes here!
+	WPN_BOOMERANG,		// LL1 boomerang
+	WPN_MEGAPHONE,		// megaphone: area of attack, loud
+	WPN_ROCKETEER,		// rocket launcher: like bombs, but fly straight and explode on walls
+
+	WPN_RAINBOWGUN,		// chroma gun: shoots strong, bouncy rainbow bullets
+	WPN_LUNCHBOX,		// lunchbox: heals on demand!
+	WPN_BLACKHOLE,		// abyssinator: shoots a black hole
+
+	WPN_GLUEGUN,		// glue gun: slows down enemies
+	WPN_THROWSTARS,		// throwing stars
+	WPN_BFG,			// bouapha's favorite gun (shoots mini hammers!?)
 
 	MAX_WEAPONS
 };

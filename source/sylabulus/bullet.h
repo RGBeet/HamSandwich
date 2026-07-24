@@ -70,7 +70,7 @@ enum BulletType : byte
 	BLT_FREEZE2       = 54, // a freeze bullet that drops like acid bullets and splats
 	BLT_LUNA          = 55, // lunachick's bullets
 	BLT_LUNA2         = 56, // lunachick's bullets with wall-bounce power
-
+	BLT_TORCH	      = 57, // torch visual effect
 	NUM_BULLETS // how many bullets there are in total. Put new types BEFORE this one!
 };
 

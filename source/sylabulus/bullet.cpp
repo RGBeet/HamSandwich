@@ -543,11 +543,23 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 	{
 		case BLT_LUNA:
 		case BLT_LUNA2:
+			ExplodeParticles(PART_HAMMER, me->x, me->y, 0, 8);
+			me->type = 0;
+			break;
 		case BLT_HAMMER:
 		case BLT_HAMMER2:
+			ExplodeParticles(PART_HAMMER, me->x, me->y, 0, 8);
+			me->type = 0;
+			break;
+		case BLT_LASER:
+			ExplodeParticles(PART_AKSPLAT, me->x, me->y, 0, 8);
+			me->type = 0;
+			break;
+		case BLT_TORCH:
+			BlowSmoke(me->x - me->dx, me->y - me->dy, me->z, FIXAMT / 16);
+			break;
 		case BLT_LILBOOM:
 		case BLT_LILBOOM2:
-		case BLT_LASER:
 		case BLT_BOOM:
 		case BLT_ENERGY:
 		case BLT_MEGABEAM:
@@ -571,10 +583,13 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_SPEAR:
 		case BLT_BADSPEAR:
-		case BLT_MINDWIPE:
 		case BLT_HARPOON:
-			ExplodeParticles(PART_HAMMER,me->x,me->y,0,8);
+			ExplodeParticles(PART_SHRAPNEL,me->x,me->y,0,8);
 			me->type=0;
+			break;
+		case BLT_MINDWIPE:
+			ExplodeParticles(PART_FIRE, me->x, me->y, 0, 8);
+			me->type = 0;
 			break;
 		case BLT_BIGSNOW:
 			// poof into snowballs
@@ -598,14 +613,24 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 			me->type=0;
 			ExplodeParticles2(PART_SNOW2,me->x,me->y,me->z,10,8);
 			break;
-		case BLT_MISSILE:
 		case BLT_CHEESEHAMMER:
+			MakeSound(SND_MISSILEBOOM, me->x, me->y, SND_CUTOFF, 1500);
+			me->type = BLT_LILBOOM;
+			me->timer = 9;
+			me->dx = 0;
+			me->dy = 0;
+			me->dz = 0;
+			ExplodeParticles2(PART_LIGHT, me->x, me->y, me->z, 6, 12);
+			ExplodeParticles2(PART_SHRAPNEL, me->x, me->y, me->z, 3, 12);
+			break;
+		case BLT_MISSILE:
 			MakeSound(SND_MISSILEBOOM,me->x,me->y,SND_CUTOFF,1500);
 			me->type=BLT_LILBOOM;
 			me->timer=9;
 			me->dx=0;
 			me->dy=0;
 			me->dz=0;
+			ExplodeParticles2(PART_SHRAPNEL, me->x, me->y, me->z, 3, 12);
 			break;
 		case BLT_TORPEDO:
 			MakeSound(SND_MISSILEBOOM,me->x,me->y,SND_CUTOFF,1500);
@@ -614,6 +639,7 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 			me->dx=0;
 			me->dy=0;
 			me->dz=0;
+			ExplodeParticles2(PART_HAMMER, me->x, me->y, me->z, 3, 12);
 			break;
 		case BLT_ACID:
 		case BLT_SWAP:
@@ -656,6 +682,7 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 			me->type=BLT_BOOM;
 			me->timer=7;
 			me->anim=0;
+			ExplodeParticles2(PART_SHRAPNEL, me->x, me->y, me->z, 3, 12);
 			break;
 		case BLT_SHROOM:
 			for(i=0;i<256;i+=8)
@@ -1147,7 +1174,10 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 		case BLT_CHEESEHAMMER:
 			me->anim++;
 			if(me->anim>7)
+			{
+				Burn(me->x,me->y,me->z);
 				me->anim=0;
+			}
 			me->facing+=6-Random(13);
 			me->dx=Cosine(me->facing)*16;
 			me->dy=Sine(me->facing)*16;
@@ -1173,6 +1203,11 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			{
 				BulletRanOut(me,map,world);
 			}
+			break;
+		case BLT_TORCH:
+			me->dz+=FIXAMT;
+			if (me->timer%4==0)
+				ExplodeParticles2(PART_LIGHT, me->x, me->y, me->z, 2, 16);
 			break;
 		case BLT_BUBBLEPOP:
 			me->dz=0;
@@ -1334,7 +1369,11 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			Clamp(&me->dx,FIXAMT*10);
 			Clamp(&me->dy,FIXAMT*10);
 			me->anim=((32-me->timer)/8)+1;
-			if(me->anim>4)
+			if(me->anim%4==0)
+			{
+				Burn((me->x / TILE_WIDTH) >> FIXSHIFT,
+					(me->y / TILE_HEIGHT) >> FIXSHIFT,FIXAMT*20);
+			}
 				me->anim=4;
 			break;
 		case BLT_LASER:
@@ -1343,7 +1382,10 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 		case BLT_BOMB:
 			me->anim++;
 			if(me->anim>15)
-				me->anim=0;
+			{
+				me->anim = 0;
+				BlowSmoke(me->x - me->dx, me->y - me->dy, me->z, FIXAMT / 16);
+			}
 			HitBadguys(me,map,world);
 			break;
 		case BLT_MINE:
@@ -1611,6 +1653,10 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_SWAP:
 			me->anim+=8;
+			if (me->anim % 24 == 8)
+			{
+				ExplodeParticles2(PART_SWAP,me->x,me->y,me->z,4,2);
+			}
 			HitBadguys(me,map,world);
 			break;
 		case BLT_SCANNER:
@@ -1769,10 +1815,22 @@ void RenderBullet(bullet_t *me)
 			break;
 		case BLT_BOMB:
 			curSpr=bulletSpr->GetSprite(me->anim/2+SPR_BOMB);
-			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,me->bright,curSpr,
+			if (me->timer > 10)
+			{
+				SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 255, me->bright, curSpr,
 					DISPLAY_DRAWME);
-			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,0,255,me->bright,curSpr,
-					DISPLAY_DRAWME|DISPLAY_SHADOW);
+			}
+			else
+			{
+				if (me->timer%4<2)
+					SprDrawOff(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 0, 0, 4, me->bright, curSpr,
+						DISPLAY_DRAWME | DISPLAY_OFFCOLOR);
+				else
+					SprDrawOff(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 0, 0, 5, me->bright+8, curSpr,
+						DISPLAY_DRAWME | DISPLAY_OFFCOLOR);	
+			}
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 0, 255, me->bright, curSpr,
+				DISPLAY_DRAWME | DISPLAY_SHADOW);
 			break;
 		case BLT_BOOM:
 			curSpr=bulletSpr->GetSprite(7-me->timer+SPR_BOOM);
@@ -2409,6 +2467,10 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type,byte friendly)
 			// Likewise with bubble pops
 			me->timer=10;
 			break;
+
+		case BLT_TORCH:
+			me->timer=15;
+			break;
 	}
 }
 
@@ -2999,6 +3061,7 @@ static const byte bulletFacingType[] = {
 	255,  	// BLT_FREEZE2	54		// a freeze bullet that drops like acid bullets and splats
 	7,  	// BLT_LUNA	55		// lunachick's bullets
 	7,  	// BLT_LUNA2	56		// lunachick's bullets with wall-bounce power
+	0,		// BLT_TORCH	57		// harmless torch stuff
 };
 static_assert(std::size(bulletFacingType) == NUM_BULLETS, "Must give new bullets a facing type");
 
@@ -3066,6 +3129,7 @@ static const char bulletName[][20] = {
 	"Evil Freeze",
 	"Lunachick Ray",
 	"Bouncy Lunachick",
+	"Torch"
 };
 static_assert(std::size(bulletName) == NUM_BULLETS, "Must give new bullets a name");
 

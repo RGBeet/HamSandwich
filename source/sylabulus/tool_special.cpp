@@ -57,6 +57,7 @@ void SpecialTool::StartPlop(void)
 		}
 	}
 
+	SetGlobalState(0); // not global, local!
 	SpecialEdit_Init(s);
 	SetEditMode(EDITMODE_SPECIAL);
 }

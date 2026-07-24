@@ -14,12 +14,17 @@
 #include "goal.h"
 #include "palettes.h"
 #include "chat.h"
+#include "world.h"
 #include "worldselect.h"
 #include "particle.h"
 #include "display.h"
 
-static std::span<special_t> spcl;  // Full special storage array.
+static std::span<special_t> spcl;			// Local specials
+static std::span<special_t> spclGlobal;		// Global specials
+static byte	globalspcluses[128];			// save the # of uses for globals - resets each level
+
 static int numSpecials;  // Specials >= this aren't set.
+static int numSpecialsGlobal;
 
 void InitSpecials(std::span<special_t> list)
 {
@@ -29,6 +34,37 @@ void InitSpecials(std::span<special_t> list)
 	{
 		me.x = 255;
 	}
+}
+
+// Fires upon starting up a world, after loading specials.
+// Used for storing the # of uses per global special, which
+// resets upon the start of each level.
+void FillGlobalSpecialUseData(std::span<special_t> list)
+{
+	int i;
+	printf("\n--- FillGlobalSpecialUseData---\n");
+
+	for (i=0;i<128;i++)
+	{
+		byte b = spclGlobal[i].uses;
+		if (spclGlobal[i].x==255) // blank!
+			continue;
+		globalspcluses[i] = spclGlobal[i].uses;
+		printf("SPCL #%03d = %d Uses\n", i, globalspcluses[i]);
+		numSpecialsGlobal = i+1;
+	}
+
+	printf("# of Global Specials:%d\n", numSpecialsGlobal);
+
+	printf("--- DONE! ---\n");
+}
+
+// Initializes blank global special data
+void InitGlobalSpecials(std::span<special_t> list)
+{
+	printf("\n--- InitGlobalSpecials ---\n");
+	spclGlobal = list;
+	printf("\n--- DONE! ---\n");
 }
 
 void GetSpecialsFromMap(std::span<special_t> list)
@@ -48,6 +84,28 @@ void GetSpecialsFromMap(std::span<special_t> list)
 				}
 		}
 	}
+}
+
+void GetSpecialsFromWorld(std::span<special_t> list)
+{
+
+}
+
+void GetSpecialsFromMapAndWorld(std::span<special_t> mapList, std::span<special_t> worldList)
+{
+	int i;
+	printf("\n--- Get Specials Form Map and World ---\n");
+	GetSpecialsFromMap(mapList);
+	for (i = 0;i < numSpecialsGlobal;i++)
+	{
+		printf("\nSPCL #%03d: %d -> %d uses.\n",i, spclGlobal[i].uses, globalspcluses[i]);
+		spclGlobal[i].uses	= globalspcluses[i];
+		spclGlobal[i].x = i;
+	}
+
+	printf("--- DONE! ---\n");
+
+	//GetSpecialsFromWorld(worldList);
 }
 
 int NewSpecial(byte x,byte y)
@@ -86,7 +144,7 @@ special_t *GetSpecial(int i)
 
 special_t* GetGlobalSpecial(int i)
 {
-	return (i >= 0 && i < numSpecials) ? &EditorGetWorld()->special[i] : NULL;
+	return (i >= 0 && i < 128) ? &EditorGetWorld()->special[i] : NULL;
 }
 
 void DeleteSpecial(int i)
@@ -1473,6 +1531,9 @@ byte TriggerYes(special_t *me,trigger_t *t,Map *map)
 				}
 			}
 			break;
+		case TRG_FORCESTART:
+			answer=0;
+			break;
 	}
 
 	if(t->flags&TF_NOT)
@@ -1893,13 +1954,69 @@ void SpecialEffect(special_t *me,Map *map)
 	}
 }
 
+byte IsForceStart(special_t *me, Map* map)
+{
+	byte result = (me->trigger[0].type == TRG_FORCESTART);
+
+	return result;
+}
+
+void CheckSpecialsAtInit(Map* map)
+{
+	int i;
+
+	if (tagged && tagged->hp == 0)
+		tagged = NULL;
+
+	// do global specials first...
+	for (i = 0;i < numSpecialsGlobal;i++)
+	{
+		if (IsForceStart(&spclGlobal[i], map))
+			SpecialEffect(&spclGlobal[i], map);
+	}
+
+	// then do the non-chaining local specials...
+	for (i = 0;i < numSpecials;i++)
+	{
+		if (IsForceStart(&spcl[i], map))
+			EventOccur(EVT_SPECIAL, i, spcl[i].x, spcl[i].y, victim);
+	}
+
+	// now do the ones that may chain off of those...
+	for (i = 0;i < numSpecials;i++)
+	{
+		if (spcl[i].x != 255 && IsTriggered(1, &spcl[i], map))
+			SpecialEffect(&spcl[i], map);
+	}
+
+	// all the specials that occurred now go off - their chains had to go off first
+	for (i = 0;i < nextEvent;i++)
+	{
+		if (events[i].type == EVT_SPECIAL)
+		{
+			victim = events[i].victim;
+			SpecialEffect(&spcl[events[i].value], map);
+		}
+	}
+}
+
 void CheckSpecials(Map *map)
 {
 	int i;
 
 	if(tagged && tagged->hp==0)
 		tagged=NULL;
-	// first do the non-chaining specials
+
+	// do global specials first...
+	for (i = 0;i < numSpecialsGlobal;i++)
+	{
+		if (spclGlobal[i].x != 255 && IsTriggered(0, &spclGlobal[i], map))
+		{
+			SpecialEffect(&spclGlobal[i], map);
+		}
+	}
+
+	// then do the non-chaining local specials...
 	for(i=0;i<numSpecials;i++)
 	{
 		if(spcl[i].x!=255 && IsTriggered(0,&spcl[i],map))
@@ -1907,7 +2024,8 @@ void CheckSpecials(Map *map)
 			EventOccur(EVT_SPECIAL,i,spcl[i].x,spcl[i].y,victim);
 		}
 	}
-	// now do the ones that may chain off of those
+
+	// now do the ones that may chain off of those...
 	for(i=0;i<numSpecials;i++)
 	{
 		if(spcl[i].x!=255 && IsTriggered(1,&spcl[i],map))
@@ -1916,7 +2034,7 @@ void CheckSpecials(Map *map)
 		}
 	}
 
-	// all the specials that occurred now go off- their chains had to go off first
+	// all the specials that occurred now go off - their chains had to go off first
 	for(i=0;i<nextEvent;i++)
 	{
 		if(events[i].type==EVT_SPECIAL)
@@ -1931,6 +2049,7 @@ void CheckSpecials(Map *map)
 void InitSpecialsForPlay(void)
 {
 	ClearEvents();
+
 	victim=NULL;
 	tagged=NULL;
 }

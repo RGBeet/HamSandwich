@@ -478,6 +478,7 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 	ClearCustomSounds();
 
 	world->numMaps = 0;
+	InitGlobalSpecials(world->special); // they dont do anything
 
 	hamworld::Section section;
 	std::string section_name;

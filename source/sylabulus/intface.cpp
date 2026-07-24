@@ -133,31 +133,6 @@ enum {
 	IV_COMBO
 };
 
-static const byte weaponToItem[] = {
-	ITM_NONE,
-	ITM_MISSILES,
-	ITM_AK8087,
-	ITM_BOMBS,
-	ITM_FLAME,
-	ITM_PWRARMOR,
-	ITM_BIGAXE,
-	ITM_LIGHTNING,
-	ITM_SPEAR,
-	ITM_MACHETE,
-	ITM_MINES,
-	ITM_TURRETWPN,
-	ITM_MINDCONTROL,
-	ITM_REFLECTOR,
-	ITM_JETPACK,
-	ITM_SWAPGUN,
-	ITM_TORCH,
-	ITM_SCANNER,
-	ITM_MINISUB,
-	ITM_FREEZERAY,
-	ITM_STOPWATCH,
-};
-static_assert(std::size(weaponToItem) == MAX_WEAPONS, "Weapons need item specified for Classic HUD display");
-
 struct intface_t
 {
 	int  x,y,tx,ty;
@@ -1112,7 +1087,9 @@ void UpdateInterface(Map *map)
 				intf[i].vDesired=player.coins;
 				break;
 			case INTF_WEAPON:
-				if(GetCurrentWeaponType()>0)
+				if(player.ammoCrate)
+					intf[i].vDesired = intf[i].valueLength; // always look FULL!
+				else if(GetCurrentWeaponType()>0)
 					intf[i].vDesired=GetCurrentWeaponAmmo()*intf[i].valueLength/WeaponMaxAmmo(GetCurrentWeaponType());
 				else
 					intf[i].vDesired=0;
@@ -1256,7 +1233,11 @@ void RenderInterface(MGLDraw *mgl)
 					PrintSimpleShadow(intf[i].x+intf[i].vOffX+2,intf[i].y+intf[i].vOffY,monsName,1);
 				break;
 			case IV_SMALLMETER:
-				if(i!=INTF_RAGE || player.rage/256>=player.life)
+				if (i==INTF_WEAPON && player.ammoCrate)
+				{
+					DrawSmallMeter(intf[i].x + intf[i].vOffX, intf[i].y + intf[i].vOffY, intf[i].value, 16+(player.ammoCrate%8)/2, mgl);
+				}
+				else if(i!=INTF_RAGE || player.rage/256>=player.life)
 				{
 					if(i==INTF_RAGE && intfFlip==0)
 						DrawSmallMeter(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,intf[i].value,2,mgl);

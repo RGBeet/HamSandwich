@@ -79,7 +79,7 @@ void InitPlayer(byte level,const char *fname)
 	player.hamSpeed=16;
 
 	player.wpnSlots=1;
-	player.activeSlot=255; // hammer
+	player.activeSlot=0; // nothing
 
 	player.lastWeapon=WPN_NONE;
 
@@ -148,9 +148,10 @@ byte PlayerShield(void)
 	return player.shield;
 }
 
+// used to determine whether the player is currently holding the hammer!
 byte PlayerHasHammer(void)
 {
-	return (player.hammers>0);
+	return (player.hammers > 0 && player.activeSlot == 255);
 }
 
 int PlayerBrains(void)
@@ -226,7 +227,7 @@ void KeyChainAllCheck(void)
 
 int WeaponMaxAmmo(byte wpn)
 {
-	return maxAmmo[wpn];
+	return (maxAmmo[wpn] > 0 ? maxAmmo[wpn] : 1);
 }
 
 byte PlayerGetWeapon(byte wpn,int x,int y)
@@ -270,6 +271,7 @@ byte PlayerGetWeapon(byte wpn,int x,int y)
 		TakeWeapon(wpn, maxAmmo[wpn]);
 		player.lastWeapon=wpn;
 	}
+
 	ScoreEvent(SE_PICKUP,10);
 	return 1;
 }
@@ -943,6 +945,7 @@ void PlayerFireWeapon(Guy *me)
 			{
 				ScoreEvent(SE_SHOOT,1);
 				MakeSound(SND_FLAMEGO,me->x,me->y,SND_CUTOFF,1200);
+				FireBullet(me->x, me->y, me->facing, BLT_SWAP, 1);
 				ReduceCurrentWeaponAmmo(1);
 				if(!editing && !player.cheated && verified)
 					profile.progress.shotsFired++;
@@ -967,19 +970,20 @@ void PlayerFireWeapon(Guy *me)
 			if(GetCurrentWeaponAmmo() && !player.timeStop)	// can't use it when time is already stopped
 			{
 				ScoreEvent(SE_SHOOT,1);
-				MakeSound(SND_LIGHTSON,me->x,me->y,SND_CUTOFF,1200);
+				MakeSound(SND_TIMESTOP,me->x,me->y,SND_CUTOFF,1200);
+				StopwatchRing(me->x, me->y, 0, 16, 4);
 				ReduceCurrentWeaponAmmo(1);
 				if(!editing && !player.cheated && verified)
 					profile.progress.shotsFired++;
 				player.wpnReload=20;
-				player.timeStop=30*3;
+				player.timeStop=30*6; // a buff?!
 			}
 			break;
 	}
-	if(player.ammoCrate)
-		player.ammunition[player.activeSlot] = maxAmmo[GetCurrentWeaponType()]; // ammo crate keeps ammunition FULL!
-	else if(!GetCurrentWeaponAmmo())
+	if(!player.ammoCrate && !GetCurrentWeaponAmmo())
+	{
 		RemoveCurrentWeapon();
+	}
 	GoalFire();
 }
 
@@ -1077,14 +1081,15 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		player.torch--;
 
 	if(player.timeStop)
+	{
+		if (player.timeStop==30*2)
+			MakeSound(SND_TIMEWARN, me->x, me->y, SND_CUTOFF, 1200);
 		player.timeStop--;
+	}
+		
 
 	if(player.ammoCrate)
-	{
 		player.ammoCrate--;
-		if (GetCurrentWeaponType())
-			SetCurrentWeaponAmmo(maxAmmo[GetCurrentWeaponType()]);
-	}
 
 	if(player.rageClock && GetGameMode()!=GAMEMODE_RAGE)
 		DoRage(me);
@@ -2002,7 +2007,7 @@ static const char wpnName[][32] = {
 	"Missiles",
 	"AK-8087",
 	"Bombs",
-	"Flamethrower",
+	"Toaster",
 	"Power Armor",
 	"Big Axe",
 	"Lightning Rod",
@@ -2019,6 +2024,18 @@ static const char wpnName[][32] = {
 	"Mini-Sub",
 	"Freeze Ray",
 	"Stopwatch",
+	// new ones go here
+	"Boomerang",
+	"Megaphone",
+	"Rocket Launcher",
+
+	"R.G.Blaster"
+	"Lunchbox",
+	"Abyssinator",
+
+	"Glue Shooter",
+	"Throwing Stars",
+	"Bouapha's Favorite Gun"
 };
 
 static const int wpnIcons[] = {
@@ -2026,7 +2043,7 @@ static const int wpnIcons[] = {
 	6,		// missiles
 	33,		// ak-8087
 	35,		// bombs
-	34,		// flamethrower
+	34,		// toaster
 	43,		// power armor
 	44,		// big axe
 	46,		// zap wand
@@ -2042,10 +2059,20 @@ static const int wpnIcons[] = {
 	113,	// scanner
 	104,	// minisub,
 	112,	// freeze ray
-	129		// stopwatch
-};
+	129,	// stopwatch,
 
-static_assert(std::size(wpnName) == MAX_WEAPONS, "Must give new weapon a name");
+	8,		
+	8,
+	8,
+
+	8,
+	8,
+	8,
+
+	8,
+	8,
+	8
+};
 
 const char* GetWeaponName(byte weapon)
 {
@@ -2114,9 +2141,12 @@ static const char particleName[][24] = {
 	"Colorful",
 	"Radar",
 	"Fire",
+	"AK Bullet Splat",
+	"Shrapnel",
+	"Light",
+	"Swap Particle",
+	"???"
 };
-
-static_assert(std::size(particleName) == MAX_PARTICLES, "Must give new particle a name");
 
 const char* GetParticleName(byte particle)
 {
@@ -2193,10 +2223,15 @@ byte TakeWeapon(byte wpn, int ammo)
 			}
 		}
 	}
-	if(!player.hammers and !GetCurrentWeaponType())
+
+	// set active slot to new slot if player has no new weapon
+	// OR if new weapon is a mech
+	if (wpn == WPN_PWRARMOR || wpn == WPN_MINISUB || !GetCurrentWeaponType())
 	{
-		player.activeSlot = GetFirstEmptyWeaponSlot();
+		player.activeSlot = slot;
 	}
+
+	printf("Take Weapon %s w/ %d Ammo @ Slot #", wpnName[wpn], ammo, slot);
 	SetWeaponAmmo(slot,wpn,ammo);
 	return refill;
 }
@@ -2250,6 +2285,8 @@ bool PlayerCanFireWeapon()
 
 byte ReduceCurrentWeaponAmmo(int amt)
 {
+	if (player.ammoCrate)
+		return 0;
 	if (!(player.activeSlot < player.wpnSlots) || !GetCurrentWeaponType() || !GetCurrentWeaponAmmo())
 		return 0;
 	player.ammunition[player.activeSlot] -= amt;

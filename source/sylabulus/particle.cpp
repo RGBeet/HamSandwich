@@ -388,6 +388,59 @@ void Particle::Update(Map *map)
 				else
 					color=128+life;
 				break;
+			case PART_AKSPLAT:		// used for ak-8087 bullets
+				color = 32*7 + 24;
+				if (profile.progress.purchase[modeShopNum[MODE_SPLATTER]] & SIF_ACTIVE)
+					size = life / 8;
+				else
+					size = life / 16;
+				break;
+			case PART_SHRAPNEL:		// used for explosive weapons
+				color = 16;
+				if (profile.progress.purchase[modeShopNum[MODE_SPLATTER]] & SIF_ACTIVE)
+					size = life / 4;
+				else
+					size = life / 8;
+				break;
+			case PART_LIGHT:
+				dz += FIXAMT + Random(FIXAMT / 4);
+				Dampen(&dx, FIXAMT / 8);
+				Dampen(&dy, FIXAMT / 8);
+				dx = dx - FIXAMT / 8 + Random(FIXAMT / 4);
+				dy = dy - FIXAMT / 8 + Random(FIXAMT / 4);
+
+				if (life > 40)
+					color = 191;
+				else if (life > 20)
+					color = 160 + (life - 20);
+				else
+					color = 128 + life;
+
+				if (profile.progress.purchase[modeShopNum[MODE_SPLATTER]] & SIF_ACTIVE)
+					size = life / 4;
+				else
+					size = life / 8;
+				break;
+			case PART_SWAP: // used for swapgun
+				dz += FIXAMT + Random(FIXAMT / 4);
+				Dampen(&dx, FIXAMT / 8);
+				Dampen(&dy, FIXAMT / 8);
+				dx = dx - FIXAMT / 8 + Random(FIXAMT / 4);
+				dy = dy - FIXAMT / 8 + Random(FIXAMT / 4);
+
+				if (life > 40)
+					color = 32 + 16;
+				else if (life > 20)
+					color = 32 + 8;
+				else
+					color = 32 + 4;
+
+				if (profile.progress.purchase[modeShopNum[MODE_SPLATTER]] & SIF_ACTIVE)
+					size = life / 8;
+				else
+					size = life / 16;
+
+				break;
 		}
 
 
@@ -766,7 +819,7 @@ void RenderParticles(void)
 			{
 				ParticleDraw(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
 							 particleList[i].z>>FIXSHIFT,particleList[i].color,particleList[i].size/4,
-							 DISPLAY_DRAWME|DISPLAY_PARTICLE|DISPLAY_GLOW);
+							 DISPLAY_DRAWME|DISPLAY_CIRCLEPART|DISPLAY_GLOW);
 			}
 			else
 				ParticleDraw(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
@@ -1138,6 +1191,47 @@ void HealRing(byte color,int x,int y,int z,byte num,byte force)
 	}
 }
 
+void StopwatchRing(int x, int y, int z, byte num, byte force)
+{
+	int i;
+	byte a, aPlus;
+
+	if (num == 0)
+		return;
+
+	if (profile.progress.purchase[modeShopNum[MODE_SPLATTER]] & SIF_ACTIVE)
+	{
+		num *= 4;
+		force *= 2;
+	}
+
+	a = 0;
+	aPlus = 256 / num;
+
+	for (i = 0;i < maxParticles;i++)
+	{
+		byte color = i%2==0 ? 1 : 5;
+		if (!particleList[i].Alive())
+		{
+			particleList[i].GoExact(PART_FX, x, y, z, a, force);
+			particleList[i].x += Cosine(i * aPlus) * 16;
+			particleList[i].y += Sine(i * aPlus) * 16;
+			//particleList[i].dx += -(Cosine(i * aPlus)*force / 4) + Random(force / 2 + 1);
+			//particleList[i].dy += -(Sine(i * aPlus)*force / 4) + Random(force / 2 + 1);
+			particleList[i].dx -= Cosine(i * aPlus) / 4;
+			particleList[i].dy -= Sine(i * aPlus) / 4;
+			particleList[i].dz = FIXAMT * 5 - Random(FIXAMT * 3);
+			particleList[i].color = color * 32 + 16;
+			particleList[i].tx = x;
+			particleList[i].life = 50;
+			particleList[i].ty = y;
+			a += aPlus;
+			if (!--num)
+				break;
+		}
+	}
+}
+
 void TeamChangeRing(byte color,int x,int y,int z,byte num,byte force)
 {
 	int i;
@@ -1380,7 +1474,7 @@ void Burn(int x, int y, int z)
 			particleList[i].dz = Random(FIXAMT * 2);
 			particleList[i].color = 191;
 			particleList[i].life = 10 + Random(30);
-			particleList[i].size = 8 * 4 + (byte)Random(4 * 4);
+			particleList[i].size = 16 * 4 + (byte)Random(4 * 4);
 			particleList[i].type = PART_FIRE;
 			if (--num == 0)
 				break;
@@ -1436,6 +1530,9 @@ static const byte particleVals[] = {
 	PART_COLOR,
 	PART_RADAR,
 	PART_FIRE,
+	PART_AKSPLAT,
+	PART_SHRAPNEL,
+	PART_LIGHT
 };
 
 void MakeParticle(int x, int y, int z, int dx, int dy, int dz, int type, int size, int life)
@@ -1515,6 +1612,15 @@ void DoParticleEffect(int x, int y, byte type)
 			break;
 		case PART_FIRE:
 			Burn(xx, yy, z + FIXAMT * 20);
+			break;
+		case PART_AKSPLAT:
+			ExplodeParticles(PART_AKSPLAT, xx, yy, 0, 8);
+			break;
+		case PART_SHRAPNEL:
+			ExplodeParticles(PART_SHRAPNEL, xx, yy, 0, 8);
+			break;
+		case PART_LIGHT:
+			ExplodeParticles2(PART_LIGHT, xx, yy, 0, 6, 12);
 			break;
 		default:
 			break;

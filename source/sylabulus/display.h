@@ -34,6 +34,7 @@ enum DisplayFlags : word
 	DISPLAY_LIGHTNING   = 1 << 8,
 	DISPLAY_OFFCOLOR    = 1 << 9,
 	DISPLAY_TILESPRITE  = 1 << 10,
+	DISPLAY_CIRCLEPART	= 1 << 11
 };
 BITFLAGS(DisplayFlags)
 

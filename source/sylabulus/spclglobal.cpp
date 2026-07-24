@@ -22,6 +22,7 @@ static byte select;
 
 static void PickSpecialClick(int id)
 {
+	ClearButtons();
 	MakeNormalSound(SND_MENUCLICK);
 	SpecialEdit_Init(id-ID_SELECT);
 	SetEditMode(EDITMODE_SPECIAL);
@@ -87,6 +88,7 @@ static void PageDownClick(int id)
 
 static void ExitClick(int id)
 {
+	SetGlobalState(0);
 	MakeNormalSound(SND_MENUCLICK);
 	SetEditMode(EDITMODE_EDIT);
 }
@@ -132,7 +134,9 @@ void UpdateGlobalSpecialMenu(world_t *wrld, int msx, int msy, MGLDraw* mgl)
 
 void InitGlobalSpecialMenu(world_t *wrld)
 {
+	ClearButtons();
 	gsFirst = 0;
+	SetGlobalState(1);
 	MakeSpecialMenu();
 
 	MakeButton(BTN_RADIO, ID_EXIT, 0, 513, 439, 119, 17, "Exit Spcl. Menu", ExitClick);

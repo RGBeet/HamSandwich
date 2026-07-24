@@ -10,6 +10,7 @@
 #include "world_io_ham1.h"
 #include "world_io_sylabulus.h"
 #include "map.h"
+#include "special.h"
 
 byte keyChainInLevel[MAX_MAPS];
 
@@ -38,8 +39,9 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 
 	// global specials
 	world->special.fill({}); // testing!
-	InitSpecials(world->special); // testing!
-	printf("Initialized Global Specials\n");
+	for (special_t& me : world->special)
+		me.x = 255;
+	
 
 	if(!world->map[0])
 		return 0;
@@ -143,7 +145,9 @@ void FreeWorld(world_t *world)
 
 void InitWorld(world_t *world)
 {
+	printf("INITIALIZING WORLD...\n");
 	SetCurrentTilegfx(&world->tilegfx);
+	FillGlobalSpecialUseData(world->special);
 }
 
 void RepairTileToTile(world_t *w, const SwapTable &table)

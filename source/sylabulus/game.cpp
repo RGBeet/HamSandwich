@@ -112,10 +112,10 @@ bool VerifyLevel(Map *map)
 	}
 	return false;
 }
-
 byte InitLevel(byte map)
 {
 	PrintToLog("InitLevel",map);
+	printf("INIT LEVEL\n");
 
 	JamulSoundPurge();	// each level, that should be good
 
@@ -153,7 +153,8 @@ byte InitLevel(byte map)
 	ResetInterface();
 	InitCheater();
 
-	GetSpecialsFromMap(curMap->special);
+	GetSpecialsFromMapAndWorld(curMap->special, curWorld.special);
+
 	InitSpecialsForPlay();
 	PlaySong(curMap->song);
 
@@ -174,6 +175,9 @@ byte InitLevel(byte map)
 
 	if(curMap->flags&MAP_SECRET)
 		CompleteGoal(70);
+
+	CheckSpecialsAtInit(curMap);
+
 	return 1;
 }
 
@@ -857,7 +861,7 @@ TASK(void) TestLevel(world_t *world,byte level)
 	}
 	curWorld = {};
 	InitGuys(256);
-	GetSpecialsFromMap(EditorGetMap()->special);
+	GetSpecialsFromMapAndWorld(EditorGetMap()->special, EditorGetWorld()->special);
 	editing=1;
 }
 

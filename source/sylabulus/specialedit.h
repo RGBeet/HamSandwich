@@ -8,6 +8,8 @@
 #include "mapdialog.h"
 #include "editor.h"
 
+void SetGlobalState(byte tf);
+
 // level specials
 void SpecialEdit_Init(int s);
 void SpecialEdit_Exit(void);
@@ -34,7 +36,6 @@ void SetSpecialRect(int x,int y,int x2,int y2);
 void SpecialEdit_Help(void);
 
 char* SpecialEditNotes(byte mode, byte type);
-
 float GetWorldPercentage(const char text[32]);
 
 #endif
