@@ -346,6 +346,8 @@ bool Supreme_LoadWorld(world_t *world, const char *fname, SDL_IOStream *f)
 		}
 	}
 
+	InitGlobalSpecials(world->special); // blankity blank
+
 	ExitItems();
 	InitItems();
 	LoadItems(f);

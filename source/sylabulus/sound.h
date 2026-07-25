@@ -371,38 +371,47 @@
 #define SND_LUNADROWN	308
 #define SND_LUNABORED	309
 #define SND_LUNABRAINS	310
-#define SND_BUNNYTHEME	311
-#define SND_HAPPYWEEN	312
-#define SND_MARKMOVIE	313
-#define SND_TZONE		314
-#define SND_BOING		315
-#define SND_BOING2		316
-#define SND_BOING3		317
-#define SND_TALLY		318
-#define SND_SHOPBELL	319
-#define SND_LOCKER		320
-#define SND_BUYITEM		321
-#define SND_TURNEVIL	322
-#define SND_TURNGOOD	323
-#define SND_ALLKEYCHAIN 324
-#define SND_MINIZOIDSPIT 325
-#define SND_MINIZOIDDIE	326
-#define SND_MINIWACKOOUCH	327
-#define SND_MINIWACKODIE	328
-#define SND_JACKATTACK	329
-#define SND_JACKDIE		330
-#define NUM_ORIG_SOUNDS	331
+#define SND_BUNNYTHEME			311 // used for bunny: vampire slayer
+#define SND_HAPPYWEEN			312
+#define SND_MARKMOVIE			313
+#define SND_TZONE				314
+#define SND_BOING				315 // bouncy tile sounds
+#define SND_BOING2				316
+#define SND_BOING3				317
+#define SND_TALLY				318 // win tally screen
+#define SND_SHOPBELL			319 // enter a shop
+#define SND_LOCKER				320 // bump into locker?
+#define SND_BUYITEM				321
+#define SND_TURNEVIL			322
+#define SND_TURNGOOD			323
+#define SND_ALLKEYCHAIN			324
+#define SND_MINIZOIDSPIT		325
+#define SND_MINIZOIDDIE			326
+#define SND_MINIWACKOOUCH		327
+#define SND_MINIWACKODIE		328
+#define SND_JACKATTACK			329
+#define SND_JACKDIE				330
+#define NUM_ORIG_SOUNDS			331
 
 #define CUSTOM_SND_START 385
 #define MAX_CUSTOM_SOUNDS 128
 
-#define NEW_SOUND_START		512
-#define SND_LYNXPOINT		512
-#define SND_PAINTSPLAT		513
-#define SND_TIMESTOP		514
-#define SND_TIMEWARN		515
+#define NEW_SOUND_START			512
+#define SND_LYNXPOINT			512	// lynx point studio theme?!
+#define SND_PAINTSPLAT			513	// paint splat, used for color changing in editor
+#define SND_TIMESTOP			514	// when stopwatch stop
+#define SND_TIMEWARN			515	// running out of time
+#define SND_BLACKHOLE			516	// black hole, existing
+#define SND_DEATHRAY			517	// abyssinator launch
+#define SND_SZLEAP				518 // new super zombie noises
+#define SND_SZOUCH				519
+#define SND_SZDIE				520
+#define SND_THROWSMTH			521	// throwing a boomerang
+#define SND_MEGAPHONE			522	// megaphone attack
+#define SND_ROCKETLAUNCH		523	// rocket go zoom
+#define SND_BIGBOOM				524	// rocket go boom
 
-#define MAX_SOUNDS		1024
+#define MAX_SOUNDS				1024 // doesn't mean a thing lol
 
 //--------------------------------
 

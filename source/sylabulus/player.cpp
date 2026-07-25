@@ -21,7 +21,12 @@ byte tportclock;
 int pStartX=-1,pStartY=-1;
 static byte oldControls,newControls,checkTheControls;
 
-int maxAmmo[MAX_WEAPONS]={1000,20,99,5,50,1000,15,40,20,30,8,3,1,40,10,3,50,5,1000,5,1};
+int maxAmmo[MAX_WEAPONS]={1000,20,99,5,50,1000,15,40,20,30,8,3,1,40,10,3,50,5,1000,5,1,25,5,10,15,4,3,10,16,3};
+
+byte IsGameModeActivated(byte n)
+{
+	return profile.progress.purchase[modeShopNum[MODE_MANIC]] & SIF_ACTIVE;
+}
 
 void ShouldCheckControls(byte n)
 {
@@ -89,33 +94,42 @@ void InitPlayer(byte level,const char *fname)
 		player.ammunition[i]	= 0;
 	}
 
-	player.reload=10;
-	player.wpnReload=10;
-	player.hammerFlags={};
-	player.life=128;
-	player.shield=0;
-	playerGlow=0;
-	player.pushPower=0;
-	player.vehicle=0;
-	player.garlic=0;
-	player.speed=0;
-	player.rageClock=0;
-	player.rage=0;
-	player.varbar=0;
-	player.varbarMax=0;
-	player.invisibility=0;
-	player.jetting=0;
-	player.clock=0;
-	player.combo=0;
-	player.comboClock=0;
-	player.oxygen=127*256;
-	player.timeStop=0;
-	player.ammoCrate=0;
-	player.cheated=0;
-	player.bestCombo=0;
-	player.cheesePower=0;
-	player.timer=0;
+	player.reload		= 10;
+	player.wpnReload	= 10;
+	player.hammerFlags	= {};
+	player.life			= 128;
+	player.shield		= 0;
+	playerGlow			= 0;
+	player.pushPower	= 0;
+	player.vehicle		= 0;
+	player.garlic		= 0;
+	player.rageClock	= 0;
+	player.rage			= 0;
+	player.varbar		= 0;
+	player.varbarMax	= 0;
+	player.invisibility	= 0;
+	player.jetting		= 0;
+	player.oxygen		= 127*256;
+	player.ammoCrate	= 0;
 
+
+	player.clock		= 0;		// # of frames spent in level
+	player.combo		= 0;		// current enemy combo
+	player.comboClock	= 0;		// combo timer (go to 0 = lose combo)
+	player.bestCombo	= 0;		// best combo, for high score purposes
+
+
+	player.cheesePower	= 0;		// squeezy cheeze
+	player.timer		= 0;		// timer (to be set later)
+
+	player.cheated = 0;
+
+	player.timeStop[0]	= 0;		// stopwatch stop time
+	player.timeStop[1]	= 1;
+
+	player.speed[0]		= 0;		// particle acceleration
+	player.speed[1]		= 1;
+	
 	for(i=1;i<6;i++)
 	{
 		player.ability[i]=ItemPurchased(SHOP_ABILITY,i);
@@ -133,7 +147,7 @@ void ExitPlayer(void)
 {
 	player.playAs=profile.playAs;
 	player.shield=0;
-	player.speed=0;
+	player.speed[0] = 0;
 	player.invisibility=0;
 	SaveProfile();
 }
@@ -295,7 +309,8 @@ byte PlayerPowerup(int powerup)
 				player.garlic=255;
 				break;
 			case PU_SPEED:
-				player.speed=255;
+				PlayerSetAccelerate(30*10);
+				CalculateMusicSpeed();
 				break;
 			case PU_INVISO:
 				player.invisibility=255;
@@ -338,7 +353,9 @@ byte PlayerPowerup(int powerup)
 				player.garlic=0;
 				break;
 			case PU_SPEED:
-				player.speed=0;
+				player.speed[0]=0;
+				player.speed[1]=1;
+				CalculateMusicSpeed();
 				break;
 			case PU_INVISO:
 				player.invisibility=0;
@@ -365,7 +382,8 @@ void PlayerRadioactiveFood(void)
 		case 0:
 			NewMessage("Radioactive Energy!!",75,0);
 			PlayerHeal(30);
-			player.speed=255;
+			PlayerSetAccelerate(30*7);
+			CalculateMusicSpeed();
 			break;
 		case 1:
 			NewMessage("Szechwan Surprise!",75,0);
@@ -692,6 +710,13 @@ void DoPlayerFacing(byte c,Guy *me)
 	}
 }
 
+void AddShotFiredToProfile()
+{
+	if (editing || player.cheated || !verified) // must be playing on a legit world
+		return;
+	profile.progress.shotsFired++;
+}
+
 void PlayerFireWeapon(Guy *me)
 {
 	byte c;
@@ -705,10 +730,9 @@ void PlayerFireWeapon(Guy *me)
 			if(GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT,1);
-				FireBullet(me->x,me->y,me->facing,BLT_MISSILE,1);
+				FireBullet(me->x,me->y,me->facing,BLT_MISSILE,me->friendly);
 				ReduceCurrentWeaponAmmo(1);
-				if(!editing && !player.cheated && verified)
-					profile.progress.shotsFired++;
+				AddShotFiredToProfile();
 			}
 			player.wpnReload=2;
 			break;
@@ -716,11 +740,10 @@ void PlayerFireWeapon(Guy *me)
 			if(GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT,1);
-				FireBullet(me->x,me->y,me->facing*32,BLT_BOMB,1);
+				FireBullet(me->x,me->y,me->facing*32,BLT_BOMB, me->friendly);
 				MakeSound(SND_BOMBTHROW,me->x,me->y,SND_CUTOFF,1200);
 				ReduceCurrentWeaponAmmo(1);
-				if(!editing && !player.cheated && verified)
-					profile.progress.shotsFired++;
+				AddShotFiredToProfile();
 			}
 			player.wpnReload=15;
 			break;
@@ -728,10 +751,9 @@ void PlayerFireWeapon(Guy *me)
 			if(GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT,1);
-				FireBullet(me->x,me->y,me->facing,BLT_LASER,1);
+				FireBullet(me->x,me->y,me->facing,BLT_LASER,me->friendly);
 				ReduceCurrentWeaponAmmo(1);
-				if(!editing && !player.cheated && verified)
-					profile.progress.shotsFired++;
+				AddShotFiredToProfile();
 			}
 			me->z+=FIXAMT*Random(4);
 			me->dx+=FIXAMT/2-Random(FIXAMT);
@@ -752,19 +774,21 @@ void PlayerFireWeapon(Guy *me)
 			if(GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT,1);
+
+				// turns to bubbles underwater
 				if(curMap->flags&MAP_UNDERWATER)
 				{
 					if(Random(2)==0)
 					{
 						MakeSound(SND_BLOWBUBBLE,me->x,me->y,SND_CUTOFF,1);
-						FireBullet(me->x,me->y,(me->facing*32-6+Random(13))&255,BLT_BUBBLE,1);
+						FireBullet(me->x,me->y,(me->facing*32-6+Random(13))&255,BLT_BUBBLE,me->friendly);
 					}
 				}
 				else
-					FireBullet(me->x,me->y,me->facing,BLT_FLAME,1);
+					FireBullet(me->x,me->y,me->facing,BLT_FLAME,me->friendly);
+
 				ReduceCurrentWeaponAmmo(1);
-				if(!editing && !player.cheated && verified)
-					profile.progress.shotsFired++;
+				AddShotFiredToProfile();
 			}
 			c=GetControls();
 			if(c&CONTROL_B2)	// fire is held
@@ -780,11 +804,10 @@ void PlayerFireWeapon(Guy *me)
 			if(GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT,1);
-				FireBullet(me->x,me->y,me->facing,BLT_BIGAXE,1);
+				FireBullet(me->x,me->y,me->facing,BLT_BIGAXE,me->friendly);
 				MakeSound(SND_BOMBTHROW,me->x,me->y,SND_CUTOFF,1200);
 				ReduceCurrentWeaponAmmo(1);
-				if(!editing && !player.cheated && verified)
-					profile.progress.shotsFired++;
+				AddShotFiredToProfile();
 			}
 			player.wpnReload=10;
 			break;
@@ -792,10 +815,9 @@ void PlayerFireWeapon(Guy *me)
 			if(GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT,1);
-				FireBullet(me->x,me->y,me->facing*32,BLT_FREEZE,1);
+				FireBullet(me->x,me->y,me->facing*32,BLT_FREEZE,me->friendly);
 				ReduceCurrentWeaponAmmo(1);
-				if(!editing && !player.cheated && verified)
-					profile.progress.shotsFired++;
+				AddShotFiredToProfile();
 			}
 			player.wpnReload=10;
 			break;
@@ -804,10 +826,9 @@ void PlayerFireWeapon(Guy *me)
 			{
 				ScoreEvent(SE_SHOOT,1);
 				// fire lightning
-				FireBullet(me->x,me->y,me->facing,BLT_LIGHTNING,1);
+				FireBullet(me->x,me->y,me->facing,BLT_LIGHTNING,me->friendly);
 				ReduceCurrentWeaponAmmo(1);
-				if(!editing && !player.cheated && verified)
-					profile.progress.shotsFired++;
+				AddShotFiredToProfile();
 			}
 			c=GetControls();
 			if(c&CONTROL_B2)	// fire is held
@@ -826,10 +847,9 @@ void PlayerFireWeapon(Guy *me)
 			{
 				ScoreEvent(SE_SHOOT,1);
 				MakeSound(SND_BOMBTHROW,me->x,me->y,SND_CUTOFF,1200);
-				FireBullet(me->x,me->y,me->facing,BLT_SPEAR,1);
+				FireBullet(me->x,me->y,me->facing,BLT_SPEAR,me->friendly);
 				ReduceCurrentWeaponAmmo(1);
-				if(!editing && !player.cheated && verified)
-					profile.progress.shotsFired++;
+				AddShotFiredToProfile();
 			}
 			player.wpnReload=5;
 			break;
@@ -839,10 +859,9 @@ void PlayerFireWeapon(Guy *me)
 				ScoreEvent(SE_SHOOT,1);
 				MakeSound(SND_SLASH,me->x,me->y,SND_CUTOFF,1200);
 				FireBullet(me->x+Cosine(me->facing*32)*32,me->y+Sine(me->facing*32)*32,
-					me->facing,BLT_SLASH,1);
+					me->facing,BLT_SLASH,me->friendly);
 				ReduceCurrentWeaponAmmo(1);
-				if(!editing && !player.cheated && verified)
-					profile.progress.shotsFired++;
+				AddShotFiredToProfile();
 			}
 			player.wpnReload=2;
 			break;
@@ -852,10 +871,9 @@ void PlayerFireWeapon(Guy *me)
 				ScoreEvent(SE_SHOOT,1);
 				MakeSound(SND_MINELAY,me->x,me->y,SND_CUTOFF,1200);
 				FireBullet(me->x-Cosine(me->facing*32)*32,me->y-Sine(me->facing*32)*32,
-					me->facing,BLT_MINE,1);
+					me->facing,BLT_MINE,me->friendly);
 				ReduceCurrentWeaponAmmo(1);
-				if(!editing && !player.cheated && verified)
-					profile.progress.shotsFired++;
+				AddShotFiredToProfile();
 			}
 			player.wpnReload=15;
 			break;
@@ -865,9 +883,11 @@ void PlayerFireWeapon(Guy *me)
 				Guy *g;
 
 				ScoreEvent(SE_SHOOT,1);
+
+				// set down good turret
 				g=AddGuy(me->x+Cosine(me->facing*32)*32,me->y+Sine(me->facing*32)*32,
-					FIXAMT*10,MONS_GOODTURRET,1);
-				if(g==NULL || !g->CanWalk(g->x,g->y,curMap,&curWorld))
+					FIXAMT*10,MONS_GOODTURRET,me->friendly);
+				if(g==NULL || !g->CanWalk(g->x,g->y,curMap,&curWorld)) // can't set down turret
 				{
 					MakeSound(SND_TURRETBZZT,me->x,me->y,SND_CUTOFF,1200);
 					if(g)
@@ -877,9 +897,9 @@ void PlayerFireWeapon(Guy *me)
 				{
 					MakeSound(SND_MINELAY,me->x,me->y,SND_CUTOFF,1200);
 					ReduceCurrentWeaponAmmo(1);
-					if(!editing && !player.cheated && verified)
-						profile.progress.shotsFired++;
+					AddShotFiredToProfile();
 				}
+
 				player.wpnReload=15;
 			}
 			break;
@@ -889,11 +909,10 @@ void PlayerFireWeapon(Guy *me)
 				ScoreEvent(SE_SHOOT,1);
 				MakeSound(SND_MINDWIPE,me->x,me->y,SND_CUTOFF,1200);
 				FireBullet(me->x+Cosine(me->facing*32)*32,me->y+Sine(me->facing*32)*32,
-					me->facing,BLT_MINDWIPE,1);
+					me->facing,BLT_MINDWIPE,me->friendly);
 				ReduceCurrentWeaponAmmo(1);
 				player.wpnReload=15;
-				if(!editing && !player.cheated && verified)
-					profile.progress.shotsFired++;
+				AddShotFiredToProfile();
 			}
 			break;
 		case WPN_REFLECTOR:
@@ -901,10 +920,9 @@ void PlayerFireWeapon(Guy *me)
 			{
 				ScoreEvent(SE_SHOOT,1);
 				MakeSound(SND_LIGHTSON,me->x,me->y,SND_CUTOFF,1200);
-				FireBullet(me->x,me->y,me->facing,BLT_REFLECT,1);
+				FireBullet(me->x,me->y,me->facing,BLT_REFLECT,me->friendly);
 				ReduceCurrentWeaponAmmo(1);
-				if(!editing && !player.cheated && verified)
-					profile.progress.shotsFired++;
+				AddShotFiredToProfile();
 				c=GetControls();
 				if(c&CONTROL_B2)	// fire is held
 				{
@@ -923,8 +941,7 @@ void PlayerFireWeapon(Guy *me)
 				ScoreEvent(SE_SHOOT,1);
 				player.jetting=5;
 				ReduceCurrentWeaponAmmo(1);
-				if(!editing && !player.cheated && verified)
-					profile.progress.shotsFired++;
+				AddShotFiredToProfile();
 				player.wpnReload=3;
 			}
 			break;
@@ -933,10 +950,9 @@ void PlayerFireWeapon(Guy *me)
 			{
 				ScoreEvent(SE_SHOOT,1);
 				MakeSound(SND_LIGHTSON,me->x,me->y,SND_CUTOFF,1200);
-				FireBullet(me->x,me->y,me->facing,BLT_SWAP,1);
+				FireBullet(me->x,me->y,me->facing,BLT_SWAP,me->friendly);
 				ReduceCurrentWeaponAmmo(1);
-				if(!editing && !player.cheated && verified)
-					profile.progress.shotsFired++;
+				AddShotFiredToProfile();
 				player.wpnReload=10;
 			}
 			break;
@@ -945,10 +961,9 @@ void PlayerFireWeapon(Guy *me)
 			{
 				ScoreEvent(SE_SHOOT,1);
 				MakeSound(SND_FLAMEGO,me->x,me->y,SND_CUTOFF,1200);
-				FireBullet(me->x, me->y, me->facing, BLT_SWAP, 1);
+				FireBullet(me->x,me->y,me->facing,BLT_TORCH,me->friendly);
 				ReduceCurrentWeaponAmmo(1);
-				if(!editing && !player.cheated && verified)
-					profile.progress.shotsFired++;
+				AddShotFiredToProfile();
 				player.wpnReload=3;
 				if(playerGlow<100)
 					playerGlow=100;
@@ -959,24 +974,111 @@ void PlayerFireWeapon(Guy *me)
 			{
 				ScoreEvent(SE_SHOOT,1);
 				MakeSound(SND_LIGHTSON,me->x,me->y,SND_CUTOFF,1200);
-				FireBullet(me->x,me->y,me->facing,BLT_SCANNER,1);
+				FireBullet(me->x,me->y,me->facing,BLT_SCANNER,me->friendly);
 				ReduceCurrentWeaponAmmo(1);
-				if(!editing && !player.cheated && verified)
-					profile.progress.shotsFired++;
+				AddShotFiredToProfile();
 				player.wpnReload=20;
 			}
 			break;
 		case WPN_STOPWATCH:
-			if(GetCurrentWeaponAmmo() && !player.timeStop)	// can't use it when time is already stopped
+			if(GetCurrentWeaponAmmo() && PlayerGetTimeStop()==0)	// can't use it when time is already stopped
 			{
 				ScoreEvent(SE_SHOOT,1);
 				MakeSound(SND_TIMESTOP,me->x,me->y,SND_CUTOFF,1200);
 				StopwatchRing(me->x, me->y, 0, 16, 4);
 				ReduceCurrentWeaponAmmo(1);
-				if(!editing && !player.cheated && verified)
-					profile.progress.shotsFired++;
+				AddShotFiredToProfile();
+				PlayerSetTimeStop(30*6);
 				player.wpnReload=20;
-				player.timeStop=30*6; // a buff?!
+			}
+			break;
+		case WPN_BOOMERANG:
+			if (GetCurrentWeaponAmmo())
+			{
+				ScoreEvent(SE_SHOOT, 1);
+				MakeSound(SND_THROWSMTH, me->x, me->y, SND_CUTOFF, 1200);
+				FireBullet(me->x, me->y, me->facing, BLT_BOOMERANG, me->friendly);
+				ReduceCurrentWeaponAmmo(1);
+				AddShotFiredToProfile();
+				player.wpnReload=15;
+			}
+			break;
+		case WPN_MEGAPHONE:
+			if (GetCurrentWeaponAmmo())
+			{
+				ScoreEvent(SE_SHOOT, 1);
+				FireBullet(me->x + Cosine(me->facing * 32) * 32, me->y + Sine(me->facing * 32) * 32, me->facing, BLT_SHOCKWAVE, 1);
+				MakeSound(SND_MEGAPHONE,me->x,me->y,SND_CUTOFF,1200);
+				ReduceCurrentWeaponAmmo(1);
+				AddShotFiredToProfile();
+				player.wpnReload=30;
+			}
+			break;
+		case WPN_ROCKETEER:
+			if (GetCurrentWeaponAmmo())
+			{
+				ScoreEvent(SE_SHOOT,1);
+				FireBullet(me->x,me->y,me->facing,BLT_ROCKET,me->friendly);
+				ReduceCurrentWeaponAmmo(1);
+				AddShotFiredToProfile();
+				player.wpnReload=10;
+			}
+			break;
+		case WPN_RAINBOWGUN:
+			if (GetCurrentWeaponAmmo())
+			{
+				ScoreEvent(SE_SHOOT, 1);
+				// do the attack
+				ReduceCurrentWeaponAmmo(1);
+				AddShotFiredToProfile();
+			}
+			break;
+		case WPN_LUNCHBOX:
+			if (GetCurrentWeaponAmmo())
+			{
+				ScoreEvent(SE_SHOOT, 1);
+				// do the attack
+				ReduceCurrentWeaponAmmo(1);
+				AddShotFiredToProfile();
+			}
+			break;
+		case WPN_BLACKHOLE: // basically the planetsmasher?
+			if (GetCurrentWeaponAmmo())
+			{
+				ScoreEvent(SE_SHOOT, 1);
+
+				MakeSound(SND_DEATHRAY, me->x, me->y, SND_CUTOFF, 1200);
+				FireBullet(me->x, me->y, me->facing, BLT_HOLESHOT, me->friendly);
+
+				ReduceCurrentWeaponAmmo(1);
+				AddShotFiredToProfile();
+			}
+			break;
+		case WPN_GLUEGUN:
+			if (GetCurrentWeaponAmmo())
+			{
+				ScoreEvent(SE_SHOOT, 1);
+				// do the attack
+				ReduceCurrentWeaponAmmo(1);
+				AddShotFiredToProfile();
+			}
+			break;
+		case WPN_THROWSTARS:
+			if (GetCurrentWeaponAmmo())
+			{
+				ScoreEvent(SE_SHOOT, 1);
+				// do the attack
+				ReduceCurrentWeaponAmmo(1);
+				AddShotFiredToProfile();
+			}
+			break;
+		case WPN_BFG:
+			if (GetCurrentWeaponAmmo())
+			{
+				ScoreEvent(SE_SHOOT, 1);
+				// do the attack
+				ReduceCurrentWeaponAmmo(1);
+				AddShotFiredToProfile();
 			}
 			break;
 	}
@@ -1067,7 +1169,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	player.life=me->hp;
 
 	if(player.hammerFlags&HMR_SPEED)
-		player.speed=255;
+		player.speed[0] = player.speed[1];
 
 	if(player.rage)
 	{
@@ -1080,14 +1182,24 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	if(player.torch)
 		player.torch--;
 
-	if(player.timeStop)
+	if(PlayerGetAccelerate()>0)
 	{
-		if (player.timeStop==30*2)
+		player.speed[0]--;
+		if (PlayerGetAccelerate() == 30 * 2)
 			MakeSound(SND_TIMEWARN, me->x, me->y, SND_CUTOFF, 1200);
-		player.timeStop--;
+		else if (PlayerGetAccelerate() == 1)
+			CalculateMusicSpeed();
+	}
+
+	if(PlayerGetTimeStop()>0)
+	{
+		player.timeStop[0]--;
+		if (PlayerGetTimeStop() == 30 * 2)
+			MakeSound(SND_TIMEWARN, me->x, me->y, SND_CUTOFF, 1200);
+		else if (PlayerGetTimeStop() == 1)
+			CalculateMusicSpeed();
 	}
 		
-
 	if(player.ammoCrate)
 		player.ammoCrate--;
 
@@ -2029,7 +2141,7 @@ static const char wpnName[][32] = {
 	"Megaphone",
 	"Rocket Launcher",
 
-	"R.G.Blaster"
+	"R.G.Blaster",
 	"Lunchbox",
 	"Abyssinator",
 
@@ -2333,4 +2445,33 @@ byte PlayerAddPockets(int amt)
 byte PlayerCanThrowHammers()
 {
 	return player.activeSlot == 255 && !player.reload;
+}
+
+byte PlayerHasPowerup()
+{
+	return ((goodguy && goodguy->poison) || player.shield > 0 || PlayerGetAccelerate() > 0 || player.invisibility > 0 || player.ammoCrate > 0 || player.cheesePower > 0 || player.garlic > 0);
+}
+
+// Sets and gets the player time 
+void PlayerSetTimeStop(word amt)
+{
+	player.timeStop[0] = amt;
+	player.timeStop[1] = amt;
+	CalculateMusicSpeed(); // x0.5 speed
+}
+word PlayerGetTimeStop()
+{
+	return player.timeStop[0];
+}
+
+// Sets and gets the player acceleration powerup.
+void PlayerSetAccelerate(word amt)
+{
+	player.speed[0] = amt;
+	player.speed[1] = amt;
+	CalculateMusicSpeed(); // x1.5 speed
+}
+word PlayerGetAccelerate()
+{
+	return player.speed[0];
 }

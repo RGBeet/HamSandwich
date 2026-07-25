@@ -750,6 +750,8 @@ TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 	char fullName[64];
 	byte result;
 
+	InitGlobalSpecials(curWorld.special);
+
 	if(!strcmp(fname,"tutorial.dlw"))
 		tutorial=1;
 	else
@@ -781,6 +783,7 @@ TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 	}
 
 	mapNum=player.levelNum;
+	
 	SetPlayerStart(-1,-1);
 	while(1)
 	{
@@ -805,6 +808,7 @@ TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 			break;
 	}
 	FreeWorld(&curWorld);
+	
 	if(result==WORLD_SHOP)
 		doShop=1;
 

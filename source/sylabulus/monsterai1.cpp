@@ -2494,9 +2494,9 @@ void AI_SuperZombie(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_ZOMBIEOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_SZOUCH,me->x,me->y,SND_CUTOFF,1200);
 		else
-			MakeSound(SND_ZOMBIEDIE,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_SZDIE,me->x,me->y,SND_CUTOFF,1200);
 	}
 
 	if(me->action==ACTION_BUSY)
@@ -2511,6 +2511,7 @@ void AI_SuperZombie(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			}
 			else if(me->frm==3)
 			{
+				MakeSound(SND_SZLEAP, me->x, me->y, SND_CUTOFF, 500);
 				me->dx=Cosine(me->facing*32)*12;
 				me->dy=Sine(me->facing*32)*12;
 				me->dz=10*FIXAMT;

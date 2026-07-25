@@ -227,7 +227,7 @@ void GoalKilledSomebody(Guy *g,byte type,byte frozen)
 	if(profile.progress.runOver>=100)
 		CompleteGoal(45);
 
-	if(player.timeStop)
+	if(PlayerGetAccelerate())
 		CompleteGoal(52);
 
 	if(type==MONS_MAGMAZOID || type==MONS_BOILER || type==MONS_BOOMKIN || type==MONS_JALAPENO || type==MONS_UNDERMAGMA ||

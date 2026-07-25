@@ -746,7 +746,7 @@ void DrawPowerupBar(int x,int y,MGLDraw *mgl)
 	color[0]=32*3+16;	// blue for shield
 	width[1]=player.garlic*POWERUP_WIDTH/255;
 	color[1]=32*0+20;	// light grey for garlic
-	width[2]=player.speed*POWERUP_WIDTH/255;
+	width[2]=player.speed[0]*POWERUP_WIDTH/player.speed[1];
 	color[2]=32*7+16;	// aqua for speed
 	width[3]=player.invisibility*POWERUP_WIDTH/255;
 	color[3]=32*6+16;	// purple for invis
@@ -929,7 +929,7 @@ void UpdateInterface(Map *map)
 	// portrait + hp bar stays in place
 
 	// status bar comes first???
-	if (player.shield || player.garlic || player.speed || player.invisibility || player.ammoCrate || (goodguy && goodguy->poison) || player.cheesePower)
+	if (PlayerHasPowerup())
 	{
 		intf[INTF_POWERUP].tx = 56;
 		intf[INTF_POWERUP].ty = yy;
@@ -984,7 +984,7 @@ void UpdateInterface(Map *map)
 	}
 
 	// oxygen
-	if (map->flags & (MAP_UNDERWATER | MAP_OXYGEN))
+	if (MapHasOxygenMechanic(map))
 	{
 		intf[INTF_OXYGEN].tx = 1;
 		intf[INTF_OXYGEN].ty = yy;

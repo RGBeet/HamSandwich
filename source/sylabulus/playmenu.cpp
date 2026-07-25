@@ -189,7 +189,6 @@ TASK(void) PlayMenu(MGLDraw *mgl)
 	int lastTime=1;
 
 	InitPlayMenu(mgl);
-	PlaySongForce("003worldpicker.ogg");
 
 	while(!done)
 	{

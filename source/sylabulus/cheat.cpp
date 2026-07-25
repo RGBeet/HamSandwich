@@ -166,7 +166,7 @@ void DoCheat(byte w)
 			break;
 		}
 		case CHEAT_FREEZE:
-			player.timeStop=255;
+			PlayerSetTimeStop(30*12);
 			break;
 		case CHEAT_BRAINS:
 			player.brains=curMap->numBrains;
@@ -210,6 +210,7 @@ void DoCheat(byte w)
 			break;
 		case CHEAT_SPEED:
 			player.hammerFlags^=HMR_SPEED;
+			CalculateMusicSpeed(); // 2x
 			MakeNormalSound(SND_CHEATWIN);
 			break;
 		case CHEAT_RAGE:

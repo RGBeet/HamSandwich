@@ -1078,7 +1078,6 @@ TASK(void) ProfMenu(MGLDraw *mgl)
 	int lastTime=1;
 
 	InitProfMenu(mgl);
-	PlaySongForce("003worldpicker.ogg");
 
 	while(!done)
 	{

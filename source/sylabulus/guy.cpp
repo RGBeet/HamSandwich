@@ -1186,7 +1186,7 @@ void UpdateGuys(Map *map,world_t *world)
 		}
 	}
 
-	if(map->flags&(MAP_UNDERWATER|MAP_OXYGEN))
+	if(MapHasOxygenMechanic(map))
 	{
 		if(player.oxygen)
 		{
@@ -1252,17 +1252,19 @@ void UpdateGuys(Map *map,world_t *world)
 	for(i=0;i<maxGuys;i++)
 		if(guys[i].type!=MONS_NONE)
 		{
-			if(guys[i].aiType==MONS_BOUAPHA && player.speed>0)
+			if(guys[i].aiType==MONS_BOUAPHA && PlayerGetAccelerate()>0)
 			{
 				guys[i].Update(map,world);
 				if(guys[i].type)
 					guys[i].Render(1);
 				guys[i].Update(map,world);
-				player.speed--;
+
+				if (PlayerGetAccelerate())
+					CalculateMusicSpeed();
 			}
 			else
 			{
-				if(!player.timeStop || guys[i].aiType==MONS_BOUAPHA || guys[i].hp==0 ||
+				if(PlayerGetTimeStop()==0 || guys[i].aiType == MONS_BOUAPHA || guys[i].hp == 0 ||
 					guys[i].aiType==MONS_MINECART || guys[i].aiType==MONS_RAFT || guys[i].aiType==MONS_YUGO)
 				{
 					if(((speedClock&3)==0) && guys[i].aiType!=MONS_BOUAPHA && guys[i].aiType!=MONS_RAFT &&
@@ -4058,4 +4060,33 @@ byte BadguyRegions(int x,int y,int x2,int y2,int tx,int ty)
 		}
 	}
 	return 1;
+}
+
+void SuckItUp(int x, int y, byte friendly)
+{
+	int i, suck;
+	byte a;
+
+	x /= FIXAMT;
+	y /= FIXAMT;
+
+	for (i = 0;i < maxGuys;i++)
+	{
+		if (guys[i].type && guys[i].friendly != friendly && guys[i].hp && !(MonsterFlags(guys[i].type, 0) & MF_NOMOVE))
+		{
+			suck = (guys[i].x/FIXAMT - x) * (guys[i].x/FIXAMT - x) + (guys[i].y/FIXAMT - y) * (guys[i].y/FIXAMT - y);
+			if (suck < 50000)	// 300? pixels max
+			{
+				suck = 50000 - suck;
+				suck /= 2600;	// now suck is 0-20
+				a = AngleFrom(guys[i].x/FIXAMT, guys[i].y/FIXAMT, x, y);
+				guys[i].x += Cosine(a) * suck;
+				if (!guys[i].CanWalk(guys[i].x, guys[i].y, curMap, &curWorld))
+					guys[i].x -= Cosine(a) * suck;
+				guys[i].y += Sine(a) * suck;
+				if (!guys[i].CanWalk(guys[i].x, guys[i].y, curMap, &curWorld))
+					guys[i].y -= Sine(a) * suck;
+			}
+		}
+	}
 }

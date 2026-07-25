@@ -478,7 +478,7 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 	ClearCustomSounds();
 
 	world->numMaps = 0;
-	InitGlobalSpecials(world->special); // they dont do anything
+	InitGlobalSpecials(world->special); // blankity blank
 
 	hamworld::Section section;
 	std::string section_name;
@@ -555,6 +555,7 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 				LoadMapSpecial(&section, &map->special[i]);
 
 			LoadMapData(&section, map);
+			
 
 			section.read_varint();  // ignore extension flags
 		}
@@ -564,6 +565,8 @@ byte Ham_LoadWorld(world_t* world, const char *fname)
 			return 0;
 		}
 	}
+
+	InitGlobalSpecials(world->special);
 
 	SetupRandomItems();
 

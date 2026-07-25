@@ -1,5 +1,13 @@
-Howdy, %%NM! Glad to see you!
+Most levels require you to collect all the Brains to pass them.
+The "GOAL" meter at the upper-right corner indicates how many
+Brains are left. Whenever it's missing, that means you can go
+complete the level - usually by running into a hub exit.
 
-Don't worry about the blockades; once you start completing levels,
-you'll gain access to other areas. Just keep exploring!
+Another thing: keep a watchful eye for any Candles lurking about.
+They're optional towards level completion, but required if you
+care about getting a 100% completion rate. The designers usually
+hide them behind walls and obstacles, though sometimes they get
+rather creative! Yerf!
 
+... Oh, and steer clear of any mummy-adjacent creatures you may
+happen to come across. They do not want to give you a hug.

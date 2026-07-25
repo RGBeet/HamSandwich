@@ -32,6 +32,7 @@ enum : byte
 	PART_SHRAPNEL,		// used for cherry bomb explosions
 	PART_LIGHT,
 	PART_SWAP,			// used to spice up swapguns a little
+	PART_SUCK,			// black hole gun
 	MAX_PARTICLES		// MAX PARTICLES
 };
 
@@ -92,6 +93,7 @@ void HealRing(byte color,int x,int y,int z,byte num,byte force);
 void TeamChangeRing(byte color,int x,int y,int z,byte num,byte force);
 
 void StopwatchRing(int x, int y, int z, byte num, byte force);
+void SuckParticle(int x, int y, int z);
 
 void DoParticleEffect(int x,int y, byte type);
 

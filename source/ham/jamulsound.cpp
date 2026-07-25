@@ -419,3 +419,8 @@ bool IsSongPlaying()
 {
 	return musicAudio && MIX_TrackPlaying(musicTrack.get());
 }
+
+void SetMusicFrequency(float f)
+{
+	MIX_SetTrackFrequencyRatio(musicTrack.get(), f);
+}

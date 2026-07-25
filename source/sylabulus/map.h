@@ -180,6 +180,8 @@ void SpecialShootCheck(Map *map,int x,int y);
 void SpecialAnytimeCheck(Map *map);
 void SpecialKillCheck(Map *map,byte type);
 
+byte MapHasOxygenMechanic(Map *map);
+
 void InitStars();
 
 #endif

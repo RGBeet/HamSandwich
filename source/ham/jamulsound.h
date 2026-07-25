@@ -57,4 +57,6 @@ void PlaySongFile(const char* path);
 void StopSong();
 bool IsSongPlaying();
 
+void SetMusicFrequency(float f);
+
 #endif  // JAMULSOUND_H

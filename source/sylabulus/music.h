@@ -32,5 +32,6 @@ void PlayPrevSong(void);
 
 void UpdateMusic(void);
 void ChooseNextSong(void);
+void CalculateMusicSpeed(void);
 
 #endif

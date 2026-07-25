@@ -42,29 +42,20 @@ void InitSpecials(std::span<special_t> list)
 void FillGlobalSpecialUseData(std::span<special_t> list)
 {
 	int i;
-	printf("\n--- FillGlobalSpecialUseData---\n");
-
 	for (i=0;i<128;i++)
 	{
 		byte b = spclGlobal[i].uses;
 		if (spclGlobal[i].x==255) // blank!
 			continue;
 		globalspcluses[i] = spclGlobal[i].uses;
-		printf("SPCL #%03d = %d Uses\n", i, globalspcluses[i]);
 		numSpecialsGlobal = i+1;
 	}
-
-	printf("# of Global Specials:%d\n", numSpecialsGlobal);
-
-	printf("--- DONE! ---\n");
 }
 
 // Initializes blank global special data
 void InitGlobalSpecials(std::span<special_t> list)
 {
-	printf("\n--- InitGlobalSpecials ---\n");
 	spclGlobal = list;
-	printf("\n--- DONE! ---\n");
 }
 
 void GetSpecialsFromMap(std::span<special_t> list)
@@ -94,16 +85,16 @@ void GetSpecialsFromWorld(std::span<special_t> list)
 void GetSpecialsFromMapAndWorld(std::span<special_t> mapList, std::span<special_t> worldList)
 {
 	int i;
-	printf("\n--- Get Specials Form Map and World ---\n");
+	//printf("\n--- Get Specials Form Map and World ---\n");
 	GetSpecialsFromMap(mapList);
 	for (i = 0;i < numSpecialsGlobal;i++)
 	{
-		printf("\nSPCL #%03d: %d -> %d uses.\n",i, spclGlobal[i].uses, globalspcluses[i]);
+		//printf("\nSPCL #%03d: %d -> %d uses.\n",i, spclGlobal[i].uses, globalspcluses[i]);
 		spclGlobal[i].uses	= globalspcluses[i];
 		spclGlobal[i].x = i;
 	}
 
-	printf("--- DONE! ---\n");
+	//printf("--- DONE! ---\n");
 
 	//GetSpecialsFromWorld(worldList);
 }
@@ -845,7 +836,7 @@ byte CheckForItem(byte item,int count,byte flags)
 					amt=player.garlic;
 					break;
 				case PU_SPEED:
-					amt=player.speed;
+					amt=player.speed[0];
 					break;
 				case PU_INVISO:
 					amt=player.invisibility;
@@ -1785,7 +1776,7 @@ void SpecialEffect(special_t *me,Map *map)
 						map->flags ^= LevelFlags{w};
 						break;
 				}
-				if((w2&(MAP_UNDERWATER|MAP_OXYGEN)) && !(map->flags&(MAP_UNDERWATER|MAP_OXYGEN)))
+				if((w2&(MAP_UNDERWATER|MAP_OXYGEN)) && !(MapHasOxygenMechanic(map)))
 					player.oxygen=127*256;
 
 				if(map->flags&MAP_UNDERWATER)

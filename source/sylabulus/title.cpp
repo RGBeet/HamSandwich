@@ -443,7 +443,8 @@ TASK(byte) MainMenu(MGLDraw *mgl)
 	oldc=~0;
 	planetSpr=new sprite_set_t("graphics/pizza.jsp");
 
-	PlaySongForce("menu.ogg");
+	if(!IsSongPlaying())
+		PlaySong("menu.ogg");
 
 	igfX=Random(500)+100;
 	igfY=Random(300)+100;

@@ -1586,3 +1586,8 @@ byte Map::PushSpecials(int x, int y, int dx, int dy)
 	}
 	return 1;
 }
+
+byte MapHasOxygenMechanic(Map *map)
+{
+	return map->flags & (MAP_UNDERWATER | MAP_OXYGEN);
+}

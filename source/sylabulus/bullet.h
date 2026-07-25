@@ -70,7 +70,27 @@ enum BulletType : byte
 	BLT_FREEZE2       = 54, // a freeze bullet that drops like acid bullets and splats
 	BLT_LUNA          = 55, // lunachick's bullets
 	BLT_LUNA2         = 56, // lunachick's bullets with wall-bounce power
-	BLT_TORCH	      = 57, // torch visual effect
+	
+	BLT_BOOMERANG		= 57,
+	BLT_MEGABLAST		= 58,
+	BLT_ROCKET			= 59,
+	BLT_RAINBOWSHOT		= 60,
+	BLT_HEALSHOT		= 61,
+	BLT_GLUESHOT		= 62,
+	BLT_HOLESHOT		= 63,		// abyssinator shot
+	BLT_BLACKHOLE		= 64,		// the black hole it creates
+	BLT_SHRUIKEN		= 65,
+	BLT_MINIHAMMER		= 66,
+
+	BLT_TORCH			= 67,		// torch visual effect
+	BLT_LANTERN			= 68,		// lantern shot
+	BLT_SHRUIKENBAD		= 69,
+	BLT_GIFTBOMB		= 70,		// santa claus's gift bomb
+	BLT_HEXATK			= 71,		// shaman's new attack
+	BLT_ORBITER3		= 72,		// new type of orbiter?!
+	BLT_TORNADO			= 73,
+	BLT_ROCKETBOOM		= 74,		// slightly larger boom for the rocket
+
 	NUM_BULLETS // how many bullets there are in total. Put new types BEFORE this one!
 };
 

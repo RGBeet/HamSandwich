@@ -143,6 +143,7 @@ byte CheckMonsterOuch(int x, int y, int type, byte flags);
 byte CheckMonsterAge(int x, int y, int type, int frames, byte flags);
 
 byte GoodguyInSight(Guy* me, Guy* goodguy, byte facing);
+void SuckItUp(int x, int y, byte friendly);
 
 Guy *GetGuyOfAIType(int type);
 

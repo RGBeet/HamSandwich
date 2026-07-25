@@ -434,7 +434,6 @@ TASK(void) InitWorldSelect(MGLDraw *mgl)
 	wsSpr = std::make_unique<sprite_set_t>("graphics/pause.jsp");
 	msBright=0;
 	msDBright=1;
-	PlaySongForce("003worldpicker.ogg");
 	mouseZ=mgl->mouse_z;
 
 	curButton = ButtonId::WorldList;

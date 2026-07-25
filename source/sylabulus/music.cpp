@@ -4,9 +4,27 @@
 #include "config.h"
 #include "editor.h"
 #include "jamulsound.h"
+#include "shop.h"
+#include "player.h"
 
 char curSongName[64];
 byte lastSong=255;
+
+void CalculateMusicSpeed()
+{
+	float speed = 1.0f;
+
+	if (PlayerGetTimeStop() > 1)
+		speed *= 0.5;
+
+	if (PlayerGetAccelerate() > 1)
+		speed *= 1.5;
+
+	if (profile.progress.purchase[modeShopNum[MODE_MANIC]] & SIF_ACTIVE)
+		speed *= 2;
+
+	SetMusicFrequency(speed);
+}
 
 void ChooseNextSong(void)
 {
@@ -144,6 +162,7 @@ void PlaySongForce(const char *fname)
 	else if (fname[0])
 	{
 		sprintf(fullname,"music/%s",fname);
+		CalculateMusicSpeed();
 		PlaySongFile(fullname);
 	}
 	else

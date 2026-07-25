@@ -75,8 +75,6 @@ byte InitEditor(void)
 	ChangeOffColor(MONS_SHARK,2,4);
 	ChangeOffColor(MONS_SNKYSHRK2,2,4);
 
-	spclSprite = std::make_unique<sprite_set_t>("graphics/special.jsp");
-
 	editmgl->MouseTap();
 	editmgl->RMouseTap();
 	editmgl->LastKeyPressed();
@@ -97,8 +95,10 @@ byte InitEditor(void)
 		MAP_SHOWOTHERITEMS |
 		(zoom == 1 ? MapRenderFlags{} : MAP_ZOOMOUT);
 
+	spclSprite = std::make_unique<sprite_set_t>("graphics/special.jsp");
 	InitSpecials(world.map[0]->special);
 	InitGlobalSpecials(world.special);
+	
 	StopSong();
 	SetPlayerStart(-1,-1);
 	InitStars();

@@ -106,7 +106,7 @@ struct player_t
 
 	byte vehicle;
 	byte garlic;
-	byte speed;	// accelerated
+	word speed[2];					// now word
 	byte rageClock;
 	word rage;
 	word varbar, varbarMax;
@@ -116,7 +116,7 @@ struct player_t
 	byte lavaTimer;
 	byte stealthy;
 	byte perfect;
-	byte timeStop;
+	word timeStop[2];				// now word
 	byte ammoCrate;
 	byte torch;
 	byte cheesePower;
@@ -208,8 +208,16 @@ byte RemoveCurrentWeapon(void);
 byte PlayerUsingMechWeapon(void);
 byte PlayerAddPockets(int amt);
 byte PlayerCanThrowHammers(void);
+byte PlayerHasPowerup(void);
+
+byte IsGameModeActivated(byte n);
 
 #define ANY_BUTTONS		(CONTROL_B1|CONTROL_B2|CONTROL_B3|CONTROL_B4)
 #define ATK_BUTTONS		(CONTROL_B1|CONTROL_B2)
+
+void PlayerSetTimeStop(word amt);
+void PlayerSetAccelerate(word amt);
+word PlayerGetTimeStop(void);
+word PlayerGetAccelerate(void);
 
 #endif

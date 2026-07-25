@@ -341,7 +341,6 @@ static SoundDesc soundInfo[512]={
 	{/*SND_MINIWACKOOUCH,*/ "Little Crazy Ouch",ST_MONSTER},
 	{/*SND_MINIWACKODIE,*/ "Little Crazy Die",ST_MONSTER|ST_VOCAL},
 	{/*SND_JACKATTACK,*/ "Jack Frost Attack",ST_MONSTER},
-	{/*SND_JACKDIE,*/ "Jack Frost Die",ST_MONSTER},
 };
 
 static SoundDesc soundInfo2[512] = { // starts from index 512, doing this for now until i can redefine custom sound indexes
@@ -350,6 +349,13 @@ static SoundDesc soundInfo2[512] = { // starts from index 512, doing this for no
 	{/*SND_PAINTSPLAT*/ "Paint Splat",ST_INTFACE},
 	{/*SND_TIMESTOP*/ "Stopwatch Activate",ST_EFFECT},
 	{/*SND_TIMEWARN*/ "Stopwatch Warn",ST_EFFECT},
+	{/*SND_BLACKHOLE*/ "Black Hole Ambience",ST_EFFECT},
+	{/*SND_DEATHRAY*/ "Death Ray Shoot",ST_EFFECT},
+	{/*SND_SZLEAP,*/ "Super Zombie Leap",ST_MONSTER},
+	{/*SND_SZOUCH,*/ "Super Zombie Ouch",ST_MONSTER},
+	{/*SND_SZDIE,*/ "Super Zombie Die",ST_MONSTER},
+	{/*SND_THROWSMTH,*/ "Throw Object",ST_EFFECT|ST_PLAYER},
+	{/*SND_MEGAPHONE,*/ "Megaphone Blast",ST_EFFECT},
 };
 
 static int numCustom;
