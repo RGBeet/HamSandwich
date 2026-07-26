@@ -209,7 +209,8 @@ void DoCheat(byte w)
 			MakeNormalSound(SND_CHEATWIN);
 			break;
 		case CHEAT_SPEED:
-			player.hammerFlags^=HMR_SPEED;
+			player.speed[1]=30*60;
+			SetSpeedFrames(goodguy,30*60);
 			CalculateMusicSpeed(); // 2x
 			MakeNormalSound(SND_CHEATWIN);
 			break;

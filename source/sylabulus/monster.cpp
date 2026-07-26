@@ -273,6 +273,9 @@ const sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing)
 	return monsType[type].spr->GetSprite(v);
 }
 
+
+std::unique_ptr<sprite_set_t>* intFace = GetIntfaceSpriteSet();
+
 void MonsterDraw(
 	int x, int y, int z,
 	dword type, bool isBouapha,
@@ -280,7 +283,8 @@ void MonsterDraw(
 	char bright,
 	byte ouch, byte poison, byte frozen,
 	byte fromCol, byte toCol, uint8_t brtChg,
-	const sprite_set_t* set
+	const sprite_set_t* set,
+	byte flags
 )
 {
 	const sprite_t *curSpr;
@@ -402,6 +406,9 @@ void MonsterDraw(
 			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,4,bright,curSpr,DISPLAY_DRAWME);
 
 	}
+	if (flags)
+		SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT - 1, 255, 0, intFace->get()->GetSprite(120), DISPLAY_DRAWME); // shine an arrow on the guy
+
 }
 
 void InstaRenderMonster(int x,int y,dword type,char bright,MGLDraw *mgl)

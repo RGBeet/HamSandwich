@@ -876,3 +876,8 @@ void EnterPickMenu(void)
 	gameMode = GAMEMODE_PWPN;
 	InitPickMenu();
 }
+
+int GetVisFrames()
+{
+	return visFrms;
+}

@@ -1737,6 +1737,12 @@ static const char pwrUpName[][32] = {
 	"Reload Weapon",
 	"Hammer Enhance",
 	"Poison",
+	"Ignite",
+	"Freeze",
+	"Weakness",
+	"Slowness",
+	"Strength",
+	"Water Walk"
 };
 static_assert(std::size(pwrUpName) == MAX_POWERUP, "Must give new powerups a name");
 

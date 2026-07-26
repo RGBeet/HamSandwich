@@ -183,6 +183,8 @@ byte LevelsPassed(worldData_t *world);
 byte LevelIsPassed(worldData_t *world,byte level);
 void ClearTestProgress(void);
 
+byte GetDifficulty(void);
+
 void StoreWorldResults(worldData_t *me,world_t *world);
 
 dword CountLevelsPassed(void);

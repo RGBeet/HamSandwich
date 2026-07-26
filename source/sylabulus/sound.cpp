@@ -356,6 +356,10 @@ static SoundDesc soundInfo2[512] = { // starts from index 512, doing this for no
 	{/*SND_SZDIE,*/ "Super Zombie Die",ST_MONSTER},
 	{/*SND_THROWSMTH,*/ "Throw Object",ST_EFFECT|ST_PLAYER},
 	{/*SND_MEGAPHONE,*/ "Megaphone Blast",ST_EFFECT},
+	{/*SND_ROCKETLAUNCH,*/ "Rocket Launch",ST_EFFECT},
+	{/*SND_BIGBOOM,*/ "Rocket Boom",ST_EFFECT},
+	{/*SND_LAVAHISS,*/ "Lava Hiss",ST_EFFECT},
+	{/*SND_ARMORHIT,*/ "Matilda Armor Hit",ST_MONSTER|ST_EFFECT},
 };
 
 static int numCustom;

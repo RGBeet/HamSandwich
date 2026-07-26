@@ -1562,7 +1562,36 @@ void SuckParticle(int x, int y, int z)
 			particleList[i].size = 8;
 			particleList[i].life = 20;
 			particleList[i].type = PART_SUCK;
-			particleList[i].color = 16;
+			particleList[i].color = Random(4)>0 ? 16 : 32*6+16;
+			break;
+		}
+	}
+}
+
+void SuckParticleSmall(int x, int y, int z)
+{
+	int i;
+	byte ang;
+
+	for (i = 0;i < maxParticles;i++)
+	{
+		if (!particleList[i].Alive())
+		{
+			ang = Random(256);
+			particleList[i].x = x + Cosine(ang) * 24;
+			particleList[i].y = y + Sine(ang) * 24;
+			particleList[i].tx = x;
+			particleList[i].ty = y;
+			particleList[i].z = z;
+			//particleList[i]->dx=(Cosine(ang)*48)/-10;
+			//particleList[i]->dy=(Sine(ang)*48)/-10;
+			particleList[i].dx = 0;
+			particleList[i].dy = 0;
+			particleList[i].dz = 0;
+			particleList[i].size = 4;
+			particleList[i].life = 20;
+			particleList[i].type = PART_SUCK;
+			particleList[i].color = Random(4) > 0 ? 16 : 32 * 6 + 16;
 			break;
 		}
 	}

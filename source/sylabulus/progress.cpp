@@ -596,3 +596,8 @@ const char* GetDifficultyName(int difficulty)
 		return diffName[difficulty];
 	return "???";
 }
+
+byte GetDifficulty()
+{
+	return profile.difficulty;
+}

@@ -22,6 +22,7 @@ int pStartX=-1,pStartY=-1;
 static byte oldControls,newControls,checkTheControls;
 
 int maxAmmo[MAX_WEAPONS]={1000,20,99,5,50,1000,15,40,20,30,8,3,1,40,10,3,50,5,1000,5,1,25,5,10,15,4,3,10,16,3};
+Guy* intfaceEnemy;
 
 byte IsGameModeActivated(byte n)
 {
@@ -111,6 +112,7 @@ void InitPlayer(byte level,const char *fname)
 	player.jetting		= 0;
 	player.oxygen		= 127*256;
 	player.ammoCrate	= 0;
+	player.waterWalk	= 0;
 
 
 	player.clock		= 0;		// # of frames spent in level
@@ -141,6 +143,8 @@ void InitPlayer(byte level,const char *fname)
 	player.candleTime=30*30;
 	player.spotted=0;
 	player.playAs=profile.playAs;
+
+	intfaceEnemy=NULL;
 }
 
 void ExitPlayer(void)
@@ -175,18 +179,7 @@ int PlayerBrains(void)
 
 void PoisonVictim(Guy *me,byte amt)
 {
-	if(me==goodguy && player.shield)
-		return;	// can't be poisoned when invulnerable
-	if(me==goodguy && profile.difficulty==DIFFICULTY_NORMAL)
-	{
-		amt/=2;
-		if(amt==0)
-			amt=1;
-	}
-	if(me->poison+amt>255)
-		me->poison=255;
-	else
-		me->poison+=amt;
+	// not used anymore?
 }
 
 void PlayerWinLevel(byte isSecret)
@@ -329,10 +322,25 @@ byte PlayerPowerup(int powerup)
 				player.cheesePower=255;
 				break;
 			case PU_POISON:
-				if(goodguy->poison+128<255)
-					goodguy->poison+=128;
-				else
-					goodguy->poison=255;
+				SetPoisonFrames(goodguy,goodguy->poison+60*5);
+				break;
+			case PU_IGNITE:
+				SetIgniteFrames(goodguy, goodguy->ignite+60*5);
+				break;
+			case PU_FROZEN:
+				SetFreezeFrames(goodguy, goodguy->frozen+60*5);
+				break;
+			case PU_WEAKEN:
+				SetWeakenFrames(goodguy, goodguy->weaken+60*5);
+				break;
+			case PU_SLOW:
+				SetSlownessFrames(goodguy, goodguy->slow+60*5);
+				break;
+			case PU_STRENGTH:
+				SetStrengthFrames(goodguy, goodguy->strength+60*5);
+				break;
+			case PU_WATRWALK:
+				player.waterWalk=255;
 				break;
 		}
 	}
@@ -549,9 +557,10 @@ void ToggleWaterwalk(void)
 	player.hammerFlags^=HMR_WATERWALK;
 }
 
+// Does player have the Water Walk cheat or powerup?
 byte PlayerCanWaterwalk(void)
 {
-	return (player.hammerFlags&HMR_WATERWALK);
+	return (player.waterWalk>0 || player.hammerFlags&HMR_WATERWALK);
 }
 
 byte PlayerPushMore(void)
@@ -1184,7 +1193,6 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 
 	if(PlayerGetAccelerate()>0)
 	{
-		player.speed[0]--;
 		if (PlayerGetAccelerate() == 30 * 2)
 			MakeSound(SND_TIMEWARN, me->x, me->y, SND_CUTOFF, 1200);
 		else if (PlayerGetAccelerate() == 1)
@@ -1270,6 +1278,9 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 
 	if(player.pushPower)
 		player.pushPower--;
+
+	if (player.waterWalk)
+		player.waterWalk--;
 
 	if(tportclock)
 		tportclock--;
@@ -1752,10 +1763,8 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	}
 }
 
-void PlayerControlPowerArmor(Guy *me,mapTile_t *mapTile,world_t *world)
+void PlayerControlMech(Guy* me, mapTile_t* mapTile, world_t* world)
 {
-	byte c;
-
 	player.oxygen=127*256;
 
 	if(player.reload)
@@ -1773,15 +1782,27 @@ void PlayerControlPowerArmor(Guy *me,mapTile_t *mapTile,world_t *world)
 	if(player.shield)
 		player.shield=0;
 
+	if(player.waterWalk)
+		player.waterWalk=0;
+
 	if(player.pushPower)
 		player.pushPower--;
 
+	if(me->poison)
+		SetPoisonFrames(me,0);
+
+	if(me->ignite)
+		SetIgniteFrames(me,0);
+
 	if(tportclock)
 		tportclock--;
+}
 
-	if(me->poison)
-		// can't be poisoned in armor
-		me->poison=0;
+void PlayerControlPowerArmor(Guy *me,mapTile_t *mapTile,world_t *world)
+{
+	byte c;
+
+	PlayerControlMech(me,mapTile,world);
 
 	// ice is not slippery for armor
 	Dampen(&me->dx,PLYR_DECEL);
@@ -1934,30 +1955,7 @@ void PlayerControlMiniSub(Guy *me,mapTile_t *mapTile,world_t *world)
 
 	player.oxygen=127*256;
 
-	if(player.reload)
-		player.reload--;
-	if(player.wpnReload)
-		player.wpnReload--;
-
-	if(player.garlic)
-	{
-		player.garlic--;
-		StinkySteam(me->x-FIXAMT*20+Random(FIXAMT*40),me->y-FIXAMT*20+Random(FIXAMT*40),
-					me->z+FIXAMT*40,FIXAMT*2);
-	}
-
-	if(player.shield)
-		player.shield=0;
-
-	if(player.pushPower)
-		player.pushPower--;
-
-	if(tportclock)
-		tportclock--;
-
-	if(me->poison)
-		// can't be poisoned in sub
-		me->poison=0;
+	PlayerControlMech(me, mapTile, world);
 
 	// ice is not slippery for sub
 	player.boredom=0;
@@ -2467,11 +2465,21 @@ word PlayerGetTimeStop()
 // Sets and gets the player acceleration powerup.
 void PlayerSetAccelerate(word amt)
 {
-	player.speed[0] = amt;
-	player.speed[1] = amt;
+	goodguy->speed		= amt;
+	player.speed[1]		= amt;
 	CalculateMusicSpeed(); // x1.5 speed
 }
 word PlayerGetAccelerate()
 {
-	return player.speed[0];
+	return goodguy ? goodguy->speed : 0;
+}
+
+Guy* GetInterfaceEnemy()
+{
+	return intfaceEnemy;
+}
+
+void SetInterfaceEnemy(Guy *g)
+{
+	intfaceEnemy = g;
 }

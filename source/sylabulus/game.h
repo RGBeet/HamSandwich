@@ -97,4 +97,6 @@ bool VerifyLevel(Map* map);
 
 void EnterPickMenu(void);
 
+int GetVisFrames(void);
+
 #endif

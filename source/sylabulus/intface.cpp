@@ -746,7 +746,7 @@ void DrawPowerupBar(int x,int y,MGLDraw *mgl)
 	color[0]=32*3+16;	// blue for shield
 	width[1]=player.garlic*POWERUP_WIDTH/255;
 	color[1]=32*0+20;	// light grey for garlic
-	width[2]=player.speed[0]*POWERUP_WIDTH/player.speed[1];
+	width[2]=goodguy->speed*POWERUP_WIDTH/player.speed[1];
 	color[2]=32*7+16;	// aqua for speed
 	width[3]=player.invisibility*POWERUP_WIDTH/255;
 	color[3]=32*6+16;	// purple for invis
@@ -1448,4 +1448,9 @@ void RenderCollectedStuff(int x,int y,MGLDraw *mgl)
 
 	snprintf(msg, sizeof(msg), "%.2f%% Complete",p);
 	PrintSimpleShadow(x + xx, y + yy, msg, 1);
+}
+
+std::unique_ptr<sprite_set_t> *GetIntfaceSpriteSet()
+{
+	return &intfaceSpr;
 }

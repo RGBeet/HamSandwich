@@ -410,6 +410,8 @@
 #define SND_MEGAPHONE			522	// megaphone attack
 #define SND_ROCKETLAUNCH		523	// rocket go zoom
 #define SND_BIGBOOM				524	// rocket go boom
+#define SND_LAVAHISS			525	// when you hit the lava
+#define SND_ARMORHIT			526 // matilda's/sphinxter's body getting hit.
 
 #define MAX_SOUNDS				1024 // doesn't mean a thing lol
 

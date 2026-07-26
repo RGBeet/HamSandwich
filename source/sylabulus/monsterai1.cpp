@@ -17,7 +17,7 @@ void AI_Bonehead(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_SKELOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_SKELOUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
 			MakeSound(SND_SKELDIE,me->x,me->y,SND_CUTOFF,1200);
 	}
@@ -149,7 +149,7 @@ void AI_Bat(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp==0)
-			MakeSound(SND_BATOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_BATOUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 	}
 	if(me->action==ACTION_BUSY)
 	{
@@ -333,7 +333,7 @@ void AI_BigSpider(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_SPD2OUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_SPD2OUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
 			MakeSound(SND_SPD2DIE,me->x,me->y,SND_CUTOFF,1200);
 	}
@@ -399,7 +399,7 @@ void AI_Zombie(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_ZOMBIEOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_ZOMBIEOUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
 			MakeSound(SND_ZOMBIEDIE,me->x,me->y,SND_CUTOFF,1200);
 	}
@@ -541,7 +541,7 @@ void AI_MamaSpider(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_SPD3OUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_SPD3OUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
 			MakeSound(SND_SPD3DIE,me->x,me->y,SND_CUTOFF,1200);
 	}
@@ -650,7 +650,7 @@ void AI_Pygmy(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_PYGMYOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_PYGMYOUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
 			MakeSound(SND_PYGMYDIE,me->x,me->y,SND_CUTOFF,1200);
 	}
@@ -794,7 +794,7 @@ void AI_Serpent(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_SERPENTOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_SERPENTOUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
 			MakeSound(SND_SERPENTDIE,me->x,me->y,SND_CUTOFF,1200);
 	}
@@ -862,7 +862,7 @@ void AI_MattieBrain(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4 && me->aiType==MONS_MATBRAIN)	// skull and head have their own ouch noises
 	{
 		if(me->hp>0)
-			MakeSound(SND_MATTIEOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_MATTIEOUCH|SND_RANDOM,me->x,me->y,SND_CUTOFF,1200);
 	}
 
 	// use facing variable to determine which way for eyes to look
@@ -919,7 +919,7 @@ void AI_MattieSkullOrHead(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_MATTIEOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_MATTIEOUCH|SND_RANDOM,me->x,me->y,SND_CUTOFF,1200);
 		else
 			MakeSound(SND_MATTIEDIE,me->x,me->y,SND_CUTOFF,1200);
 	}
@@ -1002,6 +1002,12 @@ void AI_MattieClaw(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->reload>0)
 		me->reload--;
 
+	if(me->ouch==4)
+	{
+		if(me->hp>0)
+			MakeSound(SND_ARMORHIT,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
+	}
+
 	if(!me->parent || me->parent->type==MONS_NONE)
 	{
 		me->type=MONS_NONE;	// can't exist alone
@@ -1060,7 +1066,7 @@ void AI_MattieClaw(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	if(me->reload==0)
 	{
-		MakeSound(SND_MATTIECLAW,me->x,me->y,SND_CUTOFF,1200);
+		MakeSound(SND_MATTIECLAW,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		me->reload=Random(180)+20;
 		me->action=ACTION_BUSY;
 		me->seq=ANIM_ATTACK;
@@ -1253,7 +1259,7 @@ void AI_Ginger(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_GINGEROUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_GINGEROUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
 			MakeSound(SND_GINGERDIE,me->x,me->y,SND_CUTOFF,1200);
 	}
@@ -1960,7 +1966,7 @@ void AI_Magmazoid(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_SERPENTOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_SERPENTOUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
 			MakeSound(SND_SERPENTDIE,me->x,me->y,SND_CUTOFF,1200);
 	}
@@ -2121,7 +2127,7 @@ void AI_Mush(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_MUSHOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_MUSHOUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
 			MakeSound(SND_MUSHDIE,me->x,me->y,SND_CUTOFF,1200);
 	}
@@ -2258,6 +2264,7 @@ void AI_Mush(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				me->frmTimer=0;
 				me->frmAdvance=128;
 			}
+
 			if(RangeToTarget(me,goodguy)<200*FIXAMT)
 				me->mind=2;	// in range, start killin'
 		}
@@ -2277,7 +2284,7 @@ void AI_TheThing(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_MUSHOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_MUSHOUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
 			MakeSound(SND_MUSHDIE,me->x,me->y,SND_CUTOFF,1200);
 	}
@@ -2350,6 +2357,12 @@ void AI_ThingTentacle(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		me->mind1++;
 	if(me->mind1>128)
 		me->mind1--;
+
+	if (me->ouch == 4)
+	{
+		if (me->hp > 0)
+			MakeSound(SND_ARMORHIT | SND_RANDOM, me->x, me->y, SND_CUTOFF, 1200);
+	}
 
 	if((!me->parent) || me->parent->type==MONS_NONE)
 	{
@@ -2494,7 +2507,7 @@ void AI_SuperZombie(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_SZOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_SZOUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
 			MakeSound(SND_SZDIE,me->x,me->y,SND_CUTOFF,1200);
 	}
@@ -2729,7 +2742,7 @@ void AI_StickMan(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_HAPPYOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_HAPPYOUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
 			MakeSound(SND_HAPPYDIE,me->x,me->y,SND_CUTOFF,1200);
 		if(me->hp>0)
@@ -2846,7 +2859,7 @@ void AI_BabySeal(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_SEALOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_SEALOUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
 			MakeSound(SND_SEALDIE,me->x,me->y,SND_CUTOFF,1200);
 	}
@@ -2968,7 +2981,7 @@ void AI_Isozoid(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_SERPENTOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_SERPENTOUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
 			MakeSound(SND_SERPENTDIE,me->x,me->y,SND_CUTOFF,1200);
 	}
@@ -3052,7 +3065,7 @@ void AI_Snowguy(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_SNOWOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_SNOWOUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
 			MakeSound(SND_SNOWDIE,me->x,me->y,SND_CUTOFF,1200);
 	}
@@ -3303,6 +3316,12 @@ void AI_Zomboni(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	if(me->reload)
 		me->reload--;
+	
+	if(me->ouch==4)
+	{
+		if(me->hp>0)
+			MakeSound(SND_ARMORHIT,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
+	}
 
 	if(me->action==ACTION_BUSY)
 	{
@@ -3385,7 +3404,7 @@ void AI_Yeti(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_YETIOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_YETIOUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
 			MakeSound(SND_YETIDIE,me->x,me->y,SND_CUTOFF,1200);
 	}
@@ -3531,7 +3550,7 @@ void AI_Geozoid(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_SERPENTOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_SERPENTOUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
 			MakeSound(SND_SERPENTDIE,me->x,me->y,SND_CUTOFF,1200);
 	}
@@ -3609,7 +3628,7 @@ void AI_Mumble(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_ZOMBIEOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_ZOMBIEOUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
 			MakeSound(SND_ZOMBIEDIE,me->x,me->y,SND_CUTOFF,1200);
 	}
@@ -3719,7 +3738,7 @@ void AI_Djinni(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_DJINNIOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_DJINNIOUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
 			MakeSound(SND_DJINNIDIE,me->x,me->y,SND_CUTOFF,1200);
 	}
@@ -3980,7 +3999,8 @@ void AI_Roller(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	if(me->ouch==4)
 	{
-		// make noise?
+		if(me->hp>0)
+			MakeSound(SND_ARMORHIT,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 	}
 
 	if(me->action==ACTION_BUSY)
@@ -4049,7 +4069,8 @@ void AI_Lich(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	if(me->ouch==4)
 	{
-		// make noise?
+		if(me->hp>0)
+			MakeSound(SND_ARMORHIT,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 	}
 
 	if(me->action==ACTION_BUSY)
@@ -4107,7 +4128,7 @@ void AI_Lich(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		{
 			if(Guy *victim = FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,55,0,0,1,map,world,me->friendly))
 			{
-				PoisonVictim(victim,60);
+				SetPoisonFrames(victim, victim->poison+60);
 			}
 
 			// calculate desired location (want to be above Bouapha)
@@ -4192,7 +4213,8 @@ void AI_DustDevil(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	if(me->ouch==4)
 	{
-		// make noise?
+		if(me->hp>0)
+			MakeSound(SND_ARMORHIT,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 	}
 
 	if(me->mind1<255)
@@ -4426,7 +4448,8 @@ void AI_SphinxArm(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	if(me->ouch==4)
 	{
-		// make noise?
+		if(me->hp>0)
+			MakeSound(SND_ARMORHIT,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 	}
 
 	if(me->action==ACTION_BUSY)
@@ -4495,7 +4518,7 @@ void AI_Sphinx(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_ZOMBIEOUCH,me->x,me->y,SND_CUTOFF,600);
+			MakeSound(SND_ZOMBIEOUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,600);
 		else
 			MakeSound(SND_MUSHDIE,me->x,me->y,SND_CUTOFF,600);
 	}
@@ -4578,7 +4601,7 @@ void AI_Freakazoid(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_SERPENTOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_SERPENTOUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
 			MakeSound(SND_SERPENTDIE,me->x,me->y,SND_CUTOFF,1200);
 	}
@@ -4642,7 +4665,9 @@ void AI_CentiBody(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	if(me->ouch==4)
 	{
-		if(me->hp==0)
+		if(me->hp>0)
+			MakeSound(SND_ARMORHIT,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
+		else
 			MakeSound(SND_PUMPKINDIE,me->x,me->y,SND_CUTOFF,1200);
 	}
 
@@ -4733,7 +4758,7 @@ void AI_CentiHead(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_ZOMBIEOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_ZOMBIEOUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
 			MakeSound(SND_PUMPKINDIE,me->x,me->y,SND_CUTOFF,1200);
 	}
@@ -4798,7 +4823,7 @@ void AI_Wacko(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_WACKOOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_WACKOOUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
 			MakeSound(SND_WACKODIE,me->x,me->y,SND_CUTOFF,1200);
 	}
@@ -4963,9 +4988,9 @@ void AI_GreatPumpkin(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_GREATPKOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_GREATPKOUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
-			MakeSound(SND_GREATPKDIE,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_GREATPKDIE,me->x,me->y,SND_ONE,1200);
 	}
 
 	if(me->action==ACTION_BUSY)
@@ -5085,7 +5110,7 @@ void AI_Ultrazoid(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_SERPENTOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_SERPENTOUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
 			MakeSound(SND_SERPENTDIE,me->x,me->y,SND_CUTOFF,1200);
 	}
@@ -5389,7 +5414,7 @@ void AI_Santa(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->ouch==4)
 	{
 		if(me->hp>0)
-			MakeSound(SND_SANTAOUCH,me->x,me->y,SND_CUTOFF,1200);
+			MakeSound(SND_SANTAOUCH,me->x,me->y,SND_CUTOFF|SND_RANDOM,1200);
 		else
 			MakeSound(SND_SANTADIE,me->x,me->y,SND_CUTOFF,1200);
 	}

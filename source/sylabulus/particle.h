@@ -94,6 +94,7 @@ void TeamChangeRing(byte color,int x,int y,int z,byte num,byte force);
 
 void StopwatchRing(int x, int y, int z, byte num, byte force);
 void SuckParticle(int x, int y, int z);
+void SuckParticleSmall(int x, int y, int z);
 
 void DoParticleEffect(int x,int y, byte type);
 

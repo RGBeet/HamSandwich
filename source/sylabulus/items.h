@@ -272,7 +272,12 @@ enum : int
 	PU_AMMO2    = 8,  // reload current weapon
 	PU_CHEESE   = 9,  // supreme cheese
 	PU_POISON   = 10, // poison
-
+	PU_IGNITE	= 11,
+	PU_FROZEN	= 12,
+	PU_WEAKEN	= 13,
+	PU_SLOW		= 14,
+	PU_STRENGTH	= 15,
+	PU_WATRWALK	= 16,
 	MAX_POWERUP  // End marker. Add new powerups above this.
 };
 const char* GetPowerupName(int powerup);

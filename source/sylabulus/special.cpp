@@ -2143,8 +2143,26 @@ void RenderSpecialXes(Map *map)
 			int cx = map->special[lastSpecialShown].x * TILE_WIDTH - camx + TILE_WIDTH / 2;
 			int cy = map->special[lastSpecialShown].y * TILE_HEIGHT - camy + TILE_HEIGHT / 2;
 			Map* m = curWorld.map[mNum];
+
 			CenterPrintCompressed(cx + 1, cy - outXes + 1, m->name, outXes * 100 / 40, -31, 1);
 			CenterPrintCompressed(cx, cy - outXes, m->name, outXes * 100 / 40, 0, 1);
+
+			if(LevelIsPassed(player.worldProg, map->special[lastSpecialShown].effect[0].value))
+			{
+				byte angList[] = { 96, 32, 0, 128 };
+				byte ang=0;
+
+				byte c = 0;
+				for (const levelData_t& levelData : player.worldProg->Levels())
+					if (levelData.levelNum == map->special[lastSpecialShown].effect[0].value)
+					{
+						c = ((levelData.flags & LF_CANDLES) != 0);
+						break;
+					}
+				if(c)
+					GetIntfaceSprite(51)->DrawBright(cx-5, cy - outXes - 12, GetDisplayMGL(), 0);
+					ang++;
+			}
 		}
 	}
 }

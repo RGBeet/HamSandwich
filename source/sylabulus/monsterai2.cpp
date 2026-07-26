@@ -422,7 +422,7 @@ void AI_Vampire(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			{
 				goodguy->GetShot(Cosine(me->facing*32)*4,Sine(me->facing*32)*4,12,map,world);
 				if(me->aiType==MONS_DARKVAMP)
-					PoisonVictim(goodguy,20);
+					SetPoisonFrames(goodguy, goodguy->poison+20);
 			}
 			me->reload=5;
 		}
@@ -1002,7 +1002,7 @@ void AI_Pygmy3(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				LightningBolt(x,y-FIXAMT*20,goodguy->x,goodguy->y-FIXAMT*20);
 				LightningBolt(x,y-FIXAMT*20,goodguy->x,goodguy->y-FIXAMT*20);
 				goodguy->GetShot(0,0,4,map,world);
-				PoisonVictim(goodguy,60);
+				SetPoisonFrames(goodguy, goodguy->poison+30);
 			}
 			me->reload=10;
 		}

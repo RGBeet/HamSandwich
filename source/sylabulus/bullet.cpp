@@ -615,6 +615,7 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 			me->dy=0;
 			me->timer=30*3;
 			me->anim=0;
+			ExplodeParticles2(PART_FX,me->x,me->y,me->z,10,8);
 			break;
 		case BLT_SPEAR:
 		case BLT_BADSPEAR:
@@ -897,10 +898,11 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			}
 			break;
 		case BLT_LILBOOM:
-			if(FindVictims(me->x>>FIXSHIFT,me->y>>FIXSHIFT,16,(8-Random(17))<<FIXSHIFT,
+			if(Guy *victim = FindVictims(me->x>>FIXSHIFT,me->y>>FIXSHIFT,16,(8-Random(17))<<FIXSHIFT,
 				(8-Random(16))<<FIXSHIFT,2,map,world,me->friendly))
 			{
-				// nothing much to do here, the victim will scream quite enough
+				Burn(victim->x, victim->y, victim->z);
+				SetIgniteFrames(victim, victim->ignite+30);
 			}
 			break;
 		case BLT_SLASH:
@@ -911,22 +913,17 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			}
 			break;
 		case BLT_FLAME:
-			if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,12,me->dx,me->dy,1,map,world,me->friendly))
-			{
-				// no noise, just let them scream
-			}
-			break;
 		case BLT_FLAME2:
-			if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,12,me->dx,me->dy,1,map,world,me->friendly))
+			if(Guy *victim = FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,12,me->dx,me->dy,1,map,world,me->friendly))
 			{
-				// no noise, just let him scream
+				Burn(victim->x, victim->y, victim->z);
+				SetIgniteFrames(victim, victim->ignite+30);
 			}
 			break;
 		case BLT_SPORE:
 			if(Guy *victim = FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,4,me->dx/2,me->dy/2,1,map,world,me->friendly))
 			{
-
-				PoisonVictim(victim,30);
+				SetPoisonFrames(victim, victim->poison+30);
 				me->type=BLT_NONE;	// go away
 			}
 			break;
@@ -963,10 +960,11 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			}
 			break;
 		case BLT_BOOM:
-			if(FindVictims(me->x>>FIXSHIFT,me->y>>FIXSHIFT,64,(8-Random(17))<<FIXSHIFT,
+			if(Guy *victim = FindVictims(me->x>>FIXSHIFT,me->y>>FIXSHIFT,64,(8-Random(17))<<FIXSHIFT,
 				(8-Random(16))<<FIXSHIFT,4,map,world,me->friendly))
 			{
-				// nothing much to do here, the victim will scream quite enough
+				Burn(victim->x, victim->y, victim->z);
+				SetIgniteFrames(victim, victim->ignite+30*5);
 			}
 			break;
 		case BLT_ROCKETBOOM:
@@ -999,11 +997,12 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			}
 			break;
 		case BLT_ACID:
-			if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,8,me->dx,me->dy,5,map,world,me->friendly))
+			if(Guy *victim = FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,8,me->dx,me->dy,5,map,world,me->friendly))
 			{
 				me->type=BLT_NONE;
 				MakeSound(SND_ACIDSPLAT,me->x,me->y,SND_CUTOFF,1000);
 				ExplodeParticles(PART_SLIME,me->x,me->y,me->z,6);
+				SetIgniteFrames(victim, victim->ignite+20);
 			}
 			break;
 		case BLT_SHARK:
@@ -1244,6 +1243,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			HitBadguys(me, map, world);
 			break;
 		case BLT_HOLESHOT:
+			SuckParticleSmall(me->x, me->y, FIXAMT * 20);
 			me->anim = 1 - me->anim;
 			me->dx = (me->dx * 19) / 20;
 			me->dy = (me->dy * 19) / 20;
@@ -1254,9 +1254,8 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			SuckItUp(me->x, me->y, me->friendly);
 			if (Random(2) == 0)
 				HitBadguys(me, map, world);
-			if (me->timer && me->timer % 60 == 0)
+			if (me->timer && me->timer % 30 == 0)
 			{
-				// do the ambience
 				MakeSound(SND_BLACKHOLE, me->x, me->y, SND_CUTOFF, 1100);
 			}
 			break;
@@ -1265,7 +1264,6 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			me->dz=0;
 			//ExplodeParticlesColor(4,me->x,me->y,me->z,1,1);
 			ColorDrop(4,me->x,me->y,me->z);
-
 			HitBadguys(me,map,world);
 			break;
 		case BLT_HAMMER:
@@ -1804,7 +1802,10 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 		case BLT_SCANNER:
 			me->anim++;
 			if(me->anim==3)
+			{
+				ExplodeParticles2(PART_SWAP,me->x,me->y,me->z,2,2);
 				me->anim=0;
+			}
 			HitBadguys(me,map,world);
 			break;
 		case BLT_SCANLOCK:
@@ -1919,8 +1920,20 @@ void RenderBullet(bullet_t *me)
 		case BLT_MISSILE:
 			v=me->facing+SPR_MISSILE;
 			curSpr=bulletSpr->GetSprite(v);
-			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,me->bright,curSpr,
+			if (me->timer > 10)
+			{
+				SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 255, me->bright, curSpr,
 					DISPLAY_DRAWME);
+			}
+			else
+			{
+				if (me->timer%4<2)
+					SprDrawOff(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 0, 4, me->bright, curSpr,
+						DISPLAY_DRAWME | DISPLAY_OFFCOLOR);
+				else
+					SprDrawOff(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 0, 5, me->bright+8, curSpr,
+						DISPLAY_DRAWME | DISPLAY_OFFCOLOR);	
+			}
 			break;
 		case BLT_TORPEDO:
 			v=(me->facing)+SPR_MISSILE;

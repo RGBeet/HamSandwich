@@ -120,6 +120,7 @@ struct player_t
 	byte ammoCrate;
 	byte torch;
 	byte cheesePower;
+	byte waterWalk;
 	byte gotRecords;
 
 	bool pendingLeaderboardUpload;
@@ -219,5 +220,8 @@ void PlayerSetTimeStop(word amt);
 void PlayerSetAccelerate(word amt);
 word PlayerGetTimeStop(void);
 word PlayerGetAccelerate(void);
+
+Guy* GetInterfaceEnemy();
+void SetInterfaceEnemy(Guy* g);
 
 #endif

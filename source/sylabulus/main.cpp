@@ -115,7 +115,7 @@ TASK(int) main(int argc, char* argv[])
 			case 2:	// SHOPPING
 				shopping=1;
 				ResetMoron();
-				AWAIT PlayWorld(mainmgl,"mall.dlw");
+				AWAIT PlayWorld(mainmgl,"mall.psw");
 				break;
 			case 3:	// EDITOR
 				shopping=0;

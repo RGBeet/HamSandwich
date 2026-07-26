@@ -31,6 +31,8 @@ class Guy final
 		void GetShot(int dx,int dy,byte damage,Map *map,world_t *world, bool bypassInvincible=false);
 		void CalculateRect(void);
 		byte IsAwake(void);
+		byte PushGuys(Guy *first, word size, dword stamp, Map *map, world_t *world);
+		byte IsInterface(void);
 
 		int x,y,z;
 		int oldx,oldy;
@@ -45,7 +47,6 @@ class Guy final
 		byte mind3;
 
 		byte reload;
-		byte poison;
 
 		byte ouch;
 		byte action;
@@ -56,8 +57,7 @@ class Guy final
 		char bright;
 		byte friendly;
 
-		word mindControl;
-
+		dword pushStamp;
 		Guy *target;
 		Guy *parent;
 		Guy *lastAttacker; // last guy to have attacked
@@ -69,7 +69,23 @@ class Guy final
 		int rectx,recty,rectx2,recty2;	// for collision checks
 		word ID;	// just a copy of the guy's number
 		byte item;	// what item you're carrying
-		byte frozen;
+
+		// 255 = 8.5 seconds? too short!
+
+		// Status effects
+		word poison;		// depletes HP over time
+		word ignite;		// ALSO depletes HP over time, but affects enemies based on fire characteristics (NEW)
+		word frozen;		// stops you in your tracks! affects enemies based on ice characteristics
+		word weaken;		// take more damage (+50%)
+		word slow;			// *toby voice* hey guys! i think i found a glue!
+		word mindControl;	// temporarily shifted to other team
+
+		// Good afflictions
+		word strength;		// take less damage (-25%)
+		word speed;			// twice as fast
+
+		//byte mcTeam;		// TODO: add multi-team support
+
 
 		int aiType;
 		byte fromColor,toColor;
@@ -149,4 +165,14 @@ Guy *GetGuyOfAIType(int type);
 
 void FindMonsterBrain(int myx,int myy);
 void FindMonsterCandle(int myx,int myy);
+
+void SetPoisonFrames(Guy *g,word frames);
+void SetIgniteFrames(Guy* g, word frames);
+void SetFreezeFrames(Guy* g, word frames);
+void SetWeakenFrames(Guy* g, word frames);
+void SetSlownessFrames(Guy* g, word frames);
+void SetMindControlFrames(Guy* g, word frames);
+void SetStrengthFrames(Guy* g, word frames);
+void SetSpeedFrames(Guy* g, word frames);
+
 #endif

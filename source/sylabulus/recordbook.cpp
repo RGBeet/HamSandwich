@@ -26,6 +26,16 @@ static int currentGoal;
 static byte oldc;
 static bool mouseMode;
 
+bool IsNotNamed(const char* name, const std::string& s) {
+	return (strcmp(name, (s + ".psw").c_str()));
+}
+const char *progressBlacklist[4] = {
+	"backup_load",
+	"backup_exit",
+	"backup_save",
+	"mall"
+};
+
 float CalcPlayPercent(void)
 {
 	int worlds;
@@ -39,14 +49,21 @@ float CalcPlayPercent(void)
 	for (const auto& str : files)
 	{
 		const char* name = str.c_str();
-		// rule out the backup worlds, so they don't show up
-		if((strcmp(name,"backup_load.psw")) &&
-		   (strcmp(name,"backup_exit.psw")) &&
-		   (strcmp(name,"backup_save.psw")))
+		byte pass=1;
+		for(int i=0;i<4;i++)
 		{
-			tmp=GetWorldProgressNoCreate(name);
-			if(tmp)
-				score+=tmp->percentage;
+			// do not count the backup worlds or mall world
+			if (!IsNotNamed(name, progressBlacklist[i]))
+			{
+				pass=0;
+				break;
+			}
+		}
+		if(pass)
+		{
+			tmp = GetWorldProgressNoCreate(name);
+			if (tmp)
+				score += tmp->percentage;
 			worlds++;
 		}
 	}

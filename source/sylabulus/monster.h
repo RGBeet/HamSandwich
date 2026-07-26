@@ -370,7 +370,8 @@ void MonsterDraw(
 	char bright,
 	byte ouch, byte poison, byte frozen,
 	byte fromCol, byte toCol, uint8_t brtChg,
-	const sprite_set_t* set
+	const sprite_set_t* set,
+	byte flags
 );
 void InstaRenderMonster(int x,int y,dword type,char bright,MGLDraw *mgl);
 int InstaRenderScannedMonster(int x,int y,dword type,char bright,MGLDraw *mgl);
