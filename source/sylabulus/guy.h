@@ -31,8 +31,31 @@ class Guy final
 		void GetShot(int dx,int dy,byte damage,Map *map,world_t *world, bool bypassInvincible=false);
 		void CalculateRect(void);
 		byte IsAwake(void);
+
 		byte PushGuys(Guy *first, word size, dword stamp, Map *map, world_t *world);
 		byte IsInterface(void);
+
+		void HandleOuchNoises(int ouchSnd, int deathSnd); // when ouch happen, do noise!
+
+		void StartNewAnimation(byte sequence, byte frameAdvance, byte action, int dxNew, int dyNew, int newReload=0, int sound=0);
+		void StartAnimMove(byte frameAdvance=64);
+
+		int GetSpaceInFrontX(int amt);
+		int GetSpaceInFrontY(int amt);
+		int GetFacingX(void);
+		int GetFacingY(void);
+
+		void SetNewSpeed(int speed);
+		void DampenSpeed(int speed);
+		void DoFireBullet(int bulletType, byte reloadFrames, int spaceInFront=16, int sound=0);
+		void DoFireBulletAngled(int bulletType, byte angleOffset, int spaceInFront=16);
+		byte PickRandomDirection(byte *newTimer=nullptr, byte frames=NULL);
+		void TryAddBaby(Map* map, world_t* world, int type, int offx, int offy, int newReload=0);
+
+		byte CheckSequenceFrame(byte sequence, byte frame, bool checkReload=true);
+		byte CheckTargetWithinReach(int range, Guy* target=nullptr);
+		byte CheckRoll(int n, byte rollType);
+		void DoTransform(int newType);
 
 		int x,y,z;
 		int oldx,oldy;

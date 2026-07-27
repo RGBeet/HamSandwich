@@ -1,4 +1,5 @@
 #include "monsteredit.h"
+#include "monster.h"
 #include "dialogbits.h"
 #include "filedialog.h"
 #include "items.h"
@@ -300,8 +301,13 @@ void MonsterEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 	mgl->FillBox(161,129,639,479,32*3+6);
 
 	SetSpriteConstraints(161,130,639,479);
+
 	InstaRenderMonster(520,380,curMons,0,mgl);
-	ClearSpriteConstraints();
+	
+	if (GetMonsterSprite(curMons,0,0,0)==NULL)
+		CenterPrint(520,380,"NO SPRITE!\nDO NOT USE!", 0, 1);
+
+	SetSpriteConstraints(0,0,639,479);
 
 	mgl->FillBox(161,268,470,479,32*1+4);
 	mgl->Box(160,268,470,479,32*1+16);

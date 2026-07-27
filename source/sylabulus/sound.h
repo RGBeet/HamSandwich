@@ -413,7 +413,62 @@
 #define SND_LAVAHISS			525	// when you hit the lava
 #define SND_ARMORHIT			526 // matilda's/sphinxter's body getting hit.
 
-#define MAX_SOUNDS				1024 // doesn't mean a thing lol
+#define SND_YERFSUCK			527 // sucking in slowly
+#define SND_YERFSPEW			528	// spewing out bullets
+#define SND_YERFCAUGHT			529 // he's caught you! oop!
+#define SND_YERFOUCH			530
+#define SND_YERFDIE				531 // he doesn't really die don't worry
+
+#define SND_LANTERNSPIT			532
+#define SND_LANTERNDIE			533
+
+#define SND_HARDHATTAUNT		534
+#define SND_HARDHATSHOOT		535
+#define SND_HARDHATOUCH			536
+#define SND_HARDHATDIE			537
+
+#define SND_PELICANSPEW			538
+#define SND_PELICANOUCH			539
+#define SND_PELICANDIE			540
+
+#define SND_NINJATAUNT			541
+#define SND_NINJASWORD			542
+#define SND_NINJAOUCH			543
+#define SND_NINJADIE			544
+
+#define SND_JIMBOWAKE			545
+#define SND_JIMBOATTACK			546
+#define SND_JIMBOOUCH			547
+#define SND_JIMBODIE			548
+
+#define SND_UMBRELLOTAUNT		549
+#define SND_UMBRELLOSPEW		550
+#define SND_UMBRELLOOUCH		551
+#define SND_UMBRELLODIE			552
+
+#define SND_NOHCOMEDYATK1		553
+#define SND_NOHCOMEDYATK2		554
+#define SND_NOHCOMEDYOUCH		555
+#define SND_NOHTRAGEDYATK1		556
+#define SND_NOHTRAGEDYATK2		557
+#define SND_NOHTRAGEDYOUCH		558
+#define SND_NOHSWITCH			559
+#define SND_NOHDIE				560
+
+#define SND_EYEBALLTREEOUCH		561
+#define SND_EYEBALLTREEDIE		562
+
+#define SND_STICKNINJAFLEX		563
+#define SND_STICKNINJATHROW		564
+#define SND_STICKNINJAOUCH		565
+#define SND_STICKNINJADIE		566
+
+#define SND_BUSHOUCH			567		// not george bush
+#define SND_BUSHDIE				568
+#define SND_BOMBIELEAP			569
+#define SND_GLUEON				570		// like the blupi slime sound
+
+#define MAX_SOUNDS				1024	// doesn't mean a thing lol
 
 //--------------------------------
 

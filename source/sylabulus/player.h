@@ -19,7 +19,7 @@ enum : byte
 	WPN_MISSILES,
 	WPN_AK8087,
 	WPN_BOMBS,
-	WPN_FLAME,
+	WPN_FLAME,			// thaws frozen enemies (from the great pumpkin's field)
 	WPN_PWRARMOR,
 	WPN_BIGAXE,
 	WPN_LIGHTNING,
@@ -48,6 +48,7 @@ enum : byte
 	WPN_GLUEGUN,		// glue gun: slows down enemies
 	WPN_THROWSTARS,		// throwing stars
 	WPN_BFG,			// bouapha's favorite gun (shoots mini hammers!?)
+	WPN_DESTABILIZER,	// molecular destabilizer (from the great pumpkin's field)
 
 	MAX_WEAPONS
 };

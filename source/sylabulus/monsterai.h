@@ -5,6 +5,9 @@ class Guy;
 class Map;
 struct world_t;
 
+#define ROLL_MOVE		0
+#define ROLL_ATTACK		1
+
 // ai functions for each monster type
 void AI_Bonehead(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Bat(Guy *me,Map *map,world_t *world,Guy *goodguy);
@@ -184,5 +187,33 @@ void AI_Microzoid(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_HotShroom(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_MiniWacko(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_JackFrost(Guy *me,Map *map,world_t *world,Guy *goodguy);
+
+void AI_Yerfboss(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_Lantern(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_Hardhat(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_Pelican(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_Ninja(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_Kappa(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_Tsuchizoid(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_Jimbo(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_Umbrello(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_Kabocha(Guy* me, Map* map, world_t* world, Guy* goodguy);
+
+void AI_NohMannComedy(Guy* me, Map* map, world_t* world, Guy* goodguy);		// form A
+void AI_NohMannTragedy(Guy* me, Map* map, world_t* world, Guy* goodguy);	// form B
+void AI_NohMannArm(Guy* me, Map* map, world_t* world, Guy* goodguy);		// arms
+
+void AI_EyeballTree(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_StickNinja(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_CrazyBush(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_Bombie(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_Deathcap(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_GlueTrap(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_Gingersnap(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_PurpleKappa(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_GreaterIsozoid(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_CroquetBird(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_NastyTree(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_SpikeBall(Guy* me, Map* map, world_t* world, Guy* goodguy);
 
 #endif

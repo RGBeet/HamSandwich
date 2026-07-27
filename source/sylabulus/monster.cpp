@@ -223,6 +223,33 @@ void LoadMySprite(dword type)
 	}
 }
 
+byte LoadMySpriteMaybe(byte type)
+{
+	int v;
+
+	if (type == 0 || type >= NUM_MONSTERS)
+		return -1;
+
+	if (monsType[type].spr == NULL)
+	{
+		if (monsType[type].sprName[0] == '!')
+		{
+			// it's a repeat of someone else's sprite
+			v = atoi(&monsType[type].sprName[1]);
+			if (!monsType[v].spr)
+				monsType[v].spr = new sprite_set_t(monsType[v].sprName);
+
+			monsType[type].spr = monsType[v].spr;
+		}
+		else
+			monsType[type].spr = new sprite_set_t(monsType[type].sprName);
+
+		if (monsType[type].spr == NULL || monsType[type].spr->GetSprite(0) == NULL)
+			return 0;
+	}
+	return 1;
+}
+
 const sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing)
 {
 	int v;
@@ -417,7 +444,8 @@ void InstaRenderMonster(int x,int y,dword type,char bright,MGLDraw *mgl)
 	int v;
 
 	// load if not loaded
-	LoadMySprite(type);
+	if (!LoadMySpriteMaybe(type))
+		return;
 
 	v=monsType[type].anim[ANIM_IDLE][0];
 	if(!(monsType[type].flags&MF_ONEFACE))
@@ -444,7 +472,11 @@ int InstaRenderScannedMonster(int x,int y,dword type,char bright,MGLDraw *mgl)
 	int v;
 
 	// load if not loaded
-	LoadMySprite(type);
+	if (!LoadMySpriteMaybe(type))
+	{
+		CenterPrint(x, y - 16, "No graphics!", 0, 1);
+		return 0;
+	}
 
 	v=monsType[type].anim[ANIM_IDLE][0];
 	if(!(monsType[type].flags&MF_ONEFACE))

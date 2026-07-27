@@ -18,7 +18,7 @@
 #define MONS_ZOMBIE	  6
 #define MONS_EGGSAC	  7
 #define MONS_MAMASPDR 8
-#define MONS_PYGMY	  9
+#define MONS_PYGMY	  9 // gnome
 #define MONS_SERPENT  10
 // the parts of Mattie
 #define MONS_MATHEAD  11
@@ -91,8 +91,8 @@
 #define MONS_GHOST	  65
 #define MONS_BURNER	  66
 #define MONS_LEFTY	  67
-#define MONS_PYGMY2	  68
-#define MONS_PYGMY3	  69
+#define MONS_PYGMY2	  68 // gnome
+#define MONS_PYGMY3	  69 // gnome
 #define MONS_PKSTEIN  70
 #define MONS_KNIGHT	  71
 #define MONS_TRICEROID 72
@@ -109,7 +109,7 @@
 #define MONS_BUNNY	  83
 #define MONS_KONGOR	  84
 #define MONS_SQUASH	  85
-#define MONS_MINIPYGMY 86
+#define MONS_MINIPYGMY 86 // gnome
 #define MONS_LOONYBOT 87
 #define MONS_LOONYCORE 88
 #define MONS_LOONYGUN 89
@@ -160,15 +160,16 @@
 #define MONS_PUMPKIN2	128
 #define MONS_CRAZYBONE	129
 #define MONS_CREEPAZOID 130
+
 #define MONS_LAZYBONE	131
 #define MONS_STAREYBAT	132
 #define MONS_MADMAN		133
-#define MONS_PYGMYACCT	134
+#define MONS_PYGMYACCT	134 // gnome
 #define MONS_CRAZYPANTS	135
 #define MONS_YERFDOG	136
 #define MONS_ELITESEAL	137
 #define MONS_CONE		138
-#define MONS_PYGMYDIVER	139
+#define MONS_PYGMYDIVER	139 // gnome
 #define MONS_PUFFYFISH	140
 #define MONS_PUFFYFISH2 141
 #define MONS_OLAF		142
@@ -241,8 +242,51 @@
 #define MONS_MINIWACKO	209
 #define MONS_JACKFROST	210
 
-#define NUM_MONSTERS  211    // Can grow as needed
-#define NUM_PROFILE_MONSTERS 211    // Do not change without redoing the profile format
+// -- project sylabulus additions
+
+// new stuff
+
+// world 1
+#define MONS_YERFBOSS	211
+#define MONS_LANTERN	212
+#define MONS_HARDHAT	213
+#define MONS_PELICAN	214
+#define MONS_NINJA		215
+#define MONS_KAPPA		216
+#define MONS_KAPPA2		217 // ice kappa?
+#define MONS_TSUCHIZOID 218
+#define MONS_YOJIMBO	219	// bunny!
+#define MONS_UMBERELLO	220 // eversion meets umbrella monster
+#define MONS_KABOCHA	221
+
+#define MONS_NOHMANN1	222	// form A (uses two different sprites)
+#define MONS_NOHMANN2	223 // form B
+#define MONS_NOHARML	224
+#define MONS_NOHARMR	225
+
+#define MONS_EYETREE	226 // eyeball tree
+#define MONS_STICKNINJA	227 // miniboss: happy stick ninja
+#define MONS_PLAYROBOT	228 // playable: robot from RWK
+
+// recolors a
+#define MONS_CRAZYBUSH	229
+#define MONS_CRAZYBUSH2	230
+#define MONS_BOMBIE		231
+#define MONS_DEATHCAP	232
+#define MONS_GLUETRAP	233	// glue turret
+#define MONS_GINGERSNAP	234
+#define MONS_PURPLKAPPA	235
+
+// world 2
+#define MONS_ISOZOIDBIG	236
+#define MONS_FLAMINGO	237
+#define MONS_CROQUETBAL	238
+#define MONS_NASTYTREE	239
+#define MONS_SPIKEBALL	240
+
+
+#define NUM_MONSTERS	240					// Can grow as needed
+#define NUM_PROFILE_MONSTERS 211			// Do not change without redoing the profile format
 
 // fake monster codes
 #define MONS_GOODGUY	(-1)	// any goodguy
@@ -251,6 +295,7 @@
 #define MONS_NONPLAYER	(-4)	// anybody but the player
 #define MONS_TAGGED		(-5)	// the tagged monster
 #define MONS_PLAYER		(-6)	// the player
+#define MONS_BOSS		(-7)	// the current boss
 
 // the animations
 #define ANIM_IDLE	0
@@ -344,6 +389,7 @@ struct MonsterType
 	MonsterFlags_ flags;
 	MonsterThemes theme;
 	byte anim[NUM_ANIMS][ANIM_LENGTH];
+	word height;
 };
 
 void InitMonsters(void);

@@ -1258,25 +1258,25 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world, bool bypass
 
 byte CheckMonsterType(Guy* g, int x, int y, int type)
 {
-	if (EntityIsNoneOrNobody(g->type) || g->x == 255 || g->mapx != x && g->mapy != y)
+	if (EntityIsNoneOrNobody(g->type) || (x != 255 && (g->mapx!=x || g->mapy!=y)))
 		return 0;
-
+	
 	switch (g->type)
 	{
-	case MONS_ANYBODY:
-		return 1; // can be anybody
-	case MONS_GOODGUY:
-		return g->friendly == 1;
-	case MONS_BADGUY:
-		return g->friendly == 0;
-	case MONS_NONPLAYER:
-		return g->aiType != MONS_BOUAPHA; // NOT the player
-	case MONS_PLAYER:
-		return g->aiType == MONS_BOUAPHA; // IS the player
-	case MONS_TAGGED:
-		return g == TaggedMonster(); // is tagged entity
-	default:
-		return (g->type == type);
+		case MONS_ANYBODY:
+			return 1; // can be anybody
+		case MONS_GOODGUY:
+			return (g->friendly==1);
+		case MONS_BADGUY:
+			return (g->friendly==0);
+		case MONS_NONPLAYER:
+			return (g->aiType!=MONS_BOUAPHA); // NOT the player
+		case MONS_PLAYER:
+			return (g->aiType==MONS_BOUAPHA); // IS the player
+		case MONS_TAGGED:
+			return (g==TaggedMonster()); // is tagged entity
+		default:
+			return (g->type == type);
 	}
 }
 
