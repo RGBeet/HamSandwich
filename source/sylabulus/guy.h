@@ -53,6 +53,7 @@ class Guy final
 		void TryAddBaby(Map* map, world_t* world, int type, int offx, int offy, int newReload=0);
 
 		byte CheckSequenceFrame(byte sequence, byte frame, bool checkReload=true);
+		byte CheckSequenceFrames(byte sequence, byte frameMin, byte frameMax, bool checkReload=true);
 		byte CheckTargetWithinReach(int range, Guy* target=nullptr);
 		byte CheckRoll(int n, byte rollType);
 		void DoTransform(int newType);

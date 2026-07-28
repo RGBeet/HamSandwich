@@ -1210,10 +1210,10 @@ void AI_BabyThing(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	}
 }
 
-
-void MakeMoss(Guy *me, int dx, int dy)
+// Used by moss enemies to create more moss
+void MakeMoss(Guy *me, int dx, int dy, int type=MONS_MOSS)
 {
-	if (Guy* baby = AddBaby(me->x, me->y, 0, MONS_MOSS, me))
+	if (Guy* baby = AddBaby(me->x, me->y, 0, type, me))
 	{
 		baby->action	= ACTION_BUSY;
 		baby->seq		= ANIM_ATTACK;
@@ -1225,6 +1225,7 @@ void MakeMoss(Guy *me, int dx, int dy)
 	}
 }
 
+// check the moss
 void DoMossMaking(Guy* me, Map* map, world_t* world, byte n=0)
 {
 	int x, y;
@@ -1274,6 +1275,9 @@ void AI_Moss(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 	if (me->reload)
 		me->reload--;
+
+	if (me->ouch == 4)
+		me->HandleOuchNoises(SND_BUSHOUCH,SND_BUSHDIE);
 
 	if (me->mind)
 		me->mind--;
@@ -1325,15 +1329,18 @@ void AI_MossGrande(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	if (me->reload)
 		me->reload--;
 
+	if (me->ouch == 4)
+		me->HandleOuchNoises(SND_BUSHOUCH,SND_BUSHDIE);
+
 	if (me->mind1)
 		me->mind1--;
 
 	if (me->action == ACTION_BUSY)
 	{
-		if (me->seq == ANIM_ATTACK && me->frm == 11 && me->mind1 == 0)
+		if (me->CheckSequenceFrame(ANIM_ATTACK,11) && me->mind1 == 0)
 		{
 			for (x = 0;x < 16;x++)
-				FireBullet(me->x, me->y, x * 16, BLT_ENERGY, me->friendly);	// ring of fire
+				FireBullet(me->x, me->y, x*16, BLT_ENERGY, me->friendly);	// ring of fire
 			me->mind1 = 60;
 		}
 		return;
@@ -1342,16 +1349,12 @@ void AI_MossGrande(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	if (me->seq == ANIM_IDLE)
 		me->frmAdvance = Random(200) + 1;	// animate idle at random speeds
 
-	if (!me->mind1 && Random(100) == 0)
+	if (!me->mind1 && me->CheckRoll(100,ROLL_ATTACK))
 	{
 		me->mind1 = 0;
-		me->seq = ANIM_ATTACK;
-		me->frm = 0;
-		me->frmTimer = 0;
-		me->frmAdvance = 128;
-		me->action = ACTION_BUSY;
+		me->StartNewAnimation(ANIM_ATTACK,128,ACTION_BUSY,0,0,me->reload);
 	}
-	if ((me->reload == 0) && Random(200) == 0)
+	if (!me->reload && me->CheckRoll(200,ROLL_ATTACK))
 	{
 		me->reload = 255;
 		// spawn in all four directions at once
@@ -1360,6 +1363,7 @@ void AI_MossGrande(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	}
 }
 
+//me->StartNewAnimation(ANIM_ATTACK,128,ACTION_BUSY,0,0,me->reload);
 void AI_Magmazoid(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
 	int x, y;
@@ -1368,64 +1372,34 @@ void AI_Magmazoid(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		me->reload--;
 
 	if (me->ouch == 4)
-	{
-		if (me->hp > 0)
-			MakeSound(SND_SERPENTOUCH, me->x, me->y, SND_CUTOFF, 1200);
-		else
-			MakeSound(SND_SERPENTDIE, me->x, me->y, SND_CUTOFF, 1200);
-	}
+		me->HandleOuchNoises(SND_SERPENTOUCH,SND_SERPENTDIE);
 
 	if (me->action == ACTION_BUSY)
 	{
-		if (me->seq == ANIM_ATTACK && me->frm >= 6 && me->frm <= 12 && me->reload == 0 && goodguy)
+		if (me->CheckSequenceFrames(ANIM_ATTACK,6,13) && goodguy)
 		{
 			// spit stuff
-			x = me->x + Cosine(me->facing * 32) * 16;
-			y = me->y + Sine(me->facing * 32) * 16;
-			FireBullet(x, y, me->facing, BLT_FLAME2, me->friendly);
-			me->reload = 2;
+			me->DoFireBulletAngled(BLT_FLAME2,(me->facing+me->frm-9)*2,16);
 			me->mind = 0;
 		}
-		if (me->seq == ANIM_ATTACK && me->frm == 13 && me->reload == 0)
+		if (me->CheckSequenceFrame(ANIM_ATTACK,13))
 			me->reload = 20;
 		return;	// can't do nothin' right now
 	}
-
+	// attack if close enough (and targer is within los)
 	if (goodguy)
 	{
-		if (RangeToTarget(me, goodguy) < (512 * FIXAMT) && Random(16) == 0 && me->reload == 0)
+		if (me->CheckTargetWithinReach(512) && me->CheckRoll(16,ROLL_ATTACK))
 		{
+			me->StartNewAnimation(ANIM_ATTACK,128,ACTION_BUSY,0,0,0);
 			FaceGoodguy(me, goodguy);
-			// roast him!
-			me->seq = ANIM_ATTACK;
-			me->frm = 0;
-			me->frmTimer = 0;
-			me->frmAdvance = 128;
-			me->action = ACTION_BUSY;
-			me->dx = 0;
-			me->dy = 0;
-			me->reload = 0;
 			return;
 		}
 	}
-
-	if (me->mind)
-		me->mind--;
-	if (!me->mind)	// time to get a new direction
-	{
-		me->facing = (byte)Random(8);
-		me->mind = Random(60) + 1;
-	}
-
-	me->dx = Cosine(me->facing * 32) * 2;
-	me->dy = Sine(me->facing * 32) * 2;
-	if (me->seq != ANIM_MOVE)
-	{
-		me->seq = ANIM_MOVE;
-		me->frm = 0;
-		me->frmTimer = 0;
-		me->frmAdvance = 128;
-	}
+	if (!--me->mind) // time to get a new direction
+		me->PickRandomDirection(&me->mind,Random(60)+1);
+	me->SetNewSpeed(2);
+	me->StartAnimMove(128);
 }
 
 void AI_Shroom(Guy* me, Map* map, world_t* world, Guy* goodguy)

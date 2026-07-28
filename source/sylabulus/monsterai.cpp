@@ -93,6 +93,13 @@ byte Guy::CheckSequenceFrame(byte sequence, byte frame, bool checkReload)
 	return checkReload ? (seqFrame && this->reload==0) : seqFrame;
 }
 
+// Returns whether animation is on the specified sequence and frame.
+byte Guy::CheckSequenceFrames(byte sequence, byte frameMin, byte frameMax, bool checkReload)
+{
+	byte seqFrame = (seq == sequence) && (frm >= frameMin) && (frm <= frameMax);
+	return checkReload ? (seqFrame && this->reload==0) : seqFrame;
+}
+
 byte Guy::CheckTargetWithinReach(int range, Guy* target)
 {
 	Guy* targetReal = (target != nullptr ? target : goodguy); // if target not filled out, default to "goodguy"
