@@ -15,7 +15,7 @@ void Guy::HandleOuchNoises(int ouchSnd, int deathSnd)
 }
 
 // Start a new animation.
-void Guy::StartNewAnimation(byte sequenceNew, byte frameAdvance, byte action, int dxNew, int dyNew, int newReload, int sound)
+void Guy::StartNewAnimation(byte sequenceNew, word frameAdvance, byte action, int dxNew, int dyNew, int newReload, int sound)
 {
 	this->seq			= sequenceNew;
 	this->frm			= 0;
@@ -38,6 +38,16 @@ void Guy::StartAnimMove(byte frameAdvance)
 	this->frm			= 0;
 	this->frmTimer		= 0;
 	this->frmAdvance	= frameAdvance;
+}
+
+void Guy::StartAnimIdle(byte frameAdvance)
+{
+	if (this->seq == ANIM_IDLE)
+		return;
+	this->seq = ANIM_IDLE;
+	this->frm = 0;
+	this->frmTimer = 0;
+	this->frmAdvance = frameAdvance;
 }
 
 int Guy::GetSpaceInFrontX(int amt)
@@ -207,4 +217,10 @@ void Guy::Speen(byte dir, byte frameAdvance)
 {
 	this->facing		= (this->facing+dir)&7;
 	this->frmAdvance	= frameAdvance;
+}
+
+void Guy::SelfDestruct(Map *map, world_t *world)
+{
+	this->hp = 1;
+	this->GetShot(0, 0, 1, map, world);
 }

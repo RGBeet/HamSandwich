@@ -37,8 +37,9 @@ class Guy final
 
 		void HandleOuchNoises(int ouchSnd, int deathSnd); // when ouch happen, do noise!
 
-		void StartNewAnimation(byte sequence, byte frameAdvance, byte action, int dxNew, int dyNew, int newReload=0, int sound=0);
+		void StartNewAnimation(byte sequence, word frameAdvance, byte action, int dxNew, int dyNew, int newReload=0, int sound=0);
 		void StartAnimMove(byte frameAdvance=64);
+		void StartAnimIdle(byte frameAdvance=64);
 
 		int GetSpaceInFrontX(int amt);
 		int GetSpaceInFrontY(int amt);
@@ -56,6 +57,7 @@ class Guy final
 		void TryAddBaby(Map* map, world_t* world, int type, int offx, int offy, int newReload=0);
 		void WalkAround(void);
 		void Speen(byte dir=1, byte frameAdvance=128);
+		void SelfDestruct(Map *map, world_t *world);
 
 		byte CheckSequenceFrame(byte sequence, byte frame, bool checkReload=true);
 		byte CheckSequenceFrames(byte sequence, byte frameMin, byte frameMax, bool checkReload=true);

@@ -127,131 +127,92 @@ void AI_CrazyBush(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 void AI_Bombie(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
-	int x, y;
+	int x,y,i;
 
 	if (me->reload)
 		me->reload--;
 
 	if (me->ouch == 4)
-	{
-		if (me->hp > 0)
-			MakeSound(SND_ZOMBIEOUCH, me->x, me->y, SND_CUTOFF|SND_RANDOM, 1200);
-		else
-			MakeSound(SND_ZOMBIEDIE, me->x, me->y, SND_CUTOFF, 1200);
-	}
+		me->HandleOuchNoises(SND_ZOMBIEOUCH, SND_ZOMBIEDIE);
 
-	if (me->mind3)
-		me->mind3--;
-	else
+	if (me->seq == ANIM_DIE && me->reload == 0)
 	{
-		me->mind3 = 10;
-		if (me->hp < me->maxHP && me->hp>0)
-			me->hp++;
+		if (me->frm == 0)
+		{
+			FireBullet(me->x, me->y, 0, BLT_ROCKETBOOM, me->friendly);
+		}
+		ExplodeParticles(PART_HAMMER, me->x, me->y, me->z, 8);
+		me->reload = 2;
 	}
 
 	if (me->action == ACTION_BUSY)
 	{
-		if (me->seq == ANIM_ATTACK && me->frm < 7)
+		if (me->CheckSequenceFrame(ANIM_ATTACK, 10, false))
 		{
-			for (x = 0;x < 5;x++)
-				FireBullet(me->x - FIXAMT * 20 + Random(FIXAMT * 40), me->y - FIXAMT * 20 + Random(FIXAMT * 40), Random(256), BLT_SPORE, me->friendly);
+			me->SetNewSpeed(8);
+			me->dz = 8;
 		}
-		if (me->seq == ANIM_ATTACK && me->frm == 5)
+		if (me->seq == ANIM_A1)
 		{
-			me->dx = Cosine(me->facing * 32) * 12;
-			me->dy = Sine(me->facing * 32) * 12;
-		}
-		if (me->seq == ANIM_ATTACK && me->frm > 6)
-		{
-			Dampen(&me->dx, FIXAMT / 2);
-			Dampen(&me->dy, FIXAMT / 2);
-			if (me->frm == 13 && me->frmTimer < 64)
+			if (me->frm == 10)
 			{
-				for (x = 0;x < 256;x += 8)
+				me->SetNewSpeed(8);
+				me->dz=20*FIXAMT;
+			}
+			if (me->frm > 10)
+			{
+				if (!me->reload && goodguy && (me->AttackCheck(8, me->GetSpaceInFrontX(16) >> FIXSHIFT, me->GetSpaceInFrontY(16) >> FIXSHIFT, goodguy)))
 				{
-					FireExactBullet(me->x, me->y, FIXAMT * 10, Cosine(x) * 12, Sine(x) * 12, 0, 0, 16, x, BLT_SPORE, me->friendly);
-					FireExactBullet(me->x, me->y, FIXAMT * 10, Cosine(x) * 6, Sine(x) * 6, 0, 0, 16, x, BLT_SPORE, me->friendly);
+					goodguy->GetShot(me->GetSpaceInFrontX(4), me->GetSpaceInFrontY(4), 3, map, world);
+					me->reload = 2;
+				}
+				if (me->z < 1)
+				{
+					// oh no...
+					ShakeScreen(120);
+					for(i=0;i<Random(3)+1;i++)
+					{
+						x=me->x+((64-Random(129))<<FIXSHIFT);
+						y=me->y+((64-Random(129))<<FIXSHIFT);
+						FireBullet(x,y,0,BLT_ROCKETBOOM,me->friendly);
+					}
+					me->SelfDestruct(map,world);
 				}
 			}
-		}
-		if (me->seq == ANIM_ATTACK && me->frm >= 7 && me->frm < 13 && me->reload == 0 && goodguy)
-		{
-			x = me->x + Cosine(me->facing * 32) * 16;
-			y = me->y + Sine(me->facing * 32) * 16;
-			if (me->AttackCheck(8, x >> FIXSHIFT, y >> FIXSHIFT, goodguy))
-			{
-				goodguy->GetShot(Cosine(me->facing * 32) * 4, Sine(me->facing * 32) * 4, 1, map, world);
-				me->reload = 2;
+			if (me->frm > 16)
+			{ // stay like this until death
+				me->frm = 17;
+				me->frmAdvance = 0;
 			}
 		}
 		return;	// can't do nothin' right now
 	}
 
-	if (Random(10) == 0)
-		FireBullet(me->x - FIXAMT * 20 + Random(FIXAMT * 40), me->y - FIXAMT * 20 + Random(FIXAMT * 40), Random(256), BLT_SPORE, me->friendly);
-
-	if (me->mind == 0)		// when mind=0, singlemindedly lumber towards Bouapha
+	if (me->mind == 0) // when mind=0, singlemindedly lumber towards Bouapha
 	{
 		if (goodguy)
 		{
-			if (RangeToTarget(me, goodguy) < (200 * FIXAMT) && Random(5) == 0)
+			if (me->CheckTargetWithinReach(128) && me->CheckRoll(32, ROLL_ATTACK))
 			{
-				// get him!
-				MakeSound(SND_ZOMBIELEAP, me->x, me->y, SND_CUTOFF, 1200);
-				me->seq = ANIM_ATTACK;
-				me->frm = 0;
-				me->frmTimer = 0;
-				me->frmAdvance = 128;
-				me->action = ACTION_BUSY;
-				me->dx = 0;
-				me->dy = 0;
-				me->reload = 0;
+				me->StartNewAnimation(ANIM_A1, 192, ACTION_BUSY, 0, 0, 0); // get him!
+				MakeSound(SND_BOMBIELEAP, me->x, me->y, SND_CUTOFF|SND_RANDOM, 1200); // random for the funnies
 				return;
 			}
-
 			FaceGoodguy(me, goodguy);
-
-			me->dx = Cosine(me->facing * 32) * 2;
-			me->dy = Sine(me->facing * 32) * 2;
+			me->SetNewSpeed(1);
 			if (me->seq != ANIM_MOVE)
-			{
-				me->seq = ANIM_MOVE;
-				me->frm = 0;
-				me->frmTimer = 0;
-				me->frmAdvance = 128;
-			}
-			if (Random(64) == 0)
-			{
-				me->mind = 1;		// occasionally wander
-				me->mind1 = 1;
-			}
+				me->StartAnimMove(64);
+			if (me->CheckRoll(64, ROLL_MOVE))
+				me->WalkAround();
 		}
 		else
-		{
-			me->mind = 1;	// if there's no goodguy, get random
-			me->mind1 = 1;
-		}
+			me->WalkAround();
 	}
 	else if (me->mind == 1)	// random wandering
 	{
-		if (!(me->mind1--))	// time to get a new direction
-		{
-			if ((goodguy) && Random(3) == 0)
-				me->mind = 0;	// get back on track
-			else
-				me->facing = (byte)Random(8);
-			me->mind1 = Random(40) + 1;
-		}
-
-		me->dx = Cosine(me->facing * 32) * 2;
-		me->dy = Sine(me->facing * 32) * 2;
-		if (me->seq != ANIM_MOVE)
-		{
-			me->seq = ANIM_MOVE;
-			me->frm = 0;
-			me->frmTimer = 0;
-			me->frmAdvance = 128;
-		}
+		me->TryGetNewDirection(&me->mind1, 40, goodguy, true);
+		me->SetNewSpeed(1);
+		me->StartAnimMove(64);
 	}
 }
 
