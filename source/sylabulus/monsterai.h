@@ -7,6 +7,9 @@ struct world_t;
 
 #define ROLL_MOVE		0
 #define ROLL_ATTACK		1
+#define ROLL_RANDWALK	2
+
+byte GuyCheckTargetWithinSight(Guy* me, Guy* target, Map* map);
 
 // ai functions for each monster type
 void AI_Bonehead(Guy *me,Map *map,world_t *world,Guy *goodguy);

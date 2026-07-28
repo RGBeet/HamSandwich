@@ -468,6 +468,9 @@
 #define SND_BOMBIELEAP			569
 #define SND_GLUEON				570		// like the blupi slime sound
 
+#define SND_RICHIEOUCH			571
+#define SND_RICHIEDIE			572
+
 #define MAX_SOUNDS				1024	// doesn't mean a thing lol
 
 //--------------------------------

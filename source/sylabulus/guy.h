@@ -47,14 +47,20 @@ class Guy final
 
 		void SetNewSpeed(int speed);
 		void DampenSpeed(int speed);
+		void ClampSpeed(int speed);
+		void AccelerateSpeed(int speed);
+		void AccelerateToTargetSpeed(int speed, int smoothness=8);
 		void DoFireBullet(int bulletType, byte reloadFrames, int spaceInFront=16, int sound=0);
 		void DoFireBulletAngled(int bulletType, byte angleOffset, int spaceInFront=16);
 		byte PickRandomDirection(byte *newTimer=nullptr, byte frames=NULL);
 		void TryAddBaby(Map* map, world_t* world, int type, int offx, int offy, int newReload=0);
+		void WalkAround(void);
+		void Speen(byte dir=1, byte frameAdvance=128);
 
 		byte CheckSequenceFrame(byte sequence, byte frame, bool checkReload=true);
 		byte CheckSequenceFrames(byte sequence, byte frameMin, byte frameMax, bool checkReload=true);
 		byte CheckTargetWithinReach(int range, Guy* target=nullptr);
+		void TryGetNewDirection(byte* mindVal, byte timerSet=40, Guy *target=nullptr, bool getBackOnTrack=false);
 		byte CheckRoll(int n, byte rollType);
 		void DoTransform(int newType);
 

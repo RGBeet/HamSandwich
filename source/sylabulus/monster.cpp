@@ -181,6 +181,22 @@ const char *MonsterName(short type)
 			return "Death Patrol Horiz.";
 		case MONS_DPATROLUD:
 			return "Death Patrol Vert.";
+		case MONS_NOHMANN1:
+			return "Noh-Mann";
+		case MONS_NOHMANN2:
+			return "Noh-Mann:AltForm";
+		case MONS_NOHARML:
+			return "Noh-Mann's Arm:Left";
+		case MONS_NOHARMR:
+			return "Noh-Mann's Arm:Right";
+		case MONS_MATCLAW1:
+			return "Matilda's Claw:Left";
+		case MONS_MATCLAW2:
+			return "Matilda's Claw:Right";
+		case MONS_THINGTENTTIP:
+			return "Tentacle:Tip";
+		case MONS_YERFBOSS:
+			return "Yerfdog:Boss";
 		}
 	}
 	// Otherwise the monster name is in its type definition.

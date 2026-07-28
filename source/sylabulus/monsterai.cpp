@@ -72,6 +72,28 @@ void Guy::DampenSpeed(int speed)
 	Dampen(&dy, FIXAMT/speed);
 }
 
+void Guy::ClampSpeed(int speed)
+{
+	Clamp(&dx, FIXAMT * speed);
+	Clamp(&dy, FIXAMT * speed);
+}
+
+void Guy::AccelerateSpeed(int speed)
+{
+	dx += Cosine(facing * 32) * speed;
+	dy += Sine(facing * 32) * speed;
+}
+
+void Guy::AccelerateToTargetSpeed(int speed, int smoothness)
+{
+	int targetDX = Cosine(facing * 32) * 8;
+	int targetDY = Sine(facing * 32) * 8;
+	dx += (targetDX - dx) / 8;
+	dy += (targetDY - dy) / 8;
+	Clamp(&dx, FIXAMT * speed);
+	Clamp(&dy, FIXAMT * speed);
+}
+
 // Simple way to fire a bullet as a Guy.
 void Guy::DoFireBullet(int bulletType, byte reloadFrames, int spaceInFront, int sound)
 {
@@ -106,6 +128,13 @@ byte Guy::CheckTargetWithinReach(int range, Guy* target)
 	return targetReal ? RangeToTarget(this, targetReal) < (range * FIXAMT) : 0;
 }
 
+byte GuyCheckTargetWithinSight(Guy *me, Guy *target, Map *map)
+{
+	Guy* targetReal = (target != nullptr ? target : goodguy); // if target not filled out, default to "goodguy"
+	return targetReal ? (GoodguyInSight(me, target, me->facing) && map->FindGuy(me->mapx, me->mapy, 8, targetReal)) : 0;
+}
+
+// Tells the guy to pick another direction. Can be used to reset the "direction timer".
 byte Guy::PickRandomDirection(byte *newTimer, byte frames)
 {
 	byte newDirection = (byte)Random(8);
@@ -115,11 +144,13 @@ byte Guy::PickRandomDirection(byte *newTimer, byte frames)
 	return newDirection;
 }
 
+// Does a random roll, then returns whether the roll landed on zero. May be modified depending on roll type.
 byte Guy::CheckRoll(int n, byte rollType)
 {
 	return Random(n) == 0;
 }
 
+// Quickyl
 void Guy::TryAddBaby(Map* map, world_t* world, int type, int offx, int offy, int newReload)
 {
 	Guy* g;
@@ -132,13 +163,48 @@ void Guy::TryAddBaby(Map* map, world_t* world, int type, int offx, int offy, int
 		reload = newReload;
 }
 
+// Transforms the guy into another guy of type "newType".
 void Guy::DoTransform(int newType)
 {
-	this->type	= newType;
-	this->type	= aiType;
-	this->hp	= MonsterHP(this->type);
-	this->maxHP = this->hp;
+	this->type		= newType;
+	this->aiType	= type;
+	this->hp		= MonsterHP(this->type);
+	this->maxHP		= this->hp;
 	ham_strcpy(this->name, MonsterName(this->type));
 	if (!this->friendly)
 		player.enemiesSlain--;
+}
+
+// Tells the guy to walk around randomly. Commonly used for enemy AI.
+void Guy::WalkAround()
+{
+	mind	= 1;
+	mind1	= 1;
+}
+
+// Tells the guy to pick a new direction if the selected mind timer is depleted. Commonly used for enemy AI.
+void Guy::TryGetNewDirection(byte* mindVal, byte timerSet, Guy* target, bool getBackOnTrack)
+{
+	Guy* targetReal = (target != nullptr) ? target : goodguy;
+
+	if (--(*mindVal) > 0)
+		return;
+
+	if (getBackOnTrack)
+	{
+		if (targetReal && CheckRoll(3, ROLL_RANDWALK) == 0)
+			mind = 0;
+		else
+			PickRandomDirection();
+		*mindVal = Random(timerSet) + 1;
+	}
+	else
+		PickRandomDirection(mindVal, Random(timerSet) + 1);
+}
+
+// Tells the guy to SPIN AROUND! Commonly used for death animations (e.g. Bouapha, Pengulon).
+void Guy::Speen(byte dir, byte frameAdvance)
+{
+	this->facing		= (this->facing+dir)&7;
+	this->frmAdvance	= frameAdvance;
 }
