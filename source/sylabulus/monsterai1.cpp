@@ -3862,9 +3862,7 @@ void AI_DrLunatic(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	if (me->mind == 3)
 	{
 		// run around scared
-		if (me->reload)
-			me->reload--;
-		else
+		if (!me->reload--)
 		{
 			me->facing = (me->facing + 1 - (byte)Random(3)) & 7;
 			me->reload = Random(16) + 1;
@@ -3964,7 +3962,7 @@ void AI_SDZL(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	i = (me->facing==7||me->facing<3) ? ANIM_MOVE : ANIM_A1; // move to the left or right
 
 	if (me->seq != i)
-		me->StartNewAnimation(i,128,ACTION_IDLE,me->GetSpaceInFrontX(4),me->GetSpaceInFrontY(3));
+		me->StartNewAnimation(i,128,ACTION_IDLE,0,0);
 }
 
 void AI_Santa(Guy* me, Map* map, world_t* world, Guy* goodguy)

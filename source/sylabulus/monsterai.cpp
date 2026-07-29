@@ -30,6 +30,15 @@ void Guy::StartNewAnimation(byte sequenceNew, word frameAdvance, byte action, in
 		MakeSound(sound, x, y, SND_CUTOFF, 1200);
 }
 
+// Start a new animation.
+void Guy::StartNewAnimation(byte sequenceNew, word frameAdvance, byte action, int dxNew, int dyNew, int newReload, int sound)
+{
+	this->seq			= sequenceNew;
+	this->frm			= 0;
+	this->frmTimer		= 0;
+	this->frmAdvance	= frameAdvance;
+}
+
 void Guy::StartAnimMove(word frameAdvance)
 {
 	if (this->seq == ANIM_MOVE)

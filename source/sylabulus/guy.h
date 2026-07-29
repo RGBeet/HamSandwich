@@ -38,6 +38,8 @@ class Guy final
 		void HandleOuchNoises(int ouchSnd, int deathSnd); // when ouch happen, do noise!
 
 		void StartNewAnimation(byte sequence, word frameAdvance, byte action, int dxNew, int dyNew, int newReload=0, int sound=0);
+		void StartNewAnimation(byte sequence, word frameAdvance);
+		
 		void StartAnimMove(word frameAdvance=64);
 		void StartAnimIdle(word frameAdvance=64);
 
