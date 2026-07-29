@@ -24,19 +24,20 @@ void Guy::StartNewAnimation(byte sequenceNew, word frameAdvance, byte action, in
 	this->action		= action;
 	this->dx			= dxNew;
 	this->dy			= dyNew;
-	reload		= (newReload > 0) ? newReload : reload;
+	this->reload		= (newReload > 0) ? newReload : reload;
 
 	if (sound > 0)
 		MakeSound(sound, x, y, SND_CUTOFF, 1200);
 }
 
 // Start a new animation.
-void Guy::StartNewAnimation(byte sequenceNew, word frameAdvance, byte action, int dxNew, int dyNew, int newReload, int sound)
+void Guy::StartNewAnimation(byte sequenceNew, word frameAdvance, byte action)
 {
 	this->seq			= sequenceNew;
 	this->frm			= 0;
 	this->frmTimer		= 0;
 	this->frmAdvance	= frameAdvance;
+	this->action		= action;
 }
 
 void Guy::StartAnimMove(word frameAdvance)
@@ -79,10 +80,17 @@ int Guy::GetFacingY()
 	return Sine(facing * 32);
 }
 
-void Guy::SetNewSpeed(int speed)
+void Guy::SetNewSpeed(int speed, byte *dir)
 {
-	dx = Cosine(facing * 32) * speed;
-	dy = Sine(facing * 32) * speed;
+	byte facingDir = (dir != nullptr) ? *dir : facing;
+	dx = Cosine(facingDir * 32) * speed;
+	dy = Sine(facingDir * 32) * speed;
+}
+
+void Guy::FlipSpeed()
+{
+	dx *= -1;
+	dy *= -1;
 }
 
 // Flips the direction the Guy is facing.
@@ -103,20 +111,51 @@ void Guy::ClampSpeed(int speed)
 	Clamp(&dy, FIXAMT * speed);
 }
 
-void Guy::AccelerateSpeed(int speed)
+void Guy::ClampSpeed(int speedX,int speedY)
 {
-	dx += Cosine(facing * 32) * speed;
-	dy += Sine(facing * 32) * speed;
+	Clamp(&dx, FIXAMT * speedX);
+	Clamp(&dy, FIXAMT * speedY);
 }
 
-void Guy::AccelerateToTargetSpeed(int speed, int smoothness)
+void Guy::AccelerateSpeed(int speed, const byte* dir)
 {
-	int targetDX = Cosine(facing * 32) * 8;
-	int targetDY = Sine(facing * 32) * 8;
-	dx += (targetDX - dx) / 8;
-	dy += (targetDY - dy) / 8;
-	Clamp(&dx, FIXAMT * speed);
-	Clamp(&dy, FIXAMT * speed);
+	byte facingDir = (dir != nullptr) ? *dir : facing;
+
+	dx += Cosine(facingDir * 32) * speed;
+	dy += Sine(facingDir * 32) * speed;
+}
+
+void Guy::AccelerateToTargetSpeed(int speed, int smoothness, const byte* dir)
+{
+	if (smoothness < 1)
+		smoothness = 1;
+
+	byte facingDir = (dir != nullptr) ? *dir : facing;
+
+	int targetDX = Cosine(facingDir * 32) * speed;
+	int targetDY = Sine(facingDir * 32) * speed;
+
+	dx += (targetDX - dx) / smoothness;
+	dy += (targetDY - dy) / smoothness;
+
+	ClampSpeed(speed);
+}
+
+void Guy::AccelerateToTargetSpeed(int speedX, int speedY, int smoothness, const byte* dir)
+{
+	if (smoothness < 1)
+		smoothness = 1;
+
+	byte facingDir = (dir != nullptr) ? *dir : facing;
+
+	int targetDX = Cosine(facingDir * 32) * speedX;
+	int targetDY = Sine(facingDir * 32) * speedY;
+
+	dx += (targetDX - dx) / smoothness;
+	dy += (targetDY - dy) / smoothness;
+
+	Clamp(&dx, FIXAMT * speedX);
+	Clamp(&dy, FIXAMT * speedY);
 }
 
 // Simple way to fire a bullet as a Guy.
@@ -168,15 +207,31 @@ byte GuyCheckTargetWithinSight(Guy *me, Guy *target, Map *map)
 	return targetReal ? (GoodguyInSight(me, target, me->facing) && map->FindGuy(me->mapx, me->mapy, 8, targetReal)) : 0;
 }
 
+byte GuyCheckTargetWithinReachAndSight(Guy* me, Guy* target, Map* map, int range)
+{
+	return target!=nullptr && me->CheckTargetWithinReach(range)==1 && GuyCheckTargetWithinSight(me,goodguy,map)==1;
+}
+
 // Tells the guy to pick another direction. Can be used to reset the "direction timer".
 byte Guy::PickRandomDirection(byte *newTimer, byte frames)
 {
 	byte newDirection = (byte)Random(8);
-	facing = newDirection;
+	this->facing = newDirection;
 	if (newTimer)
 		newTimer = &frames;
 	return newDirection;
 }
+
+// Tells the guy to pick another direction. Can be used to reset the "direction timer".
+byte Guy::PickRandomDirectionNear(byte* newTimer, byte frames)
+{
+	byte newDirection = (this->facing+1-Random(3))&7;
+	this->facing = newDirection;
+	if (newTimer)
+		newTimer = &frames;
+	return newDirection;
+}
+
 
 int GetModifiedRoll(int n)
 {
@@ -289,4 +344,16 @@ void Guy::FaceMovement()
 		else if(this->dy<-FIXAMT)
 			this->facing=6;
 	}
+}
+
+void Guy::HoneInOnPoint(int x,int y,int sharp)
+{
+	if (this->x < x)
+		this->dx += FIXAMT / sharp;
+	if (this->y < y)
+		this->dy += FIXAMT / sharp;
+	if (this->x > x)
+		this->dx -= FIXAMT / sharp;
+	if (this->y > y)
+		this->dy -= FIXAMT / sharp;
 }

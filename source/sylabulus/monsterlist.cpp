@@ -49,7 +49,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},
 			},0},
 		{"Eensy Weensy",255,255,0,AI_Spider,
-		 4,22,1,10,"graphics/spider.jsp",0,{},
+		 4,22,1,10,"graphics/spider.jsp",0,MF_ENEMYWALK,
 		 MT_EVIL|MT_SPIDER|MT_ANIMAL,
 			{
 				{0,255},	// idle
@@ -1555,7 +1555,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,255},	// attack
 				{7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,255},	// attack
 			},0},
-		{"Moss Rapido",1,5,0,AI_MossRapido,
+		{"Moss Rapido",1,5,0,AI_Moss,
 		 15,17,1,25,"!21",0,MF_NOMOVE|MF_ONEFACE|MF_FREEWALK|MF_ENEMYWALK|MF_WALLWALK|MF_NOSHADOW,
 		 MT_EVIL|MT_VEGGIE,
 			{

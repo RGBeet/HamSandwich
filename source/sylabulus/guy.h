@@ -38,7 +38,7 @@ class Guy final
 		void HandleOuchNoises(int ouchSnd, int deathSnd); // when ouch happen, do noise!
 
 		void StartNewAnimation(byte sequence, word frameAdvance, byte action, int dxNew, int dyNew, int newReload=0, int sound=0);
-		void StartNewAnimation(byte sequence, word frameAdvance);
+		void StartNewAnimation(byte sequence, word frameAdvance, byte action=ACTION_BUSY);
 		
 		void StartAnimMove(word frameAdvance=64);
 		void StartAnimIdle(word frameAdvance=64);
@@ -48,19 +48,27 @@ class Guy final
 		int GetFacingX(void);
 		int GetFacingY(void);
 
-		void SetNewSpeed(int speed);
 		void DampenSpeed(int speed);
 		void ClampSpeed(int speed);
-		void AccelerateSpeed(int speed);
-		void AccelerateToTargetSpeed(int speed, int smoothness=8);
+		void ClampSpeed(int speedX, int speedY);
+		
+		void SetNewSpeed(int speed, byte *dir=nullptr);
+		void FlipSpeed(void);
+
+		void AccelerateSpeed(int speed, const byte* dir = nullptr);
+		void AccelerateToTargetSpeed(int speed, int smoothness, const byte* dir = nullptr);
+		void AccelerateToTargetSpeed(int speedX, int speedY, int smoothness, const byte* dir = nullptr);
+
 		void DoFireBullet(int bulletType, byte reloadFrames, int spaceInFront=16, int sound=0);
 		void DoFireBulletAngled(int bulletType, byte angleOffset, int spaceInFront=16);
 		byte PickRandomDirection(byte *newTimer=nullptr, byte frames=NULL);
+		byte PickRandomDirectionNear(byte* newTimer = nullptr, byte frames = NULL);
 		Guy* TryAddBaby(Map* map, world_t* world, int type, int offx, int offy, int newReload=0);
 		void WalkAround(void);
 		void Speen(byte dir=1, byte frameAdvance=128);
 		void SelfDestruct(Map *map, world_t *world);
 		void FlipFacing(void);
+		void HoneInOnPoint(int x, int y, int sharp=8);
 
 		byte CheckSequenceFrame(byte sequence, byte frame, bool checkReload=true);
 		byte CheckSequenceFrames(byte sequence, byte frameMin, byte frameMax, bool checkReload=true);

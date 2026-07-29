@@ -10,6 +10,7 @@ struct world_t;
 #define ROLL_RANDWALK	2
 
 byte GuyCheckTargetWithinSight(Guy* me, Guy* target, Map* map);
+byte GuyCheckTargetWithinReachAndSight(Guy* me, Guy* target, Map* map, int range);
 
 // ai functions for each monster type
 void AI_Bonehead(Guy *me,Map *map,world_t *world,Guy *goodguy);
@@ -123,7 +124,6 @@ void AI_Wizard(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_EvilClone(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Bob(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_MultiMoss(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_MossRapido(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Snowball(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Snowblower(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_XenoMama(Guy *me,Map *map,world_t *world,Guy *goodguy);

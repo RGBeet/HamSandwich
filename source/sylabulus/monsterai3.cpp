@@ -10,13 +10,8 @@ void AI_GoodTurret(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->reload)
 		me->reload--;
 
-	if(me->ouch==4)
-	{
-		if(me->hp>0)
-			MakeSound(SND_ROBOOUCH,me->x,me->y,SND_CUTOFF,1200);
-		else
-			MakeSound(SND_ROBODIE,me->x,me->y,SND_CUTOFF,1200);
-	}
+	if (me->ouch == 4)
+		me->HandleOuchNoises(SND_ROBOOUCH, SND_ROBODIE);
 
 	if(me->action==ACTION_BUSY)
 	{
@@ -30,7 +25,7 @@ void AI_GoodTurret(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	if(me->mind==0)
 	{
-		if(goodguy && RangeToTarget(me,goodguy)<500*FIXAMT)
+		if(me->CheckTargetWithinReach(500))
 		{
 			me->mind=1;
 			me->reload=(byte)Random(20);
@@ -38,7 +33,7 @@ void AI_GoodTurret(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	}
 	else
 	{
-		if(RangeToTarget(me,goodguy)>500*FIXAMT)
+		if(GuyCheckTargetWithinReachAndSight(me,goodguy,map,500))
 			me->mind=0;
 
 		if(me->reload==0)
@@ -58,12 +53,10 @@ void AI_Mattie2Brain(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	byte tempface;
 	static const byte faceTable[8]={5,4,0,1,2,3,0,6};
 	int x,y;
+	
 
-	if(me->ouch==4 && me->aiType==MONS_MAT2BRAIN)	// skull and head have their own ouch noises
-	{
-		if(me->hp>0)
-			MakeSound(SND_MATTIEOUCH,me->x,me->y,SND_CUTOFF,1200);
-	}
+	if (me->ouch == 4 && me->aiType == MONS_MATBRAIN)	// skull and head have their own ouch noises
+		me->HandleOuchNoises(SND_MATTIEOUCH,0); // no death sound
 
 	// use facing variable to determine which way for eyes to look
 	if(me->action!=ACTION_BUSY)
@@ -113,48 +106,21 @@ void AI_Mattie2SkullOrHead(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
 	int x,y;
 
-	if(me->reload)
+	if (me->reload)
 		me->reload--;
 
-	if(me->ouch==4)
-	{
-		if(me->hp>0)
-			MakeSound(SND_MATTIEOUCH,me->x,me->y,SND_CUTOFF,1200);
-		else
-			MakeSound(SND_MATTIEDIE,me->x,me->y,SND_CUTOFF,1200);
-	}
+	if (me->ouch == 4)
+		me->HandleOuchNoises(SND_MATTIEOUCH, SND_MATTIEDIE); // no death sound
 
 	if(me->action==ACTION_BUSY)
 	{
-		if(me->seq==ANIM_DIE && me->frm==5)
+		if (me->CheckSequenceFrame(ANIM_DIE,5,false))
 		{
-			if(me->aiType==MONS_MAT2HEAD)
-			{
-				me->type=MONS_MAT2SKULL;
-				me->aiType=MONS_MAT2SKULL;
-				ham_strcpy(me->name,MonsterName(me->type));
-				if(!me->friendly)
-					player.enemiesSlain--;
-				me->hp=MonsterHP(MONS_MAT2SKULL);
-				me->maxHP=me->hp;
-			}
+			if (me->aiType == MONS_MAT2HEAD)
+				me->DoTransform(MONS_MAT2SKULL);
 			else
-			{
-				me->type=MONS_MAT2BRAIN;
-				me->aiType=MONS_MAT2BRAIN;
-				ham_strcpy(me->name,MonsterName(me->type));
-				if(!me->friendly)
-					player.enemiesSlain--;
-				me->hp=MonsterHP(MONS_MAT2BRAIN);
-				me->maxHP=me->hp;
-			}
-			me->seq=ANIM_IDLE;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=128;
-			me->action=ACTION_IDLE;
-			me->reload=100;
-			me->facing=0;
+				me->DoTransform(MONS_MAT2BRAIN);
+			me->StartNewAnimation(ANIM_IDLE,128,ACTION_IDLE,me->dx,me->dy,100);
 			return;
 		}
 		if(me->seq==ANIM_DIE && me->frmTimer<128)
@@ -180,16 +146,8 @@ void AI_Mattie2SkullOrHead(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		return;
 	}
 
-	if((!me->reload) && Random(100)==0)
-	{
-		me->seq=ANIM_ATTACK;
-		me->frm=0;
-		me->frmTimer=0;
-		me->frmAdvance=32;	// very very slow animation
-		me->action=ACTION_BUSY;
-		me->dx=0;
-		me->dy=0;
-	}
+	if ((!me->reload) && me->CheckRoll(100,ROLL_ATTACK) == 0)
+		me->StartNewAnimation(ANIM_ATTACK,32,ACTION_BUSY,0,0,0,0);
 
 	// do everything the brain does
 	AI_Mattie2Brain(me,map,world,goodguy);
@@ -238,24 +196,14 @@ void AI_Mattie2Tail(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		return;
 	}
 
-	if(me->mind)
+	if (me->mind)
 		me->mind--;
 
-	if(me->mind<3)
+	if (me->mind < 3)
 	{
-		MakeSound(SND_MATTIESHOOT,me->x,me->y,SND_CUTOFF,1200);
-		me->seq=ANIM_ATTACK;
-		me->frm=0;
-		me->frmTimer=0;
-		me->frmAdvance=255;
-		me->action=ACTION_BUSY;
-		if(me->mind==0)
-		{
-			if(me->parent->aiType!=MONS_MAT2BRAIN)
-				me->mind=80;
-			else
-				me->mind=30;
-		}
+		me->StartNewAnimation(ANIM_ATTACK,255,ACTION_BUSY,0,0,0,SND_MATTIESHOOT);
+		if (!me->mind)
+			me->mind = (me->parent->aiType != MONS_MATBRAIN) ? 80 : 30;
 	}
 
 	if(goodguy)
@@ -344,18 +292,13 @@ void AI_Mattie2Body(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	else if(b<50)
 		me->mind=128;
 
-	Dampen(&me->dx,FIXAMT/32);
-	Dampen(&me->dy,FIXAMT/32);
-	Clamp(&me->dx,FIXAMT*2);
-	Clamp(&me->dy,FIXAMT*2);
+	me->DampenSpeed(32);
+	me->ClampSpeed(2);
 
-	if(me->seq!=ANIM_MOVE)
+	if (me->seq != ANIM_MOVE)
 	{
-		MakeSound(SND_MATTIESTOMP,me->x,me->y,SND_CUTOFF,1200);
-		me->seq=ANIM_MOVE;
-		me->frm=0;
-		me->frmTimer=0;
-		me->frmAdvance=64;
+		MakeSound(SND_MATTIESTOMP, me->x, me->y, SND_CUTOFF, 1200);
+		me->StartAnimMove(64);
 	}
 }
 
@@ -378,7 +321,7 @@ void AI_BuddyBunny(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	if(me->ouch==4)
 	{
-		MakeSound(SND_BUNNYDIE,me->x,me->y,SND_CUTOFF,800);
+		MakeSound(SND_BUNNYDIE, me->x, me->y, SND_CUTOFF | SND_RANDOM, 800);
 	}
 
 	if(me->action==ACTION_BUSY)
@@ -502,12 +445,7 @@ void AI_BuddyBunny(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			if(me->aiType==MONS_FRIENDLY)
 				me->mind3=Random(4)*64;
 			me->mind=30;	// wait 1 second before trying again
-			me->dx=0;
-			me->dy=0;
-			me->frm=0;
-			me->seq=ANIM_IDLE;
-			me->frmTimer=0;
-			me->frmAdvance=128;
+			me->StartNewAnimation(ANIM_IDLE,128,ACTION_IDLE,0,0);
 			return;
 		}
 		else
@@ -540,16 +478,11 @@ void AI_BuddyBunny(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	}
 
 	// move forward at that pace
-	me->dx=Cosine(me->mind3)*2;
-	me->dy=Sine(me->mind3)*2;
-
+	me->SetNewSpeed(2,&me->mind3);
 	if(me->seq!=ANIM_MOVE)
-	{
-		me->seq=ANIM_MOVE;
-		me->frm=0;
-		me->frmTimer=0;
-	}
-	me->frmAdvance=128;
+		me->StartNewAnimation(ANIM_MOVE,128);
+	else
+		me->frmAdvance=128;
 }
 
 void AI_PygmyQueen(Guy *me,Map *map,world_t *world,Guy *goodguy)
@@ -561,33 +494,22 @@ void AI_PygmyQueen(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		me->reload--;
 
 	if(me->ouch==4)
-	{
-		if(me->hp>0)
-			MakeSound(SND_SHAMANOUCH,me->x,me->y,SND_CUTOFF,1200);
-		else
-			MakeSound(SND_SHAMANDIE,me->x,me->y,SND_CUTOFF,1200);
-	}
+		me->HandleOuchNoises(SND_SHAMANOUCH, SND_SHAMANDIE);
 
 	if(me->action==ACTION_BUSY)
 	{
-		if(me->seq==ANIM_ATTACK && me->frm==2 && me->reload==0 && goodguy)
+		if(me->CheckFrame(ANIM_ATTACK,2) && goodguy)
 		{
-			x=me->x+Cosine(me->facing*32)*8;
-			y=me->y+Sine(me->facing*32)*8;
+			x = me->GetSpaceInFrontX(8);
+			y = me->GetSpaceInFrontY(8);
 			// summon babies!
 			for(i=0;i<5;i++)
 			{
-				x=me->x+(-200+Random(401))*FIXAMT;
-				y=me->y+(-170+Random(341))*FIXAMT;
-				g=AddBaby(x,y,FIXAMT*20,MONS_MINIPYGMY,me);
-				if(g && (!g->CanWalk(g->x,g->y,map,world)))
-					RemoveGuy(g);
-				else if(g)
-				{
+				x = me->x + (-200 + Random(401)) * FIXAMT;
+				y = me->y + (-170 + Random(341)) * FIXAMT;
+				if(g=me->TryAddBaby(map,world,MONS_MINIPYGMY,x-me->x,y-me->y,10))
 					LightningBolt(me->x,me->y,x,y);
-				}
 			}
-			me->reload=10;
 		}
 		return;	// can't do nothin' right now
 	}
@@ -597,53 +519,26 @@ void AI_PygmyQueen(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		me->frmAdvance=32;	// overcome the auto-128 frmAdvance of guy.cpp
 
 		if(me->seq==ANIM_MOVE)
-		{
-			me->seq=ANIM_IDLE;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=32;
-		}
+			me->StartNewAnimation(ANIM_IDLE,32,ACTION_IDLE);
 		if(me->mind1<101)
 			me->mind1++;
-
 		if(me->mind1>100 && Random(200)==0)
 		{
-			switch(Random(2))
-			{
-				case 0:
-					MakeSound(SND_SHAMANDANCE,me->x,me->y,SND_CUTOFF,1200);
-					me->seq=ANIM_A1;	// unga dance
-					me->frm=0;
-					me->frmTimer=0;
-					me->frmAdvance=64;
-					me->mind1=0;
-					me->action=ACTION_BUSY;
-					break;
-				case 1:
-					me->facing=(me->facing+(-1+Random(3)))&7;	//change facing
-					me->mind1=0;
-					break;
-			}
+			if(Random(2)==0)
+				me->StartNewAnimation(ANIM_A1, 64, ACTION_BUSY, 0, 0, 0, SND_SHAMANDANCE);
+			else
+				me->facing=(me->facing+(-1+Random(3)))&7;	//change facing
+			me->mind1=0;
 		}
 		if(goodguy)
 		{
-			if(RangeToTarget(me,goodguy)<700*FIXAMT || me->ouch>0)
+			if ((me->CheckTargetWithinReach(700) && GuyCheckTargetWithinSight(me,goodguy,map)||me->ouch))
 			{
 				// if the goodguy is near, or he shot me
-				me->mind=1;	// start hunting
-				if(me->ouch==0)
-					me->mind1=60;	// for 2 seconds minimum
-				else
-					me->mind1=120;	// 4 seconds, because they HATE getting shot
-				FaceGoodguy(me,goodguy);
-
-				// do angry animation
-				me->action=ACTION_BUSY;
-				me->seq=ANIM_A2;
-				me->frm=0;
-				me->frmTimer=0;
-				me->frmAdvance=255;	// very fast
-				MakeSound(SND_SHAMANANGRY,me->x,me->y,SND_CUTOFF,1200);
+				me->mind = 1;	// start hunting
+				me->mind1 = (!me->ouch) ? 60 : 120;	// for 2 seconds minimum OR 4 seconds, because they HATE getting shot
+				FaceGoodguy(me, goodguy);
+				me->StartNewAnimation(ANIM_A3,255,ACTION_BUSY,0,0,0,SND_PYGMYANGRY);
 			}
 		}
 		me->dx=0;
@@ -658,26 +553,15 @@ void AI_PygmyQueen(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			me->mind1=0;
 			return;
 		}
-		if(RangeToTarget(me,goodguy)<(500*FIXAMT) && Random(64)==0 && me->reload==0)
+		if(!me->reload && me->CheckRoll(64,ROLL_ATTACK) && me->CheckTargetWithinReach(500))
 		{
-			// make ultrapygmies!
-			MakeSound(SND_SHAMANZAP,me->x,me->y,SND_CUTOFF,1200);
-			me->seq=ANIM_ATTACK;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=255;
-			me->action=ACTION_BUSY;
-			me->dx=0;
-			me->dy=0;
-			me->reload=1;
+			me->StartNewAnimation(ANIM_ATTACK,256,ACTION_BUSY,0,0,1,SND_SHAMANZAP); // zap
 			return;
 		}
 
 		if(me->ouch && me->mind1<240)
 			me->mind1+=10;
-		if(me->mind1)
-			me->mind1--;
-		else
+		if(!me->mind1--)
 		{
 			if(RangeToTarget(me,goodguy)>400*FIXAMT)
 				me->mind=0;	// get bored again
@@ -685,15 +569,8 @@ void AI_PygmyQueen(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				me->mind1=20;	// stay on trail a little longer
 			return;
 		}
-		me->dx=Cosine(me->facing*32)*2;
-		me->dy=Sine(me->facing*32)*2;
-		if(me->seq!=ANIM_MOVE)
-		{
-			me->seq=ANIM_MOVE;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=128;
-		}
+		me->SetNewSpeed(2);
+		me->StartAnimMove(128);
 	}
 }
 
@@ -748,7 +625,9 @@ void AI_Jalapeno(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 		if(goodguy)
 		{
-			if(RangeToTarget(me,goodguy)<512*FIXAMT || me->ouch>0)
+			if(me->seq==ANIM_MOVE)
+				me->StartNewAnimation(ANIM_IDLE,32);
+			if(goodguy && GuyCheckTargetWithinSight(me,goodguy,map) && (me->CheckTargetWithinReach(512)||me->ouch))
 			{
 				// if the goodguy is near, or he shot me
 				me->mind=1;	// start hunting
@@ -757,8 +636,7 @@ void AI_Jalapeno(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				FaceGoodguy(me,goodguy);
 			}
 		}
-		me->dx=0;
-		me->dy=0;
+		me->SetNewSpeed(0);
 	}
 	else
 	{
@@ -780,30 +658,13 @@ void AI_Jalapeno(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				me->mind1=20;	// stay on trail a little longer
 			return;
 		}
-
-		if(RangeToTarget(me,goodguy)<40*FIXAMT)
+		if(me->CheckTargetWithinReach(40))
 		{
-			// shoot at him
-			me->seq=ANIM_ATTACK;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=255;
-			me->action=ACTION_BUSY;
-			me->dx=0;
-			me->dy=0;
-			me->reload=0;
+			me->StartNewAnimation(ANIM_ATTACK,256,ACTION_BUSY,0,0,0);
 			return;
 		}
-
-		me->dx=Cosine(me->facing*32)*6;
-		me->dy=Sine(me->facing*32)*6;
-		if(me->seq!=ANIM_MOVE)
-		{
-			me->seq=ANIM_MOVE;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=255;
-		}
+		me->SetNewSpeed(6);
+		me->StartAnimMove(256);
 	}
 }
 
@@ -824,9 +685,7 @@ void AI_Generator(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	}
 
 	// countdown subseconds
-	if(me->mind1)
-		me->mind1--;
-	else
+	if(!me->mind1--)
 	{
 		// a second has elapsed
 		me->mind2--;
@@ -897,21 +756,16 @@ void AI_Shark(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		me->reload--;
 
 	if(me->ouch==4)
-	{
-		if(me->hp==0)
-			MakeSound(SND_SHARKDIE,me->x,me->y,SND_CUTOFF,1200);
-		else
-			MakeSound(SND_SHARKOUCH,me->x,me->y,SND_CUTOFF,1200);
-	}
+		me->HandleOuchNoises(SND_SHARKDIE,SND_SHARKOUCH);
 
 	if(me->action==ACTION_BUSY)
 	{
-		if(me->seq==ANIM_A1 && me->frm==2 && me->reload==0)
+		if(me->CheckSequenceFrame(ANIM_A1,2))
 		{
 			me->reload=5;
 			FireBullet(me->x,me->y,0,BLT_SHOCKWAVE,me->friendly);
 		}
-		if(me->seq==ANIM_ATTACK && me->frm>=2 && me->frm<=7)
+		if(me->CheckSequenceFrames(ANIM_ATTACK,2,7,false))
 		{
 			FaceGoodguy(me,goodguy);
 			FireBulletZ(me->x,me->y,FIXAMT*4,me->facing*32-16+(byte)Random(32),BLT_SHARK,me->friendly);
@@ -922,9 +776,8 @@ void AI_Shark(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->mind==0)	// hiding
 	{
 		me->frmAdvance=32;
-		me->dx=0;
-		me->dy=0;
-		if(RangeToTarget(me,goodguy)<64*FIXAMT || me->ouch)
+		me->SetNewSpeed(0);
+		if(me->CheckTargetWithinReach(64) || me->ouch)
 		{
 			me->mind=1;
 			me->mind1=40+(byte)Random(60);
@@ -940,30 +793,17 @@ void AI_Shark(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	}
 	else
 	{
-		if(me->seq!=ANIM_MOVE)
-		{
-			me->seq=ANIM_MOVE;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=2;
-		}
+		me->StartAnimMove(2);
 		FaceGoodguy(me,goodguy);
-		me->dx+=Cosine(me->facing*32)/2;
-		me->dy+=Sine(me->facing*32)/2;
-		Clamp(&me->dx,FIXAMT*6);
-		Clamp(&me->dy,FIXAMT*6);
+		me->AccelerateSpeed(1/2);
+		me->ClampSpeed(6);
 
-		me->mind1--;
-		if(!me->mind1)
+		if(!me->mind1--)
 		{
 			ExplodeParticles2(PART_WATER,me->x,me->y,0,16,6);
 			me->mind1=40+(byte)Random(60);
 			MakeSound(SND_SHARKATTACK,me->x,me->y,SND_CUTOFF,1200);
-			me->action=ACTION_BUSY;
-			me->seq=ANIM_ATTACK;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=128;
+			me->StartNewAnimation(ANIM_ATTACK,128);
 			return;
 		}
 	}
@@ -976,15 +816,12 @@ void AI_MadBug(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->reload)
 		me->reload--;
 
-	if(me->ouch==4)
-	{
-		if(me->hp==0)
-			MakeSound(SND_SPD1DIE,me->x,me->y,SND_CUTOFF,1200);
-	}
+	if (me->ouch == 4)
+		me->HandleOuchNoises(SND_SPD1OUCH, SND_SPD1DIE);
 
 	if(me->action==ACTION_BUSY)
 	{
-		if(me->seq==ANIM_ATTACK && me->frm==2 && me->reload==0 && goodguy)
+		if (me->CheckSequenceFrame(ANIM_ATTACK,2) && goodguy)
 		{
 			x=me->x+Cosine(me->facing*32)*4;
 			y=me->y+Sine(me->facing*32)*4;
@@ -993,7 +830,7 @@ void AI_MadBug(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			me->reload=2;
 
 		}
-		if(me->seq==ANIM_A1 && me->frm==2 && me->reload==0 && goodguy)
+		if (me->CheckSequenceFrame(ANIM_A1,2) && goodguy)
 		{
 			x=me->x+Cosine(me->facing*32)*4;
 			y=me->y+Sine(me->facing*32)*4;
@@ -1004,54 +841,22 @@ void AI_MadBug(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		return;	// can't do nothin' right now
 	}
 
-	if(RangeToTarget(me,goodguy)<(32*FIXAMT) && Random(4)==0)
+	if(me->CheckTargetWithinReach(32) && me->CheckRoll(4,ROLL_ATTACK))
 	{
 		FaceGoodguy(me,goodguy);
-		// get him!
-		MakeSound(SND_SPD1GNAW,me->x,me->y,SND_CUTOFF,1200);
-		me->seq=ANIM_ATTACK;
-		me->frm=0;
-		me->frmTimer=0;
-		me->frmAdvance=255;
-		me->action=ACTION_BUSY;
-		me->dx=0;
-		me->dy=0;
-		me->reload=0;
+		me->StartNewAnimation(ANIM_ATTACK,256,ACTION_BUSY,0,0,0,SND_SPD1GNAW); // get him!!
 		return;
 	}
-	if(RangeToTarget(me,goodguy)<(256*FIXAMT) && Random(16)==0)
+	if(me->CheckTargetWithinReach(256) && me->CheckRoll(16,ROLL_ATTACK) && GuyCheckTargetWithinSight(me,goodguy,map))
 	{
 		FaceGoodguy(me,goodguy);
-		// get him!
-		MakeSound(SND_SPD3SPEW,me->x,me->y,SND_CUTOFF,1200);
-		me->seq=ANIM_A1;
-		me->frm=0;
-		me->frmTimer=0;
-		me->frmAdvance=255;
-		me->action=ACTION_BUSY;
-		me->dx=0;
-		me->dy=0;
-		me->reload=0;
+		me->StartNewAnimation(ANIM_A1,256,ACTION_BUSY,0,0,0,SND_SPD3SPEW); // get him!!
 		return;
 	}
 
-	if(me->mind)
-		me->mind--;
-	if(!me->mind)	// time to get a new direction
-	{
-		me->facing=(byte)Random(8);
-		me->mind=Random(40)+1;
-	}
-
-	me->dx=Cosine(me->facing*32)*4;
-	me->dy=Sine(me->facing*32)*4;
-	if(me->seq!=ANIM_MOVE)
-	{
-		me->seq=ANIM_MOVE;
-		me->frm=0;
-		me->frmTimer=0;
-		me->frmAdvance=128;
-	}
+	me->TryGetNewDirection(&me->mind,40,goodguy,true);
+	me->SetNewSpeed(4);
+	me->StartAnimMove(128);
 }
 
 void AI_Wizard(Guy *me,Map *map,world_t *world,Guy *goodguy)
@@ -1063,24 +868,19 @@ void AI_Wizard(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	if(me->ouch==4)
 	{
-		if(me->hp>0)
-		{
-			MakeSound(SND_WIZOUCH,me->x,me->y,SND_CUTOFF,1200);
-			if(Random(10)==0)
-				FireBullet(me->x,me->y,0,BLT_REFLECT,me->friendly);
-		}
-		else
-			MakeSound(SND_WIZDIE,me->x,me->y,SND_CUTOFF,1200);
+		me->HandleOuchNoises(SND_WIZOUCH,SND_WIZDIE);
+		if(me->hp>0 && me->CheckRoll(10,ROLL_ATTACK))
+			FireBullet(me->x,me->y,0,BLT_REFLECT,me->friendly);
 	}
 
 	if(me->action==ACTION_BUSY)
 	{
-		if(me->seq==ANIM_ATTACK && me->frm==8 && me->reload==0 && goodguy)
+		if(me->CheckSequenceFrame(ANIM_ATTACK,8) && goodguy)
 		{
 			x=me->x+Cosine(me->facing*32)*16;
 			y=me->y+Sine(me->facing*32)*16;
 
-			FindVictim(x>>FIXSHIFT,y>>FIXSHIFT,32,Cosine(me->facing*32)*6,Sine(me->facing*32)*6,8,map,world,me->friendly);
+			FindVictim(me->GetSpaceInFrontX(16) >> FIXSHIFT, me->GetSpaceInFrontY(16) >> FIXSHIFT, 32, me->GetSpaceInFrontX(6), me->GetSpaceInFrontY(6), 8, map, world, me->friendly);
 
 			if(me->mind1)
 			{
@@ -1090,7 +890,7 @@ void AI_Wizard(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			else
 				me->reload=10;
 		}
-		if(me->seq==ANIM_A1 && me->frm>1 && me->frm<9 && me->reload==0)
+		if(me->CheckSequenceFrames(ANIM_A1,1,9))
 		{
 			me->reload=3;
 			MakeSound(SND_ZAP,me->x,me->y,SND_CUTOFF,1200);
@@ -1116,44 +916,19 @@ void AI_Wizard(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(goodguy)
 	{
 		FaceGoodguy3(me,goodguy);
-		if(RangeToTarget(me,goodguy)<(96*FIXAMT) && Random(16)==0 && me->reload==0)
+		if(!me->reload && me->CheckTargetWithinReach(96) && me->CheckRoll(16,ROLL_ATTACK) && GuyCheckTargetWithinSight(me,goodguy,map))
 		{
-			// smack him!
-			MakeSound(SND_WIZHIT,me->x,me->y,SND_CUTOFF,1200);
-			me->seq=ANIM_ATTACK;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=255;
-			me->action=ACTION_BUSY;
-			me->dx=0;
-			me->dy=0;
-			me->reload=1;
+			me->StartNewAnimation(ANIM_ATTACK,256,ACTION_BUSY,0,0,1,SND_WIZHIT); // smack him!
 			me->mind1=2;	// tell him to repeat twice
 			return;
 		}
-		if(RangeToTarget(me,goodguy)<(500*FIXAMT) && Random(50)==0 && me->reload==0)
+		if(me->reload && me->CheckTargetWithinReach(500) && me->CheckRoll(50,ROLL_ATTACK))
 		{
-			// shoot a shroom
-			me->seq=ANIM_A1;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=255;
-			me->action=ACTION_BUSY;
-			me->dx=0;
-			me->dy=0;
-			me->reload=1;
+			me->StartNewAnimation(ANIM_A1,256,ACTION_BUSY,0,0,1);
 			return;
 		}
-
-		me->dx=Cosine(me->facing*32)*4;
-		me->dy=Sine(me->facing*32)*4;
-		if(me->seq!=ANIM_MOVE)
-		{
-			me->seq=ANIM_MOVE;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=128;
-		}
+		me->SetNewSpeed(4);
+		me->StartAnimMove(128);
 	}
 }
 
@@ -1165,115 +940,56 @@ void AI_EvilClone(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		me->reload--;
 
 	if(me->ouch==4)
-	{
-		if(me->hp>0)
-			MakeSound(SND_CLONEOUCH,me->x,me->y,SND_CUTOFF,1200);
-		else
-			MakeSound(SND_CLONEDIE,me->x,me->y,SND_CUTOFF,1200);
-	}
+		me->HandleOuchNoises(SND_CLONEOUCH,SND_CLONEDIE);
 
 	if(me->action==ACTION_BUSY)
 	{
-		if(me->seq==ANIM_ATTACK && me->frm==3 && me->reload==0 && goodguy)
+		if(goodguy && me->CheckSequenceFrame(ANIM_ATTACK,3))
 		{
-			x=me->x+Cosine(me->facing*32)*16;
-			y=me->y+Sine(me->facing*32)*16;
-			FireBullet(x,y,me->facing,BLT_EVILHAMMER,me->friendly);
-			me->reload=5;
+			me->DoFireBullet(BLT_EVILHAMMER,5,16);
 			me->mind1=1;
 		}
-		if(me->seq==ANIM_DIE)
-			me->facing=(me->facing+1)&7;
+		if (me->seq == ANIM_DIE)
+			me->Speen();
 		return;	// can't do nothin' right now
 	}
 
 	if(me->mind==0)		// when mind=0, singlemindedly lumber towards Bouapha
 	{
-		if(RangeToTarget(me,goodguy)<(512*FIXAMT) && Random(32)==0)
+		FaceGoodguy(me, goodguy);
+		if(me->CheckTargetWithinReach(512) && me->CheckRoll(32,ROLL_ATTACK) && GuyCheckTargetWithinSight(me,goodguy,map))
 		{
-			// spit at him
-			MakeSound(SND_HAMMERTOSS,me->x,me->y,SND_CUTOFF,1200);
-			me->seq=ANIM_ATTACK;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=256;
-			me->action=ACTION_BUSY;
-			me->dx=0;
-			me->dy=0;
-			me->reload=0;
-			FaceGoodguy(me,goodguy);
+			me->StartNewAnimation(ANIM_ATTACK,256,ACTION_BUSY,0,0,0,SND_HAMMERTOSS); // spit at him
 			return;
 		}
-		FaceGoodguy(me,goodguy);
-
-		me->dx=Cosine(me->facing*32)*5;
-		me->dy=Sine(me->facing*32)*5;
-		if(me->seq!=ANIM_MOVE)
-		{
-			me->seq=ANIM_MOVE;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=128;
-		}
-		if(Random(64)==0)
-		{
-			me->mind=1;		// occasionally wander
-			me->mind1=1;
-		}
+		me->SetNewSpeed(5);
+		me->StartAnimMove(128);
+		if (me->CheckRoll(64,ROLL_MOVE))
+			me->WalkAround();
 	}
 	else if(me->mind==1)	// random wandering
 	{
-		if(RangeToTarget(me,goodguy)<(512*FIXAMT) && Random(32)==0)
+		if(me->CheckTargetWithinReach(512) && me->CheckRoll(32,ROLL_ATTACK) && GuyCheckTargetWithinSight(me,goodguy,map))
 		{
-			// spit at him
-			MakeSound(SND_HAMMERTOSS,me->x,me->y,SND_CUTOFF,1200);
-			me->seq=ANIM_ATTACK;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=256;
-			me->action=ACTION_BUSY;
-			me->dx=0;
-			me->dy=0;
-			me->reload=0;
-			FaceGoodguy(me,goodguy);
+			FaceGoodguy(me, goodguy);
+			me->StartNewAnimation(ANIM_ATTACK,256,ACTION_BUSY,0,0,0,SND_HAMMERTOSS); // spit at him
 			return;
 		}
-
-		if(!(me->mind1--))	// time to get a new direction
-		{
-			if((goodguy) && Random(3)==0)
-				me->mind=0;	// get back on track
-			else
-				me->facing=(byte)Random(8);
-			me->mind1=Random(40)+1;
-		}
-
-		me->dx=Cosine(me->facing*32)*5;
-		me->dy=Sine(me->facing*32)*5;
-		if(me->seq!=ANIM_MOVE)
-		{
-			me->seq=ANIM_MOVE;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=128;
-		}
+		me->TryGetNewDirection(&me->mind1, 40, goodguy, true);
+		me->SetNewSpeed(6);
+		me->StartAnimMove(128);
 	}
 }
 
 void AI_Bob(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
-	int x,y;
+	int x,y,i;
 
 	if(me->reload)
 		me->reload--;
 
-	if(me->ouch==4)
-	{
-		if(me->hp>0)
-			MakeSound(SND_GINGEROUCH,me->x,me->y,SND_CUTOFF,1200);
-		else
-			MakeSound(SND_GINGERDIE,me->x,me->y,SND_CUTOFF,1200);
-	}
+	if (me->ouch == 4)
+		me->HandleOuchNoises(SND_GINGEROUCH, SND_GINGERDIE);
 
 	if(me->action==ACTION_BUSY)
 	{
@@ -1281,57 +997,36 @@ void AI_Bob(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		{
 			x=me->x+Cosine(me->facing*32)*32;
 			y=me->y+Sine(me->facing*32)*32;
-			if(me->AttackCheck(32,x>>FIXSHIFT,y>>FIXSHIFT,goodguy))
-				goodguy->GetShot(Cosine(me->facing*32)*4,Sine(me->facing*32)*4,12,map,world);
-			FireBullet(me->x,me->y,0,BLT_SHOCKWAVE,me->friendly);
+			if (me->AttackCheck(32, (me->GetSpaceInFrontX(32)) >> FIXSHIFT, (me->GetSpaceInFrontY(32)) >> FIXSHIFT, goodguy))
+				goodguy->GetShot(me->GetSpaceInFrontX(4), me->GetSpaceInFrontY(4), 12, map, world);
+			me->DoFireBullet(BLT_SHOCKWAVE,4,0);
 			if(me->frm==11)
 			{
 				me->frmAdvance=64;
-				me->dx=0;
-				me->dy=0;
+				me->SetNewSpeed(0);
 			}
-			me->reload=4;
 		}
-		if(me->seq==ANIM_A3 && me->frm==4 && me->reload==0)
+		if(me->CheckSequenceFrame(ANIM_A3,4))
 		{
 			me->reload=6;
-			if(me->mindControl)
-			{
-				AddNinja(map,world,0);
-				AddNinja(map,world,0);
-				AddNinja(map,world,0);
-				AddNinja(map,world,0);
-			}
-			else
-			{
+			for(i=0;i<4;i++)
 				AddNinja(map,world,me->friendly);
-				AddNinja(map,world,me->friendly);
-				AddNinja(map,world,me->friendly);
-				AddNinja(map,world,me->friendly);
-			}
 		}
 		if(me->seq==ANIM_A1 && goodguy)
 		{
 			if(me->frm<2)
-			{
-				me->dx=0;
-				me->dy=0;
-			}
+				me->DampenSpeed(2);
 			else
 			{
-				me->dx=Cosine(me->facing*32)*14;
-				me->dy=Sine(me->facing*32)*14;
+				me->SetNewSpeed(14);
 				x=me->x+Cosine(me->facing*32)*16;
 				y=me->y+Sine(me->facing*32)*16;
-				if(me->AttackCheck(16,x>>FIXSHIFT,y>>FIXSHIFT,goodguy))
+				if(me->AttackCheck(16,(me->GetSpaceInFrontX(16)) >> FIXSHIFT, (me->GetSpaceInFrontY(16)) >> FIXSHIFT, goodguy))
 				{
 					goodguy->GetShot(Cosine(me->facing*32)*12,Sine(me->facing*32)*12,24,map,world);
-					me->seq=ANIM_A2;
-					me->frm=0;
-					me->frmTimer=0;
-					me->frmAdvance=32;
-					me->dx=-Cosine(me->facing*32)*4;
-					me->dy=-Sine(me->facing*32)*4;
+					me->StartNewAnimation(ANIM_A2,32);
+					me->SetNewSpeed(4);
+					me->FlipSpeed();
 				}
 			}
 		}
@@ -1342,7 +1037,7 @@ void AI_Bob(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	{
 		if(goodguy)
 		{
-			if(RangeToTarget(me,goodguy)<(64*FIXAMT) && Random(8)==0)
+			if (me->CheckTargetWithinReach(64) && me->CheckRoll(8,ROLL_ATTACK))
 			{
 				// get him!
 				MakeSound(SND_GINGERCOMBO,me->x,me->y,SND_CUTOFF,1200);
@@ -1355,97 +1050,50 @@ void AI_Bob(Guy *me,Map *map,world_t *world,Guy *goodguy)
 				me->dy=Sine(me->facing*32);
 				return;
 			}
-			if(RangeToTarget(me,goodguy)<(512*FIXAMT) && Random(32)==0)
+		if (me->CheckTargetWithinReach(512) && me->CheckRoll(128,ROLL_MOVE) && GuyCheckTargetWithinSight(me,goodguy,map))
 			{
-				// jumpkick him
-				MakeSound(SND_GINGERJKICK,me->x,me->y,SND_CUTOFF,1200);
-				me->seq=ANIM_A1;
-				me->frm=0;
-				me->frmTimer=0;
-				me->frmAdvance=128;
-				me->action=ACTION_BUSY;
-				FaceGoodguy(me,goodguy);
-				me->dz=FIXAMT*6;
+				me->StartNewAnimation(ANIM_A1,128,ACTION_BUSY,me->dx,me->dy,0,SND_GINGERJKICK);
+				FaceGoodguy(me, goodguy);
+				me->dz = FIXAMT * 6;
 				return;
 			}
-
-			FaceGoodguy(me,goodguy);
-
-			me->dx=Cosine(me->facing*32)*5;
-			me->dy=Sine(me->facing*32)*5;
-			if(me->seq!=ANIM_MOVE)
-			{
-				me->seq=ANIM_MOVE;
-				me->frm=0;
-				me->frmTimer=0;
-				me->frmAdvance=128;
-			}
-			if(Random(64)==0)
-			{
-				me->mind=1;		// occasionally wander
-				me->mind1=1;
-			}
+			FaceGoodguy(me, goodguy);
+			me->SetNewSpeed(5);
+			me->StartAnimMove(128);
+			if (me->CheckRoll(64,ROLL_MOVE))
+				me->WalkAround();
 		}
 		else
-		{
-			me->mind=1;	// if there's no goodguy, get random
-			me->mind1=1;
-		}
+			me->WalkAround();
 	}
 	else if(me->mind==1)	// random wandering
 	{
-		if(RangeToTarget(me,goodguy)<(1024*FIXAMT) && Random(256)==0)
+		if (me->CheckTargetWithinReach(1024) && me->CheckRoll(256,ROLL_MOVE))
 		{
-			// yell for help
-			MakeSound(SND_GINGERJKICK,me->x,me->y,SND_CUTOFF,1200);
+			
+			me->StartNewAnimation(ANIM_A3,128,ACTION_BUSY,me->dx,me->dy,0,SND_GINGERJKICK); // yell for help
 			me->seq=ANIM_A3;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=128;
-			me->action=ACTION_BUSY;
-			me->dx=0;
-			me->dy=0;
 			me->facing=0;
 			return;
 		}
-		if(RangeToTarget(me,goodguy)<(512*FIXAMT) && Random(32)==0)
+		if (me->CheckTargetWithinReach(512) && me->CheckRoll(32,ROLL_MOVE) && GuyCheckTargetWithinSight(me, goodguy, map))
 		{
-			// jumpkick him
-			MakeSound(SND_GINGERJKICK,me->x,me->y,SND_CUTOFF,1200);
-			me->seq=ANIM_A1;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=128;
-			me->action=ACTION_BUSY;
+			
+			me->StartNewAnimation(ANIM_A1,128,ACTION_BUSY,me->dx,me->dy,0,SND_GINGERJKICK); // jumpkick him
 			FaceGoodguy(me,goodguy);
 			me->dz=FIXAMT*6;
 			return;
 		}
 
-		if(!(me->mind1--))	// time to get a new direction
-		{
-			if((goodguy) && Random(3)==0)
-				me->mind=0;	// get back on track
-			else
-				me->facing=(byte)Random(8);
-			me->mind1=Random(40)+1;
-		}
-
-		me->dx=Cosine(me->facing*32)*3;
-		me->dy=Sine(me->facing*32)*3;
-		if(me->seq!=ANIM_MOVE)
-		{
-			me->seq=ANIM_MOVE;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=64;
-		}
+		me->TryGetNewDirection(&me->mind1,40,goodguy,true);
+		me->SetNewSpeed(3);
+		me->StartAnimMove(64);
 	}
 }
 
 void AI_MultiMoss(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
-	int x,y;
+	int x,y,i;
 	Guy *g;
 	byte tries;
 
@@ -1458,32 +1106,16 @@ void AI_MultiMoss(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		{
 			// divide in two!
 			me->reload=100;
-			tries=255;
-			while((tries--))
+			for(i=0;i<2;i++)
 			{
-				x=me->x-FIXAMT*48+Random(FIXAMT*96);
-				y=me->y-FIXAMT*32+Random(FIXAMT*64);
-				g=AddBaby(x,y,0,MONS_MULTIMOSS,me);
-				if(g && !g->CanWalk(g->x,g->y,map,world))
-					RemoveGuy(g);
-				else if(g)
+				tries=255;
+				while((tries--))
 				{
-					g->seq=ANIM_A1;
-					break;
-				}
-			}
-			tries=255;
-			while((tries--))
-			{
-				x=me->x-FIXAMT*48+Random(FIXAMT*96);
-				y=me->y-FIXAMT*32+Random(FIXAMT*64);
-				g=AddBaby(x,y,0,MONS_MULTIMOSS,me);
-				if(g && !g->CanWalk(g->x,g->y,map,world))
-					RemoveGuy(g);
-				else if(g)
-				{
-					g->seq=ANIM_A1;
-					break;
+					if(g=me->TryAddBaby(map,world,MONS_MULTIMOSS,FIXAMT*48+Random(FIXAMT*96),FIXAMT*32+Random(FIXAMT*64),0))
+					{
+						g->seq=ANIM_A1;
+						break;
+					}
 				}
 			}
 		}
@@ -1491,158 +1123,11 @@ void AI_MultiMoss(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		return;	// can't do nothin' right now
 	}
 
-	if(!(me->mind1--))	// time to get a new direction
-	{
-		if((goodguy) && Random(3)==0)
-			me->mind=0;	// get back on track
-		else
-			me->facing=(byte)Random(8);
-		me->mind1=Random(40)+1;
-	}
+	me->TryGetNewDirection(&me->mind1,40,goodguy,true);
+	me->SetNewSpeed(1/2);
 
-	me->dx=Cosine(me->facing*32)/2;
-	me->dy=Sine(me->facing*32)/2;
-
-	if(RangeToTarget(me,goodguy)<40*FIXAMT)
+	if(me->CheckTargetWithinReach(40))
 		goodguy->GetShot(me->dx*4,me->dy*4,1,map,world);
-}
-
-void AI_MossRapido(Guy *me,Map *map,world_t *world,Guy *goodguy)
-{
-	int x,y;
-	Guy *baby;
-
-	if(me->reload)
-		me->reload--;
-
-	if(me->mind)
-		me->mind--;
-
-	if(me->action==ACTION_BUSY)
-	{
-		if(me->seq!=ANIM_DIE && me->frm==4)
-		{
-			x=((me->x>>FIXSHIFT)/TILE_WIDTH);
-			y=((me->y>>FIXSHIFT)/TILE_HEIGHT);
-			me->x=(x*TILE_WIDTH+TILE_WIDTH/2)<<FIXSHIFT;
-			me->y=(y*TILE_HEIGHT+TILE_HEIGHT/2)<<FIXSHIFT;
-			me->dx=0;
-			me->dy=0;	// you are at your destination
-			me->reload=Random(60)+10;
-
-			// this prevents overlapping ones, in cases of ones getting born near-simultaneously
-			me->aiType=MONS_NONE;	// so it doesn't get counted in the moss check
-			if(MossCheck(x,y))
-			{
-				if(!me->friendly)
-					player.totalEnemies--;
-				return;	// with type=MONS_NONE, so it is dead
-			}
-			me->aiType=MONS_MOSS2;
-		}
-		return;
-	}
-
-	// if goodguy steps on you, hurt him
-	if(goodguy && (!me->mind) && RangeToTarget(me,goodguy)<20*FIXAMT)
-	{
-		goodguy->GetShot(0,0,4,map,world);
-		me->mind=5;	// so as not to hurt him too often
-	}
-	if(me->reload==0)
-	{
-		me->reload=Random(60)+10;
-		// spawn
-		x=(me->x>>FIXSHIFT)/TILE_WIDTH;
-		y=(me->y>>FIXSHIFT)/TILE_HEIGHT;
-		switch(Random(4))
-		{
-			case 0:
-				// left
-				if (mapTile_t *tile = map->TryGetTile(x - 1, y); tile &&
-					tile->wall==0 &&
-					(GetTerrain(world,tile->floor)->flags&(TF_WATER|TF_LAVA|TF_SOLID))==0 &&
-					!(GetItem(tile->item)->flags&(IF_SOLID|IF_BULLETPROOF))
-					&& (!MossCheck(x-1,y)))
-				{
-					baby=AddBaby(me->x,me->y,0,MONS_MOSS2,me);
-					if(baby)
-					{
-						baby->action=ACTION_BUSY;
-						baby->seq=ANIM_ATTACK;
-						baby->frm=0;
-						baby->frmTimer=0;
-						baby->frmAdvance=64;
-						baby->dx=-(32*FIXAMT)/20;
-						baby->dy=0;
-					}
-				}
-				break;
-			case 1:
-				// right
-				if (mapTile_t *tile = map->TryGetTile(x + 1, y); tile &&
-					tile->wall==0 &&
-					(GetTerrain(world,tile->floor)->flags&(TF_WATER|TF_LAVA|TF_SOLID))==0 &&
-					!(GetItem(tile->item)->flags&(IF_SOLID|IF_BULLETPROOF))
-					&& (!MossCheck(x+1,y)))
-				{
-					baby=AddBaby(me->x,me->y,0,MONS_MOSS2,me);
-					if(baby)
-					{
-						baby->action=ACTION_BUSY;
-						baby->seq=ANIM_ATTACK;
-						baby->frm=0;
-						baby->frmTimer=0;
-						baby->frmAdvance=64;
-						baby->dx=(32*FIXAMT)/20;
-						baby->dy=0;
-					}
-				}
-				break;
-			case 2:
-				// up
-				if (mapTile_t *tile = map->TryGetTile(x, y - 1); tile &&
-					tile->wall==0 &&
-					(GetTerrain(world,tile->floor)->flags&(TF_WATER|TF_LAVA|TF_SOLID))==0 &&
-					!(GetItem(tile->item)->flags&(IF_SOLID|IF_BULLETPROOF))
-					&& (!MossCheck(x,y-1)))
-				{
-					baby=AddBaby(me->x,me->y,0,MONS_MOSS2,me);
-					if(baby)
-					{
-						baby->action=ACTION_BUSY;
-						baby->seq=ANIM_MOVE;
-						baby->frm=0;
-						baby->frmTimer=0;
-						baby->frmAdvance=64;
-						baby->dx=0;
-						baby->dy=-(24*FIXAMT)/20;
-					}
-				}
-				break;
-			case 3:
-				// down
-				if (mapTile_t *tile = map->TryGetTile(x, y + 1); tile &&
-					tile->wall==0 &&
-					(GetTerrain(world,tile->floor)->flags&(TF_WATER|TF_LAVA|TF_SOLID))==0 &&
-					!(GetItem(tile->item)->flags&(IF_SOLID|IF_BULLETPROOF))
-					&& (!MossCheck(x,y+1)))
-				{
-					baby=AddBaby(me->x,me->y,0,MONS_MOSS2,me);
-					if(baby)
-					{
-						baby->action=ACTION_BUSY;
-						baby->seq=ANIM_MOVE;
-						baby->frm=0;
-						baby->frmTimer=0;
-						baby->frmAdvance=64;
-						baby->dx=0;
-						baby->dy=(24*FIXAMT)/20;
-					}
-				}
-				break;
-		}
-	}
 }
 
 void AI_Snowball(Guy *me,Map *map,world_t *world,Guy *goodguy)
@@ -1653,16 +1138,13 @@ void AI_Snowball(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		me->reload--;
 
 	if(me->ouch==4)
-	{
-		// make noise?
-		MakeSound(SND_ACIDSPLAT,me->x,me->y,SND_CUTOFF,850);
-	}
+		me->HandleOuchNoises(SND_ACIDSPLAT, 0);
 
 	if(me->action==ACTION_BUSY)
 	{
 		if(me->seq==ANIM_DIE)
 		{
-			if(me->frm==0 && me->reload==0)
+			if(me->frm==0 && !me->reload)
 			{
 				MakeSound(SND_LAMPPOOF,me->x,me->y,SND_CUTOFF,1000);
 				me->reload=10;
@@ -1684,15 +1166,13 @@ void AI_Snowball(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	if(GetTerrain(world,map->map[me->mapx+me->mapy*map->width].floor)->flags&(TF_WATER|TF_LAVA))
 	{
-		me->hp=1;
-		me->GetShot(0,0,1,map,world);
+		me->SelfDestruct(map,world);
 		return;
 	}
 
 	if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,40,0,0,255,map,world,me->friendly))
 	{
-		// kill him
-		MakeSound(SND_ACIDSPLAT,me->x,me->y,SND_CUTOFF,850);
+		MakeSound(SND_ACIDSPLAT,me->x,me->y,SND_CUTOFF,850); // kill him
 	}
 	if(me->mind1)	// bonked a wall
 	{
@@ -1724,15 +1204,8 @@ void AI_Snowball(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			f=ANIM_ATTACK;	// roll up
 			break;
 	}
-	if(me->seq!=f)
-	{
-		me->seq=f;
-		me->frm=0;
-		me->frmTimer=0;
-		me->frmAdvance=128;
-		me->dx=Cosine(me->facing*32)*4;
-		me->dy=Sine(me->facing*32)*4;
-	}
+	if (me->seq != f)
+		me->StartNewAnimation(f,128,ACTION_IDLE,me->GetSpaceInFrontX(4),me->GetSpaceInFrontY(4));
 }
 
 void AI_Snowblower(Guy *me,Map *map,world_t *world,Guy *goodguy)
@@ -1794,34 +1267,27 @@ void AI_XenoMama(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	if(me->reload)
 		me->reload--;
 
-	if(me->mind3>0)
+	if(me->mind3)
 		me->mind3--;
 
 	if(me->ouch==4)
-	{
-		if(me->hp>0)
-			MakeSound(SND_ALIENOUCH,me->x,me->y,SND_CUTOFF,1200);
-		else
-			MakeSound(SND_ALIENDIE,me->x,me->y,SND_CUTOFF,1200);
-	}
+		me->HandleOuchNoises(SND_ALIENOUCH, SND_ALIENDIE);
 
 	if(me->action==ACTION_BUSY)
 	{
-		if(me->seq==ANIM_ATTACK && me->frm==2 && me->reload==0)
+		if(me->CheckSequenceFrame(ANIM_ATTACK,2) && goodguy)
 		{
-			x=me->x+Cosine(me->facing*32)*16;
-			y=me->y+Sine(me->facing*32)*16;
-			g=AddBaby(x,y,0,MONS_ALIENEGG,me);
-			if(g && !g->CanWalk(g->x,g->y,map,world))
-				RemoveGuy(g);
-			MakeSound(SND_LAYEGG,x,y,SND_CUTOFF,1200);
+			x=me->GetSpaceInFrontX(16);
+			y=me->GetSpaceInFrontY(16);
+			if(g=me->TryAddBaby(map,world,MONS_ALIENEGG,x-me->x,y-me->y,2))
+				MakeSound(SND_LAYEGG,x,y,SND_CUTOFF,1200);
 
 			me->reload=10;
 		}
 		if(me->seq==ANIM_A1 && me->frm==5 && me->reload==0)
 		{
-			x=me->x+Cosine(me->facing*32)*20;
-			y=me->y+Sine(me->facing*32)*20;
+			x=me->GetSpaceInFrontX(20);
+			y=me->GetSpaceInFrontY(20);
 			SpitAcid(x,y,me->facing*32,BLT_ACID,me->friendly);	// same as FireBullet, just does it up a little (z axis)
 													// because alien is taller than other acid-spitters
 			SpitAcid(x,y,(me->facing*32+256-4)&255,BLT_ACID,me->friendly);
@@ -1840,88 +1306,35 @@ void AI_XenoMama(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	if(me->mind==0)		// when mind=0, singlemindedly lumber towards Bouapha
 	{
-		if(Random(32)==0 && RangeToTarget(me,goodguy)<800*FIXAMT && me->mind3==0)
+		if(!me->mind3 && me->CheckTargetWithinReach(800) && me->CheckRoll(32,ROLL_ATTACK) && GuyCheckTargetWithinSight(me, goodguy, map))
 		{
-			// get him!
+			me->StartNewAnimation(ANIM_ATTACK,256,ACTION_BUSY,0,0,0,SND_SKELKICK); // get him!!
 			me->mind3=60;
-			MakeSound(SND_SKELKICK,me->x,me->y,SND_CUTOFF,1200);
-			me->seq=ANIM_ATTACK;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=128;
-			me->action=ACTION_BUSY;
-			me->dx=0;
-			me->dy=0;
-			me->reload=0;
 			return;
 		}
 		FaceGoodguy(me,goodguy);
-
-		me->dx=Cosine(me->facing*32)*4;
-		me->dy=Sine(me->facing*32)*4;
-		if(me->seq!=ANIM_MOVE)
-		{
-			me->seq=ANIM_MOVE;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=128;
-		}
-		if(Random(32)==0)
-		{
-			me->mind=1;		// occasionally wander
-			me->mind1=1;
-		}
+		me->SetNewSpeed(4);
+		me->StartAnimMove(128);
+		if (me->CheckRoll(32,ROLL_MOVE) == 0)
+			me->WalkAround();
 	}
 	else if(me->mind==1)	// random wandering
 	{
-		if(RangeToTarget(me,goodguy)<(512*FIXAMT) && Random(16)==0)
+		if(me->CheckTargetWithinReach(512) && me->CheckRoll(16,ROLL_ATTACK) && GuyCheckTargetWithinSight(me, goodguy, map))
 		{
-			// spit at him
-			MakeSound(SND_ALIENSPIT,me->x,me->y,SND_CUTOFF,1200);
-			me->seq=ANIM_A1;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=128;
-			me->action=ACTION_BUSY;
-			me->dx=0;
-			me->dy=0;
-			me->reload=0;
+			me->StartNewAnimation(ANIM_A1,128,ACTION_BUSY,0,0,0); // get him!!
 			FaceGoodguy(me,goodguy);
 			return;
 		}
-		if(Random(32)==0 && RangeToTarget(me,goodguy)<800*FIXAMT && me->mind3==0)
+		if(!me->mind3 && me->CheckTargetWithinReach(800) && me->CheckRoll(32,ROLL_ATTACK) && GuyCheckTargetWithinSight(me, goodguy, map))
 		{
-			// get him!
+			me->StartNewAnimation(ANIM_ATTACK,256,ACTION_BUSY,0,0,0,SND_SKELKICK); // get him!!
 			me->mind3=60;
-			MakeSound(SND_SKELKICK,me->x,me->y,SND_CUTOFF,1200);
-			me->seq=ANIM_ATTACK;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=128;
-			me->action=ACTION_BUSY;
-			me->dx=0;
-			me->dy=0;
-			me->reload=0;
 			return;
 		}
-		if(!(me->mind1--))	// time to get a new direction
-		{
-			if((goodguy) && Random(3)==0)
-				me->mind=0;	// get back on track
-			else
-				me->facing=(byte)Random(8);
-			me->mind1=Random(40)+1;
-		}
-
-		me->dx=Cosine(me->facing*32)*4;
-		me->dy=Sine(me->facing*32)*4;
-		if(me->seq!=ANIM_MOVE)
-		{
-			me->seq=ANIM_MOVE;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=128;
-		}
+		me->TryGetNewDirection(&me->mind1,40,goodguy,true);
+		me->SetNewSpeed(4);
+		me->StartAnimMove(128);
 	}
 }
 
@@ -1933,25 +1346,18 @@ void AI_Gnome(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		me->reload--;
 
 	if(me->ouch==4)
-	{
-		if(me->hp>0)
-			MakeSound(SND_ULTRAPYGMYOUCH,me->x,me->y,SND_CUTOFF,1200);
-		else
-			MakeSound(SND_ULTRAPYGMYDIE,me->x,me->y,SND_CUTOFF,1200);
-	}
+		me->HandleOuchNoises(SND_ULTRAPYGMYOUCH,SND_ULTRAPYGMYDIE);
 
 	if(me->action==ACTION_BUSY)
 	{
 		if(me->seq==ANIM_ATTACK && me->frm==6 && me->reload==0 && goodguy)
 		{
-			x=me->x+Cosine(me->facing*32)*8;
-			y=me->y+Sine(me->facing*32)*8;
+			me->SetNewSpeed(8);
 			if(me->AttackCheck(12,x>>FIXSHIFT,y>>FIXSHIFT,goodguy))
 			{
-				if(goodguy->aiType==MONS_BOUAPHA && me->mind3==0)
+				if(goodguy->aiType==MONS_BOUAPHA && !me->mind3)
 				{
-					me->mind3=StealWeapon();
-					if(me->mind3)
+					if(me->mind3=StealWeapon())
 						MakeSound(SND_GNOMELAUGH,me->x,me->y,SND_CUTOFF,1200);
 				}
 				goodguy->GetShot(Cosine(me->facing*32)*3,Sine(me->facing*32)*3,3,map,world);
