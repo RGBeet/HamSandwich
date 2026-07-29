@@ -38,8 +38,8 @@ class Guy final
 		void HandleOuchNoises(int ouchSnd, int deathSnd); // when ouch happen, do noise!
 
 		void StartNewAnimation(byte sequence, word frameAdvance, byte action, int dxNew, int dyNew, int newReload=0, int sound=0);
-		void StartAnimMove(byte frameAdvance=64);
-		void StartAnimIdle(byte frameAdvance=64);
+		void StartAnimMove(word frameAdvance=64);
+		void StartAnimIdle(word frameAdvance=64);
 
 		int GetSpaceInFrontX(int amt);
 		int GetSpaceInFrontY(int amt);
@@ -54,17 +54,22 @@ class Guy final
 		void DoFireBullet(int bulletType, byte reloadFrames, int spaceInFront=16, int sound=0);
 		void DoFireBulletAngled(int bulletType, byte angleOffset, int spaceInFront=16);
 		byte PickRandomDirection(byte *newTimer=nullptr, byte frames=NULL);
-		void TryAddBaby(Map* map, world_t* world, int type, int offx, int offy, int newReload=0);
+		Guy* TryAddBaby(Map* map, world_t* world, int type, int offx, int offy, int newReload=0);
 		void WalkAround(void);
 		void Speen(byte dir=1, byte frameAdvance=128);
 		void SelfDestruct(Map *map, world_t *world);
+		void FlipFacing(void);
 
 		byte CheckSequenceFrame(byte sequence, byte frame, bool checkReload=true);
 		byte CheckSequenceFrames(byte sequence, byte frameMin, byte frameMax, bool checkReload=true);
 		byte CheckTargetWithinReach(int range, Guy* target=nullptr);
 		void TryGetNewDirection(byte* mindVal, byte timerSet=40, Guy *target=nullptr, bool getBackOnTrack=false);
 		byte CheckRoll(int n, byte rollType);
+		int GetRoll(int n, byte rollType);
 		void DoTransform(int newType);
+		byte CheckFrame(byte frame, bool checkReload=true);
+
+		void FaceMovement(void);
 
 		int x,y,z;
 		int oldx,oldy;

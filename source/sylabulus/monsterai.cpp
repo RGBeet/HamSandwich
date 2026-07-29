@@ -30,7 +30,7 @@ void Guy::StartNewAnimation(byte sequenceNew, word frameAdvance, byte action, in
 		MakeSound(sound, x, y, SND_CUTOFF, 1200);
 }
 
-void Guy::StartAnimMove(byte frameAdvance)
+void Guy::StartAnimMove(word frameAdvance)
 {
 	if (this->seq == ANIM_MOVE)
 		return;
@@ -40,7 +40,7 @@ void Guy::StartAnimMove(byte frameAdvance)
 	this->frmAdvance	= frameAdvance;
 }
 
-void Guy::StartAnimIdle(byte frameAdvance)
+void Guy::StartAnimIdle(word frameAdvance)
 {
 	if (this->seq == ANIM_IDLE)
 		return;
@@ -74,6 +74,12 @@ void Guy::SetNewSpeed(int speed)
 {
 	dx = Cosine(facing * 32) * speed;
 	dy = Sine(facing * 32) * speed;
+}
+
+// Flips the direction the Guy is facing.
+void Guy::FlipFacing()
+{
+	this->facing=(this->facing+4)&7;
 }
 
 void Guy::DampenSpeed(int speed)
@@ -122,7 +128,7 @@ void Guy::DoFireBulletAngled(int bulletType, byte angleOffset, int spaceInFront)
 byte Guy::CheckSequenceFrame(byte sequence, byte frame, bool checkReload)
 {
 	byte seqFrame = (seq == sequence) && (frm == frame);
-	return checkReload ? (seqFrame && this->reload==0) : seqFrame;
+	return checkReload ? (seqFrame && this->reload == 0) : (seqFrame && this->frmTimer < 32);
 }
 
 // Returns whether animation is on the specified sequence and frame.
@@ -132,12 +138,21 @@ byte Guy::CheckSequenceFrames(byte sequence, byte frameMin, byte frameMax, bool 
 	return checkReload ? (seqFrame && this->reload==0) : seqFrame;
 }
 
+// Checks the frame only, but ALSO checks whether reload is empty
+// OR frameTimer is under 32 (which means it only fires ONCE!)
+byte Guy::CheckFrame(byte frame, bool checkReload)
+{
+	byte framePass = (frm == frame);
+	return checkReload ? (framePass && this->reload == 0) : (framePass && this->frmTimer < 32);
+}
+
 byte Guy::CheckTargetWithinReach(int range, Guy* target)
 {
 	Guy* targetReal = (target != nullptr ? target : goodguy); // if target not filled out, default to "goodguy"
 	return targetReal ? RangeToTarget(this, targetReal) < (range * FIXAMT) : 0;
 }
 
+// Checks whether the target is within sight (uses LOS 
 byte GuyCheckTargetWithinSight(Guy *me, Guy *target, Map *map)
 {
 	Guy* targetReal = (target != nullptr ? target : goodguy); // if target not filled out, default to "goodguy"
@@ -154,14 +169,25 @@ byte Guy::PickRandomDirection(byte *newTimer, byte frames)
 	return newDirection;
 }
 
+int GetModifiedRoll(int n)
+{
+	return n;
+}
+
 // Does a random roll, then returns whether the roll landed on zero. May be modified depending on roll type.
 byte Guy::CheckRoll(int n, byte rollType)
 {
-	return Random(n) == 0;
+	return Random(GetModifiedRoll(n)) == 0;
+}
+
+// Returns a random roll influenced by
+int Guy::GetRoll(int n, byte rollType)
+{
+	return Random(GetModifiedRoll(n));
 }
 
 // Quickyl
-void Guy::TryAddBaby(Map* map, world_t* world, int type, int offx, int offy, int newReload)
+Guy* Guy::TryAddBaby(Map* map, world_t* world, int type, int offx, int offy, int newReload)
 {
 	Guy* g;
 	g = AddBaby(x+offx, y+offy, 0, type, this);
@@ -171,6 +197,8 @@ void Guy::TryAddBaby(Map* map, world_t* world, int type, int offx, int offy, int
 
 	if (newReload)
 		reload = newReload;
+
+	return g;
 }
 
 // Transforms the guy into another guy of type "newType".
@@ -223,4 +251,33 @@ void Guy::SelfDestruct(Map *map, world_t *world)
 {
 	this->hp = 1;
 	this->GetShot(0, 0, 1, map, world);
+}
+
+void Guy::FaceMovement()
+{
+	if(this->dx>FIXAMT)
+	{
+		if(this->dy>FIXAMT)
+			this->facing=1;
+		else if(this->dy<-FIXAMT)
+			this->facing=7;
+		else
+			this->facing=0;
+	}
+	else if(this->dx<-FIXAMT)
+	{
+		if(this->dy>FIXAMT)
+			this->facing=3;
+		else if(this->dy<-FIXAMT)
+			this->facing=5;
+		else
+			this->facing=4;
+	}
+	else
+	{
+		if(this->dy>FIXAMT)
+			this->facing=2;
+		else if(this->dy<-FIXAMT)
+			this->facing=6;
+	}
 }

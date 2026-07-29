@@ -89,10 +89,10 @@ void AI_MineCart(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 		if(me->mind1==1)	// wait for goodguy to go away before re-allowing him to board
 		{
-			if(RangeToTarget(me,goodguy)>32*FIXAMT)
+			if(!me->CheckTargetWithinReach(33))
 				me->mind1=0;
 		}
-		else if(RangeToTarget(me,goodguy)<32*FIXAMT && player.vehicle==0)
+		else if(me->CheckTargetWithinReach(32) && player.vehicle == 0)
 		{
 			MakeSound(SND_MINECART,goodguy->x,goodguy->y,SND_CUTOFF,1200);
 			noiseLoop=0;
@@ -153,10 +153,8 @@ void AI_MineCart(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			{
 				me->mind1=1;
 				me->mind=0;
-				me->dx=0;
-				me->dy=0;
-				goodguy->dx=0;
-				goodguy->dy=0;
+				me->SetNewSpeed(0);
+				goodguy->SetNewSpeed(0);
 				player.vehicle=0;
 				goodguy->parent=NULL;
 				goodguy->x=me->x;
@@ -209,8 +207,7 @@ void AI_MineCart(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		goodguy->x=me->x;
 		goodguy->y=me->y+1;
 		goodguy->z=FIXAMT*8;
-		goodguy->dx=0;
-		goodguy->dy=0;
+		goodguy->SetNewSpeed(0);
 		goodguy->dz=0;
 
 		if(me->mind1<96)
@@ -405,20 +402,13 @@ void AI_Vampire(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	}
 
 	if(me->ouch==4)
-	{
-		if(me->hp>0)
-			MakeSound(SND_VAMPOUCH,me->x,me->y,SND_CUTOFF,1200);
-		else
-			MakeSound(SND_VAMPDIE,me->x,me->y,SND_CUTOFF,1200);
-	}
+		me->HandleOuchNoises(SND_VAMPOUCH,SND_VAMPDIE);
 
 	if(me->action==ACTION_BUSY)
 	{
-		if(me->seq==ANIM_ATTACK && me->frm==3 && me->reload==0 && goodguy)
+		if(goodguy && me->CheckSequenceFrame(ANIM_ATTACK,3))
 		{
-			x=me->x+Cosine(me->facing*32)*16;
-			y=me->y+Sine(me->facing*32)*16;
-			if(me->AttackCheck(20,x>>FIXSHIFT,y>>FIXSHIFT,goodguy))
+			if(me->AttackCheck(20, me->GetSpaceInFrontX(16) >> FIXSHIFT, me->GetSpaceInFrontY(16) >> FIXSHIFT, goodguy))
 			{
 				goodguy->GetShot(Cosine(me->facing*32)*4,Sine(me->facing*32)*4,12,map,world);
 				if(me->aiType==MONS_DARKVAMP)
@@ -431,7 +421,7 @@ void AI_Vampire(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	if(me->mind==0)		// when mind=0, singlemindedly drift towards Bouapha
 	{
-		if(player.garlic && goodguy && RangeToTarget(me,goodguy)<500*FIXAMT)
+		if(player.garlic && goodguy && me->CheckTargetWithinReach(500) && GuyCheckTargetWithinSight(me,goodguy,map))
 		{
 			MakeSound(SND_VAMPFEAR,me->x,me->y,SND_CUTOFF,1200);
 			me->mind=2;	// enter fear mode
@@ -440,130 +430,72 @@ void AI_Vampire(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 		if(goodguy)
 		{
-			if(RangeToTarget(me,goodguy)<(72*FIXAMT) && Random(8)==0)
+			if(me->CheckRoll(8,ROLL_ATTACK) && me->CheckTargetWithinReach(72) && GuyCheckTargetWithinSight(me,goodguy,map))
 			{
-				// get him!
-				MakeSound(SND_VAMPATTK,me->x,me->y,SND_CUTOFF,1200);
-				me->seq=ANIM_ATTACK;
-				me->frm=0;
-				me->frmTimer=0;
-				me->frmAdvance=320;
-				me->action=ACTION_BUSY;
-				me->dx=0;
-				me->dy=0;
-				me->reload=0;
+				me->StartNewAnimation(ANIM_ATTACK,320,ACTION_BUSY,0,0,0,SND_VAMPATTK);
 				return;
 			}
 			FaceGoodguy(me,goodguy);
 
-			me->dx=Cosine(me->facing*32)*9;
-			me->dy=Sine(me->facing*32)*9;
-			if(me->seq!=ANIM_MOVE)
-			{
-				me->seq=ANIM_MOVE;
-				me->frm=0;
-				me->frmTimer=0;
-				me->frmAdvance=64;
-			}
-			if(me->mind1>0 && RangeToTarget(me,goodguy)>(64*FIXAMT))
+			me->SetNewSpeed(9);
+			me->StartAnimMove(64);
+			if(me->mind1 && me->CheckTargetWithinReach(64) && GuyCheckTargetWithinSight(me,goodguy,map)) // bump a wall
 			{
 				me->mind=1;	// bumped a wall, so randomly maneuver
 				me->facing=(byte)Random(8);
-				me->mind2=10;
+				me->PickRandomDirection(&me->mind2,10);
 			}
 		}
 		else
 		{
 			me->mind=1;	// if there's no goodguy, get random
-			me->facing=(byte)Random(8);
+			me->PickRandomDirection();
 		}
 	}
 	else if(me->mind==1)	// random wandering
 	{
 		if(!(me->mind2--))	// time to get a new direction
-		{
 			me->mind=0;	// get back on track
-		}
-
-		me->dx=Cosine(me->facing*32)*6;
-		me->dy=Sine(me->facing*32)*6;
-		if(me->seq!=ANIM_MOVE)
-		{
-			me->seq=ANIM_MOVE;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=64;
-		}
+		me->SetNewSpeed(6);
+		me->StartAnimMove(64);
 	}
 	else
 	{
-		if(player.garlic && goodguy)
+		if(player.garlic && goodguy && me->CheckTargetWithinReach(52) && GuyCheckTargetWithinSight(me, goodguy, map)) // runs away
 		{
-			// run from the garlic
+			// face away from the target! they STINK!!
 			FaceGoodguy(me,goodguy);
-			me->facing=(me->facing+4)&7;	// face opposite direction
-			me->dx=Cosine(me->facing*32)*8;
-			me->dy=Sine(me->facing*32)*8;
-			if(me->seq!=ANIM_MOVE)
-			{
-				me->seq=ANIM_MOVE;
-				me->frm=0;
-				me->frmTimer=0;
-				me->frmAdvance=64;
-			}
+			me->FlipFacing();
+
+			me->SetNewSpeed(8);
+			me->StartAnimMove(64);
 		}
 		else
-		{
 			me->mind=0;
-		}
 		return;
 	}
-
 	me->mind1=0;
 }
 
 void AI_Coffin(Guy *me,Map *map,world_t *world,Guy *goodguy)
 {
-	if(me->ouch==4 && me->hp>0)
-	{
-		MakeSound(SND_VAMPOUCH,me->x,me->y,SND_CUTOFF,1200);
-		if(me->seq!=ANIM_ATTACK)
-		{
-			MakeSound(SND_COFFIN,me->x,me->y,SND_CUTOFF,1200);
-			me->seq=ANIM_ATTACK;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=127;
-			me->action=ACTION_BUSY;
-		}
-	}
+	if(me->ouch==4)
+		me->HandleOuchNoises(SND_VAMPOUCH,me->mind?0:SND_VAMPDIE);
 
 	if(me->action==ACTION_BUSY)
 	{
-		if(me->seq==ANIM_ATTACK && me->frm==15 && me->frmTimer>64)
+		if(me->CheckSequenceFrame(ANIM_ATTACK,15) && me->frmTimer>64)
 		{
-			if(me->aiType==MONS_COFFIN)
-				AddBaby(me->x+FIXAMT*20,me->y+FIXAMT*10,0,MONS_VAMPIRE,me);
-			else
-				AddBaby(me->x+FIXAMT*20,me->y+FIXAMT*10,0,MONS_DARKVAMP,me);
-			// then die
-			me->hp=1;
-			me->GetShot(0,0,1,map,world);
+			AddBaby(me->x+FIXAMT*20,me->y+FIXAMT*10,0,(me->aiType==MONS_COFFIN) ? MONS_VAMPIRE : MONS_DARKVAMP,me);
+			me->SelfDestruct(map,world); // DIE!
+			me->mind=1;
 			me->ouch=0;
 		}
 		return;	// can't do nothin' right now
 	}
 
-	if(goodguy && RangeToTarget(me,goodguy)<180*FIXAMT)
-	{
-		// goodguy got close, pop out
-		MakeSound(SND_COFFIN,me->x,me->y,SND_CUTOFF,1200);
-		me->seq=ANIM_ATTACK;
-		me->frm=0;
-		me->frmTimer=0;
-		me->frmAdvance=127;
-		me->action=ACTION_BUSY;
-	}
+	if ((goodguy && me->CheckTargetWithinReach(180) && GuyCheckTargetWithinSight(me, goodguy, map)) || me->ouch) // open the coffin
+		me->StartNewAnimation(ANIM_ATTACK, 127, ACTION_BUSY, 0, 0, 0, SND_COFFIN);
 }
 
 void AI_Ghost(Guy *me,Map *map,world_t *world,Guy *goodguy)
@@ -595,7 +527,7 @@ void AI_Ghost(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	if(me->action==ACTION_BUSY)
 	{
-		if(me->seq==ANIM_ATTACK && me->frm==2 && me->reload==0)
+		if(me->CheckSequenceFrame(ANIM_ATTACK,2))
 		{
 			me->reload=10;
 			if(goodguy && RangeToTarget(me,goodguy)<120*FIXAMT)
