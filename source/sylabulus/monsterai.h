@@ -219,4 +219,7 @@ void AI_CroquetBird(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_NastyTree(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_SpikeBall(Guy* me, Map* map, world_t* world, Guy* goodguy);
 
+void AI_MiniZombie(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_MiniBonehead(Guy* me, Map* map, world_t* world, Guy* goodguy);
+
 #endif

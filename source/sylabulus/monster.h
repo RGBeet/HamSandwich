@@ -284,8 +284,10 @@
 #define MONS_NASTYTREE	239
 #define MONS_SPIKEBALL	240
 
+#define MONS_MINIZOMB	241
+#define MONS_MINISKEL	242
 
-#define NUM_MONSTERS	240					// Can grow as needed
+#define NUM_MONSTERS	243					// Can grow as needed
 #define NUM_PROFILE_MONSTERS 211			// Do not change without redoing the profile format
 
 // fake monster codes

@@ -3174,6 +3174,20 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},
 				{0,255},
 			},0},
+		{"Robot",255,255,0,0, // not yet implemented
+		 8,38,10,50,"graphics/rwkrobot.jsp",0,{},
+		 MT_BITS,
+			{
+				{0,255},	// idle
+				{0,255},	// move
+				{0,255},	// attack 1
+				{0,255},	// defeated
+				{0,255},
+				{0,255},
+				{0,255},
+				{0,255},
+				{0,255},
+			},0},
 		{"Crazy Bush",255,255,0,AI_CrazyBush, // not yet implemented
 		 10,8,20,5,"graphics/crazybush.jsp",0,{},
 		 MT_EVIL|MT_VEGGIE,
@@ -3216,7 +3230,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},
 				{0,255},
 			},0},
-		{"Deathcap",1,7,-3,AI_Deathcap,
+		{"Deathcap",1,7,-8,AI_Deathcap,
 		 15,23,30,50,"graphics/shroom.jsp",0,{},
 		 MT_EVIL|MT_VEGGIE|MT_TRAP,
 			{
@@ -3300,6 +3314,20 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},
 				{0,255},
 			},0},
+		{"Croquet Ball",255,255,0,AI_SpikeBall, // not yet implemented
+		 8,38,10,50,"graphics/spikeball.jsp",0,{},
+		 MT_EVIL|MT_WACKY,
+			{
+				{0,255},	// idle
+				{0,255},	// move
+				{0,255},	// attack 1
+				{0,255},	// defeated
+				{0,255},
+				{0,255},
+				{0,255},
+				{0,255},
+				{0,255},
+			},0},
 		{"Nasty Tree",255,255,0,AI_NastyTree, // not yet implemented
 		 8,38,10,50,"graphics/tree.jsp",0,{},
 		 MT_EVIL|MT_VEGGIE|MT_WACKY,
@@ -3314,7 +3342,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},
 				{0,255},
 			},0},
-		{"Roller",255,255,0,AI_SpikeBall, // not yet implemented
+		{"Chainball",255,255,0,AI_SpikeBall, // not yet implemented
 		 8,38,10,50,"graphics/spikeball.jsp",0,{},
 		 MT_EVIL|MT_SPOOKY|MT_WACKY,
 			{
@@ -3327,5 +3355,32 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},
 				{0,255},
 				{0,255},
+			},0},
+		{"Peabrain",255,255,0,AI_MiniZombie,
+		 5,42,10,50,"graphics/minizombie.jsp",0,{},
+		 MT_SPOOKY|MT_ZOMBIE|MT_EVIL|MT_WACKY,
+			{
+				{0,255},	// idle
+				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
+				{15,16,17,18,19,20,21,22,23,23,24,25,26,27,28,255},	// attack
+				{29,30,31,32,33,34,35,36,37,38,39,40,41,255},		// die
+				{7,8,9,10,11,12,13,14,255},	// A1 = stomp ground
+				{15,16,17,18,19,20,21,22,23,23,24,25,26,27,28,255},	// attack
+				{7,8,9,10,11,12,13,14,255},	// A1 = stomp ground
+				{15,16,17,18,19,20,21,22,23,23,24,25,26,27,28,255},	// attack
+				{7,8,9,10,11,12,13,14,255},	// A1 = stomp ground
+			},0},
+		{"Babybones",255,255,0,AI_MiniBonehead,
+		 5,32,5,25,"graphics/miniskeleton.jsp",0,{},
+		 MT_SPOOKY|MT_EVIL|MT_WACKY,
+			{
+				{0,255},	// idle
+				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
+				{12,13,14,15,16,17,18,19,255},	// attack
+				{7,8,9,10,11,11,11,11,254,11,254,11,254,11,254,11,254,11,254,11,254,11,255}, // die
+				{20,21,22,23,24,25,255},	// chomp/spit projectile
+				{26,27,27,27,26,255},	// point at bouapha
+				{7,8,9,10,11,11,11,11,254,11,254,11,254,11,254,11,254,11,254,11,254,11,255}, // drown=A3
+				{11,10,9,8,7,255},	// resurrect=A4
 			},0},
 	};

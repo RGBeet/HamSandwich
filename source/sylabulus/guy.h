@@ -31,64 +31,21 @@ class Guy final
 		void GetShot(int dx,int dy,byte damage,Map *map,world_t *world, bool bypassInvincible=false);
 		void CalculateRect(void);
 		byte IsAwake(void);
-
-		byte PushGuys(Guy *first, word size, dword stamp, Map *map, world_t *world);
 		byte IsInterface(void);
 
-		void HandleOuchNoises(int ouchSnd, int deathSnd); // when ouch happen, do noise!
-
-		void StartNewAnimation(byte sequence, word frameAdvance, byte action, int dxNew, int dyNew, int newReload=0, int sound=0);
-		void StartNewAnimation(byte sequence, word frameAdvance, byte action=ACTION_BUSY);
-		
-		void StartAnimMove(word frameAdvance=64);
-		void StartAnimIdle(word frameAdvance=64);
-
-		int GetSpaceInFrontX(int amt);
-		int GetSpaceInFrontY(int amt);
-		int GetFacingX(void);
-		int GetFacingY(void);
-
-		void DampenSpeed(int speed);
-		void ClampSpeed(int speed);
-		void ClampSpeed(int speedX, int speedY);
-		
-		void SetNewSpeed(int speed, byte *dir=nullptr);
-		void FlipSpeed(void);
-
-		void AccelerateSpeed(int speed, const byte* dir = nullptr);
-		void AccelerateToTargetSpeed(int speed, int smoothness, const byte* dir = nullptr);
-		void AccelerateToTargetSpeed(int speedX, int speedY, int smoothness, const byte* dir = nullptr);
-
-		void DoFireBullet(int bulletType, byte reloadFrames, int spaceInFront=16, int sound=0);
-		void DoFireBulletAngled(int bulletType, byte angleOffset, int spaceInFront=16);
-		byte PickRandomDirection(byte *newTimer=nullptr, byte frames=NULL);
-		byte PickRandomDirectionNear(byte* newTimer = nullptr, byte frames = NULL);
-		Guy* TryAddBaby(Map* map, world_t* world, int type, int offx, int offy, int newReload=0);
-		void WalkAround(void);
-		void Speen(byte dir=1, byte frameAdvance=128);
-		void SelfDestruct(Map *map, world_t *world);
-		void FlipFacing(void);
-		void HoneInOnPoint(int x, int y, int sharp=8);
-
-		byte CheckSequenceFrame(byte sequence, byte frame, bool checkReload=true);
-		byte CheckSequenceFrames(byte sequence, byte frameMin, byte frameMax, bool checkReload=true);
-		byte CheckTargetWithinReach(int range, Guy* target=nullptr);
-		void TryGetNewDirection(byte* mindVal, byte timerSet=40, Guy *target=nullptr, bool getBackOnTrack=false);
-		byte CheckRoll(int n, byte rollType);
-		int GetRoll(int n, byte rollType);
-		void DoTransform(int newType);
-		byte CheckFrame(byte frame, bool checkReload=true);
-
-		void FaceMovement(void);
 
 		int x,y,z;
 		int oldx,oldy;
 		int dx,dy,dz;
 		byte mapx,mapy;
 		byte lastBumpX,lastBumpY;
-		byte facing;
 
-		byte mind;		// brain variables for AI
+		byte facing;		// visual facing
+		byte direction;		// actual direction (for fine tuning movement)
+
+
+		// brain variables for ai
+		byte mind;
 		byte mind1;
 		byte mind2;
 		byte mind3;
@@ -112,6 +69,7 @@ class Guy final
 		int hp,maxHP;
 		int type;
 		int age;		// # of frames
+		int size;		// takes monsSize
 
 		int rectx,recty,rectx2,recty2;	// for collision checks
 		word ID;	// just a copy of the guy's number

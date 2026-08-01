@@ -75,59 +75,6 @@ byte Guy::AttackCheck(byte size,int xx,int yy,Guy *him)
 	return 0;
 }
 
-// todo: do a better job at pushing guys
-byte Guy::PushGuys(Guy* first, word size, dword stamp, Map* map, world_t* world)
-{
-	int i;
-	byte pushed = 0;
-	static dword nextStamp = 1;
-
-	// Start a new push chain if this is the root call.
-	if (stamp == 0)
-	{
-		stamp = nextStamp++;
-		if (nextStamp == 0)
-			nextStamp = 1;
-	}
-
-	// Already handled during this push chain.
-	if (pushStamp == stamp)
-		return 0;
-
-	pushStamp = stamp;
-
-	// Contact point in front of this guy.
-	int xx = x + Cosine(facing * 32) * size;
-	int yy = y + Sine(facing * 32) * size;
-
-	for (i = 0; i < maxGuys; i++)
-	{
-		Guy* g = &guys[i];
-
-		if (g == this || g->pushStamp == stamp || MonsterFlags(g->type,g->aiType)&(MF_GHOST|MF_ENEMYWALK|MF_NOMOVE))
-			continue;
-
-		// Use the contact point, not the old position.
-		if (!AttackCheck(size, xx >> FIXSHIFT, yy >> FIXSHIFT, g))
-			continue;
-
-		int xTo = g->x + first->dx;
-		int yTo = g->y + first->dy;
-		if(!CanWalk(xTo,g->y,map,world))
-			g->x=xTo;
-		if(!CanWalk(g->x,yTo,map,world))
-			g->y=yTo;
-
-		// Recurse so chains of guys can be pushed.
-		if (g->PushGuys(this, MonsterSize(g->type), stamp, map, world))
-			pushed = 1;
-
-		pushed = 1;
-	}
-
-	return pushed;
-}
-
 // check to see if the chosen tile intersects HIMs rectangle
 byte TileBonkCheck(int x,int y,Guy *him)
 {
@@ -1417,9 +1364,14 @@ void UpdateGuys(Map *map,world_t *world)
 		if ((guys[i].type == MONS_NONE) || (PlayerGetTimeStop() > 0 && !HasPlayerAI(guys[i].aiType) && guys[i].hp > 0 && !HasVehicleAI(guys[i].aiType)))
 			continue;
 
+		if (guys[i].slow > 0 && (guys[i].slow % 2) == 0) // slowness takes away frames
+		{
+			guys[i].slow--;
+			continue;
+		}
+
 		byte updates=1;
 		byte render=0;
-			
 
 		if (HasPlayerAI(guys[i].aiType) || HasVehicleAI(guys[i].aiType))
 		{
@@ -1614,28 +1566,39 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 			guys[i].x=x;
 			guys[i].y=y;
 			guys[i].z=z;
+
 			guys[i].oldx=-1;
 			guys[i].oldy=-1;
+
+			guys[i].dx = 0;
+			guys[i].dy = 0;
+			guys[i].dz = 0;
+
 			guys[i].seq=ANIM_IDLE;
 			guys[i].action=ACTION_IDLE;
 			guys[i].frm=0;
 			guys[i].frmTimer=0;
 			guys[i].frmAdvance=128;
+
+			guys[i].facing = 2;
+			guys[i].direction = 2 * 32;
+
 			guys[i].hp=MonsterHP(type);
 			guys[i].maxHP=guys[i].hp;
-			guys[i].facing=2;
 			guys[i].ouch=0;
-			guys[i].dx=0;
-			guys[i].dy=0;
-			guys[i].dz=0;
 			guys[i].bright=0;
+
 			guys[i].mind=0;
 			guys[i].mind1=0;
 			guys[i].mind2=0;
 			guys[i].mind3=0;
 			guys[i].reload=0;
+
+			guys[i].size = MonsterSize(guys[i].type);
+
 			guys[i].parent=NULL;
 			guys[i].aiType=guys[i].type;
+
 			guys[i].CalculateRect();
 			guys[i].ID=i;
 			guys[i].mapx=(guys[i].x>>FIXSHIFT)/TILE_WIDTH;

@@ -1448,6 +1448,95 @@ char monsNotes[NUM_MONSTERS][512]={
 	"He's nipping at your nose!  He does that by firing freeze bolts at random.  For a mini-boss, this guy is pretty harmless. "
 	"But if you want to make him tough, put him in fairly tight quarters with Bouapha and some other enemies!  That makes his "
 	"ice shots hard to avoid, and greatly improves his odds of getting a swipe at you on his highly predictable journey.",
+	// yerfdog:boss
+	"The Hamumu, mascot now in boss form! He's not evil at all- just trying to test your strength as part of the revamped "
+	"Tutorial World. I used his moveset from Kid Hallow since it really fits him well and offers a decent enough challenge. "
+	"I originally wanted to use an animated version of Yerfdog's 2D appearance, but felt it'd be cooler to see him in 3D as "
+	"seen in \"Behind the Dumb\". Just remember: Yerfdog never dies, he only respawns.",
+	// lantern
+	"The first of many imported enemies, straight from Ninja Academy! They normally just float around, but I thought it'd be "
+	"cool to make them shoot fire. A simple enemy, but one that contributes to the overall oriental feel of the first world. "
+	"I especially like their angry face.",
+	// hardhat
+	"What's a mustached construction worker doing in Japan!? Gentrification! Really though, this guy's mostly a nod to one "
+	"of Hamumu's many ninja-themed games - Hitsuji: Shears of Fury. They throw tools and offer a nice side of thematic"
+	"juxtaposition.",
+	// pelican
+	"If the fat crow can't, the Pelican!",
+	// wee ninja
+	"???",
+	// kaptana
+	"Ninja Turtles meet the Koopa Bros! They are the only enemy that can walk on water and land, yet they strongly prefer "
+	"the former. Their waterfaring ability makes them especially dangerous around large bodies of water.",
+	// madkap
+	"He's like the Kaptana, but he's MAD! That's why he's so red... and why he moves faster, and does more damage. He "
+	"probably lost a lot on gambling, or he really doesn't like bald men in green shirts.",
+	// tsuchizoid
+	"In the original Dr. Lunatic, each of the main five worlds had its own Zoid variant. Needless to say, I've upheld "
+	"that tradition in Project Sylabulus. Based on the Tsuchinoko (meaning \"child of hammer\"), the Tsuchizoid differs "
+	"from other Zoids with its agility and venomous bite - just like the yokai, but in Zoid form! They also resist hammers, "
+	"so make sure to give the player some special weapons if you use them. They're tough!!",
+	// yojimbo
+	"Yes, this guy is a nod to the series Usagi Yojimbo. While I've never read the comic, I really like the character and "
+	"admire the creator's dedication to teaching Japanese history in such a creative manner. Jimbo serves nobody, but he'll "
+	"help you keep the peace with his kunai and wakizashi. His favorite dish is pumpkin soup.",
+	// umbrello
+	"???",
+	// kabocha
+	"???",
+	// noh-mann 1
+	"???",
+	// noh-mann 2
+	"DANGER: Do not use unless you know what you are doing!  This is Noh-Mann's second form, which they usually transition " 
+	"into afterwards.",
+	// noh-mann arm L
+	"DANGER: Do not use unless you know what you are doing!  This is Noh-Mann's left arm.",
+	// noh-mann arm R
+	"DANGER: Do not use unless you know what you are doing!  This is Noh-Mann's right arm.",
+	// eyeball tree
+	"Originally conceptualized by PurpleKoopa, these guys have existed in the Hamumusphere for years - from Happyponygate "
+	"to Kid Hallow. They're not the first sentient tree, they're not the last either, but they're the coolest. Their purple "
+	"homing projectiles were inspired by Binding of Isaac's to the tee! When it comes to Hamumu, purple (or fucshia) usually "
+	"suggests an enemy is of higher difficulty or danger.",
+	// happy stick ninja
+	"???",
+	// RWK robot
+	"DANGER: Do not use unless you know what you are doing!"
+	"This is the dummy monster for the playable Robot (from Robot Wants Kitty).",
+	// crazy bush
+	"Another port from Kid Mystic, and the first enemy I coded into Dr. Lunatic back when the source code became "
+	"readily available. They're simplistic, yet blend in well with a forest setting while adding that dash of "
+	"Hamumu zaniness.",
+	// thorn bush
+	"???",
+	// bombie
+	"Rhymes with Zombie. These guys first appeared in Loonyland, but were much more tame - no jump, no battle cry. "
+	"I believe their signature bombastic belly flop make them both humorous yet extremely deadly; in fact, it takes "
+	"only two to completely kill Bouapha. So when you hear \"Bombs away!\", get running!!",
+	// deathcap
+	"Suggested by Hamumu user Hyperme! Simply a shroom which shoots rockets instead of spores, alternating between "
+	"cross and X patterns. Kind of inspired by the Quadbot from Gubble 2.",
+	// glue trap
+	"It looks like you've found a [GLUE]! I felt this was a nice little way to test out the slowdown status effect. "
+	"They can't hurt you, but they WILL make it easier for other enemies to hurt you. Can't do much when you're "
+	"glued to the floor!",
+	// gingersnap
+	"The keychain guardian, by Hamumu fan Lisa Dash. Originally, I wanted another Ninjabread Man, but the idea of a "
+	"chompy cookie amused me more. You might see a resemblence to another chompy creature from another game series."
+	"We've got turtles, we've got mushrooms, so it just felt right. Very appropriate for this day and age!",
+	// purple kappa
+	"Not to be confused with Hamumu user and worldbuilder PurpleKoopa. The Purple Kaptana continues the trend of "
+	"violet enemies being dangerous, using the same homing bullets spewed by the Eyeball Tree.",
+	// greater cryozoid
+	"???",
+	// flamingo
+	"???",
+	// croquet ball
+	"???",
+	// nasty tree
+	"???",
+	// spike ball
+	"???",
 };
 
 char *MonsterNotes(dword type)

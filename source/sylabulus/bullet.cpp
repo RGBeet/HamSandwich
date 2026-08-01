@@ -43,6 +43,7 @@ constexpr int SPR_SCANLOCK  = 387;
 constexpr int SPR_BOOMERANG = 388;
 constexpr int SPR_TORNADO	= 404;
 constexpr int SPR_ROCKET	= 412;
+constexpr int SPR_GLUESHOT	= 428;
 
 static bullet_t *bullet;
 static sprite_set_t *bulletSpr;
@@ -265,6 +266,11 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 			ExplodeParticles(PART_SLIME,me->x,me->y,me->z,4);
 			me->type=0;
 			break;
+		case BLT_GLUESHOT:
+			MakeSound(SND_ACIDSPLAT,me->x,me->y,SND_CUTOFF,950);
+			ExplodeParticles(PART_SNOW2,me->x,me->y,me->z,6);
+			me->type=0;
+			break;
 		case BLT_MEGABEAM:
 		case BLT_MEGABEAM1:
 			me->type=BLT_MEGABEAM2;
@@ -416,6 +422,11 @@ void BulletHitWallY(bullet_t *me,Map *map,world_t *world)
 			ExplodeParticles(PART_SLIME,me->x,me->y,me->z,4);
 			me->type=0;
 			break;
+		case BLT_GLUESHOT:
+			MakeSound(SND_ACIDSPLAT,me->x,me->y,SND_CUTOFF,950);
+			ExplodeParticles(PART_SNOW2,me->x,me->y,me->z,6);
+			me->type=0;
+			break;
 		case BLT_MEGABEAM:
 		case BLT_MEGABEAM1:
 			me->type=BLT_MEGABEAM2;
@@ -466,6 +477,10 @@ void BulletHitFloor(bullet_t *me,Map *map,world_t *world)
 		case BLT_MINDWIPE:
 			if(me->dz<-FIXAMT)	// don't make it on small bounces, because it'd be annoying
 				MakeSound(SND_BOMBREFLECT,me->x,me->y,SND_CUTOFF,600);
+			me->dz=-me->dz*3/4;
+			me->z=0;
+			break;
+		case BLT_GLUESHOT:
 			me->dz=-me->dz*3/4;
 			me->z=0;
 			break;
@@ -691,6 +706,11 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 		case BLT_SHARK:
 			MakeSound(SND_ACIDSPLAT,me->x,me->y,SND_CUTOFF,850);
 			ExplodeParticles(PART_WATER,me->x,me->y,me->z,6);
+			me->type=0;
+			break;
+		case BLT_GLUESHOT:
+			MakeSound(SND_ACIDSPLAT,me->x,me->y,SND_CUTOFF,950);
+			ExplodeParticles(PART_SNOW2,me->x,me->y,me->z,6);
 			me->type=0;
 			break;
 		case BLT_BUBBLE:
@@ -1097,6 +1117,14 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			if(SwapMe(me->x,me->y,10,map))
 				BulletRanOut(me,map,world);
 			break;
+		case BLT_GLUESHOT:
+			if(Guy *victim = FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,8,0,0,0,map,world,me->friendly))
+			{
+				MakeSound(SND_PAINTSPLAT,me->x,me->y,SND_CUTOFF,950);
+				SetSlownessFrames(victim,8*30);
+				BulletRanOut(me,map,world);	// detonate
+			}
+			break;
 	}
 	attackType=BLT_NONE;
 }
@@ -1214,7 +1242,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 	// all gravity-affected bullets, get gravitized
 	if(me->type==BLT_HAMMER || me->type==BLT_HAMMER2 || me->type==BLT_BOMB || me->type==BLT_GRENADE
 		|| me->type==BLT_ROCK || me->type==BLT_EVILHAMMER || me->type==BLT_SPEAR || me->type==BLT_BADSPEAR
-		|| me->type==BLT_BUBBLE)
+		|| me->type==BLT_BUBBLE || me->type==BLT_GLUESHOT)
 		me->dz-=FIXAMT;
 
 	me->timer--;
@@ -1434,6 +1462,10 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			HitBadguys(me,map,world);
 			break;
 		case BLT_SHROOM:
+			HitBadguys(me,map,world);
+			break;
+		case BLT_GLUESHOT:
+			me->dz-=FIXAMT;	// less gravity than normal things
 			HitBadguys(me,map,world);
 			break;
 		case BLT_MEGABEAM:
@@ -2231,6 +2263,13 @@ void RenderBullet(bullet_t *me)
 					DISPLAY_DRAWME|DISPLAY_SHADOW);
 			}
 			break;
+		case BLT_GLUESHOT:
+			curSpr=bulletSpr->GetSprite(SPR_GLUESHOT);
+			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,me->bright,curSpr,
+					DISPLAY_DRAWME);
+			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,0,255,me->bright,curSpr,
+					DISPLAY_DRAWME|DISPLAY_SHADOW);
+			break;
 	}
 }
 
@@ -2681,6 +2720,13 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type,byte friendly)
 			me->dx=Cosine(me->facing)*5;
 			me->dy=Sine(me->facing)*5;
 			me->dz=FIXAMT*4;
+			break;
+		case BLT_GLUESHOT:
+			me->anim=0;
+			me->timer=40+Random(30);
+			me->dx=Cosine(me->facing)*8;
+			me->dy=Sine(me->facing)*8;
+			me->dz=8*FIXAMT;
 			break;
 
 		case BLT_LILBOOM:
