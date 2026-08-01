@@ -9,8 +9,9 @@ struct world_t;
 #define ROLL_ATTACK		1
 #define ROLL_RANDWALK	2
 
-byte GuyCheckTargetWithinSight(Guy* me, Guy* target, Map* map);
-byte GuyCheckTargetWithinReachAndSight(Guy* me, Guy* target, Map* map, int range);
+void DoMove(Guy* me, int move, int frmAdv=128, byte busy=1, int dx=0, int dy=0);
+void BasicAI(Guy* me, byte ouchSound, byte dieSound, Map* map, world_t* world, Guy* goodguy);
+void WanderAI(Guy* me, int speed, int wanderRate, int wanderTime, int unWanderRate, Map* map, world_t* world, Guy* goodguy);
 
 // ai functions for each monster type
 void AI_Bonehead(Guy *me,Map *map,world_t *world,Guy *goodguy);

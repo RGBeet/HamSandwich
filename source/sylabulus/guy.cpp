@@ -992,6 +992,33 @@ void Guy::MonsterControl(Map *map,world_t *world)
 		aiFunc(this,map,world,target);
 }
 
+void Guy::GetHealed(byte damage, Map* map, world_t* world, bool bypassInvincible)
+{
+	if (profile.difficulty == DIFFICULTY_NORMAL && damage > 0)
+	{
+		if (friendly)
+			damage = damage * 2;
+		else
+			damage = damage / 2;
+		if (damage == 0)
+			damage = 1;
+	}
+	if (profile.difficulty == DIFFICULTY_LUNATIC && damage > 0)
+	{
+		if (friendly)
+			damage = damage / 2;
+		else
+			damage = damage * 2;
+		if (damage == 0)
+			damage = 1;
+	}
+
+	ouch = 4;
+	hp += damage;
+	if (hp > maxHP)
+		hp = maxHP;
+}
+
 void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world, bool bypassInvincible)
 {
 	int formerHP,newHP;
@@ -1208,22 +1235,36 @@ byte CheckMonsterType(Guy* g, int x, int y, int type)
 	if (EntityIsNoneOrNobody(g->type) || (x != 255 && (g->mapx!=x || g->mapy!=y)))
 		return 0;
 	
-	switch (g->type)
+	switch (type)
 	{
 		case MONS_ANYBODY:
+			printf("Anybody...\n");
 			return 1; // can be anybody
+			break;
 		case MONS_GOODGUY:
+			printf("Goodguy...\n");
 			return (g->friendly==1);
+			break;
 		case MONS_BADGUY:
+			printf("Badguy...\n");
 			return (g->friendly==0);
+			break;
 		case MONS_NONPLAYER:
+			printf("Non-Player...\n");
 			return (g->aiType!=MONS_BOUAPHA); // NOT the player
+			break;
 		case MONS_PLAYER:
+			printf("Player...\n");
 			return (g->aiType==MONS_BOUAPHA); // IS the player
+			break;
 		case MONS_TAGGED:
+			printf("Tagged...\n");
 			return (g==TaggedMonster()); // is tagged entity
+			break;
 		default:
+			printf("Regular...\n");
 			return (g->type == type);
+			break;
 	}
 }
 
@@ -2031,14 +2072,29 @@ Guy *FindVictim(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t
 		{
 			if(CheckHit(size,x,y,&guys[i]))
 			{
-				// stained glass knight blocking will reflect hits
-				if(guys[i].aiType==MONS_KNIGHT && guys[i].seq==ANIM_A2 && guys[i].frm>2)
+				switch(guys[i].aiType)
 				{
-					MakeSound(SND_GLASSBLOCK,x<<FIXSHIFT,y<<FIXSHIFT,SND_CUTOFF,1200);
-					ReflectShot();
+					case MONS_KNIGHT:
+						MakeSound(SND_GLASSBLOCK, x << FIXSHIFT, y << FIXSHIFT, SND_CUTOFF, 1200);
+						ReflectShot();
+						break;
+					case MONS_TSUCHIZOID:
+						PrimaryWeaponCheck();
+						if (damage > 0)
+						{
+							guys[i].GetShot(dx, dy, damage, map, world);
+							guys[i].mind2 += damage/2;
+						}
+						break;
+					case MONS_NASTYTREE:
+						if(guys[i].mind>0)
+							guys[i].GetShot(dx, dy, damage, map, world);
+						break;
+					default:
+						if (damage > 0)
+							guys[i].GetShot(dx, dy, damage, map, world);
+						break;
 				}
-				else if(damage>0)
-					guys[i].GetShot(dx,dy,damage,map,world);
 				return &guys[i];
 			}
 		}

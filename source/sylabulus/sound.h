@@ -52,8 +52,8 @@
 // scary bat
 #define SND_BATEYES		38
 #define SND_BATDIVE		39
-#define SND_BATOUCH		40
-#define SND_BATDIE		41
+#define SND_BATDIE		40
+#define SND_BATOUCH		41
 // eensy weensy spider
 #define SND_SPD1OUCH	42
 #define SND_SPD1DIE		43
@@ -470,6 +470,8 @@
 
 #define SND_RICHIEOUCH			571
 #define SND_RICHIEDIE			572
+#define SND_SPIKECLANK			573		// when a spikeball roll
+#define SND_SPIKEBOUNCE			574		// when a spikeball hit wall
 
 #define MAX_SOUNDS				1024	// doesn't mean a thing lol
 

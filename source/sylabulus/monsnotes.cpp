@@ -1459,7 +1459,7 @@ char monsNotes[NUM_MONSTERS][512]={
 	"I especially like their angry face.",
 	// hardhat
 	"What's a mustached construction worker doing in Japan!? Gentrification! Really though, this guy's mostly a nod to one "
-	"of Hamumu's many ninja-themed games - Hitsuji: Shears of Fury. They throw tools and offer a nice side of thematic"
+	"of Hamumu's many ninja-themed games - Hitsuji: Shears of Fury. They throw tools and offer a nice side of thematic "
 	"juxtaposition.",
 	// pelican
 	"If the fat crow can't, the Pelican!",
@@ -1477,7 +1477,7 @@ char monsNotes[NUM_MONSTERS][512]={
 	"from other Zoids with its agility and venomous bite - just like the yokai, but in Zoid form! They also resist hammers, "
 	"so make sure to give the player some special weapons if you use them. They're tough!!",
 	// yojimbo
-	"Yes, this guy is a nod to the series Usagi Yojimbo. While I've never read the comic, I really like the character and "
+	"Yes, this guy is a direct reference to the series Usagi Yojimbo. While I've never read the comic, I really like the character and "
 	"admire the creator's dedication to teaching Japanese history in such a creative manner. Jimbo serves nobody, but he'll "
 	"help you keep the peace with his kunai and wakizashi. His favorite dish is pumpkin soup.",
 	// umbrello
@@ -1528,14 +1528,23 @@ char monsNotes[NUM_MONSTERS][512]={
 	"Not to be confused with Hamumu user and worldbuilder PurpleKoopa. The Purple Kaptana continues the trend of "
 	"violet enemies being dangerous, using the same homing bullets spewed by the Eyeball Tree.",
 	// greater cryozoid
-	"???",
+	"While Supreme with Cheese showed the full Aquazoid body, we never got to see the land-dwelling Zoids. I don't "
+	"believe they'd have short stubby bodies. It's not practical! This Cryozoid variant takes that unanswered question. "
+	"Bit of a stretch with the non-serpent characteristics, but hey - he looks cool.",
 	// flamingo
 	"???",
 	// croquet ball
 	"???",
 	// nasty tree
-	"???",
+	"I couldn't resist inserting a Crystal Castles reference, so here comes Nasty Tree! These guys are meant to look "
+	"like actual trees, as sort of a cruel trick. However, observant players might notice they subtly shake as "
+	"you get near their activation distance.",
 	// spike ball
+	"A combination of several spherical enemies from other games. I find they're more dangerous in larger rooms given"
+	"their tendency to accelerate to an alarming degree. ",
+	// peabrain
+	"They might not ride chickens, but they're annoying nonetheless!",
+	// babybones
 	"???",
 };
 

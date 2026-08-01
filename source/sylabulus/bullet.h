@@ -140,7 +140,7 @@ void FireExactBullet(int x, int y, int z, int dx, int dy, int dz, byte anim, byt
 void HammerLaunch(int x, int y, byte facing, byte count, HammerFlags flags);
 byte Bulletable(Map *map, int x, int y);
 void BulletRanOut(bullet_t *me, Map *map, world_t *world); // prototyped for interior use
-void ReflectShot(void);
+
 void BulletSwap(int sx, int sy, int width, int height, int dx, int dy);
 void SpitAcid(int x, int y, byte facing, byte type, byte friendly);
 void FireBulletZ(int x, int y, int z, byte facing, byte type, byte friendly);
@@ -150,6 +150,10 @@ void ReflectBullets(int x, int y, byte size, byte friendly);
 void RemoveOrbiters(int n, byte f, byte t);
 void FireScanShots(Guy *victim);
 void MakeRadar(int rx, int ry, byte w);
+
+void ReflectShot(void);
+void PrimaryWeaponCheck(void);
+
 byte GetBulletAttackType(void);
 
 int CountBullets(byte type);                                     // For specials to check orbiters

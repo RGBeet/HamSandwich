@@ -544,6 +544,35 @@ void FaceGoodguy(Guy *me,Guy *goodguy)
 	}
 }
 
+void FacePoint(Guy* me, int x, int y)
+{
+	if (x < me->x - FIXAMT * 16)
+	{
+		if (y < me->y - FIXAMT * 16)
+			me->facing = 5;
+		else if (y > me->y + FIXAMT * 16)
+			me->facing = 3;
+		else
+			me->facing = 4;
+	}
+	else if (x > me->x + FIXAMT * 16)
+	{
+		if (y < me->y - FIXAMT * 16)
+			me->facing = 7;
+		else if (y > me->y + FIXAMT * 16)
+			me->facing = 1;
+		else
+			me->facing = 0;
+	}
+	else
+	{
+		if (y < me->y - FIXAMT * 16)
+			me->facing = 6;
+		else if (y > me->y + FIXAMT * 16)
+			me->facing = 2;
+	}
+}
+
 int RangeToTarget(Guy *me,Guy *goodguy)
 {
 	return abs(me->x-goodguy->x)+abs(me->y-goodguy->y);

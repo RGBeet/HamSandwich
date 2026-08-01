@@ -47,9 +47,11 @@ constexpr int SPR_GLUESHOT	= 428;
 
 static bullet_t *bullet;
 static sprite_set_t *bulletSpr;
-static byte reflect = 0;
 static byte attackType;
 static int activeBulDX, activeBulDY;
+
+static byte reflect = 0; // used by stan glass to reflect hammer bullets!
+static byte primaryCheck = 0; // used by tsuchizoid to check if the bullet is from a primary weapon
 
 void GetBulletDeltas(int *bdx,int *bdy)
 {
@@ -857,7 +859,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 		case BLT_LUNA:
 		case BLT_LUNA2:
 		case BLT_BIGSHELL:
-			if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,12,me->dx,me->dy,5,map,world,me->friendly))
+			if(Guy *g = FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,12,me->dx,me->dy,5,map,world,me->friendly))
 			{
 				if(!reflect)
 				{
@@ -873,6 +875,31 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 					me->dx=Cosine(me->facing*32)*12;
 					me->dy=Sine(me->facing*32)*12;
 					me->timer+=10;
+				}
+				if(primaryCheck)
+				{
+					if(g->aiType == MONS_TSUCHIZOID)
+					{
+						g->mind2 += 30;	// make him angry]
+						if (g->mind2 > 60) // pursuit mode
+						{
+							g->mind2 = 0;
+							g->mind = 2;
+						}
+						MakeSound(SND_CLANG, me->x, me->y, SND_CUTOFF, 900);
+						g->GetHealed(3, map, world, false);
+						if(me->facing%2==1)
+						{
+							if (!Random(2))
+								me->facing = (me->facing + 2) & 7;
+							else
+								me->facing = (me->facing - 2) & 7;
+						}
+						else
+							me->facing = (me->facing + 4) & 7;
+						me->dx = Cosine(me->facing * 32) * 12;
+						me->dy = Sine(me->facing * 32) * 12;
+					}
 				}
 			}
 			break;
@@ -3098,6 +3125,11 @@ void ShroomSpew(int x,int y,byte facing,byte count,byte flags)
 void ReflectShot(void)
 {
 	reflect=1;
+}
+
+void PrimaryWeaponCheck(void)
+{
+	primaryCheck=1;
 }
 
 void BulletSwap(int sx,int sy,int width,int height,int dx,int dy)

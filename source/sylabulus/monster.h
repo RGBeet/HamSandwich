@@ -430,5 +430,5 @@ void FaceGoodguy2(Guy *me,Guy *goodguy);
 void FaceGoodguy3(Guy *me,Guy *goodguy);
 int RangeToTarget(Guy *me,Guy *goodguy);
 void FlailLock(Guy *me);
-
+void FacePoint(Guy* me, int x, int y);
 #endif
