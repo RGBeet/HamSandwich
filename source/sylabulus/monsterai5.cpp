@@ -974,32 +974,21 @@ void AI_Gingersnap(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	if (me->mind == 0)
 	{
 		me->mind	= 1;
-		me->mind2	= me->mapx;
+		me->mind2	= me->mapx-4;
 		me->mind3	= me->mapy;
-		me->facing	= 64;
 	}
 	else if (me->mind == 1)
 	{
-		const int radius = 64;
+		x = (me->mind2 << FIXSHIFT) + Cosine(me->mind1) * 60;
+		y = (me->mind3 << FIXSHIFT) + Sine(me->mind1) * 60;
 
-		int targetX = (me->mind2 << FIXSHIFT);
-		int targetY = (me->mind3 << FIXSHIFT) + radius * FIXAMT;
-
-		me->dy = FIXAMT * 4;
-
-		// Close enough to begin orbiting?
-		if (abs(me->x - targetX) + abs(me->y - targetY) < 8 * FIXAMT)
-			me->mind = 2;
-	}
-	else if (me->mind == 2)
-	{
-		const int radius = 64;
-		const int turnSpeed = 2;
-
-		me->facing = (me->facing + turnSpeed)&255;
-
-		me->dx = Cosine(me->facing) * 4;
-		me->dy = Sine(me->facing) * 4;
+		if (!me->reload && me->CanWalk(x,y,map,world))
+		{
+			me->x = x;
+			me->y = y;
+			me->mind1 = (me->mind1+4)&255;
+			me->reload = 1;
+		}
 	}
 }
 

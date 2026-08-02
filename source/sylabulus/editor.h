@@ -38,6 +38,7 @@ enum : byte
 	EDITMODE_PICKTRG,
 	EDITMODE_PICKEFF,
 	EDITMODE_SPCLGLOBAL,
+	EDITMODE_MARKER,
 };
 
 extern byte editing;
