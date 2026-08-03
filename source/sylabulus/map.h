@@ -5,6 +5,7 @@
 #include "tile.h"
 #include "items.h"
 #include "special.h"
+#include "marker.h"
 #include "string_extras.h"
 #include "bitflags.h"
 #include "pathfinding.h"
@@ -158,6 +159,7 @@ class Map
 		word itemDrops;	// how often items drop, a fixshifted percent
 		std::array<mapBadguy_t, MAX_MAPMONS> badguy;
 		std::array<special_t, MAX_SPECIAL> special;
+		std::array<marker_t, MAX_MARKER> marker;
 
 	private:
 		void LOSPoints(int x,int y,int curx,int cury,int *p1x,int *p1y,int *p2x,int *p2y);

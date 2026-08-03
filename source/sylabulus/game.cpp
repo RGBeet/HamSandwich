@@ -4,6 +4,7 @@
 #include "chat.h"
 #include "rage.h"
 #include "special.h"
+#include "marker.h"
 #include "progress.h"
 #include "editor.h"
 #include "hiscore.h"
@@ -156,6 +157,7 @@ byte InitLevel(byte map)
 	GetSpecialsFromMapAndWorld(curMap->special, curWorld.special);
 
 	InitSpecialsForPlay();
+
 	PlaySong(curMap->song);
 
 	ScoreEvent(SE_INIT,curMap->width*curMap->height);
@@ -300,6 +302,7 @@ TASK(byte) LunaticRun(int *lastTime)
 					UpdateItems();
 					UpdateBullets(curMap,&curWorld);
 					CheckSpecials(curMap);
+					CheckMarkers(curMap);
 				}
 			}
 			else

@@ -40,8 +40,13 @@ Map::Map(byte width, byte height, const char *name)
 	strcpy(song,"");
 	flags={};
 	badguy.fill({});
+
 	special.fill({});
 	InitSpecials(special);
+	
+	marker.fill({});
+	InitMarkers(marker);
+	
 	numBrains=0;
 	numCandles=0;
 	itemDrops=5*FIXAMT;
@@ -61,8 +66,9 @@ Map::Map(const Map *m)
 	map=(mapTile_t *)calloc(sizeof(mapTile_t)*width*height,1);
 	memcpy(map,m->map,sizeof(mapTile_t)*width*height);
 
-	badguy = m->badguy;
+	badguy 	= m->badguy;
 	special = m->special;
+	marker 	= m->marker;
 }
 
 Map::~Map(void)
@@ -755,6 +761,23 @@ void Map::Swap(int sx,int sy,int blkwidth,int blkheight,int dx,int dy)
 
 	// move all specials that are in the target zone
 	for (special_t &spcl : special)
+	{
+		if(spcl.x>=sx && spcl.y>=sy && spcl.x<sx+blkwidth && spcl.y<sy+blkheight)
+		{
+			spcl.x=spcl.x-sx+dx;
+			spcl.y=spcl.y-sy+dy;
+			AdjustSpecialCoords(&spcl,-sx+dx,-sy+dy);
+		}
+		else if(spcl.x>=dx && spcl.y>=dy && spcl.x<dx+blkwidth && spcl.y<dy+blkheight)
+		{
+			spcl.x=spcl.x+sx-dx;
+			spcl.y=spcl.y+sy-dy;
+			AdjustSpecialCoords(&spcl,sx-dx,sy-dy);
+		}
+	}
+	
+	//and move markers
+	for (marker_t &mrkr : markers)
 	{
 		if(spcl.x>=sx && spcl.y>=sy && spcl.x<sx+blkwidth && spcl.y<sy+blkheight)
 		{

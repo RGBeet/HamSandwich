@@ -44,18 +44,16 @@ void MarkerTool::StartPlop(void)
 	if (lastX < 0 || lastY < 0 || lastX >= m->width || lastY >= m->height)
 		return;
 
-	int s = GetSpecial((byte)lastX, (byte)lastY);
+	int s = GetMarker((byte)lastX, (byte)lastY);
 	if (s == -1)
 	{
-		s = NewSpecial((byte)lastX, (byte)lastY);
+		s = NewMarker((byte)lastX, (byte)lastY);
 		if (s == -1)
 		{
 			MakeNormalSound(SND_BOMBBOOM);
 			return;
 		}
 	}
-
-	SetGlobalState(0); // not global, local!
 	SpecialEdit_Init(s);
 	SetEditMode(EDITMODE_SPECIAL);
 }
