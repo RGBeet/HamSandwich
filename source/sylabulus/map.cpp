@@ -1652,39 +1652,32 @@ PathNode* Map::GetNode(int x, int y)
 	return &nodes[y*width+x];
 }
 
-bool Map::CanSeePath(int x1, int y1, int x2, int y2)
+bool Map::CanSeePath(Guy* me, world_t* world, int x1, int y1, int x2, int y2)
 {
-	int dx = abs(x2 - x1);
-	int dy = abs(y2 - y1);
+	int startX = (x1 * TILE_WIDTH + TILE_WIDTH / 2) << FIXSHIFT;
+	int startY = (y1 * TILE_HEIGHT + TILE_HEIGHT / 2) << FIXSHIFT;
 
-	int sx = (x1 < x2) ? 1 : -1;
-	int sy = (y1 < y2) ? 1 : -1;
+	int endX = (x2 * TILE_WIDTH + TILE_WIDTH / 2) << FIXSHIFT;
+	int endY = (y2 * TILE_HEIGHT + TILE_HEIGHT / 2) << FIXSHIFT;
 
-	int err = dx - dy;
+	int dx = endX - startX;
+	int dy = endY - startY;
 
-	while (true)
+	int dist = std::max(abs(dx), abs(dy));
+
+	if (dist == 0)
+		return true;
+
+	// Sample every 4 pixels
+	int step = 4 * FIXAMT;
+
+	for (int d = 0; d <= dist; d += step)
 	{
-		PathNode* node = GetNode(x1, y1);
+		int px = startX + dx * d / dist;
+		int py = startY + dy * d / dist;
 
-		if (!node || !node->walkable)
+		if (!me->CanWalkPath(px, py, this, world))
 			return false;
-
-		if (x1 == x2 && y1 == y2)
-			break;
-
-		int e2 = 2 * err;
-
-		if (e2 > -dy)
-		{
-			err -= dy;
-			x1 += sx;
-		}
-
-		if (e2 < dx)
-		{
-			err += dx;
-			y1 += sy;
-		}
 	}
 
 	return true;

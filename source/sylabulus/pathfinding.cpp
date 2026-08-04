@@ -92,7 +92,8 @@ void Pathfinder::BuildPath(PathNode* endNode, std::vector<PathNode*>& path)
 	std::reverse(path.begin(),path.end());
 }
 
-bool Pathfinder::FindPath(Guy *me, int startX, int startY, int endX, int endY, std::vector<PathNode*>& path)
+// Returns whether the pathfinder found a path for the guy.
+bool Pathfinder::FindPath(Guy* me, int startX, int startY, int endX, int endY, std::vector<PathNode*>& path)
 {
 	if (!map)
 	{
@@ -104,31 +105,39 @@ bool Pathfinder::FindPath(Guy *me, int startX, int startY, int endX, int endY, s
 	ResetNodes(map);
 
 	PathNode* startNode = map->GetNode(startX, startY);
-	PathNode* endNode	= map->GetNode(endX, endY);
+	PathNode* endNode = map->GetNode(endX, endY);
 
-	if (!startNode || !endNode || !endNode->walkable)
+	if (!startNode || !endNode)
 		return false;
+
+	// Make sure the monster can actually stand at the start/end
+	if (!startNode->CanFit(me, map, world) ||
+		!endNode->CanFit(me, map, world))
+	{
+		return false;
+	}
 
 	std::priority_queue<PathNode*, std::vector<PathNode*>, CompareNodes> openSet;
 
-	startNode->gcost	= 0;
-	startNode->hcost	= Heuristic(startX, startY, endX, endY);
-	startNode->fcost	= startNode->gcost + startNode->hcost; // ???
-	startNode->opened	= true;
+	startNode->gcost = 0;
+	startNode->hcost = Heuristic(startX, startY, endX, endY);
+	startNode->fcost = startNode->gcost + startNode->hcost;
+	startNode->opened = true;
 
 	openSet.push(startNode);
 
 	const int offsets[8][2] =
 	{
-		{ 1, 0},
-		{ 1, 1},
-		{ 0, 1},
-		{-1, 1},
-		{-1, 0},
-		{-1,-1},
-		{ 0,-1},
-		{ 1,-1}
+		{ 1, 0},   // right
+		{ 1, 1},   // down-right
+		{ 0, 1},   // down
+		{-1, 1},   // down-left
+		{-1, 0},   // left
+		{-1,-1},   // up-left
+		{ 0,-1},   // up
+		{ 1,-1}    // up-right
 	};
+
 
 	while (!openSet.empty())
 	{
@@ -140,52 +149,64 @@ bool Pathfinder::FindPath(Guy *me, int startX, int startY, int endX, int endY, s
 
 		current->closed = true;
 
+
 		if (current == endNode)
 		{
 			BuildPath(endNode, path);
 			return true;
 		}
 
+
 		for (int i = 0; i < 8; i++)
 		{
 			int nx = current->x + offsets[i][0];
 			int ny = current->y + offsets[i][1];
 
-			PathNode* neighbor	= map->GetNode(nx, ny);
-			byte canWalk		= me->CanWalk(nx, ny, map, world);
+			PathNode* neighbor = map->GetNode(nx, ny);
 
-			if (!neighbor || !neighbor->walkable || neighbor->closed)
+			if (!neighbor || neighbor->closed)
 				continue;
 
-			// Only check when moving diagonally
+
+			// Check if monster can actually fit there
+			if (!neighbor->CanFit(me, map, world))
+				continue;
+
+
+			// Prevent diagonal corner cutting
 			if (nx != current->x && ny != current->y)
 			{
-				PathNode* horizontal	= map->GetNode(nx, current->y);
-				PathNode* vertical		= map->GetNode(current->x, ny);
+				PathNode* horizontal = map->GetNode(nx, current->y);
+				PathNode* vertical = map->GetNode(current->x, ny);
 
-				// Prevent cutting through corners
-				if (!horizontal || !vertical ||
-					!horizontal->walkable ||
-					!vertical->walkable)
+				if (!horizontal || !vertical)
+					continue;
+
+				if (!horizontal->CanFit(me, map, world) ||
+					!vertical->CanFit(me, map, world))
 				{
 					continue;
 				}
 			}
 
+
 			int newCost = current->gcost + MovementCost(current, neighbor);
+
 
 			if (neighbor->opened && newCost >= neighbor->gcost)
 				continue;
 
-			neighbor->gcost		= newCost;
-			neighbor->hcost		= Heuristic(nx, ny, endX, endY);
-			neighbor->fcost		= neighbor->gcost + neighbor->hcost;
 
-			neighbor->parent	= current;
-			neighbor->opened	= true;
+			neighbor->gcost = newCost;
+			neighbor->hcost = Heuristic(nx, ny, endX, endY);
+			neighbor->fcost = neighbor->gcost + neighbor->hcost;
+
+			neighbor->parent = current;
+			neighbor->opened = true;
 
 			openSet.push(neighbor);
 		}
 	}
-	return false; // No path found
+
+	return false;
 }

@@ -2186,12 +2186,12 @@ void AI_Mush(Guy* me, Map* map, world_t* world, Guy* goodguy)
 				me->dx = 0;
 				me->dy = 0;
 				me->reload = 0;
-				me->mind = 2;		// destroy bouapha
+				me->mind = 3;		// destroy bouapha
 				me->facing = 2;	// angry animation ONLY works from forward (memory saver)
 			}
 		}
 	}
-	else if (me->mind == 2)		// when mind=2, hold still and go off on Bouapha
+	else if (me->mind == 3)		// when mind=3, hold still and go off on Bouapha
 	{
 		if (goodguy)
 		{
@@ -2243,23 +2243,42 @@ void AI_Mush(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			// just sit there
 		}
 	}
+	else if (me->mind == 2)	// pathfind
+	{
+		if (goodguy)
+		{
+			me->UpdatePathfinding(map, world, 8, (goodguy->x >> FIXSHIFT)/TILE_WIDTH, (goodguy->y >> FIXSHIFT)/TILE_HEIGHT);
+
+			if (me->GetPathDistance() < 60 * FIXAMT && !Random(8) && map->FindGuy(me->mapx, me->mapy, 8, goodguy))
+				me->mind = 3; // in range, start killing
+
+			me->AvoidGuys();
+			StartMoveAnimation(me, 128);
+		}
+		else
+			me->mind = 0;
+	}
 	else if (me->mind == 1)	// chase down Bouapha
 	{
 		if (goodguy)
 		{
-			FaceGoodguy2(me, goodguy);
-
-			me->dx = Cosine(me->facing * 32) * 8;
-			me->dy = Sine(me->facing * 32) * 8;
-			if (me->seq != ANIM_MOVE)
+			if (!map->CheckLOS(me->x, me->y, 15, goodguy->x, goodguy->y))
 			{
-				me->seq = ANIM_MOVE;
-				me->frm = 0;
-				me->frmTimer = 0;
-				me->frmAdvance = 128;
+				if (me->mind2++ > 9)
+				{
+					me->mind2 = 0;
+					me->mind = 2; // pathfinding time!
+				}
 			}
+			else if (me->mind2)
+				me->mind2--;
+
+			FaceGoodguy2(me, goodguy);
+			SetMoveFacing(me, 8);
+			StartMoveAnimation(me, 128);
+
 			if (RangeToTarget(me, goodguy) < 200 * FIXAMT)
-				me->mind = 2;	// in range, start killin'
+				me->mind = 3;	// in range, start killin'
 		}
 		else
 			me->mind = 0;
@@ -2626,7 +2645,7 @@ void AI_SuperZombie(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		if (me->ouch)
 			me->mind = 1;
 	}
-	else if (me->mind == 2)		// when mind=2, hold still and go off on Bouapha
+	else if (me->mind == 3)		// when mind=3, hold still and go off on Bouapha
 	{
 		if (goodguy)
 		{
@@ -2680,24 +2699,58 @@ void AI_SuperZombie(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			// just sit there
 		}
 	}
+	else if (me->mind == 2)	// pathfind
+	{
+		if (goodguy)
+		{
+			bool result = me->UpdatePathfinding(map, world, 4, (goodguy->x >> FIXSHIFT) / TILE_WIDTH, (goodguy->y >> FIXSHIFT) / TILE_HEIGHT);
+
+			if (me->GetPathDistance() < 60 * FIXAMT && !Random(8) && map->FindGuy(me->mapx, me->mapy, 8, goodguy))
+				me->mind = 3; // in range, start killing
+
+			me->AvoidGuys();
+			if (result) // stand still!
+			{
+				StartMoveAnimation(me, 128);
+				if (me->mind2)
+					me->mind2=0;
+			}
+			else
+			{
+				if (me->mind2++ > 19)
+				{
+					me->mind2 = 0;
+					me->mind = 0; // done for now
+				}
+				StartIdleAnimation(me, 128);
+				SetMoveFacing(me, 0); // still
+			}
+		}
+		else
+			me->mind = 0;
+	}
 	else if (me->mind == 1)	// chase down Bouapha
 	{
 		if (goodguy)
 		{
-			FaceGoodguy2(me, goodguy);
-
-			me->dx = Cosine(me->facing * 32) * 4;
-			me->dy = Sine(me->facing * 32) * 4;
-			if (me->seq != ANIM_MOVE)
+			if (!map->CheckLOS(me->x, me->y, 15, goodguy->x, goodguy->y))
 			{
-				me->seq = ANIM_MOVE;
-				me->frm = 0;
-				me->frmTimer = 0;
-				me->frmAdvance = 128;
+				if (me->mind2++ > 9)
+				{
+					me->mind2 = 0;
+					me->mind = 2; // pathfinding time!
+				}
 			}
+			else if (me->mind2)
+				me->mind2--;
+
+			FaceGoodguy2(me, goodguy);
+			SetMoveFacing(me, 4);
+			StartMoveAnimation(me, 128);
+
 			if (RangeToTarget(me, goodguy) < 128 * FIXAMT && me->mind1 == 0)
 			{
-				me->mind = 2;	// in range, start killin'
+				me->mind = 3;	// in range, start killin'
 				me->mind1 = 8;
 			}
 			else if (Random(64) == 0)

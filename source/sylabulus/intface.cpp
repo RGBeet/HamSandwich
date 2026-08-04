@@ -1130,6 +1130,10 @@ void UpdateInterface(Map *map)
 					intf[i].vDesired=curMonsLife*intf[i].valueLength/128;
 					intf[i].value=curMonsLife*intf[i].valueLength/128;
 					intf[i].ty=GetDisplayMGL()->GetHeight()-1;
+					if (!monsTimer)
+					{
+						SetInterfaceEnemy(nullptr);
+					}
 				}
 				else
 				{

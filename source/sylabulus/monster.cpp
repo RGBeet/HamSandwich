@@ -319,6 +319,170 @@ const sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing)
 
 std::unique_ptr<sprite_set_t>* intFace = GetIntfaceSpriteSet();
 
+
+void DrawMe(Guy* g, const sprite_set_t* set) {
+	const sprite_t* curSpr;
+	int v;
+	int intfx = 0;
+	int intfoffset = 0;
+	word type = (word)g->type;
+	byte shld;
+
+	if (g->aiType == MONS_BOUAPHA)
+	{
+		if (player.weapon == WPN_PWRARMOR)
+			type = MONS_PWRBOUAPHA;
+		else if (player.weapon == WPN_MINISUB)
+			type = MONS_PWRBOUAPHA;
+		else if (type == MONS_BOUAPHA)
+		{
+			if (player.playAs == PLAY_LUNATIC)
+				type = MONS_DRL;
+			else if (player.playAs == PLAY_HAPPY)
+				type = MONS_STICKMAN;
+			else if (player.playAs == PLAY_MECHA)
+				type = MONS_PLAYMECHA;
+			else if (player.playAs == PLAY_SHROOM)
+				type = MONS_PLAYSHROOM;
+			else if (player.playAs == PLAY_LUNACHIK)
+				type = MONS_LUNACHICK;
+		}
+	}
+
+	LoadMySprite(type);
+
+	if (set == NULL)
+		set = monsType[type].spr;
+
+	v = monsType[type].anim[g->seq][g->frm];
+
+	if (editing)
+	{
+		if (g->type >= MONS_SUCKER1 && g->type <= MONS_BLOWER4 && g->seq == ANIM_IDLE && g->frm == 0) // suckers and blowers are visible in editor
+			v = 0;
+	}
+
+	if (v == FRAME_INVIS || v == FRAME_END) // 255 = end of frame
+		return;	// don't draw this frame
+
+	if (!(monsType[g->type].flags & MF_ONEFACE))
+		v += g->facing * monsType[type].framesPerDir;
+
+
+	if ((type == MONS_BOUAPHA && PlayerHasHammer()) || type == MONS_EVILCLONE) // hammer man uses hammer sprites
+		v += 8 * monsType[type].framesPerDir;
+
+
+
+
+	if (g->type == MONS_BOUAPHA) // do player stuff
+	{
+		// energy shield
+		shld = PlayerShield();
+		if (shld > 0 && (shld > 16 || shld % 2 != 0))
+		{
+			curSpr = monsType[MONS_BOUAPHA].spr->GetSprite(464 + (shld & 7)); // account for shield
+		}
+		else
+		{
+			curSpr = set->GetSprite(v);
+		}
+
+		if (curSpr == NULL)
+			return;
+
+		if (!(monsType[type].flags & MF_NOSHADOW))
+			SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, 0, 255, 0, curSpr, DISPLAY_DRAWME | DISPLAY_SHADOW);
+
+		if (shld) // energy shield
+			SprDraw(g->x >> FIXSHIFT, (g->y >> FIXSHIFT) + 1, 1 + (g->z >> FIXSHIFT), 255, g->bright, curSpr, DISPLAY_DRAWME | DISPLAY_GLOW);
+
+		// invisibility
+		shld = player.invisibility;
+		if (shld > 0 && (shld > 16 || shld%2!=0))
+		{
+			SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 255, g->bright, curSpr, DISPLAY_DRAWME | DISPLAY_GLOW);
+			return;
+		}
+	}
+
+	if (monsType[type].flags&MF_FACECMD) // used for one-directional monsters
+		v += g->facing;
+
+	curSpr = set->GetSprite(v);
+
+	if (!curSpr)
+		return;
+
+	if (!(monsType[type].flags & MF_NOSHADOW))
+		SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, 0, 255, 0, curSpr, DISPLAY_DRAWME | DISPLAY_SHADOW);
+
+	byte bright		= monsType[type].brtChg;
+
+	if (!g->ouch)
+	{
+		if (g->frozen)
+			SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 7, g->bright+bright+4, curSpr, DISPLAY_DRAWME);
+		else if (g->slow)
+			SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 0, g->bright+bright+4, curSpr, DISPLAY_DRAWME);
+		else if (g->ignite)
+			SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 5, g->bright+bright+4, curSpr, DISPLAY_DRAWME);
+		else if (g->poison)
+			SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 1, g->bright+bright+4, curSpr, DISPLAY_DRAWME);
+		else if (!(monsType[type].flags & (MF_GHOST | MF_GLOW)))
+		{
+			byte fromCol = monsType[type].fromCol;
+			byte toCol = monsType[type].toCol;
+			if (fromCol != 255)
+				SprDrawOff(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, fromCol, toCol, g->bright + bright, curSpr, DISPLAY_DRAWME);
+			else
+				SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 255, g->bright, curSpr, DISPLAY_DRAWME);
+		}
+		else if (monsType[type].flags & MF_GHOST)
+			SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 255, g->bright + bright, curSpr, DISPLAY_DRAWME | DISPLAY_GHOST);
+		else if (monsType[type].flags & MF_GLOW)
+			SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 255, g->bright + bright, curSpr, DISPLAY_DRAWME | DISPLAY_GLOW);
+	}
+	else
+	{
+		if (!(monsType[type].flags & (MF_GHOST | MF_GLOW)))
+			SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 4, g->bright, curSpr, DISPLAY_DRAWME);
+		else if (monsType[type].flags & MF_GHOST)
+			SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 4, g->bright + bright, curSpr, DISPLAY_DRAWME | DISPLAY_GHOST);
+		else if (monsType[type].flags & MF_GLOW)
+			SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 4, g->bright + bright, curSpr, DISPLAY_DRAWME | DISPLAY_GLOW);
+	}
+
+	int iconSpacing = 10; // pixels between icons
+	int baseZ = g->z + ((monsType[g->type].height + 8) * FIXAMT);
+	int imgs = 0;
+	int baseX = (g->x >> FIXSHIFT) - (imgs * 16);
+
+	auto DrawStatusIcon = [&](bool active, int sprite)
+	{
+		if (!active)
+			return;
+		SprDraw(
+			baseX + imgs * 16,
+			g->y >> FIXSHIFT,
+			baseZ >> FIXSHIFT,
+			255,
+			0,
+			intFace->get()->GetSprite(sprite),
+			DISPLAY_DRAWME
+		);
+		imgs++;
+	};
+
+	DrawStatusIcon(g->poison, 121);
+	DrawStatusIcon(g->frozen, 122);
+	DrawStatusIcon(g->ignite, 123);
+	DrawStatusIcon(g->slow, 124);
+	DrawStatusIcon(g->weaken, 125);
+	DrawStatusIcon(g->speed, 126);
+	DrawStatusIcon(g->strength, 127);
+}
+
 void MonsterDraw(
 	int x, int y, int z,
 	dword type, bool isBouapha,
@@ -332,6 +496,8 @@ void MonsterDraw(
 {
 	const sprite_t *curSpr;
 	int v;
+	int intfx=0;
+	int intfoffset=0;
 	byte shld;
 
 	// load if not loaded
@@ -364,33 +530,7 @@ void MonsterDraw(
 			return;
 		if(shld)
 			SprDraw(x>>FIXSHIFT,(y>>FIXSHIFT)+1,1+(z>>FIXSHIFT),255,bright,curSpr,DISPLAY_DRAWME|DISPLAY_GLOW);
-		if(frozen)
-		{
-			curSpr=set->GetSprite(v);
-			if(!curSpr)
-				return;
-			if(!(monsType[type].flags&MF_NOSHADOW))
-				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,0,255,0,curSpr,DISPLAY_DRAWME|DISPLAY_SHADOW);
-			if(ouch==0)
-				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,7,bright+4,curSpr,DISPLAY_DRAWME);	// aqua
-			else
-				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,6,bright+8,curSpr,DISPLAY_DRAWME); // purple
-			return;
-		}
-		else if(poison)
-		{
-			curSpr=set->GetSprite(v);
-			if(!curSpr)
-				return;
-			if(!(monsType[type].flags&MF_NOSHADOW))
-				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,0,255,0,curSpr,DISPLAY_DRAWME|DISPLAY_SHADOW);
-			if(ouch==0)
-				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,1,bright-4,curSpr,DISPLAY_DRAWME);	// green
-			else
-				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,5,bright,curSpr,DISPLAY_DRAWME); // yellow
-			return;
-		}
-		else if(player.invisibility)
+		if(player.invisibility)
 		{
 			curSpr=set->GetSprite(v);
 			if(!curSpr)
@@ -450,8 +590,9 @@ void MonsterDraw(
 
 	}
 	if (flags)
-		SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, z >> FIXSHIFT - 1, 255, 0, intFace->get()->GetSprite(120), DISPLAY_DRAWME); // shine an arrow on the guy
+	{
 
+	}
 }
 
 void InstaRenderMonster(int x,int y,dword type,char bright,MGLDraw *mgl)

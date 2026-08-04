@@ -33,10 +33,12 @@ class Guy final
 		void GetHealed(byte damage, Map* map, world_t* world, bool bypassInvincible);
 		void CalculateRect(void);
 		byte IsAwake(void);
-		void SmoothPath(Map* map);
+		void SmoothPath(Map* map, world_t* world);
 
 		// new functions
-		byte IsInterface(void); // returns TRUE if guy's hp is currnetly being displayed on the interface (i.e. a boss)
+		byte IsInterface(void);				// returns TRUE if guy's hp is currnetly being displayed on the interface (i.e. a boss)
+		byte CanWalkPath(int xx, int yy,	// returns TRUE if pathfinding guy can walk path
+			Map* map, world_t* world);
 
 		int x,y,z;
 		int oldx,oldy;
@@ -107,8 +109,13 @@ class Guy final
 		word pathIndex; // current index in the path vector
 		byte pathTimer; // timer for pathfinding updates
 
-		void UpdatePathfinding(Map* map, int endX, int endY);
-		void FollowPath(int speed=4);
+		byte UpdatePathfinding(Map* map, world_t *world,				// updates the pathfinding nodes, returns if there's a path.
+			int speed, int endX, int endY);			
+		bool FollowPath(Map* map, world_t* world, int speed = 4);		// puts the guy on the path, returns 1 if successful
+		int GetPathDistance();
+
+		// new
+		void AvoidGuys();
 };
 
 extern Guy *goodguy;

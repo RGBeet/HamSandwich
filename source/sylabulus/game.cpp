@@ -115,6 +115,11 @@ bool VerifyLevel(Map *map)
 	return false;
 }
 
+dword GetGameClock()
+{
+	return updFrameCount;
+}
+
 byte InitLevel(byte map)
 {
 	PrintToLog("InitLevel",map);

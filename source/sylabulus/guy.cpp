@@ -341,6 +341,65 @@ byte Guy::CanWalk(int xx,int yy,Map *map,world_t *world)
 	return result;
 }
 
+byte Guy::CanWalkPath(int xx, int yy, Map* map, world_t* world)
+{
+	int oldRectx = rectx;
+	int oldRectx2 = rectx2;
+	int oldRecty = recty;
+	int oldRecty2 = recty2;
+
+	// Slightly shrink collision box for navigation
+	// Prevents large enemies from losing all possible paths
+	int shrink = 12;
+
+	rectx += shrink;
+	rectx2 -= shrink;
+	recty += shrink;
+	recty2 -= shrink;
+
+	xx >>= FIXSHIFT;
+	yy >>= FIXSHIFT;
+
+	int mapx1 = (xx + rectx) / TILE_WIDTH;
+	int mapy1 = (yy + recty) / TILE_HEIGHT;
+	int mapx2 = (xx + rectx2) / TILE_WIDTH;
+	int mapy2 = (yy + recty2) / TILE_HEIGHT;
+
+	if (mapx1 < 0 || mapy1 < 0 ||
+		mapx2 >= map->width ||
+		mapy2 >= map->height ||
+		xx < 0 || yy < 0)
+	{
+		rectx = oldRectx;
+		rectx2 = oldRectx2;
+		recty = oldRecty;
+		recty2 = oldRecty2;
+		return 0;
+	}
+
+	for (int i = mapx1; i <= mapx2; i++)
+	{
+		for (int j = mapy1; j <= mapy2; j++)
+		{
+			if (!Walkable(this, i, j, map, world))
+			{
+				rectx = oldRectx;
+				rectx2 = oldRectx2;
+				recty = oldRecty;
+				recty2 = oldRecty2;
+				return 0;
+			}
+		}
+	}
+
+	rectx = oldRectx;
+	rectx2 = oldRectx2;
+	recty = oldRecty;
+	recty2 = oldRecty2;
+
+	return 1;
+}
+
 void Guy::SeqFinished(void)
 {
 	if((seq==ANIM_DIE) || (seq==ANIM_A3 && aiType==MONS_BOUAPHA && player.weapon!=WPN_PWRARMOR && player.weapon!=WPN_MINISUB))
@@ -919,7 +978,8 @@ void Guy::Render(byte light)
 		brtChange2 = 0;
 	}
 
-	MonsterDraw(x,y,z,t2,isBouapha,seq,frm,facing,bright*(light>0),ouch,poison,frozen,fromColor2,toColor2,brtChange2,customSpr.get(),IsInterface());
+	DrawMe(this,customSpr.get());
+
 	if(editing==1 && EditorShowMonsItems())
 	{
 		RenderItem(x>>FIXSHIFT,(y+FIXAMT*2)>>FIXSHIFT,item,bright*(light>0),MAP_SHOWITEMS);
@@ -1635,6 +1695,8 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 			guys[i].mind2=0;
 			guys[i].mind3=0;
 			guys[i].reload=0;
+			guys[i].pathIndex = 0;
+			guys[i].pathTimer = 0;
 
 			guys[i].size = MonsterSize(guys[i].type);
 
@@ -3721,29 +3783,34 @@ byte Guy::IsInterface()
 	return (GetInterfaceEnemy() == this);
 }
 
-void Guy::UpdatePathfinding(Map* map, int endX, int endY)
+byte Guy::UpdatePathfinding(Map* map, world_t* world, int speed, int endX, int endY)
 {
 	if (pathTimer > 0)
+	{
 		pathTimer--;
+	}
 	else
 	{
 		int startX = (this->x >> FIXSHIFT) / TILE_WIDTH;
 		int startY = (this->y >> FIXSHIFT) / TILE_HEIGHT;
 
-		path.clear();
+		std::vector<PathNode*> newPath;
 
-		if (GetPathfinder()->FindPath(this, startX, startY, endX, endY, path))
+		if (GetPathfinder()->FindPath(this, startX, startY, endX, endY, newPath))
 		{
-			SmoothPath(map);
+			path = newPath;
+			//SmoothPath(map, world);
 			pathIndex = 1;
 		}
 		else
 		{
-			printf("NO PATH!\n");
+			//printf("NO PATH! Keeping old path\n");
 		}
-		pathTimer = 5;
+
+		pathTimer = 10;
 	}
-	FollowPath();
+
+	return !path.empty() && FollowPath(map, world, speed);
 }
 
 byte DirectionToPoint(int x1, int y1, int x2, int y2)
@@ -3791,16 +3858,26 @@ byte DirectionToPoint(int x1, int y1, int x2, int y2)
 	}
 }
 
-void Guy::FollowPath(int speed)
+// UPDATE function which does the pathfinding for the guy entity.
+bool Guy::FollowPath(Map* map, world_t* world, int speed)
 {
+
 	if (pathIndex >= path.size())
 	{
+		printf("NO PATH TO FOLLOW: index %d size %d\n", pathIndex, path.size());
+
 		dx = 0;
 		dy = 0;
-		return;
+		return false;
 	}
 
 	PathNode* node = path[pathIndex];
+
+	//printf("Following node %d/%d (%d,%d)\n",
+	//	pathIndex,
+	//	path.size(),
+	//	node->x,
+	//	node->y);
 
 	int targetX = node->x * TILE_WIDTH + TILE_WIDTH / 2;
 	int targetY = node->y * TILE_HEIGHT + TILE_HEIGHT / 2;
@@ -3811,22 +3888,28 @@ void Guy::FollowPath(int speed)
 	int distX = targetX - guyX;
 	int distY = targetY - guyY;
 
-	if (abs(distX) < TILE_WIDTH / 4 &&
-		abs(distY) < TILE_HEIGHT / 4)
+	// Only advance when close to center
+	if (abs(distX) < 4 && abs(distY) < 4)
 	{
+		printf("Reached node, advancing\n");
 		pathIndex++;
-		return;
+		return true;
 	}
 
-	int angle = atan2(distY, distX) * 256 / (2 * 3.14159);
+	int angle = atan2((float)distY, (float)distX) * 256 / (2 * 3.14159f);
 
-	FacePoint(this, targetX<<FIXSHIFT, targetY<<FIXSHIFT);
+	int moveDX = Cosine(angle) * speed;
+	int moveDY = Sine(angle) * speed;
 
-	dx = Cosine(angle) * speed;
-	dy = Sine(angle) * speed;
+	// Let normal collision handle the movement
+	dx = moveDX;
+	dy = moveDY;
+
+	FacePoint(this, targetX << FIXSHIFT, targetY << FIXSHIFT);
+	return true;
 }
 
-void Guy::SmoothPath(Map* map)
+void Guy::SmoothPath(Map* map, world_t *world)
 {
 	if (path.size() < 3)
 		return;
@@ -3842,11 +3925,7 @@ void Guy::SmoothPath(Map* map)
 
 		for (int i = current + 1; i < path.size(); i++)
 		{
-			if (map->CanSeePath(
-				path[current]->x,
-				path[current]->y,
-				path[i]->x,
-				path[i]->y))
+			if (map->CanSeePath(this, world, path[current]->x, path[current]->y, path[i]->x, path[i]->y))
 			{
 				furthest = i;
 			}
@@ -3859,6 +3938,42 @@ void Guy::SmoothPath(Map* map)
 		newPath.push_back(path[furthest]);
 		current = furthest;
 	}
-
 	path = newPath;
+}
+
+
+int Guy::GetPathDistance()
+{
+	int distance = 0;
+	for (int i = 1; i < path.size(); i++)
+	{
+		int dx = abs(path[i]->x - path[i - 1]->x);
+		int dy = abs(path[i]->y - path[i - 1]->y);
+
+		distance += (dx && dy) ? 14 : 10;
+	}
+	return distance;
+}
+
+void Guy::AvoidGuys()
+{
+	for (int i = 0;i < maxGuys;i++)
+	{
+		if (&guys[i] == this)
+			continue;
+
+		if (!guys[i].type || guys[i].hp <= 0)
+			continue;
+
+		int dx = (x - guys[i].x) >> FIXSHIFT;
+		int dy = (y - guys[i].y) >> FIXSHIFT;
+
+		int dist = dx * dx + dy * dy;
+
+		if (dist < 32 * 32)
+		{
+			this->dx += dx;
+			this->dy += dy;
+		}
+	}
 }

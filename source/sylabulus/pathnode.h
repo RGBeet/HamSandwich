@@ -12,6 +12,7 @@ struct PathNode
 	bool walkable;
 	bool opened;
 	bool closed;
+	byte clearance;
 
 	PathNode* parent;
 
@@ -22,6 +23,9 @@ struct PathNode
 		opened = closed = false;
 		parent = nullptr;
 	}
+
+	public:
+		bool CanFit(Guy* guy, Map* map, world_t* world);
 };
 
 #endif

@@ -19,7 +19,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{1,3,1,0,4,6,4,0,1,3,1,0,0,0,26,27,28,255},	// watery death
 				{7,8,9,10,11,12,13,14,15,16,255},	// attack
 				{0,255},
-			},0},
+			},72},
 		{"Bonehead",255,255,0,AI_Bonehead,
 		 8,38,10,50,"graphics/skeleton.jsp",0,{},
 		 MT_SPOOKY|MT_EVIL,
@@ -33,7 +33,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{16,15,14,13,12,11,10,9,8,7,255},	// resurrect=A3
 				{0,255},
 				{0,255},
-			},0},
+			},69},
 		{"Scary Bat",255,255,0,AI_Bat,
 		 8,27,5,25,"graphics/bat.jsp",0,MF_FLYING,
 		 MT_SPOOKY|MT_FLYING|MT_EVIL|MT_ANIMAL,
@@ -411,7 +411,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{27,31,32,33,34,35,34,36,37,36,34,35,34,36,37,36,34,35,34,33,31,27,255},	//A3= grab n' pound
 				{0,255},
 				{0,255},
-			},0},
+			},140},
 		{"Happy Stick Man",255,255,0,AI_StickMan,
 		 16,12,100,1000,"graphics/stickman.jsp",0,MF_ONEFACE,
 		 MT_EVIL|MT_WACKY|MT_MINIBOSS|MT_HUMAN,

@@ -1641,8 +1641,9 @@ void AI_Pathfinder(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	{
 		int px = (goodguy->x >> FIXSHIFT) / TILE_WIDTH;
 		int py = (goodguy->y >> FIXSHIFT) / TILE_HEIGHT;
-		me->UpdatePathfinding(map, px, py);
-		if (RangeToTarget(me, goodguy) <= 256 * FIXAMT && Random(2) == 0 && map->FindGuy(me->mapx,me->mapy,8,goodguy))
+		me->UpdatePathfinding(map, world, 4, px, py);
+
+		if (me->GetPathDistance() < 60 * FIXAMT && Random(8) == 0 && map->FindGuy(me->mapx,me->mapy,8,goodguy))
 		{
 			// back to pursuing!
 			me->mind=0;

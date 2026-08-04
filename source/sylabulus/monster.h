@@ -318,7 +318,7 @@ constexpr byte FRAME_INVIS = 254;
 constexpr byte FRAME_END = 255;
 
 // flags
-enum MonsterFlags_ : word
+enum MonsterFlags_ : dword
 {
 	MF_FLYING     = 1 << 0,
 	MF_WATERWALK  = 1 << 1,
@@ -432,4 +432,6 @@ void FaceGoodguy3(Guy *me,Guy *goodguy);
 int RangeToTarget(Guy *me,Guy *goodguy);
 void FlailLock(Guy *me);
 void FacePoint(Guy* me, int x, int y);
+
+void DrawMe(Guy* g, const sprite_set_t* set);
 #endif

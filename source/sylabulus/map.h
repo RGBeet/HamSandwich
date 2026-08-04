@@ -148,7 +148,7 @@ class Map
 		byte Resize(byte w,byte h);
 
 		byte CompareRegions(int x,int y,int x2,int y2,int tx,int ty,byte checkMons);
-		bool CanSeePath(int x1, int y1, int x2, int y2);
+		bool CanSeePath(Guy* me, world_t* world, int x1, int y1, int x2, int y2);
 
 		byte width,height;
 		mapTile_t *map;
