@@ -7,6 +7,8 @@
 #include "hiscore.h"
 #include "shop.h"
 #include "goal.h"
+#include "pathfinding.h"
+#include "map.h"
 
 static std::unique_ptr<Guy[]> guys;
 static std::unique_ptr<bool[]> changed;
@@ -1622,7 +1624,6 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 			guys[i].frmAdvance=128;
 
 			guys[i].facing = 2;
-			guys[i].direction = 2 * 32;
 
 			guys[i].hp=MonsterHP(type);
 			guys[i].maxHP=guys[i].hp;
@@ -3718,4 +3719,146 @@ void SetSpeedFrames(Guy* g, word frames)
 byte Guy::IsInterface()
 {
 	return (GetInterfaceEnemy() == this);
+}
+
+void Guy::UpdatePathfinding(Map* map, int endX, int endY)
+{
+	if (pathTimer > 0)
+		pathTimer--;
+	else
+	{
+		int startX = (this->x >> FIXSHIFT) / TILE_WIDTH;
+		int startY = (this->y >> FIXSHIFT) / TILE_HEIGHT;
+
+		path.clear();
+
+		if (GetPathfinder()->FindPath(this, startX, startY, endX, endY, path))
+		{
+			SmoothPath(map);
+			pathIndex = 1;
+		}
+		else
+		{
+			printf("NO PATH!\n");
+		}
+		pathTimer = 5;
+	}
+	FollowPath();
+}
+
+byte DirectionToPoint(int x1, int y1, int x2, int y2)
+{
+	int dx = x2 - x1;
+	int dy = y2 - y1;
+
+	int ax = abs(dx);
+	int ay = abs(dy);
+
+	const int diagonalThreshold = 2;
+
+	// Mostly horizontal
+	if (ax > ay * diagonalThreshold)
+	{
+		if (dx > 0)
+			return 0; // right
+		else
+			return 4; // left
+	}
+
+	// Mostly vertical
+	if (ay > ax * diagonalThreshold)
+	{
+		if (dy > 0)
+			return 2; // down
+		else
+			return 6; // up
+	}
+
+	// Diagonal
+	if (dx > 0)
+	{
+		if (dy > 0)
+			return 1; // down-right
+		else
+			return 7; // up-right
+	}
+	else
+	{
+		if (dy > 0)
+			return 3; // down-left
+		else
+			return 5; // up-left
+	}
+}
+
+void Guy::FollowPath(int speed)
+{
+	if (pathIndex >= path.size())
+	{
+		dx = 0;
+		dy = 0;
+		return;
+	}
+
+	PathNode* node = path[pathIndex];
+
+	int targetX = node->x * TILE_WIDTH + TILE_WIDTH / 2;
+	int targetY = node->y * TILE_HEIGHT + TILE_HEIGHT / 2;
+
+	int guyX = x >> FIXSHIFT;
+	int guyY = y >> FIXSHIFT;
+
+	int distX = targetX - guyX;
+	int distY = targetY - guyY;
+
+	if (abs(distX) < TILE_WIDTH / 4 &&
+		abs(distY) < TILE_HEIGHT / 4)
+	{
+		pathIndex++;
+		return;
+	}
+
+	int angle = atan2(distY, distX) * 256 / (2 * 3.14159);
+
+	FacePoint(this, targetX<<FIXSHIFT, targetY<<FIXSHIFT);
+
+	dx = Cosine(angle) * speed;
+	dy = Sine(angle) * speed;
+}
+
+void Guy::SmoothPath(Map* map)
+{
+	if (path.size() < 3)
+		return;
+
+	std::vector<PathNode*> newPath;
+
+	int current = 0;
+	newPath.push_back(path[0]);
+
+	while (current < path.size() - 1)
+	{
+		int furthest = current + 1;
+
+		for (int i = current + 1; i < path.size(); i++)
+		{
+			if (map->CanSeePath(
+				path[current]->x,
+				path[current]->y,
+				path[i]->x,
+				path[i]->y))
+			{
+				furthest = i;
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		newPath.push_back(path[furthest]);
+		current = furthest;
+	}
+
+	path = newPath;
 }

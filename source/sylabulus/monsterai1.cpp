@@ -148,12 +148,10 @@ void AI_Bat(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 	if (me->ouch == 4)
 	{
-		if (me->hp > 0)
-			MakeSound(SND_SKELOUCH, me->x, me->y, SND_CUTOFF, 1200);
-		else
-			MakeSound(SND_SKELDIE, me->x, me->y, SND_CUTOFF, 1200);
+		if (me->hp == 0)
+			MakeSound(SND_BATOUCH, me->x, me->y, SND_CUTOFF, 1200);
 	}
-
+	if (me->action == ACTION_BUSY)
 	{
 		if (me->seq == ANIM_ATTACK && me->frm == 2 && me->reload == 0 && goodguy)
 		{
@@ -4048,13 +4046,9 @@ void AI_Lich(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	if (me->reload)
 		me->reload--;
 
-
 	if (me->ouch == 4)
 	{
-		if (me->hp > 0)
-			MakeSound(SND_RICHIEOUCH, me->x, me->y, SND_CUTOFF, 1200);
-		else
-			MakeSound(SND_RICHIEDIE, me->x, me->y, SND_CUTOFF, 1200);
+		// make noise?
 	}
 
 	if (me->action == ACTION_BUSY)

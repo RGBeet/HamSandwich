@@ -2,6 +2,8 @@
 #include "dialogbits.h"
 #include "editor.h"
 #include "terrainedit.h"
+#include "markeredit.h"
+#include "marker.h"
 
 MarkerTool::MarkerTool(void)
 {
@@ -9,7 +11,7 @@ MarkerTool::MarkerTool(void)
 	lastY = -1;
 }
 
-SpecialTool::~MarkerTool(void)
+MarkerTool::~MarkerTool(void)
 {
 }
 
@@ -54,8 +56,8 @@ void MarkerTool::StartPlop(void)
 			return;
 		}
 	}
-	SpecialEdit_Init(s);
-	SetEditMode(EDITMODE_SPECIAL);
+	MarkerEdit_Init(s);
+	SetEditMode(EDITMODE_MARKER);
 }
 
 void MarkerTool::PlopOne(int x, int y)
@@ -104,7 +106,7 @@ void MarkerTool::Erase(void)
 	{
 		if (mapTile_t* target = m->TryGetTile(x, y); target && target->select)
 		{
-			//DeleteSpecial(GetSpecial((byte)x, (byte)y));
+			DeleteMarker(GetMarker((byte)x, (byte)y));
 		}
 
 		MakeNormalSound(SND_MENUCLICK);

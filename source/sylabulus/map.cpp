@@ -777,19 +777,12 @@ void Map::Swap(int sx,int sy,int blkwidth,int blkheight,int dx,int dy)
 	}
 	
 	//and move markers
-	for (marker_t &mrkr : markers)
+	for (marker_t &mrkr : marker)
 	{
-		if(spcl.x>=sx && spcl.y>=sy && spcl.x<sx+blkwidth && spcl.y<sy+blkheight)
+		if(mrkr.x1>=sx && mrkr.y1>=sy && mrkr.x1<sx+blkwidth && mrkr.y1<sy+blkheight)
 		{
-			spcl.x=spcl.x-sx+dx;
-			spcl.y=spcl.y-sy+dy;
-			AdjustSpecialCoords(&spcl,-sx+dx,-sy+dy);
-		}
-		else if(spcl.x>=dx && spcl.y>=dy && spcl.x<dx+blkwidth && spcl.y<dy+blkheight)
-		{
-			spcl.x=spcl.x+sx-dx;
-			spcl.y=spcl.y+sy-dy;
-			AdjustSpecialCoords(&spcl,sx-dx,sy-dy);
+			mrkr.x1=mrkr.x1-sx+dx;
+			mrkr.y1=mrkr.y1-sy+dy;
 		}
 	}
 
@@ -1613,4 +1606,86 @@ byte Map::PushSpecials(int x, int y, int dx, int dy)
 byte MapHasOxygenMechanic(Map *map)
 {
 	return map->flags & (MAP_UNDERWATER | MAP_OXYGEN);
+}
+
+bool CanWalkTile(int x, int y, Map* map, world_t* world)
+{
+	mapTile_t* tile = map->TryGetTile(x, y);
+
+	if (!tile)
+		return false;
+
+	return tile->wall == 0
+		&& !(GetItem(tile->item)->flags & IF_SOLID)
+		&& !(GetTerrain(world, tile->floor)->flags & (TF_SOLID | TF_WATER | TF_LAVA));
+}
+
+void Map::InitPathNodes(world_t* world)
+{
+	int x,y;
+	nodes.resize(width * height);
+
+	for (y = 0;y < height;y++)
+	{
+		for (x = 0; x < height; x++)
+		{
+			PathNode& node = nodes[y * width + x];
+
+			node.x = x;
+			node.y = y;
+
+			node.walkable = CanWalkTile(x, y, this, world);
+			node.parent = nullptr;
+			node.opened = false;
+			node.closed = false;
+			node.gcost = 0;
+			node.hcost = 0;
+			node.fcost = 0;
+		}
+	}
+}
+
+PathNode* Map::GetNode(int x, int y)
+{
+	if (!this || x < 0 || y < 0 || x >= width || y >= height)
+		return nullptr;
+	return &nodes[y*width+x];
+}
+
+bool Map::CanSeePath(int x1, int y1, int x2, int y2)
+{
+	int dx = abs(x2 - x1);
+	int dy = abs(y2 - y1);
+
+	int sx = (x1 < x2) ? 1 : -1;
+	int sy = (y1 < y2) ? 1 : -1;
+
+	int err = dx - dy;
+
+	while (true)
+	{
+		PathNode* node = GetNode(x1, y1);
+
+		if (!node || !node->walkable)
+			return false;
+
+		if (x1 == x2 && y1 == y2)
+			break;
+
+		int e2 = 2 * err;
+
+		if (e2 > -dy)
+		{
+			err -= dy;
+			x1 += sx;
+		}
+
+		if (e2 < dx)
+		{
+			err += dx;
+			y1 += sy;
+		}
+	}
+
+	return true;
 }

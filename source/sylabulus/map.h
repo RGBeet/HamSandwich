@@ -148,6 +148,7 @@ class Map
 		byte Resize(byte w,byte h);
 
 		byte CompareRegions(int x,int y,int x2,int y2,int tx,int ty,byte checkMons);
+		bool CanSeePath(int x1, int y1, int x2, int y2);
 
 		byte width,height;
 		mapTile_t *map;
@@ -160,6 +161,10 @@ class Map
 		std::array<mapBadguy_t, MAX_MAPMONS> badguy;
 		std::array<special_t, MAX_SPECIAL> special;
 		std::array<marker_t, MAX_MARKER> marker;
+
+		std::vector<PathNode> nodes;
+		void InitPathNodes(world_t* world);
+		PathNode* GetNode(int x, int y);
 
 	private:
 		void LOSPoints(int x,int y,int curx,int cury,int *p1x,int *p1y,int *p2x,int *p2y);
@@ -183,6 +188,7 @@ void SpecialAnytimeCheck(Map *map);
 void SpecialKillCheck(Map *map,byte type);
 
 byte MapHasOxygenMechanic(Map *map);
+bool CanWalkTile(int x, int y, Map* map, world_t* world);
 
 void InitStars();
 

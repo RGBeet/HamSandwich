@@ -7,6 +7,7 @@
 #include "editor.h"
 #include "shop.h"
 #include "goal.h"
+#include "map.h"
 
 void AI_Yerfboss(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
@@ -1452,5 +1453,207 @@ void AI_MiniBonehead(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			me->frmTimer=0;
 			me->frmAdvance=192;
 		}
+	}
+}
+
+byte IsTargetVisible(Guy* me, Map* map, Guy* goodguy)
+{
+	if (!goodguy || goodguy->type == MONS_NOBODY)
+		return 0;
+
+	switch (me->facing)
+	{
+	case 0:
+		if (goodguy->mapx > me->mapx && goodguy->mapx - me->mapx < 12)
+		{
+			// on the right side anyway, and within the range
+			if (abs(goodguy->mapy - me->mapy) < 2 + (goodguy->mapx - me->mapx) / (12 / 6))
+			{
+				// within the cone
+				return map->FindGuy(me->mapx, me->mapy, 8, goodguy);
+			}
+		}
+		return 0;
+		break;
+	case 2:
+		if (goodguy->mapy > me->mapy && goodguy->mapy - me->mapy < 12)
+		{
+			// on the right side anyway, and within the range
+			if (abs(goodguy->mapx - me->mapx) < 2 + (goodguy->mapy - me->mapy) / (12 / 6))
+			{
+				// within the cone
+				return map->FindGuy(me->mapx, me->mapy, 8, goodguy);
+			}
+		}
+		return 0;
+		break;
+	case 4:
+		if (goodguy->mapx < me->mapx && -goodguy->mapx + me->mapx < 12)
+		{
+			// on the right side anyway, and within the range
+			if (abs(goodguy->mapy - me->mapy) < 2 + (-goodguy->mapx + me->mapx) / (12 / 6))
+			{
+				// within the cone
+				return map->FindGuy(me->mapx, me->mapy, 8, goodguy);
+			}
+		}
+		return 0;
+		break;
+	case 6:
+		if (goodguy->mapy < me->mapy && -goodguy->mapy + me->mapy < 12)
+		{
+			// on the right side anyway, and within the range
+			if (abs(goodguy->mapx - me->mapx) < 2 + (-goodguy->mapy + me->mapy) / (12 / 6))
+			{
+				// within the cone
+				return map->FindGuy(me->mapx, me->mapy, 8, goodguy);
+			}
+		}
+		return 0;
+		break;
+	}
+	return 0;
+}
+
+void AI_Pathfinder(Guy* me, Map* map, world_t* world, Guy* goodguy)
+{
+	int x, y;
+
+	if (me->reload)
+		me->reload--;
+
+	if (me->ouch == 4)
+	{
+		if (me->hp > 0)
+			MakeSound(SND_SKELOUCH, me->x, me->y, SND_CUTOFF, 1200);
+		else
+			MakeSound(SND_SKELDIE, me->x, me->y, SND_CUTOFF, 1200);
+	}
+
+	if (me->action == ACTION_BUSY)
+	{
+		if (me->seq == ANIM_ATTACK && me->frm == 3 && me->reload == 0 && goodguy)
+		{
+			x = me->x + Cosine(me->facing * 32) * 16;
+			y = me->y + Sine(me->facing * 32) * 16;
+			if (me->AttackCheck(16, x >> FIXSHIFT, y >> FIXSHIFT, goodguy))
+				goodguy->GetShot(Cosine(me->facing * 32) * 4, Sine(me->facing * 32) * 4, 4, map, world);
+			me->reload = 5;
+		}
+		if (me->seq == ANIM_A1 && me->frm == 3 && me->reload == 0 && goodguy)
+		{
+			x = me->x + Cosine(me->facing * 32) * 16;
+			y = me->y + Sine(me->facing * 32) * 16;
+			FireBullet(x, y, me->facing * 32, BLT_ENERGY, me->friendly);
+			me->reload = 5;
+			me->mind1 = 1;
+		}
+		return;	// can't do nothin' right now
+	}
+
+	if (me->mind == 0)		// when mind=0, singlemindedly lumber towards Bouapha
+	{
+		if (goodguy)
+		{
+			if (RangeToTarget(me, goodguy) < (48 * FIXAMT) && Random(8) == 0)
+			{
+				// get him!
+				MakeSound(SND_SKELKICK, me->x, me->y, SND_CUTOFF, 1200);
+				me->seq = ANIM_ATTACK;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 64;
+				me->action = ACTION_BUSY;
+				me->dx = 0;
+				me->dy = 0;
+				me->reload = 0;
+				return;
+			}
+			FaceGoodguy(me, goodguy);
+
+			me->dx = Cosine(me->facing * 32) * 4;
+			me->dy = Sine(me->facing * 32) * 4;
+			if (me->seq != ANIM_MOVE)
+			{
+				me->seq = ANIM_MOVE;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 128;
+			}
+			if (Random(64) == 0)
+			{
+				me->mind = 1;		// occasionally wander
+				me->mind1 = 1;
+			}
+			if (RangeToTarget(me, goodguy) > 256*FIXAMT && Random(2) == 0)
+			{
+				me->mind = 2; // PATHFINDING MODE!
+				printf("Going into pathfinding mode...\n");
+				return;
+			}
+		}
+		else
+		{
+			me->mind = 1;	// if there's no goodguy, get random
+			me->mind1 = 1;
+		}
+	}
+	else if (me->mind == 1)	// random wandering
+	{
+		if (goodguy)
+		{
+			if (RangeToTarget(me, goodguy) < (512 * FIXAMT) && Random(32) == 0)
+			{
+				// spit at him
+				MakeSound(SND_SKELSHOOT, me->x, me->y, SND_CUTOFF, 1200);
+				me->seq = ANIM_A1;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 64;
+				me->action = ACTION_BUSY;
+				me->dx = 0;
+				me->dy = 0;
+				me->reload = 0;
+				FaceGoodguy(me, goodguy);
+				return;
+			}
+		}
+		if (!(me->mind1--))	// time to get a new direction
+		{
+			if ((goodguy) && Random(3) == 0)
+				me->mind = 0;	// get back on track
+			else
+				me->facing = (byte)Random(8);
+			me->mind1 = Random(40) + 1;
+		}
+
+		me->dx = Cosine(me->facing * 32) * 4;
+		me->dy = Sine(me->facing * 32) * 4;
+		if (me->seq != ANIM_MOVE)
+		{
+			me->seq = ANIM_MOVE;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 128;
+		}
+	}
+	else if (me->mind == 2)
+	{
+		int px = (goodguy->x >> FIXSHIFT) / TILE_WIDTH;
+		int py = (goodguy->y >> FIXSHIFT) / TILE_HEIGHT;
+		me->UpdatePathfinding(map, px, py);
+		if (RangeToTarget(me, goodguy) <= 256 * FIXAMT && Random(2) == 0 && map->FindGuy(me->mapx,me->mapy,8,goodguy))
+		{
+			// back to pursuing!
+			me->mind=0;
+		}
+	}
+
+	if (me->seq != ANIM_MOVE)
+	{
+		me->seq = ANIM_MOVE;
+		me->frm = 0;
+		me->frmTimer = 0;
+		me->frmAdvance = 128;
 	}
 }

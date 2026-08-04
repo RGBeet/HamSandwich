@@ -6,6 +6,8 @@
 #define MRK_NONE    0
 #define MRK_PATH    1   //
 
+#define MAX_MARKER 128
+
 struct marker_t
 {
     byte type; //
@@ -26,3 +28,7 @@ void DeleteMarker(int i);
 void SlideMarkers(Map *map,int dx,int dy);
 
 void AdjustMarkerCoords(marker_t *me,int dx,int dy);
+bool CheckMarker(const marker_t& me);
+void CheckMarkers(Map* map);
+
+#endif

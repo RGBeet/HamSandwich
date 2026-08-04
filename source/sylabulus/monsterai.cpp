@@ -81,3 +81,50 @@ void WanderAI(Guy* me, int speed, int wanderRate, int wanderTime, int unWanderRa
 		}
 	}
 }
+
+void StartAnimation(Guy* me, byte seq, byte adv, bool force)
+{
+	if (!force && seq == me->seq) // don't restart the animation if it's already playing
+		return;
+	me->seq			= seq;
+	me->frm			= 0;
+	me->frmTimer	= 0;
+	me->frmAdvance	= adv;
+	if (me->seq > ANIM_MOVE) // animations 2-9 are busy animations, so set the action to busy
+		me->action = ACTION_BUSY;
+	else
+		me->action = ACTION_IDLE;
+}
+
+void SetMoveFacing(Guy* me, int speed)
+{
+	me->dx = Cosine(me->facing * 32) * speed;
+	me->dy = Sine(me->facing * 32) * speed;
+}
+
+void StartMoveAnimation(Guy* me, byte speed)
+{
+	if (me->seq != ANIM_MOVE)
+		StartAnimation(me, ANIM_MOVE, speed);
+}
+
+void StartIdleAnimation(Guy* me, byte speed)
+{
+	if (me->seq != ANIM_IDLE)
+		StartAnimation(me, ANIM_IDLE, speed);
+}
+
+bool IsAnimationFrame(Guy* me, byte seq, byte frame)
+{
+	return me->seq == seq && me->frm == frame;
+}
+
+bool IsAnimationFrames(Guy* me, byte seq, byte frameFirst, byte frameLast)
+{
+	return me->seq == seq && (me->frm >= frameFirst && me->frm <= frameLast);
+}
+
+bool TargetWithinRange(Guy* me, Guy* target, int range)
+{
+	return (abs(me->x - goodguy->x) + abs(me->y - goodguy->y)) <= range * FIXAMT;
+}

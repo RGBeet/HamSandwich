@@ -2673,12 +2673,12 @@ void SpecialEdit_Init(int spclNum)
 
 	if(global==0)
 	{
-		printf("GETTING LOCAL SPECIAL #%03d\n", spclNum);
+		//printf("GETTING LOCAL SPECIAL #%03d\n", spclNum);
 		target = GetSpecial(spclNum);
 	}
 	else
 	{
-		printf("GETTING GLOBAL SPECIAL #%03d\n",spclNum);
+		//printf("GETTING GLOBAL SPECIAL #%03d\n",spclNum);
 		target = GetGlobalSpecial(spclNum);
 		if (target && target->x == 255)
 			target->x = spclNum;
@@ -2686,14 +2686,14 @@ void SpecialEdit_Init(int spclNum)
 
 	if (target != NULL)
 	{
-		printf("TARGET FOUND!\n");
+		//printf("TARGET FOUND!\n");
 		memcpy(&spcl, target, sizeof(special_t));
 		trgStart = effStart = 0;
 		specialNum = spclNum;
 	}
 	else
 	{
-		printf("TARGET NOT FOUND.\n");
+		//printf("TARGET NOT FOUND.\n");
 	}
 	SpecialEditSetupButtons();
 }

@@ -26,8 +26,8 @@ static int numMarkers;                  // Specials >= this aren't set.
 void InitMarkers(std::span<marker_t> list)
 {
 	mrkr = list;
-	numSpecials = 0;
-	for (special_t &me : list)
+	numMarkers = 0;
+	for (marker_t &me : list)
 	{
 		me.x1 = 255;
 	}
@@ -35,10 +35,10 @@ void InitMarkers(std::span<marker_t> list)
 
 int NewMarker(byte x,byte y)
 {
-	for(int i=0;i<(int)spcl.size();i++)
+	for(int i=0;i<(int)mrkr.size();i++)
 		if(mrkr[i].x1==255)
 		{
-			memset(&spcl[i],0,sizeof(marker_t));
+			memset(&mrkr[i],0,sizeof(marker_t));
 			mrkr[i].x1=x;
 			mrkr[i].y1=y;
             mrkr[i].x2=x;
@@ -56,7 +56,7 @@ int GetMarker(byte x,byte y)
 	int i;
 
 	for(i=0;i<numMarkers;i++)
-		if(mrkr[i].x==x && mrkr[i].y==y)
+		if(mrkr[i].x1==x && mrkr[i].y1==y)
 			return i;
 
 	return -1;
@@ -73,10 +73,10 @@ void DeleteMarker(int i)
 
 	if(i>=0 && i<numMarkers)
 	{
-		mrkr[i].x=255;
+		mrkr[i].x1=255;
 		for(j=i;j<numMarkers-1;j++)
 			mrkr[j]=mrkr[j+1];
-		mrkr[numMarkers-1].x=255;
+		mrkr[numMarkers-1].x1=255;
 		numMarkers--;
 	}
 }
@@ -85,19 +85,29 @@ void SlideMarkers(Map *map,int dx,int dy)
 {
 	for (marker_t &me : map->marker)
 	{
-		if(me.x!=255)
+		if(me.x1!=255)
 		{
-			int offX=-me.x;
-			int offY=-me.y;
+			int offX=-me.x1;
+			int offY=-me.y1;
 
-			me.x=(byte)SlideCoord(me.x,dx,map->width);
-			me.y=(byte)SlideCoord(me.y,dy,map->height);
+			me.x1=(byte)SlideCoord(me.x1,dx,map->width);
+			me.y1=(byte)SlideCoord(me.y1,dy,map->height);
+			me.x2=(byte)SlideCoord(me.x2,dx,map->width);
+			me.y2=(byte)SlideCoord(me.y2,dy,map->height);
 
-			offX+=me.x;
-			offY+=me.y;
-
-			AdjustSpecialCoords(&me,offX,offY);
-			AdjustSpecialEffectCoords(&me,offX,offY);
+			offX+=me.x1;
+			offY+=me.y1;
 		}
 	}
+}
+
+void CheckMarkers(Map* map)
+{
+	int i;
+	// do stuff i guess
+}
+
+bool CheckMarker(const marker_t *me)
+{
+	return (me->type > 0);
 }

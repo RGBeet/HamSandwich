@@ -8,6 +8,7 @@
 #include "tool_eraser.h"
 #include "tool_special.h"
 #include "tool_select.h"
+#include "tool_marker.h"
 #include "spclglobal.h"
 #include "terrainedit.h"
 #include "soundedit.h"
@@ -113,7 +114,7 @@ static byte whichTool;
 static byte doing;
 
 static const char toolName[NUM_TOOLS][16]={
-	"Floor","Wall","Item","Badguy","Light","Special","Select","Eraser"
+	"Floor","Wall","Item","Badguy","Light","Special","Select","Marker","Eraser"
 };
 static const char menuName[NUM_MENUS][16]={
 	"File","World","TEST!","Level","View","Tiles","Items","Sound","Spcls","Exit"
@@ -141,6 +142,7 @@ void ToolInit(void)
 	tool[TOOL_SELECT]=new SelectTool();
 	tool[TOOL_ERASER]=new EraserTool();
 	tool[TOOL_SPECIAL]=new SpecialTool();
+	tool[TOOL_MARKER]=new MarkerTool();
 	curTool=tool[0];
 
 	visMenus.clear();

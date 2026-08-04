@@ -18,6 +18,7 @@ class Guy final
 		Guy(void);
 		~Guy(void);
 
+		// old functions
 		void Update(Map *map,world_t *world);
 		void EditorUpdate(Map *map);
 		void Render(byte light);
@@ -32,8 +33,10 @@ class Guy final
 		void GetHealed(byte damage, Map* map, world_t* world, bool bypassInvincible);
 		void CalculateRect(void);
 		byte IsAwake(void);
-		byte IsInterface(void);
+		void SmoothPath(Map* map);
 
+		// new functions
+		byte IsInterface(void); // returns TRUE if guy's hp is currnetly being displayed on the interface (i.e. a boss)
 
 		int x,y,z;
 		int oldx,oldy;
@@ -41,16 +44,13 @@ class Guy final
 		byte mapx,mapy;
 		byte lastBumpX,lastBumpY;
 
-		byte facing;		// visual facing
-		byte direction;		// actual direction (for fine tuning movement)
-
+		byte facing;
 
 		// brain variables for ai
 		byte mind;
 		byte mind1;
 		byte mind2;
 		byte mind3;
-
 		byte reload;
 
 		byte ouch;
@@ -59,16 +59,20 @@ class Guy final
 		word frmAdvance;
 		byte frm;
 		byte seq;
+
 		char bright;
-		byte friendly;
+		byte friendly; // which team? (TODO: add multi-team support)
 
 		dword pushStamp;
 		Guy *target;
 		Guy *parent;
+
 		Guy *lastAttacker; // last guy to have attacked
 
 		int hp,maxHP;
-		int type;
+
+		int type;		// what kind of monster?
+		int aiType;		// behavior type (which function to use)
 		int age;		// # of frames
 		int size;		// takes monsSize
 
@@ -83,22 +87,28 @@ class Guy final
 		word ignite;		// ALSO depletes HP over time, but affects enemies based on fire characteristics (NEW)
 		word frozen;		// stops you in your tracks! affects enemies based on ice characteristics
 		word weaken;		// take more damage (+50%)
-		word slow;			// *toby voice* hey guys! i think i found a glue!
-		word mindControl;	// temporarily shifted to other team
+		word slow;			// move at half frames
+
+		word mindControl;		// temporarily shifted to other team
+		byte mindControlTeam;	// which team you're on while mind controlled
 
 		// Good afflictions
 		word strength;		// take less damage (-25%)
 		word speed;			// twice as fast
 
-		//byte mcTeam;		// TODO: add multi-team support
-
-
-		int aiType;
 		byte fromColor,toColor;
 		char brtChange;
 		char name[32];
 
 		std::unique_ptr<sprite_set_t> customSpr; // custom sprites
+
+		// PATHFINDING
+		std::vector<PathNode*> path; // pathfinding nodes
+		word pathIndex; // current index in the path vector
+		byte pathTimer; // timer for pathfinding updates
+
+		void UpdatePathfinding(Map* map, int endX, int endY);
+		void FollowPath(int speed=4);
 };
 
 extern Guy *goodguy;

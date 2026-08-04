@@ -20,6 +20,7 @@
 #include "winpch.h"
 #include "steam.h"
 #include "pickmenu.h"
+#include "pathfinding.h"
 
 byte showStats=0;
 dword gameStartTime,visFrameCount,updFrameCount;
@@ -113,6 +114,7 @@ bool VerifyLevel(Map *map)
 	}
 	return false;
 }
+
 byte InitLevel(byte map)
 {
 	PrintToLog("InitLevel",map);
@@ -155,7 +157,6 @@ byte InitLevel(byte map)
 	InitCheater();
 
 	GetSpecialsFromMapAndWorld(curMap->special, curWorld.special);
-
 	InitSpecialsForPlay();
 
 	PlaySong(curMap->song);
@@ -179,6 +180,9 @@ byte InitLevel(byte map)
 		CompleteGoal(70);
 
 	CheckSpecialsAtInit(curMap);
+
+	curMap->InitPathNodes(&curWorld);
+	GetPathfinder()->SetMap(curMap,&curWorld);
 
 	return 1;
 }
