@@ -8,22 +8,11 @@
 #include "player.h"
 
 char curSongName[64];
-byte lastSong=255;
+byte lastSong = 255;
 
-void CalculateMusicSpeed()
+void RestartCurrentSong()
 {
-	float speed = 1.0f;
-
-	if (PlayerGetTimeStop() > 1)
-		speed *= 0.5;
-
-	if (PlayerGetAccelerate() > 1)
-		speed *= 1.5;
-
-	if (profile.progress.purchase[modeShopNum[MODE_MANIC]] & SIF_ACTIVE)
-		speed *= 2;
-
-	SetMusicFrequency(speed);
+	PlaySongForce(curSongName);
 }
 
 void ChooseNextSong(void)
@@ -109,64 +98,65 @@ void PlaySong(const char *fname)
 	PlaySongForce(fname);
 }
 
-void PlaySongForce(const char *fname)
+void PlaySongForce(const char* fname)
 {
-	char fullname[64];
+	char fullname[128];
+	char basename[128];
 
-	if(!config.music)
+	if (!config.music)
 		return;
 
-	if(curSongName != fname)
-		strcpy(curSongName,fname);
+	strncpy(curSongName, fname, sizeof(curSongName) - 1);
+	curSongName[sizeof(curSongName) - 1] = '\0';
 
-	if (!strcasecmp(fname, "006cavernboss.ogg"))
+	if (!fname[0])
 	{
-		/*
-			The following levels are victims of an old bug in legacyload that
-			assigned the wrong song filename, or of selecting the wrong song
-			after working around that bug by creating the missing file.
-
-			Dead.dlw | "Dead". . .or "Alive"? | 5 | A Walk In The Park
-			HalloweenPOP.dlw | Halloween Horror - TG | 12 | The 4 Zombies of the Apocalypse
-			HalloweenPOP.dlw | Halloween Horror - TG | 13 | Zombies of the Apocalypse II
-			HauntedH.dlw | Haunted House | 1 | Darkness
-			House.dlw | Weird House | 6 | SSSHHRRRREEAAAKKKKKKK!!!!!!!!!!
-			House.dlw | Weird House | 9 | SSSHHRRRREEAAAKKK!!!! 2
-			Looniesgooniesbaboonies.dlw | Loonies, Goonies, & Baboonies | 6 | Dr. Loony's Goonies
-			Spaced.dlw | Spaced Station | 3 | The Robo Factory
-			caverns.dlw | Cavernous Caves | 7 | The Bad Place
-			excellent.dlw | Bouapha's Excellent Expedition | 4 | Metamorphosis Madness
-			excellent.dlw | Bouapha's Excellent Expedition | 13 | Alienated!
-			hh14sm.dlw | Halloween Horror 14 - SM | 3 | Son of a Lich
-			interluna.dlw | Intergalactic Lunacy | 2 | Alien Robotics
-			junglequest.dlw | Jungle Quest | 7 | Fugumogo Village
-			justdeserts.dlw | Just Deserts | 14 | BRAAIINNSS!!
-			lavacave.dlw | Lava Cave | 3 | Zoid Pit
-			mansion.dlw | The Haunted Mansion | 14 | Countess Hausaufgaben
-			splitlevellunacy.dlw | Split Level Lunacy | 6 | Let's Split
-			splitlevellunacy.dlw | Split Level Lunacy | 19 | Split Decision
-
-			Actual legacy worlds were fixed by legacyload being fixed.
-
-			Jubilee.dlw | Queen's Jubilee | 5 | The Death Squads
-			Jubilee.dlw | Queen's Jubilee | 6 | Robot Wars!
-			Queenrevenge.dlw | The Queen's Revenge | 0 | The Queen's Revenge
-			landofoz.dlw | The Land of Oz | 7 | The Tin Man
-			loony.dlw | Lair of the Lunatic | 3 | The big,green,lava Octapus
-			planetJ.dlw | Planet J | 4 | Football!!!!!
-			spookycastle2.dlw | Return to Spooky Castle | 9 | The Ancient Evil
-			spookycastle2.dlw | Return to Spooky Castle | 14 | The Lair
-		*/
-		PlaySongFile("music/006cavesboss.ogg");
-	}
-	else if (fname[0])
-	{
-		sprintf(fullname,"music/%s",fname);
-		CalculateMusicSpeed();
-		PlaySongFile(fullname);
-	}
-	else
 		StopSong();
+		return;
+	}
+
+	CalculateMusicSpeed();
+
+	const char* layers[MAX_MUSIC_LAYERS] = {};
+	static char filenames[MAX_MUSIC_LAYERS][128];
+
+	// Main song
+	snprintf(
+		filenames[0],
+		sizeof(filenames[0]),
+		"music/%s",
+		fname
+	);
+
+	layers[0] = filenames[0];
+
+	// Remove extension for layer names
+	strncpy(basename, fname, sizeof(basename) - 1);
+	basename[sizeof(basename) - 1] = '\0';
+
+	char* ext = strrchr(basename, '.');
+	if (ext)
+		*ext = '\0';
+
+
+	// Extra layers
+	for (int i = 1; i < MAX_MUSIC_LAYERS; i++)
+	{
+		snprintf(
+			filenames[i],
+			sizeof(filenames[i]),
+			"music/layers/%s_layer%d.ogg",
+			basename,
+			i
+		);
+
+		if (filenames[i])
+			layers[i] = filenames[i];
+		else
+			break;
+	}
+
+	PlayLayeredSong(layers);
 }
 
 const char *CurSongTitle(void)
@@ -222,4 +212,26 @@ void PlayPrevSong(void)
 		}
 	}
 	PlaySongForce(&profile.playList[pl].song[lastSong*SONGNAME_LEN]);
+}
+
+void UpdateSong(void)
+{
+	UpdateMusicLayers();
+	CalculateMusicSpeed();
+}
+
+void CalculateMusicSpeed()
+{
+	float speed = 1.0f;
+
+	if (PlayerGetTimeStop() > 1)
+		speed *= 0.5;
+
+	if (PlayerGetAccelerate() > 1)
+		speed *= 1.5;
+
+	if (profile.progress.purchase[modeShopNum[MODE_MANIC]] & SIF_ACTIVE)
+		speed *= 2;
+
+	SetMusicFrequency(speed);
 }

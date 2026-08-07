@@ -2513,9 +2513,9 @@ void AI_SuperZombie(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	if (me->ouch == 4)
 	{
 		if (me->hp > 0)
-			MakeSound(SND_ZOMBIEOUCH, me->x, me->y, SND_CUTOFF, 1200);
+			MakeSound(SND_SZOUCH, me->x, me->y, SND_CUTOFF, 1200);
 		else
-			MakeSound(SND_ZOMBIEDIE, me->x, me->y, SND_CUTOFF, 1200);
+			MakeSound(SND_SZDIE, me->x, me->y, SND_CUTOFF, 1200);
 	}
 
 	if (me->action == ACTION_BUSY)
@@ -2705,7 +2705,7 @@ void AI_SuperZombie(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		{
 			bool result = me->UpdatePathfinding(map, world, 4, (goodguy->x >> FIXSHIFT) / TILE_WIDTH, (goodguy->y >> FIXSHIFT) / TILE_HEIGHT);
 
-			if (me->GetPathDistance() < 60 * FIXAMT && !Random(8) && map->FindGuy(me->mapx, me->mapy, 8, goodguy))
+			if (me->GetPathDistance() < 120 * FIXAMT && !Random(8) && map->FindGuy(me->mapx, me->mapy, 15, goodguy))
 				me->mind = 3; // in range, start killing
 
 			me->AvoidGuys();
@@ -2733,7 +2733,7 @@ void AI_SuperZombie(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	{
 		if (goodguy)
 		{
-			if (!map->CheckLOS(me->x, me->y, 15, goodguy->x, goodguy->y))
+			if (!map->CheckLOS(me->x, me->y, 192, goodguy->x, goodguy->y))
 			{
 				if (me->mind2++ > 9)
 				{
@@ -3684,76 +3684,78 @@ void AI_Mumble(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 	if (me->mind == 0)	// not yet aware
 	{
-		if (me->aiType == MONS_MUMBLE2)
-			me->mind = 1;
-
 		if (goodguy && RangeToTarget(me, goodguy) < 200 * FIXAMT)
 		{
 			me->mind = 1;	// begin chasing.  Slowly.
 		}
-		if (me->seq != ANIM_IDLE)
+		StartIdleAnimation(me, 128);
+	}
+	if (me->mind == 1)		// when mind=0, singlemindedly lumber towards Bouapha
+	{
+		if (goodguy)
 		{
-			me->seq = ANIM_IDLE;
-			me->frm = 0;
-			me->frmTimer = 0;
-			me->frmAdvance = 128;
+			// check if within range
+			if (!TargetWithinRange(me,goodguy,64) && !map->CheckLOS(me->x, me->y, 192, goodguy->x, goodguy->y))
+			{
+				if (me->mind2++ > 9)
+				{
+					me->mind2 = 0;
+					me->mind = 2; // pathfinding time!
+					return;
+				}
+			}
+			else if (me->mind2)
+				me->mind2--;
+
+			// crush his skull when within range
+			if (RangeToTarget(me, goodguy) < (60 * FIXAMT) && !Random(8) && !me->reload)
+			{
+				MakeSound(SND_MUMBLECRUSH, me->x, me->y, SND_CUTOFF, 1000);
+				StartAnimation(me,ANIM_ATTACK,128);
+				SetMoveFacing(me, 0);
+				me->reload = 0;
+				return;
+			}
+
+			// move slowly towards player
+			FaceGoodguy(me, goodguy);
+			StartMoveAnimation(me, 64);
+			if (!((me->frm >= 3 && me->frm <= 5) || (me->frm >= 9 && me->frm <= 11)))
+				SetMoveFacing(me, 1);
+			else
+				SetMoveFacing(me, 0);
 		}
 	}
-	else
+	else if (me->mind == 2)
 	{
-		if (RangeToTarget(me, goodguy) < (60 * FIXAMT) && Random(8) == 0 && me->reload == 0)
+		int px = (goodguy->x >> FIXSHIFT) / TILE_WIDTH;
+		int py = (goodguy->y >> FIXSHIFT) / TILE_HEIGHT;
+		int spd = 0;
+
+		if (!((me->frm >= 3 && me->frm <= 5) || (me->frm >= 9 && me->frm <= 11)))
+			spd = 1;
+
+		bool result = me->UpdatePathfinding(map, world, spd, (goodguy->x >> FIXSHIFT) / TILE_WIDTH, (goodguy->y >> FIXSHIFT) / TILE_HEIGHT);
+
+		if (me->GetPathDistance() < 128 * FIXAMT && !Random(8) && map->FindGuy(me->mapx, me->mapy, 8, goodguy))
+			me->mind = 1; // in range, start killing
+
+		me->AvoidGuys();
+		if (result) // stand still!
 		{
-			// crush his skull
-			MakeSound(SND_MUMBLECRUSH, me->x, me->y, SND_CUTOFF, 1000);
-			me->seq = ANIM_ATTACK;
-			me->frm = 0;
-			me->frmTimer = 0;
-			me->frmAdvance = 128;
-			if (me->aiType == MONS_MUMBLE2)
-				me->frmAdvance = 256;
-			me->action = ACTION_BUSY;
-			me->dx = 0;
-			me->dy = 0;
-			me->reload = 0;
-			return;
-		}
-		if (!me->mind1)
-		{
-			// turns only once a second
-			FaceGoodguy3(me, goodguy);
-			me->mind1 = 30;
-			if (me->aiType == MONS_MUMBLE2)
-				me->mind1 = 0;
-		}
-		if (me->seq != ANIM_MOVE)
-		{
-			me->seq = ANIM_MOVE;
-			me->frm = 0;
-			me->frmTimer = 0;
-			me->frmAdvance = 64;
-			if (me->aiType == MONS_MUMBLE2)
-				me->frmAdvance = 256;
+			StartMoveAnimation(me, 64);
+			if (me->mind2)
+				me->mind2 = 0;
 		}
 		else
 		{
-			if (me->aiType == MONS_MUMBLE2)
+			if (me->mind2++ > 19)
 			{
-				me->dx = Cosine(me->facing * 32) * 4;
-				me->dy = Sine(me->facing * 32) * 4;
+				me->mind2 = 0;
+				me->mind = 0; // done for now
 			}
-			else
-			{
-				if (!((me->frm >= 3 && me->frm <= 5) || (me->frm >= 9 && me->frm <= 11)))
-				{
-					me->dx = Cosine(me->facing * 32);
-					me->dy = Sine(me->facing * 32);
-				}
-				else
-				{
-					me->dx = 0;
-					me->dy = 0;
-				}
-			}
+			StartIdleAnimation(me, 64);
+			SetMoveFacing(me, 0); // still
 		}
 	}
 }
@@ -4101,7 +4103,10 @@ void AI_Lich(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 	if (me->ouch == 4)
 	{
-		// make noise?
+		if (me->hp > 0)
+			MakeSound(SND_RICHIEOUCH, me->x, me->y, SND_CUTOFF, 2000);
+		else
+			MakeSound(SND_RICHIEDIE, me->x, me->y, SND_CUTOFF, 2000);
 	}
 
 	if (me->action == ACTION_BUSY)
@@ -4478,7 +4483,8 @@ void AI_SphinxArm(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 	if (me->ouch == 4)
 	{
-		// make noise?
+		if (me->hp > 0)
+			MakeSound(SND_SPHINXOUCH, me->x, me->y, SND_CUTOFF|SND_RANDOM, 600);
 	}
 
 	if (me->action == ACTION_BUSY)
@@ -4547,9 +4553,9 @@ void AI_Sphinx(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	if (me->ouch == 4)
 	{
 		if (me->hp > 0)
-			MakeSound(SND_ZOMBIEOUCH, me->x, me->y, SND_CUTOFF, 600);
+			MakeSound(SND_SPHINXOUCH, me->x, me->y, SND_CUTOFF|SND_RANDOM, 2000);
 		else
-			MakeSound(SND_MUSHDIE, me->x, me->y, SND_CUTOFF, 600);
+			MakeSound(SND_SPHINXDIE, me->x, me->y, SND_CUTOFF, 2000);
 	}
 
 	if (me->action == ACTION_BUSY)

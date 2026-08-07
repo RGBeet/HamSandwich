@@ -84,6 +84,7 @@ void MakeSpaceSound(int snd,int priority)
 
 void LoopingSound(int snd)
 {
+	/*
 	if(!SoundIsAvailable())
 		return;
 
@@ -100,6 +101,7 @@ void LoopingSound(int snd)
 	snprintf(buf, 32, "sound/snd%03d.wav", snd);
 	PlaySongFile(buf);
 	sndNum=snd;
+	*/
 }
 
 void KillSong(void)

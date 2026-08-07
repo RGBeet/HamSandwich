@@ -431,12 +431,18 @@ void DrawMe(Guy* g, const sprite_set_t* set) {
 			SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 1, g->bright+bright+4, curSpr, DISPLAY_DRAWME);
 		else if (!(monsType[type].flags & (MF_GHOST | MF_GLOW)))
 		{
-			byte fromCol = monsType[type].fromCol;
-			byte toCol = monsType[type].toCol;
-			if (fromCol != 255)
-				SprDrawOff(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, fromCol, toCol, g->bright + bright, curSpr, DISPLAY_DRAWME);
+			if (g->fromColor != 255)
+			{
+				SprDrawOff(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, g->fromColor, g->toColor, g->bright + bright, curSpr, DISPLAY_DRAWME);
+			}
+			else if (monsType[type].fromCol != 255)
+			{
+				SprDrawOff(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, monsType[type].fromCol, monsType[type].toCol, g->bright + bright, curSpr, DISPLAY_DRAWME);
+			}
 			else
+			{
 				SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 255, g->bright, curSpr, DISPLAY_DRAWME);
+			}
 		}
 		else if (monsType[type].flags & MF_GHOST)
 			SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 255, g->bright + bright, curSpr, DISPLAY_DRAWME | DISPLAY_GHOST);

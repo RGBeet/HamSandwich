@@ -164,7 +164,10 @@ byte InitLevel(byte map)
 	GetSpecialsFromMapAndWorld(curMap->special, curWorld.special);
 	InitSpecialsForPlay();
 
+	// song stuff
 	PlaySong(curMap->song);
+	for(int i=1;i<MAX_MUSIC_LAYERS;i++)
+		SetMusicLayerVolume(i,0);
 
 	ScoreEvent(SE_INIT,curMap->width*curMap->height);
 

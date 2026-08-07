@@ -484,7 +484,7 @@ void SoundEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 			for(int i=0;i<sndsInList-sndStart;i++)
 			{
 				int num = sndList[i + sndStart];
-				if (num >= CUSTOM_SND_START)
+				if (num >= CUSTOM_SND_START && num < 512)
 				{
 					std::span<const byte> data = GetCustomSound(num - CUSTOM_SND_START);
 					if (!data.empty() && data[0] == 'O')

@@ -501,14 +501,12 @@ void AI_Crazypants(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 void AI_Yerfdog(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
-	if (me->z > FIXAMT * 8 && me->facing != 1 && abs(me->dz) < FIXAMT * 2)
+	if (me->reload)
+		me->reload--;
+	else
 	{
-		me->mind1 = 2 - me->facing;
-		me->facing = 1;
-	}
-	else if (me->z <= FIXAMT * 8)
-	{
-		me->facing = me->mind1;
+		me->reload = 5;
+		FaceGoodguy3(me, goodguy);
 	}
 
 	me->dz += FIXAMT * 3 / 2;

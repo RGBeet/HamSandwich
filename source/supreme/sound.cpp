@@ -463,7 +463,13 @@ int GetNumCustomSounds(void)
 
 std::span<const byte> GetCustomSound(int n)
 {
-	return {customSound[n], customLength[n]};
+	// Avoid returning a span with non-zero length but null data pointer.
+	// This prevents callers from doing data[0] when the pointer is null.
+	byte *ptr = customSound[n];
+	int len = customLength[n];
+	if (!ptr || len <= 0)
+		return {};
+	return { ptr, len };
 }
 
 bool AddCustomSound(const char *fname)

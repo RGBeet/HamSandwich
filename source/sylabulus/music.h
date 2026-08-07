@@ -18,9 +18,11 @@
 #define MUSIC_SEQUENTIAL (16)
 #define MUSIC_REPEAT	(0)
 
-void PlaySong(const char *fname);
-void PlaySongForce(const char *fname);
-void StopSong(void);
+#define MAX_MUSIC_LAYERS	8
+
+void PlaySong(const char *fname);		// play song with one layer
+void PlaySongForce(const char *fname);	// ditto, but forced
+void StopSong(void);			
 
 void SetMusicVolume(int vol);
 
@@ -30,7 +32,9 @@ void PickSongToPlay(void);
 void PlayNextSong(void);
 void PlayPrevSong(void);
 
-void UpdateMusic(void);
+void UpdateSong(void);
+void UpdateMusicLayers(void);
+
 void ChooseNextSong(void);
 void CalculateMusicSpeed(void);
 

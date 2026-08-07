@@ -3,6 +3,8 @@
 #include <limits.h>
 #include <memory>
 #include <vector>
+#include <array>
+#include <string>
 #include <utility>
 #include <SDL3/SDL.h>
 #include <SDL3_mixer/SDL_mixer.h>
@@ -18,12 +20,29 @@ struct Sound
 	owned::MIX_Audio sample;
 };
 
-struct Channel
+struct Channel // used for sound channels
 {
 	int soundNum;
 	int priority;
 	owned::MIX_Track track;
 	owned::MIX_Audio sample;
+};
+
+#define MAX_MUSIC_LAYERS	8
+float musicFrequency = 1.0f;
+
+struct MusicLayer
+{
+	owned::MIX_Track track;
+	owned::MIX_Audio audio;
+
+	int volumeCurrent	= 0;
+	int volumeTarget	= 0;
+	int fadeSpeed		= 1;
+
+	bool loaded			= false;
+	bool paused			= false;
+	std::string filename;
 };
 
 namespace
@@ -41,9 +60,11 @@ namespace
 	owned::MIX_Audio musicAudio;
 
 	std::vector<Sound> soundList;
+	std::array<MusicLayer, MAX_MUSIC_LAYERS> musicLayers;
 
 	int NUM_SOUNDS = 0;
 	std::vector<Channel> schannel;
+
 }  // namespace
 
 void SetJamulSoundEnabled(bool enable, int numSounds)
@@ -89,7 +110,18 @@ bool JamulSoundInit(int numBuffers)
 		LogError("MIX_GetMixerFormat: %s", SDL_GetError());
 	}
 
-	musicTrack = owned::MIX_CreateTrack(mixer.get());
+	//musicTrack = owned::MIX_CreateTrack(mixer.get());
+
+	for (auto& layer : musicLayers)
+	{
+		layer.track = owned::MIX_CreateTrack(mixer.get());
+
+		if (!layer.track)
+		{
+			LogError("Failed creating music layer track");
+			return false;
+		}
+	}
 
 	NUM_SOUNDS = configNumSounds;  // Only copied over here to avoid problems if SetJamulSoundEnabled is called after init.
 
@@ -112,9 +144,18 @@ void JamulSoundExit(void)
 		soundIsOn = false;
 		JamulSoundPurge();
 		StopSong();
+
+		// Sound stuff
 		schannel.clear();
 		soundList.clear();
-		musicTrack.reset();
+
+		// Music stuff
+		StopEntireSong();
+		for (auto& layer : musicLayers)
+		{
+			layer.track.reset();
+			layer.audio.reset();
+		}
 		mixer.reset();
 	}
 }
@@ -356,16 +397,6 @@ void SetHamMusicEnabled(bool enabled)
 	musicEnabled = enabled;
 }
 
-void UpdateMusic()
-{
-	if (musicEnabled && musicAudio && !MIX_TrackPlaying(musicTrack.get()))
-	{
-		MIX_PlayTrack(musicTrack.get(), 0);
-		if (g_HamExtern.ChooseNextSong)
-			g_HamExtern.ChooseNextSong();
-	}
-}
-
 void SetMusicVolume(int vol)
 {
 	musVolume = vol;
@@ -377,42 +408,58 @@ int GetMusicVolume()
 	return musVolume;
 }
 
-void PlaySongFile(const char* fullname)
+byte PlaySongFile(const char* filename)
 {
 	if (!musicEnabled)
-		return;
-
+		return 0;
 	StopSong();
 
-	owned::SDL_IOStream rw = AppdataOpen(fullname);
+	owned::SDL_IOStream rw = AppdataOpen(filename);
 	if (!rw)
-	{
-		return;
-	}
+		return 0;
 
 	musicAudio = owned::MIX_LoadAudio_IO(mixer.get(), std::move(rw), false);
 	if (!musicAudio)
 	{
-		LogError("Mix_LoadMUS(%s): %s", fullname, SDL_GetError());
-		return;
+		LogError("Mix_LoadMUS(%s): %s", filename, SDL_GetError());
+		return 0;
 	}
 
 	MIX_SetTrackGain(musicTrack.get(), musVolume / 255.f);
 	MIX_SetTrackAudio(musicTrack.get(), musicAudio.get());
 	if (!MIX_PlayTrack(musicTrack.get(), 0))
 	{
-		LogError("MIX_PlayTrack(%s): %s", fullname, SDL_GetError());
+		LogError("MIX_PlayTrack(%s): %s", filename, SDL_GetError());
 	}
 	UpdateMusic();
+	return 1;
 }
 
 void StopSong()
 {
-	if (musicAudio)
+	StopEntireSong();
+
+	if (musicAudio && musicTrack)
 	{
 		MIX_StopTrack(musicTrack.get(), 0);
+
+		MIX_SetTrackAudio(
+			musicTrack.get(),
+			nullptr
+		);
+
 		musicAudio.reset();
 	}
+}
+
+void PauseSong() // pauses the song!?
+{
+	MIX_PauseTrack(musicTrack.get());
+}
+
+void ResumeSong()
+{
+	MIX_ResumeTrack(musicTrack.get());
 }
 
 bool IsSongPlaying()
@@ -420,7 +467,261 @@ bool IsSongPlaying()
 	return musicAudio && MIX_TrackPlaying(musicTrack.get());
 }
 
+/// NEW FUNCTIONS GO HERE...
+void UpdateMusicLayers()
+{
+	bool chooseSong = false;
+
+	if (!musicEnabled || !soundIsOn)
+		return;
+
+	for (int i = 0; i < MAX_MUSIC_LAYERS; i++)
+	{
+		MusicLayer& layer = musicLayers[i];
+
+		if (!layer.audio)
+			continue;
+
+		if (!layer.paused && !MIX_TrackPlaying(layer.track.get())) // repeat
+		{
+			MIX_PlayTrack(layer.track.get(), 0);
+
+			if (!chooseSong && i == 0 && g_HamExtern.ChooseNextSong) // base layer
+				chooseSong = true;
+		}
+
+		if (layer.volumeCurrent != layer.volumeTarget)
+		{
+			int diff = layer.volumeTarget - layer.volumeCurrent;
+
+			layer.volumeCurrent += diff / 8;
+
+			if (abs(diff) <= 1)
+				layer.volumeCurrent = layer.volumeTarget;
+
+			MIX_SetTrackGain(
+				layer.track.get(),
+				layer.volumeCurrent/255.f
+			);
+		}
+	}
+
+	// only the main layer decides when a new song starts
+	if (chooseSong)
+		g_HamExtern.ChooseNextSong();
+}
+
+// Plays a song for the target layer.
+byte PlaySongLayer(int layer, const char* filename)
+{
+	if (!musicEnabled)
+		return 0;
+
+	if (layer < 0 || layer >= MAX_MUSIC_LAYERS)
+		return 0;
+
+	MusicLayer& music = musicLayers[layer];
+
+	if (music.audio)
+		printf("Loaded music layer %d: %s\n", layer, filename);
+	else
+		printf("FAILED loading music layer %d: %s\n", layer, filename);
+
+	// Stop old layer and detach old audio
+	if (music.track)
+	{
+		MIX_StopTrack(music.track.get(), 0);
+
+		MIX_SetTrackAudio(
+			music.track.get(),
+			nullptr
+		);
+	}
+
+	music.audio.reset();
+
+
+	owned::SDL_IOStream rw = AppdataOpen(filename);
+	if (!rw)
+		return 0;
+
+
+	music.audio = owned::MIX_LoadAudio_IO(
+		mixer.get(),
+		std::move(rw),
+		false
+	);
+
+	if (!music.audio)
+	{
+		LogError("Mix_LoadMUS(%s): %s", filename, SDL_GetError());
+		return 0;
+	}
+
+
+	// Create track for this layer
+	if (!music.track)
+	{
+		music.track = owned::MIX_CreateTrack(mixer.get());
+	}
+
+	if (!music.track)
+	{
+		LogError("Failed creating music track");
+		music.audio.reset();
+		return 0;
+	}
+
+
+	MIX_SetTrackGain(
+		music.track.get(),
+		music.volumeCurrent / 255.f
+	);
+
+	MIX_SetTrackAudio(
+		music.track.get(),
+		music.audio.get()
+	);
+
+
+	if (!MIX_PlayTrack(music.track.get(), 0))
+	{
+		LogError("MIX_PlayTrack(%s): %s", filename, SDL_GetError());
+
+		MIX_SetTrackAudio(
+			music.track.get(),
+			nullptr
+		);
+
+		music.audio.reset();
+
+		return 0;
+	}
+
+
+	return 1;
+}
+
+// Stops the song layer,
+void StopSongLayer(int layer)
+{
+	if (layer < 0 || layer >= MAX_MUSIC_LAYERS)
+		return;
+
+	MusicLayer& music = musicLayers[layer];
+
+	if (music.track)
+	{
+		MIX_StopTrack(music.track.get(), 0);
+
+		MIX_SetTrackAudio(
+			music.track.get(),
+			nullptr
+		);
+	}
+	music.audio.reset();
+	music.loaded = false;
+	music.paused = false;
+	music.filename.clear();
+}
+
+// Set the volume for the specified layer.
+void SetMusicLayerVolume(int layer, int volume)
+{
+	if (layer < 0 || layer >= MAX_MUSIC_LAYERS)
+		return;
+	MusicLayer& music = musicLayers[layer];
+	music.volumeCurrent = music.volumeTarget = volume;
+
+	if (music.track)
+		MIX_SetTrackGain(music.track.get(), volume/255.f);
+}
+
+// Set the target volume for the specified layer.
+void SetMusicLayerTarget(int layer, int target)
+{
+	if (layer < 0 || layer >= MAX_MUSIC_LAYERS)
+		return;
+
+	MusicLayer& music = musicLayers[layer];
+	music.volumeTarget = target;
+
+	musicLayers[layer].volumeTarget = target;
+}
+
+// Plays the specified layers all at once.
+byte PlayLayeredSong(const char* files[MAX_MUSIC_LAYERS])
+{
+	StopEntireSong();
+	for (int i = 0; i < MAX_MUSIC_LAYERS; i++)
+	{
+		if (!files[i])
+			continue;
+		PlaySongLayer(i, files[i]);
+		musicLayers[i].volumeCurrent = musVolume;
+		musicLayers[i].volumeTarget	= musVolume;
+	}
+	return 1;
+}
+
+// Stops every layer at once.
+void StopEntireSong()
+{
+	for (int i = 0; i < MAX_MUSIC_LAYERS; i++) // stop all the layers!
+		StopSongLayer(i);
+}
+
+// "Pauses" the specified layer.
+void PauseMusicLayer(int layer)
+{
+	if (layer < 0 || layer >= MAX_MUSIC_LAYERS)
+		return;
+
+	MusicLayer& music = musicLayers[layer];
+
+	if (!music.track || music.paused)
+		return;
+
+	MIX_PauseTrack(music.track.get());
+	music.paused = true;
+}
+
+// "Resumes" the specified layer.
+void ResumeMusicLayer(int layer)
+{
+	if (layer < 0 || layer >= MAX_MUSIC_LAYERS)
+		return;
+
+	MusicLayer& music = musicLayers[layer];
+
+	if (!music.track || !music.paused)
+		return;
+
+	MIX_ResumeTrack(music.track.get());
+	music.paused = false;
+}
+
+// Sets the pitch/tempo of ALL layers.
 void SetMusicFrequency(float f)
 {
-	MIX_SetTrackFrequencyRatio(musicTrack.get(), f);
+	for (int i = 0; i < MAX_MUSIC_LAYERS; i++)
+	{
+		MusicLayer& layer = musicLayers[i];
+
+		if (layer.track)
+			MIX_SetTrackFrequencyRatio(layer.track.get(), f);
+	}
+}
+
+void UpdateMusic()
+{
+	/*
+	if (musicEnabled && musicAudio && !MIX_TrackPlaying(musicTrack.get()))
+	{
+		MIX_PlayTrack(musicTrack.get(), 0);
+		if (g_HamExtern.ChooseNextSong)
+			g_HamExtern.ChooseNextSong();
+	}
+	*/
+	UpdateMusicLayers();
 }

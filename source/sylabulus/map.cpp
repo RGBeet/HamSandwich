@@ -1313,6 +1313,8 @@ void Map::ContiguousTileChange(int x0, int y0, int floor, int wall, byte fx)
 		target->floor = floor;
 		target->wall = wall;
 
+		// TODO: edit nodes!!!
+
 		pending.push_back({ x, y + 1 });
 		pending.push_back({ x, y - 1 });
 		pending.push_back({ x + 1, y });
@@ -1340,6 +1342,8 @@ void Map::AllTileChange(int x,int y,int floor,int wall,byte fx)
 		{
 			map[i].floor=floor;
 			map[i].wall=wall;
+
+			// TODO: edit nodes!!!
 			if(fx)
 				SmokeTile(i%width,i/width);
 		}
@@ -1608,6 +1612,28 @@ byte MapHasOxygenMechanic(Map *map)
 	return map->flags & (MAP_UNDERWATER | MAP_OXYGEN);
 }
 
+Guy* GetGuyOnTile(int tx, int ty)
+{
+	for (int i = 0; i < MAX_MAPMONS; i++)
+	{
+		Guy* g = GetGuy(i);
+
+		if (!g)
+			continue;
+
+		if (g->type == MONS_NOBODY)
+			continue;
+
+		if (g->hp <= 0)
+			continue;
+
+		if (g->mapx == tx && g->mapy == ty)
+			return g;
+	}
+
+	return nullptr;
+}
+
 bool CanWalkTile(int x, int y, Map* map, world_t* world)
 {
 	mapTile_t* tile = map->TryGetTile(x, y);
@@ -1627,7 +1653,7 @@ void Map::InitPathNodes(world_t* world)
 
 	for (y = 0;y < height;y++)
 	{
-		for (x = 0; x < height; x++)
+		for (x = 0; x < width; x++)
 		{
 			PathNode& node = nodes[y * width + x];
 

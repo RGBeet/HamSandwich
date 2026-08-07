@@ -1254,12 +1254,21 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world, bool bypass
 			{
 				player.combo=1;
 				player.comboClock=60;
+				SetMusicLayerTarget(1,0);
 			}
 			else
 			{
 				player.combo++;
+
 				if(player.combo>9999)
 					player.combo=9999;
+
+				if (player.combo==10)
+				{
+					printf("Loading combo music for %s", CurSongTitle());
+					SetMusicLayerTarget(1, 255);
+				}
+
 				player.comboClock=60;
 				if(player.combo>player.bestCombo)
 					player.bestCombo=player.combo;

@@ -1892,18 +1892,18 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,10,11,12,13,14,15,16,17,18,19,8,7,255},	// attack=dash
 			},0},
 		{"Yerfdog",0,0,0,AI_Yerfdog,
-		 10,3,30,1000,"graphics/yerfdog.jsp",0,MF_NOHIT|MF_FREEWALK|MF_ENEMYWALK|MF_WATERWALK|MF_ONEFACE|MF_FACECMD,
+		 10,1,30,1000,"graphics/yerf3d.jsp",0,MF_NOHIT|MF_FREEWALK|MF_ENEMYWALK|MF_WATERWALK,
 		 MT_GOOD|MT_ANIMAL,
 			{
 				{0,255},	// idle
-				{1,2,0,255},	// move
-				{0,255},	// attack
-				{0,0,0,0,255},	// die
-				{1,2,0,255},	// move
-				{1,2,0,255},	// move
-				{1,2,0,255},	// move
-				{1,2,0,255},	// move
-				{1,2,0,255},	// move
+				{0,255},	// nope
+				{0,255},	// nope
+				{0,255},	// nope
+				{0,255},	// nope
+				{0,255},	// nope
+				{0,255},	// nope
+				{0,255},	// nope
+				{0,255},	// nope
 			},0},
 		{"Elite SEAL",1,4,0,AI_EliteSeal,
 		 22,20,50,125,"!31",0,{},

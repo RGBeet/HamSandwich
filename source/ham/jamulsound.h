@@ -53,10 +53,30 @@ void UpdateMusic();
 void SetMusicVolume(int vol);
 
 // Accepts full path, including leading "sound/" or "music/".
-void PlaySongFile(const char* path);
-void StopSong();
+byte PlaySongFile(const char* path, byte layer=0);	// defaults to base layer, can be used to play layer 1 as well!
+void StopSong(void);
+
+void PauseSong(); // pauses all layers at same time
+void ResumeSong(); // resumes all layers at same time
+
 bool IsSongPlaying();
 
-void SetMusicFrequency(float f);
+void SetMusicFrequency(float f); // speed up or slow down the song - shifts pitch AND tempo!
+
+// Music layer functions
+
+byte PlaySongLayer(int layer, const char* filename);
+void StopSongLayer(int layer);
+void PauseMusicLayer(int layer);
+void ResumeMusicLayer(int layer);
+
+void SetMusicLayerVolume(int layer, int volume);
+void SetMusicLayerTarget(int layer, int target);
+
+byte PlayLayeredSong(const char* files[8]);
+void StopEntireSong();
+void PauseEntireSong();
+void ResumeEntireSong();
+
 
 #endif  // JAMULSOUND_H

@@ -446,6 +446,7 @@
 #define SND_UMBRELLOOUCH		551
 #define SND_UMBRELLODIE			552
 
+// missing!
 #define SND_NOHCOMEDYATK1		553
 #define SND_NOHCOMEDYATK2		554
 #define SND_NOHCOMEDYOUCH		555
@@ -455,9 +456,11 @@
 #define SND_NOHSWITCH			559
 #define SND_NOHDIE				560
 
+// missing!
 #define SND_EYEBALLTREEOUCH		561
 #define SND_EYEBALLTREEDIE		562
 
+// missing!
 #define SND_STICKNINJAFLEX		563
 #define SND_STICKNINJATHROW		564
 #define SND_STICKNINJAOUCH		565
@@ -472,6 +475,14 @@
 #define SND_RICHIEDIE			572
 #define SND_SPIKECLANK			573		// when a spikeball roll
 #define SND_SPIKEBOUNCE			574		// when a spikeball hit wall
+
+#define SND_UNSTOPPABLE			575		// combo x10
+#define SND_COMBO				576		// combo x5!!!
+#define SND_SECRETAREA			577	
+#define SND_TOASTY				578		// im the toasty guy
+
+#define SND_SPHINXOUCH			579
+#define SND_SPHINXDIE			580
 
 #define MAX_SOUNDS				1024	// doesn't mean a thing lol
 
