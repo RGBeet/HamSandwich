@@ -3122,7 +3122,7 @@ void AI_LoonyGun(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
 	byte diff;
 	char dir;
-	int x, y;
+	int x, y, z, dz;
 
 	if (me->action == ACTION_BUSY)
 	{
@@ -3134,7 +3134,8 @@ void AI_LoonyGun(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			me->z, FIXAMT);
 		return;
 	}
-	if (!me->parent || me->parent->mind == 0)
+
+	if (me->parent != nullptr && me->parent->mind == 0)
 		return;
 
 	me->recty += 60;
@@ -3142,15 +3143,19 @@ void AI_LoonyGun(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 	me->z = FIXAMT * 48;
 	me->dz = 0;
-	if (me->mind3 == 0)
+
+	if (me->parent != nullptr)
 	{
-		me->x = me->parent->x - 87 * FIXAMT;
-		me->y = me->parent->y;
-	}
-	else
-	{
-		me->x = me->parent->x + 92 * FIXAMT;
-		me->y = me->parent->y;
+		if (me->mind3 == 0)
+		{
+			me->x = me->parent->x - 87 * FIXAMT;
+			me->y = me->parent->y;
+		}
+		else
+		{
+			me->x = me->parent->x + 92 * FIXAMT;
+			me->y = me->parent->y;
+		}
 	}
 
 	if (!goodguy)
@@ -3232,9 +3237,11 @@ void AI_LoonyGun(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	case 5:
 		x = me->x + Cosine(me->facing * 16) * 40;
 		y = me->y + Sine(me->facing * 16) * 32;
+		z = (me->parent) ? (me->z + 12 * FIXAMT) : (me->z + 4 * FIXAMT);
+		dz = (me->parent) ? (-FIXAMT / 2) : 0;
+
 		diff = me->facing * 16 - 10 + Random(20);
-		FireExactBullet(x, y, me->z + 12 * FIXAMT, Cosine(diff) * 6, Sine(diff) * 6, -FIXAMT / 2,
-			0, 60, diff, BLT_ENERGY, me->friendly);
+		FireExactBullet(x, y, z, Cosine(diff) * 6, Sine(diff) * 6, dz, 0, 60, diff, BLT_ENERGY, me->friendly);
 		MakeSound(SND_BULLETFIRE, me->x, me->y, SND_CUTOFF, 1000);
 		if (me->mind2)
 			me->mind2--;

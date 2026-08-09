@@ -1309,31 +1309,24 @@ byte CheckMonsterType(Guy* g, int x, int y, int type)
 	switch (type)
 	{
 		case MONS_ANYBODY:
-			printf("Anybody...\n");
 			return 1; // can be anybody
 			break;
 		case MONS_GOODGUY:
-			printf("Goodguy...\n");
 			return (g->friendly==1);
 			break;
 		case MONS_BADGUY:
-			printf("Badguy...\n");
 			return (g->friendly==0);
 			break;
 		case MONS_NONPLAYER:
-			printf("Non-Player...\n");
 			return (g->aiType!=MONS_BOUAPHA); // NOT the player
 			break;
 		case MONS_PLAYER:
-			printf("Player...\n");
 			return (g->aiType==MONS_BOUAPHA); // IS the player
 			break;
 		case MONS_TAGGED:
-			printf("Tagged...\n");
 			return (g==TaggedMonster()); // is tagged entity
 			break;
 		default:
-			printf("Regular...\n");
 			return (g->type == type);
 			break;
 	}

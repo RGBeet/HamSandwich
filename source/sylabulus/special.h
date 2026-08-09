@@ -64,7 +64,9 @@
 #define TRG_STPVARTILE	44	// true if creature step on tile N (variable!)
 #define TRG_FORCESTART	45	// true always - fires once at start of level
 
-#define MAX_TRIGGER		46
+#define TRG_STEALTHY	46	// true if player is currently (stealthy/not stealthy/spotted)
+
+#define MAX_TRIGGER		47
 
 // effects
 #define EFF_NONE		0
@@ -124,7 +126,9 @@
 #define EFF_MOVESPCL		46	// move special At X,Y by N,M (affects coordinates)
 #define EFF_VARTILE			47	// set var N to tile at X,Y
 
-#define EFF_MAX				48
+#define EFF_SNGLAYER		48	// sets song layer 1-8 to volume 0-255 (if it isn't ON/OFF already)
+
+#define EFF_MAX				49
 
 #define OLD_MAX_TRIGGERS	33
 #define OLD_MAX_EFFECTS		38

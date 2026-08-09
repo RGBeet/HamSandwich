@@ -8,7 +8,11 @@
 #include "player.h"
 
 char curSongName[64];
-byte lastSong = 255;
+char reserveSongName[64];
+
+int songPosition;
+byte lastSong	= 255;
+byte pauseMenu	= 0;
 
 void RestartCurrentSong()
 {
@@ -234,4 +238,23 @@ void CalculateMusicSpeed()
 		speed *= 2;
 
 	SetMusicFrequency(speed);
+}
+
+void InitPauseMenuSong()
+{
+	sprintf(reserveSongName, curSongName);
+	songPosition = GetBaseLayerPosition();
+	StopEntireSong();
+	PlaySongForce("pause.ogg");
+	pauseMenu = 1;
+}
+
+void ExitPauseMenuSong(bool resume)
+{
+	StopSongLayer(0); // exit pause music
+	if (!resume)
+		return;
+	PlaySongForce(reserveSongName);
+	SetEntireSongPosition(songPosition);
+	pauseMenu = 0;
 }

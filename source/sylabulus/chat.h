@@ -12,7 +12,7 @@ public:
 	word next;
 } Convo;
 
-TASK(void) InitChat(int x,int y);
+TASK(void) InitChat(const char* str, byte nosnd, byte mode);
 TASK(byte) UpdateChat(MGLDraw *mgl);
 void RenderChat(MGLDraw *mgl);
 

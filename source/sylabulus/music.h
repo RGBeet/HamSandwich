@@ -22,7 +22,9 @@
 
 void PlaySong(const char *fname);		// play song with one layer
 void PlaySongForce(const char *fname);	// ditto, but forced
-void StopSong(void);			
+void StopSong(void);
+void PauseSong(void);
+void ResumeSong(void);
 
 void SetMusicVolume(int vol);
 
@@ -37,5 +39,8 @@ void UpdateMusicLayers(void);
 
 void ChooseNextSong(void);
 void CalculateMusicSpeed(void);
+
+void InitPauseMenuSong(void);
+void ExitPauseMenuSong(bool resume);
 
 #endif

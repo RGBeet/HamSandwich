@@ -323,6 +323,9 @@ void InitPauseMenu(void)
 	oldc = ~0;
 	oldGamepad = ~0;
 
+	// "stop" the music, switch it out for the pause menu music.
+	InitPauseMenuSong();
+
 	if (!pauseSpr)
 		pauseSpr = std::make_unique<sprite_set_t>("graphics/pause.jsp");
 

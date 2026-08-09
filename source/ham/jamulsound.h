@@ -77,6 +77,11 @@ byte PlayLayeredSong(const char* files[8]);
 void StopEntireSong();
 void PauseEntireSong();
 void ResumeEntireSong();
+int GetBaseLayerPosition();
+void SetEntireSongPosition(int position);
+
+byte IsMusicLayerLoaded(int layer);
+byte IsMusicLayerPaused(int layer);
 
 
 #endif  // JAMULSOUND_H

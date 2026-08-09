@@ -153,7 +153,8 @@ static const char trigName[][32]={
 	"Adjacent Color Special",
 	"Monster Age",
 	"Step On Tile Var.",
-	"Force Activate At Start"
+	"Force Activate At Start",
+	"Stealth Check"
 };
 
 static const char effName[][32]={
@@ -204,7 +205,8 @@ static const char effName[][32]={
 	"Set Entity Status Effect",
 	"Create Particle",
 	"Move Special Along Grid",
-	"Set Var. to Tile Value"
+	"Set Var. to Tile Value",
+	"Edit Song Layer"
 };
 
 void SetGlobalState(byte tf)
@@ -1252,6 +1254,14 @@ static void PicNameClick(int id)
 	InitFileDialog("user",nullptr,FM_LOAD|FM_EXIT|FM_PICMOVIE,spcl.effect[curEff].text);
 }
 
+static void PicNameClick2(int id)
+{
+	curEff = effStart + (id - ID_EFF0) / 100;
+
+	mode = SMODE_PICKBMP;
+	InitFileDialog("user/chat", nullptr, FM_LOAD | FM_EXIT | FM_PICMOVIE, spcl.effect[curEff].text);
+}
+
 static void WorldNameClick(int id)
 {
 	if (id < ID_EFF0)
@@ -1945,6 +1955,9 @@ static void SetupTriggerButtons(int t,int y)
 			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 1 + 100 * t, 0, 369, y - 3, 1, 1, "* Activates first!", NULL);
 			disableUsesButton=1; // no use button for you!
 			break;
+		case TRG_STEALTHY:
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "If the player is stealthy", NULL);
+			break;
 	}
 }
 
@@ -2534,7 +2547,7 @@ static void SetupEffectButtons(int t,int y)
 		// NEW EFFECTS
 		case EFF_CHAT:
 			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "Start chat", NULL);
-			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 140, y + 17, 250, 14, effect.text, PicNameClick);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 140, y + 17, 250, 14, effect.text, PicNameClick2);
 			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 2 + 100 * t, 0, 394, y + 17, 1, 1, "mode", NULL);
 
 			if (effect.flags & EF_NOFX)
@@ -2628,6 +2641,14 @@ static void SetupEffectButtons(int t,int y)
 			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 130, y + 17, 30, 14, VarName(effect.value), VarClick);
 			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 2 + 100 * t, 0, 194, y + 17, 1, 1, "to tile at", NULL);
 			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 3 + 100 * t, 0, 214, y + 17, 70, 14, s, XY3Click);
+			break;
+		case EFF_SNGLAYER:
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "Set Song Layer #", NULL);
+			sprintf(s, "%d", std::max(1, std::min(effect.value, 7)));
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 180, y + 17, 40, 14, s, NumberClick);
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 2 + 100 * t, 0, 244, y + 17, 1, 1, "to volume", NULL);
+			sprintf(s, "%d", std::max(0,std::min(effect.value2,255)));
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 3 + 100 * t, 0, 304, y + 17, 40, 14, s, Number2Click);
 			break;
 	}
 }

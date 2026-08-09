@@ -21,6 +21,7 @@
 #include "steam.h"
 #include "pickmenu.h"
 #include "pathfinding.h"
+#include "jamulsound.h"
 
 byte showStats=0;
 dword gameStartTime,visFrameCount,updFrameCount;
@@ -356,12 +357,14 @@ TASK(byte) LunaticRun(int *lastTime)
 				case PAUSE_PAUSED:
 					break;
 				case PAUSE_CONTINUE:
+					ExitPauseMenuSong(true); // exit pause menu
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
 					if (!shopping && !editing)
 						Steam()->StartPlaytimeTracking(nullptr);
 					break;
 				case PAUSE_GIVEUP:
+					ExitPauseMenuSong(false); // exit pause menu
 					SetPlayerStart(-1,-1);
 					if(mapNum)
 						mapToGoTo=0;
@@ -374,12 +377,14 @@ TASK(byte) LunaticRun(int *lastTime)
 					CO_RETURN LEVEL_ABORT;
 					break;
 				case PAUSE_WORLDSEL:
+					ExitPauseMenuSong(false); // exit pause menu
 					mapToGoTo=255;
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
 					CO_RETURN WORLD_ABORT;	// dump out altogether
 					break;
 				case PAUSE_RETRY:
+					ExitPauseMenuSong(false); // exit pause menu
 					mapToGoTo=player.levelNum;	// repeat this level
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
@@ -388,12 +393,14 @@ TASK(byte) LunaticRun(int *lastTime)
 					CO_RETURN LEVEL_ABORT;
 					break;
 				case PAUSE_EXIT:
+					ExitPauseMenuSong(false); // exit pause menu
 					mapToGoTo=255;
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
 					CO_RETURN WORLD_QUITGAME;
 					break;
 				case PAUSE_SHOP:
+					ExitPauseMenuSong(false); // exit pause menu
 					mapToGoTo=255;
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
@@ -444,6 +451,7 @@ TASK(byte) LunaticRun(int *lastTime)
 		{
 			if(!AWAIT UpdateChat(gamemgl))
 			{
+				printf("Back to usual!");
 				gameMode=GAMEMODE_PLAY;
 				RestoreGameplayGfx();
 			}
@@ -513,6 +521,11 @@ TASK(byte) LunaticRun(int *lastTime)
 			AWAIT Credits(gamemgl);
 			player.boredom=0;
 		}
+		else if (msgFromOtherModules == MSG_CHATNOW)
+		{
+			msgFromOtherModules=MSG_NONE;
+			gameMode = GAMEMODE_CHAT;
+		}
 		//*lastTime-=TIME_PER_FRAME;
 		numRunsToMakeUp++;
 		updFrameCount++;
@@ -527,12 +540,17 @@ TASK(void) LunaticDraw(void)
 	dword d;
 
 	// add all the sprites to the list
+	
 	if(gameMode!=GAMEMODE_PIC && gameMode!=GAMEMODE_SCAN)
 	{
 		RenderGuys(1);
 		RenderBullets();
 		RenderParticles();
 		RenderItAll(&curWorld,curMap,MAP_SHOWLIGHTS|MAP_SHOWPICKUPS|MAP_SHOWOTHERITEMS|MAP_SHOWWALLS);
+	}
+	
+	if(gameMode!=GAMEMODE_PIC && gameMode!=GAMEMODE_SCAN && gameMode!=GAMEMODE_CHAT)
+	{
 		RenderSpecialXes(curMap);
 		RenderMessage(visFrameCount);
 		PlayerRenderInterface(gamemgl);
@@ -630,6 +648,10 @@ TASK(void) LunaticDraw(void)
 	else if(gameMode==GAMEMODE_SCAN)
 	{
 		RenderScan(gamemgl);
+	}
+	else if (gameMode==GAMEMODE_CHAT)
+	{
+		RenderChat(gamemgl);
 	}
 	// update statistics
 	d=timeGetTime();

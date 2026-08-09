@@ -463,6 +463,10 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 			eff->value		= 1;
 			eff->value2		= 1;
 			break;
+		case EFF_SNGLAYER:
+			eff->value		= 1;
+			eff->value2		= 200;
+			break;
 		default:
 			break;
 	}
@@ -1522,8 +1526,11 @@ byte TriggerYes(special_t *me,trigger_t *t,Map *map)
 				}
 			}
 			break;
-		case TRG_FORCESTART:
+		case TRG_FORCESTART: // idk what this does :(
 			answer=0;
+			break;
+		case TRG_STEALTHY:
+			answer = ((player.stealthy > 0 && !player.spotted) || player.invisibility > 0); // player is S
 			break;
 	}
 
@@ -1907,7 +1914,7 @@ void SpecialEffect(special_t *me,Map *map)
 				ChangeBullet(!(me->effect[i].flags&EF_NOFX),me->effect[i].x,me->effect[i].y,me->effect[i].value,me->effect[i].value2);
 				break;
 			case EFF_CHAT:
-				coro::launch(std::bind(ShowImageOrFlic, me->effect[i].text, (me->effect[i].flags & EF_NOFX), me->effect[i].value));
+				coro::launch(std::bind(InitChat, me->effect[i].text, (me->effect[i].flags & EF_NOFX), me->effect[i].value));
 				break;
 			case EFF_TIMER:
 				player.timer += me->effect[i].value;
@@ -1934,6 +1941,20 @@ void SpecialEffect(special_t *me,Map *map)
 				v = map->GetTile(me->effect[i].x, me->effect[i].y)->floor;
 				SetVar(me->effect[i].value, v);
 				//v2 = map->GetTile(me->effect[i].x, me->effect[i].y)->wall;
+				break;
+			case EFF_SNGLAYER:
+				byte v1, v2;
+				v1 = std::max(1, std::min(me->effect[i].value, 7)); // fix it to layers 1-7
+				v2 = std::min(me->effect[i].value2, 255);
+				if (IsMusicLayerLoaded(v1))
+				{
+					printf("Setting Song Layer %d to Volume %d.", v1, v2);
+					SetMusicLayerTarget(v1, v2);
+				}
+				else
+				{
+					printf("OOPS! Song Layer %d not loaded...", v1);
+				}
 				break;
 		}
 	}
@@ -2293,6 +2314,8 @@ void AdjustSpecialCoords(special_t *me,int dx,int dy)
 				x2=me->trigger[i].value2%256;
 				y2=me->trigger[i].value2/256;
 				me->trigger[i].value2=(x2+dx)+(y2+dy)*256;
+				break;
+			case TRG_STEALTHY:
 				break;
 		}
 	}

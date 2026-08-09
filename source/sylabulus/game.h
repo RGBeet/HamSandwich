@@ -42,6 +42,7 @@
 #define MSG_NEWFEATURE 		6
 #define MSG_SCANMONSTER 	7
 #define MSG_SHOPNOW			8
+#define MSG_CHATNOW			9
 
 // these are the possible outcomes of a level
 // if you die, the level just starts over, so that isn't included

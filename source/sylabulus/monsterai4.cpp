@@ -5225,6 +5225,7 @@ void AI_Patrol(Guy* me, Map* map, world_t* world, Guy* goodguy)
 				goodguy->GetShot(Cosine(me->facing * 32) * 10, Sine(me->facing * 32) * 10, 12, map, world);
 			}
 			me->reload = 5;
+			me->dz = FIXAMT*6;
 		}
 		if (me->seq == ANIM_ATTACK && me->reload == 0 && (me->aiType == MONS_DPATROLLR || me->aiType == MONS_DPATROLUD))
 		{

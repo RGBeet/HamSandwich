@@ -454,12 +454,12 @@ void StopSong()
 
 void PauseSong() // pauses the song!?
 {
-	MIX_PauseTrack(musicTrack.get());
+	PauseEntireSong();
 }
 
 void ResumeSong()
 {
-	MIX_ResumeTrack(musicTrack.get());
+	ResumeEntireSong();
 }
 
 bool IsSongPlaying()
@@ -724,4 +724,49 @@ void UpdateMusic()
 	}
 	*/
 	UpdateMusicLayers();
+}
+
+byte IsMusicLayerLoaded(int layer)
+{
+	if (layer < 0 || layer > MAX_MUSIC_LAYERS)
+		return 0;
+	MusicLayer& music = musicLayers[layer];
+	return (music.track && music.audio);
+}
+
+byte IsMusicLayerPaused(int layer)
+{
+	if (layer < 0 || layer > MAX_MUSIC_LAYERS)
+		return 0;
+	MusicLayer& music = musicLayers[layer];
+	return music.paused;
+}
+
+void PauseEntireSong()
+{
+	for (int i = 0; i < MAX_MUSIC_LAYERS; i++)
+		PauseMusicLayer(i);
+}
+
+void ResumeEntireSong()
+{
+	for (int i = 0; i < MAX_MUSIC_LAYERS; i++)
+		ResumeMusicLayer(i);
+}
+
+int GetBaseLayerPosition()
+{
+	MusicLayer& music = musicLayers[0];
+	return MIX_GetTrackPlaybackPosition(music.track.get());
+}
+
+void SetEntireSongPosition(int position)
+{
+	if (position < 0)
+		return;
+	for (int i = 0; i < MAX_MUSIC_LAYERS; i++)
+	{
+		MusicLayer& music = musicLayers[i];
+		MIX_SetTrackPlaybackPosition(music.track.get(), position);
+	}
 }
