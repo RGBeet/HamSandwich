@@ -119,9 +119,9 @@ byte Compare(worldDesc_t *me,worldDesc_t *you,byte field,byte bkwds)
 		return 0;	// no flipping between ones of different dim status
 	if(!bkwds)
 	{
-		if(!strcmp(me->fname,"tutorial.dlw"))	// the tutorial comes before all else
+		if(!strcmp(me->fname,"tutorial.psw"))	// the tutorial comes before all else
 			return 0;
-		if(!strcmp(you->fname,"tutorial.dlw"))
+		if(!strcmp(you->fname,"tutorial.psw"))
 		{
 			FlipEm(me,you);
 			return 1;
@@ -129,9 +129,9 @@ byte Compare(worldDesc_t *me,worldDesc_t *you,byte field,byte bkwds)
 	}
 	else
 	{
-		if(!strcmp(you->fname,"tutorial.dlw"))	// the tutorial comes before all else (vice versa when backwards, so still on top)
+		if(!strcmp(you->fname,"tutorial.psw"))	// the tutorial comes before all else (vice versa when backwards, so still on top)
 			return 0;
-		if(!strcmp(me->fname,"tutorial.dlw"))
+		if(!strcmp(me->fname,"tutorial.psw"))
 		{
 			FlipEm(me,you);
 			return 1;

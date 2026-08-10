@@ -198,4 +198,7 @@ void SetMindControlFrames(Guy* g, word frames);
 void SetStrengthFrames(Guy* g, word frames);
 void SetSpeedFrames(Guy* g, word frames);
 
+byte TerrainCheck(Guy* g,byte target,mapTile_t *mapTile,world_t *world);
+byte ConveyorCheck(Guy* g, mapTile_t* mapTile, world_t* world);
+
 #endif

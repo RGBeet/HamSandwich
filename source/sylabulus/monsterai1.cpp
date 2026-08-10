@@ -4,6 +4,7 @@
 #include "sound.h"
 #include "bullet.h"
 #include "player.h"
+#include "world.h"
 
 static int pickupX, pickupY;
 
@@ -1753,7 +1754,7 @@ void AI_Moss(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		case 0:
 			// left
 			if (x > 0 && map->GetTile(x - 1, y)->wall == 0 &&
-				(GetTerrain(world, map->GetTile(x - 1, y)->floor)->flags & (TF_WATER | TF_LAVA | TF_SOLID)) == 0 &&
+				(!IsTerrainAqueousOrSolid(world, map->GetTile(x - 1, y)->floor)) &&
 				!(GetItem(map->GetTile(x - 1, y)->item)->flags & (IF_SOLID | IF_BULLETPROOF))
 				&& (!MossCheck(x - 1, y)))
 			{
@@ -1773,7 +1774,7 @@ void AI_Moss(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		case 1:
 			// right
 			if (x < map->width - 1 && map->GetTile(x + 1, y)->wall == 0 &&
-				(GetTerrain(world, map->GetTile(x + 1, y)->floor)->flags & (TF_WATER | TF_LAVA | TF_SOLID)) == 0 &&
+				(!IsTerrainAqueousOrSolid(world, map->GetTile(x + 1, y)->floor)) &&
 				!(GetItem(map->GetTile(x + 1, y)->item)->flags & (IF_SOLID | IF_BULLETPROOF))
 				&& (!MossCheck(x + 1, y)))
 			{
@@ -1793,7 +1794,7 @@ void AI_Moss(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		case 2:
 			// up
 			if (y > 0 && map->GetTile(x, y - 1)->wall == 0 &&
-				(GetTerrain(world, map->GetTile(x, y - 1)->floor)->flags & (TF_WATER | TF_LAVA | TF_SOLID)) == 0 &&
+				(!IsTerrainAqueousOrSolid(world, map->GetTile(x, y - 1)->floor)) &&
 				!(GetItem(map->GetTile(x, y - 1)->item)->flags & (IF_SOLID | IF_BULLETPROOF))
 				&& (!MossCheck(x, y - 1)))
 			{
@@ -1813,7 +1814,7 @@ void AI_Moss(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		case 3:
 			// down
 			if (y < map->height - 1 && map->GetTile(x, y + 1)->wall == 0 &&
-				(GetTerrain(world, map->GetTile(x, y + 1)->floor)->flags & (TF_WATER | TF_LAVA | TF_SOLID)) == 0 &&
+				(!IsTerrainAqueousOrSolid(world, map->GetTile(x, y + 1)->floor)) &&
 				!(GetItem(map->GetTile(x, y + 1)->item)->flags & (IF_SOLID | IF_BULLETPROOF))
 				&& (!MossCheck(x, y + 1)))
 			{
@@ -1877,7 +1878,7 @@ void AI_MossGrande(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 		// left
 		if (x > 0 && map->GetTile(x - 1, y)->wall == 0 &&
-			(GetTerrain(world, map->GetTile(x - 1, y)->floor)->flags & (TF_WATER | TF_LAVA | TF_SOLID)) == 0 &&
+			(!IsTerrainAqueousOrSolid(world, map->GetTile(x - 1, y)->floor)) &&
 			!(GetItem(map->GetTile(x - 1, y)->item)->flags & (IF_SOLID | IF_BULLETPROOF))
 			&& (!MossCheck(x - 1, y)))
 		{
@@ -1895,7 +1896,7 @@ void AI_MossGrande(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		}
 		// right
 		if (x < map->width - 1 && map->GetTile(x + 1, y)->wall == 0 &&
-			(GetTerrain(world, map->GetTile(x + 1, y)->floor)->flags & (TF_WATER | TF_LAVA | TF_SOLID)) == 0 &&
+			(!IsTerrainAqueousOrSolid(world, map->GetTile(x + 1, y)->floor)) &&
 			!(GetItem(map->GetTile(x + 1, y)->item)->flags & (IF_SOLID | IF_BULLETPROOF))
 			&& (!MossCheck(x + 1, y)))
 		{
@@ -1913,7 +1914,7 @@ void AI_MossGrande(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		}
 		// up
 		if (y > 0 && map->GetTile(x, y - 1)->wall == 0 &&
-			(GetTerrain(world, map->GetTile(x, y - 1)->floor)->flags & (TF_WATER | TF_LAVA | TF_SOLID)) == 0 &&
+			(!IsTerrainAqueousOrSolid(world, map->GetTile(x, y - 1)->floor)) &&
 			!(GetItem(map->GetTile(x, y - 1)->item)->flags & (IF_SOLID | IF_BULLETPROOF))
 			&& (!MossCheck(x, y - 1)))
 		{
@@ -1931,7 +1932,7 @@ void AI_MossGrande(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		}
 		// down
 		if (y < map->height - 1 && map->GetTile(x, y + 1)->wall == 0 &&
-			(GetTerrain(world, map->GetTile(x, y + 1)->floor)->flags & (TF_WATER | TF_LAVA | TF_SOLID)) == 0 &&
+			(!IsTerrainAqueousOrSolid(world, map->GetTile(x, y + 1)->floor)) &&
 			!(GetItem(map->GetTile(x, y + 1)->item)->flags & (IF_SOLID | IF_BULLETPROOF))
 			&& (!MossCheck(x, y + 1)))
 		{

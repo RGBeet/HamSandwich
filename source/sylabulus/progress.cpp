@@ -8,7 +8,6 @@
 #include "steam.h"
 #include "ioext.h"
 #include "string_extras.h"
-#include "world_io_legacy.h"
 
 static char prfName[64];
 static byte firstTime;
@@ -306,6 +305,37 @@ void EmptyPlaylist(playList_t *p)
 	p->numSongs=0;
 }
 
+static const char songTab[23][32] = {
+	"",	// 1=no song
+	"002title.ogg",
+	"003worldpicker.ogg",
+	"004CavernHub.ogg",
+	"005CavernLevel.ogg",
+	"006cavesboss.ogg",
+	"007ForestHub.ogg",
+	"008forestlevel.ogg",
+	"009forestboss.ogg",
+	"010IcyHub.ogg",
+	"011IcyLevel.ogg",
+	"012icyboss.ogg",
+	"013DesertHub.ogg",
+	"014DesertLevel.ogg",
+	"015desertboss.ogg",
+	"016AsylumHub.ogg",
+	"017asylumlevel.ogg",
+	"018AsylumBossLevel.ogg",
+	"019victory.ogg",
+	"020Pumpkin.ogg",
+	"021secretlevel.ogg",
+	"022EndingCreditsTheme.ogg",
+	"023asylumbigboss.ogg"
+};
+
+const char* GetOriginalSongName(byte song)
+{
+	return songTab[song];
+}
+
 void OriginalPlaylist(playList_t *p)
 {
 	int i;
@@ -549,7 +579,7 @@ void CalcFinishedWorlds(void)
 	for(i=0;i<profile.progress.num_worlds;i++)
 	{
 		if(strcmp(profile.progress.world[i].filename,"TEST") &&
-			strcmp(profile.progress.world[i].filename,"tutorial.dlw"))
+			strcmp(profile.progress.world[i].filename,"tutorial.psw"))
 		{
 			if(profile.progress.world[i].percentage==100.0f)
 				result++;

@@ -65,19 +65,19 @@ void AI_MineCart(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	if (me->mind == 0)	// waiting to be ridden
 	{
 		// figure out which directions are valid minecart paths
-		if (me->mapx < map->width - 1 && GetTerrain(world, map->map[me->mapx + 1 + me->mapy * map->width].floor)->flags & TF_MINECART)
+		if (me->mapx < map->width - 1 && GetTerrain(world, map->map[me->mapx + 1 + me->mapy * map->width].floor)->pathType & TRN_MINECART)
 			ok[0] = 1;
 		else
 			ok[0] = 0;
-		if (me->mapy < map->height - 1 && GetTerrain(world, map->map[me->mapx + (me->mapy + 1) * map->width].floor)->flags & TF_MINECART)
+		if (me->mapy < map->height - 1 && GetTerrain(world, map->map[me->mapx + (me->mapy + 1) * map->width].floor)->pathType & TRN_MINECART)
 			ok[1] = 1;
 		else
 			ok[1] = 0;
-		if (me->mapx > 0 && GetTerrain(world, map->map[me->mapx - 1 + me->mapy * map->width].floor)->flags & TF_MINECART)
+		if (me->mapx > 0 && GetTerrain(world, map->map[me->mapx - 1 + me->mapy * map->width].floor)->pathType & TRN_MINECART)
 			ok[2] = 1;
 		else
 			ok[2] = 0;
-		if (me->mapy > 0 && GetTerrain(world, map->map[me->mapx + (me->mapy - 1) * map->width].floor)->flags & TF_MINECART)
+		if (me->mapy > 0 && GetTerrain(world, map->map[me->mapx + (me->mapy - 1) * map->width].floor)->pathType & TRN_MINECART)
 			ok[3] = 1;
 		else
 			ok[3] = 0;
@@ -124,19 +124,19 @@ void AI_MineCart(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			me->x = x;
 			me->y = y;
 			// figure out which directions are valid minecart paths
-			if (me->mapx < map->width - 1 && GetTerrain(world, map->map[me->mapx + 1 + me->mapy * map->width].floor)->flags & TF_MINECART)
+			if (me->mapx < map->width - 1 && GetTerrain(world, map->map[me->mapx + 1 + me->mapy * map->width].floor)->pathType & TRN_MINECART)
 				ok[0] = 1;
 			else
 				ok[0] = 0;
-			if (me->mapy < map->height - 1 && GetTerrain(world, map->map[me->mapx + (me->mapy + 1) * map->width].floor)->flags & TF_MINECART)
+			if (me->mapy < map->height - 1 && GetTerrain(world, map->map[me->mapx + (me->mapy + 1) * map->width].floor)->pathType & TRN_MINECART)
 				ok[1] = 1;
 			else
 				ok[1] = 0;
-			if (me->mapx > 0 && GetTerrain(world, map->map[me->mapx - 1 + me->mapy * map->width].floor)->flags & TF_MINECART)
+			if (me->mapx > 0 && GetTerrain(world, map->map[me->mapx - 1 + me->mapy * map->width].floor)->pathType & TRN_MINECART)
 				ok[2] = 1;
 			else
 				ok[2] = 0;
-			if (me->mapy > 0 && GetTerrain(world, map->map[me->mapx + (me->mapy - 1) * map->width].floor)->flags & TF_MINECART)
+			if (me->mapy > 0 && GetTerrain(world, map->map[me->mapx + (me->mapy - 1) * map->width].floor)->pathType & TRN_MINECART)
 				ok[3] = 1;
 			else
 				ok[3] = 0;
@@ -230,6 +230,7 @@ void AI_Raft(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
 	int x, y;
 	byte tries;
+	byte terrain;
 
 	goodguy = GetGuyOfAIType(MONS_BOUAPHA);
 	if (!goodguy)
@@ -313,9 +314,11 @@ void AI_Raft(Guy* me, Map* map, world_t* world, Guy* goodguy)
 					}
 					if (mapTile_t* tile = map->TryGetTile(x, y); tile &&
 						tile->wall == 0 &&
-						!(GetItem(tile->item)->flags & IF_SOLID) &&
-						!(GetTerrain(world, tile->floor)->flags & (TF_SOLID | TF_WATER | TF_LAVA)))
+						!(GetItem(tile->item)->flags & IF_SOLID))
 					{
+						terrain = GetTerrain(world, tile->floor)->type;
+						if (terrain == TRN_SOLID || terrain == TRN_WATER || terrain == TRN_LAVA)
+							return;
 						me->facing = tries;
 						me->x = (me->mapx * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
 						me->y = (me->mapy * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
@@ -341,7 +344,8 @@ void AI_Raft(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 			}
 			// otherwise if it's not water, we're done
-			if (!(GetTerrain(world, map->GetTile(x, y)->floor)->flags & (TF_WATER | TF_LAVA)))
+			terrain = GetTerrain(world, map->GetTile(x, y)->floor)->type;
+			if (!(terrain == TRN_WATER || terrain == TRN_LAVA))
 			{
 				me->x = (me->mapx * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
 				me->y = (me->mapy * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;

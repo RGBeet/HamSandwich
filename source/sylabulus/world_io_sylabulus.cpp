@@ -506,8 +506,14 @@ byte Syl_SaveWorld(const world_t* world, const char* fname)
 	terrain.write_varint(world->numTiles);
 	for (const terrain_t& t : world->Terrain())
 	{
-		terrain.write_varint(t.flags);
+		terrain.write_varint(t.type);
+		terrain.write_varint(t.change);
+		terrain.write_varint(t.transparent);
+		terrain.write_varint(t.shadowless);
+		terrain.write_varint(t.value);
 		terrain.write_varint(t.next);
+		terrain.write_varint(t.restrict);
+		terrain.write_varint(t.pathType);
 		terrain.write_varint(0);  // no extension flags
 	}
 
@@ -597,6 +603,54 @@ byte Syl_SaveWorld(const world_t* world, const char* fname)
 	return 1;
 }
 
+terrain_t ConvertOldTerrain(TileFlags flags, word next)
+{
+	terrain_t terrain{};
+
+	terrain.next = next;
+
+	terrain.type		= TRN_NORMAL;
+	terrain.change		= TRN_NOCHANGE;
+	terrain.restrict	= TRN_NORESTRICT;
+
+	if (flags & TF_SOLID)
+		terrain.type = TRN_SOLID;
+	else if (flags & TF_ICE)
+		terrain.type = TRN_ICE;
+	else if (flags & TF_MUD)
+		terrain.type = TRN_MUD;
+	else if (flags & TF_WATER)
+		terrain.type = TRN_WATER;
+	else if (flags & TF_LAVA)
+		terrain.type = TRN_LAVA;
+	else if (flags & TF_PUSHY)
+		terrain.type = TRN_PUSHABLE;
+	else if (flags & TF_PUSHON)
+		terrain.type = TRN_PUSHON;
+
+	if (flags & TF_ANIM)
+		terrain.change = TRN_ANIM;
+	else if (flags & TF_STEP)
+		terrain.change = TRN_STEP;
+	else if (flags & TF_DESTRUCT)
+		terrain.change = TRN_DESTRUCT;
+
+	if (flags & TF_NOENEMY)
+		terrain.restrict = TRN_NOENEMY;
+	else if (flags & TF_NOGHOST)
+		terrain.restrict = TRN_NOGHOST;
+
+	if (flags & TF_MINECART)
+		terrain.pathType = TRN_MINECART;
+	else if (flags & TF_BUNNY)
+		terrain.pathType = TRN_BUNNY;
+
+	terrain.transparent = (flags & TF_TRANS) != 0;
+	terrain.shadowless = (flags & TF_SHADOWLESS) != 0;
+
+	return terrain;
+}
+
 byte Syl_LoadWorld(world_t* world, const char* fname)
 {
 	hamworld::Load load(fname);
@@ -659,13 +713,27 @@ byte Syl_LoadWorld(world_t* world, const char* fname)
 		}
 		else if (section_name == "terrain")
 		{
+			printf("READING TERRAIN!");
+			word n=0;
 			world->numTiles = section.read_varint();
 			for (terrain_t& terrain : world->Terrain())
 			{
-				terrain.flags = (TileFlags)section.read_varint();
-				terrain.next = section.read_varint();
+				terrain.type		= (TerrainType)section.read_varint();
+				terrain.change		= (TerrainChange)section.read_varint();
+				terrain.transparent = section.read_varint();
+				terrain.shadowless	= section.read_varint();
+				terrain.value		= section.read_varint();
+				terrain.next		= section.read_varint();
+				terrain.restrict	= (TerrainRestriction)section.read_varint();
+				terrain.pathType	= (TerrainPathType)section.read_varint();
+
 				section.read_varint();  // ignore extension flags
+				n++;
 			}
+		}
+		else if (section_name == "terrain_data") // new terrain data
+		{
+			// ???
 		}
 		else if (section_name == "map")
 		{

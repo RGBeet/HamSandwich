@@ -17,6 +17,7 @@
 #include "exportdialog.h"
 #include "steam.h"
 #include "spclglobal.h"
+#include "water.h"
 
 byte editing = 0;
 
@@ -83,6 +84,7 @@ byte InitEditor(void)
 	viewMenu=0;
 	editMenu=1;
 	editing=1;
+	SetupWater();
 	editMode=EDITMODE_HELP;
 	InitEditHelp(HELP_BASIC);
 

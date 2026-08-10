@@ -5,9 +5,7 @@
 #include "worldstitch.h"
 #include "log.h"
 #include "appdata.h"
-#include "world_io_legacy.h"
 #include "world_io_supreme.h"
-#include "world_io_ham1.h"
 #include "world_io_sylabulus.h"
 #include "map.h"
 #include "special.h"
@@ -19,8 +17,10 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 	int i;
 
 	ClearCustomSounds();
+
 	world->numMaps=1;
 	mgl->LoadBMP("tilegfx/tiles.bmp");
+
 	world->numTiles=400;
 	world->tilegfx.numTiles = world->numTiles;
 	world->tilegfx.SetTiles(mgl->GetScreen(), mgl->GetWidth(), mgl->GetHeight());
@@ -68,11 +68,6 @@ bool LoadWorld(world_t *world,const char *fname)
 	else if (!strcmp(code, "SUPREME!"))
 	{
 		return Supreme_LoadWorld(world, fname, f.get());
-	}
-	else
-	{
-		ClearCustomSounds();
-		return Legacy_LoadWorld(world, f.get());
 	}
 }
 
@@ -126,11 +121,6 @@ bool GetWorldName(const char *fname, StringDestination name, StringDestination a
 	{
 		return Supreme_GetWorldName(f.get(), name, author);
 	}
-	else
-	{
-		author.assign("Unknown Author");
-		return Legacy_GetWorldName(f.get(), name);
-	}
 }
 
 void FreeWorld(world_t *world)
@@ -179,6 +169,36 @@ terrain_t *GetTerrain(world_t *w,word tile)
 		return &w->terrain[tile];
 
 	static terrain_t fake;
-	fake = {{}, 0};
+	fake = {{}};
 	return &fake;
+}
+
+byte IsTerrainAqueous(world_t* w, word tile)
+{
+	terrain_t* terrain = GetTerrain(w, tile);
+
+	if (!terrain)
+		return 0;
+
+	return terrain->type == TRN_WATER || terrain->type == TRN_LAVA;
+}
+
+byte IsTerrainSolid(world_t* w, word tile)
+{
+	terrain_t* terrain = GetTerrain(w, tile);
+
+	if (!terrain)
+		return 0;
+
+	return terrain->type == TRN_SOLID;
+}
+
+byte IsTerrainAqueousOrSolid(world_t* w, word tile)
+{
+	terrain_t* terrain = GetTerrain(w, tile);
+
+	if (!terrain)
+		return 0;
+
+	return terrain->type == TRN_WATER || terrain->type == TRN_LAVA || terrain->type == TRN_SOLID;
 }

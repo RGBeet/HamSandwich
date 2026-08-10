@@ -22,6 +22,7 @@
 #include "pickmenu.h"
 #include "pathfinding.h"
 #include "jamulsound.h"
+#include "water.h"
 
 byte showStats=0;
 dword gameStartTime,visFrameCount,updFrameCount;
@@ -73,8 +74,11 @@ void LunaticInit(MGLDraw *mgl)
 	SeedRNG();
 	InitControls();
 	msgFromOtherModules=0;
+	InitWater();
+
 	JamulSoundVolume(profile.sound);
 	SetMusicVolume(profile.music);
+
 	InitHiScores();
 }
 
@@ -89,6 +93,8 @@ void LunaticExit(void)
 	ExitPlayer();
 	ExitInterface();
 	FreeProfile();
+	ExitWater();
+	// maybe add extra for other stuff? (e.g. exitchatstuff)
 	StopSong();
 }
 
@@ -189,7 +195,7 @@ byte InitLevel(byte map)
 		CompleteGoal(70);
 
 	CheckSpecialsAtInit(curMap);
-
+	SetupWater();
 	curMap->InitPathNodes(&curWorld);
 	GetPathfinder()->SetMap(curMap,&curWorld);
 
@@ -789,7 +795,7 @@ TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 
 	InitGlobalSpecials(curWorld.special);
 
-	if(!strcmp(fname,"tutorial.dlw"))
+	if(!strcmp(fname,"tutorial.psw"))
 		tutorial=1;
 	else
 		tutorial=0;

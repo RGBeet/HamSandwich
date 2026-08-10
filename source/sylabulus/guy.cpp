@@ -145,7 +145,7 @@ void TryToPush(Guy *me,int x,int y,Map *map,world_t *world)
 		return;	// can't push into a wall
 	if(tile->item)
 		return;	// can't push into any item
-	if(GetTerrain(world,tile->floor)->flags&TF_PUSHON)
+	if(GetTerrain(world,tile->floor)->type == TRN_PUSHON)
 	{
 		// it passed every single test. the only thing left is to see if it would overlap
 		// any badguys, which would not be good
@@ -180,7 +180,7 @@ byte TryToPushItem(int x,int y,int destx,int desty,Map *map,world_t *world)
 		return 0;	// can't push into a wall
 	if(tile->item)
 		return 0;	// can't push into any item
-	if(GetTerrain(world,tile->floor)->flags&TF_PUSHON)
+	if(GetTerrain(world,tile->floor)->type == TRN_PUSHON)
 	{
 		// it passed every single test. the only thing left is to see if it would overlap
 		// any badguys, which would not be good
@@ -213,22 +213,25 @@ byte Walkable(Guy *me,int x,int y,Map *map,world_t *world)
 	if(m->wall && !(MonsterFlags(me->type,me->aiType)&MF_WALLWALK))
 		result=0;
 
-	if((MonsterFlags(me->type,me->aiType)&MF_WALLWALK) && (GetTerrain(world,m->floor)->flags&TF_NOGHOST))
+	if((MonsterFlags(me->type,me->aiType)&MF_WALLWALK) && (GetTerrain(world,m->floor)->restrict&TRN_NOGHOST))
 		result=0;
 
-	if(!me->friendly && (GetTerrain(world,m->floor)->flags&TF_NOENEMY))
+	if(!me->friendly && (GetTerrain(world,m->floor)->restrict&TRN_NOENEMY))
 		result=0;
 
-	if((GetTerrain(world,m->floor)->flags&(TF_WATER|TF_LAVA)) && (!(MonsterFlags(me->type,me->aiType)&(MF_WATERWALK|MF_FLYING))))
+	byte terrain = GetTerrain(world, m->floor)->type;
+	byte aqueous = (terrain == TRN_WATER || terrain == TRN_LAVA);
+
+	if(aqueous && (!(MonsterFlags(me->type,me->aiType)&(MF_WATERWALK|MF_FLYING))))
 	{
 		if(me->aiType!=MONS_BOUAPHA)
 			result=0;
 	}
 
-	if((GetTerrain(world,m->floor)->flags&TF_SOLID) && (!(MonsterFlags(me->type,me->aiType)&(MF_FLYING|MF_WALLWALK))))
+	if((terrain == TRN_SOLID) && (!(MonsterFlags(me->type,me->aiType)&(MF_FLYING|MF_WALLWALK))))
 		result=0; // impassable
 
-	if((GetTerrain(world,m->floor)->flags&TF_PUSHY) && me->aiType==MONS_BOUAPHA)
+	if((terrain == TRN_PUSHABLE) && me->aiType==MONS_BOUAPHA)
 	{
 		TryToPush(me,x,y,map,world);
 	}
@@ -240,7 +243,7 @@ byte Walkable(Guy *me,int x,int y,Map *map,world_t *world)
 	}
 	else if(MonsterFlags(me->type,me->aiType)&MF_AQUATIC)
 	{
-		if(!(GetTerrain(world,m->floor)->flags&(TF_WATER|TF_LAVA)))
+		if(!aqueous)
 			result=0;
 		if(m->wall)
 			result=0;
@@ -546,10 +549,10 @@ byte EntityIsGoodguy(int type)
 	}
 }
 
-byte EntityCanInteractWithGround(Guy *g, Map *map, world_t *world, byte flag)
+byte EntityCanInteractWithGround(Guy *g, Map *map, world_t *world, byte type)
 {
 	byte pass = (g->hp>0) && (g->z<1)
-		&& (GetTerrain(world, map->GetTile(g->mapx, g->mapy)->floor)->flags & flag)
+		&& (GetTerrain(world, map->GetTile(g->mapx, g->mapy)->floor)->type == type)
 		&& !(MonsterFlags(g->type, g->aiType) & (MF_AQUATIC|MF_FLYING));
 
 	if (EntityIsPlayer(g->aiType))
@@ -829,8 +832,7 @@ void Guy::Update(Map *map,world_t *world)
 		if(player.torch)
 			map->TempTorch(mapx,mapy,64);
 
-		// standing on water!!!!!!!  DROWN!!!!
-		if(EntityCanInteractWithGround(this,map,world,TF_WATER))
+		if(EntityCanInteractWithGround(this,map,world,TRN_WATER)) // water - instant death?!
 		{
 			// if there's a raft, hop on instead of dying
 			if(!RaftNearby())
@@ -855,8 +857,7 @@ void Guy::Update(Map *map,world_t *world)
 					CompleteGoal(57);	// fell in water while shielded
 			}
 		}
-		// standing on lava, OW!
-		if(EntityCanInteractWithGround(this,map,world,TF_LAVA))
+		if(EntityCanInteractWithGround(this,map,world,TRN_LAVA)) // lava - hurts a little, burns the player
 		{
 			if(!RaftNearby())
 			{
@@ -877,8 +878,28 @@ void Guy::Update(Map *map,world_t *world)
 				burnFlip=1-burnFlip;
 			}
 		}
+		if(EntityCanInteractWithGround(this,map,world,TRN_QUICKSAND)) // quicksand - sucks you in if you're not moving enough
+		{
+			if ((abs(dx) + abs(dy) < 1) && !ouch)
+			{
+				GetShot(0, 0, 16, map, world);
+				MakeNormalSound(SND_GLUP);
+				if (hp == 0)	// drown
+				{
+					seq = ANIM_A3;
+					frm = 9;
+					dx = 0;
+					dy = 0;
+					frmAdvance = 128;
+					frmTimer = 0;
+					action = ACTION_BUSY;
+					MakeNormalSound(SND_DEATHRAY);
+				}
+			}
+		}
+
 		if((oldmapx!=mapx || oldmapy!=mapy) &&
-			(GetTerrain(world,map->GetTile(mapx,mapy)->floor)->flags&TF_STEP))
+			(GetTerrain(world,map->GetTile(mapx,mapy)->floor)->change == TRN_STEP))
 		{
 			map->GetTile(mapx,mapy)->floor=GetTerrain(world,map->GetTile(mapx,mapy)->floor)->next;
 		}
@@ -3978,4 +3999,25 @@ void Guy::AvoidGuys()
 			this->dy += dy;
 		}
 	}
+}
+
+byte TerrainCheck(Guy* g, byte target, mapTile_t* mapTile, world_t* world)
+{
+	if (!g || EntityIsNoneOrNobody(g->type))
+		return 0;
+
+	return GetTerrain(world, mapTile->floor)->type == target; // matches target terrain type
+}
+
+byte ConveyorCheck(Guy* g, mapTile_t* mapTile, world_t* world)
+{
+	if (!g || EntityIsNoneOrNobody(g->type))
+		return 0;
+
+	for(int i=TRN_CNVYDN; i< TRN_CNVYRG; i++) // loop through conveyor ids (up, down, left, right)
+	{
+		if (TerrainCheck(g, i, mapTile, world))
+			return i; // return id
+	}
+	return 0;
 }

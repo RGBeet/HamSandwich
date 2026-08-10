@@ -39,22 +39,68 @@ constexpr MapRenderFlags MAP_SHOWITEMS = MAP_SHOWPICKUPS | MAP_SHOWOTHERITEMS;  
 // Map flags. SERIALIZED.
 enum LevelFlags : word
 {
-	MAP_SNOWING     = 1 << 0,
-	MAP_RAIN        = 1 << 1,
-	MAP_HUB         = 1 << 2,
-	MAP_SECRET      = 1 << 3,
-	MAP_TORCHLIT    = 1 << 4,
-	MAP_WELLLIT     = 1 << 5,
-	MAP_STARS       = 1 << 6,
-	MAP_UNDERWATER  = 1 << 7,
-	MAP_LAVA        = 1 << 8,
-	MAP_STEALTH     = 1 << 9,
-	MAP_WAVY        = 1 << 10,
-	MAP_OXYGEN      = 1 << 11,
+	MAP_SNOWING     = 1 << 0, // weather: snowing, conflicts wth rain
+	MAP_RAIN        = 1 << 1, // weather: raining, conflicts wth snow
+	MAP_HUB         = 1 << 2, // is a hub? conflicts with secret
+	MAP_SECRET      = 1 << 3, // is a secret? conflicts with hub
+	MAP_TORCHLIT    = 1 << 4, // mutually exclusive with torch lit
+	MAP_WELLLIT     = 1 << 5, // mutually exclusive with torch lit
+	MAP_STARS       = 1 << 6, // doesn't conflict with anything
+	MAP_UNDERWATER  = 1 << 7,  // mutually exclusive with underlava and wavy
+	MAP_LAVA        = 1 << 8, // mutually exclusive with underwater and wavy
+	MAP_STEALTH     = 1 << 9, // doesn't conflict with anything
+	MAP_WAVY        = 1 << 10, // mutually exclusive with underwater and underlava
+	MAP_OXYGEN      = 1 << 11,  // mutually exclusive with underwater
 };
 BITFLAGS(LevelFlags)
 constexpr int NUM_LVL_FLAGS = 12;
 const char* MapFlagName(int flagIndex);  // expects 0, 1, 2, 3, not the constants above
+
+enum MapType : byte
+{
+	MAP_TYPE_NORMAL,
+	MAP_TYPE_HUB,			// doesn't count as a regular level
+	MAP_TYPE_SECRET,		// doesn't count in level counts
+	MAP_TYPE_BOSS,			// houses a boss
+	MAP_TYPE_KEYCHAIN,		// is a certified keychain level!! WOOHOO!!
+	MAP_TYPE_MAX,
+};
+
+enum MapWeather : byte
+{
+	MAP_WEATHER_NONE,
+	MAP_WEATHER_RAIN,
+	MAP_WEATHER_SNOW,
+	MAP_WEATHER_SAKURA,
+	MAP_WEATHER_MAX
+};
+
+enum MapLighting : byte
+{
+	MAP_LIGHT_NORMAL,		// normal lighting
+	MAP_LIGHT_TORCH,		// torch-lit
+	MAP_LIGHT_LANTERN,		// larger lighting
+	MAP_LIGHT_STEALTH,		// anti-lighting, conflicts with other lighting
+	MAP_LIGHT_MAX		
+};
+
+enum MapEnvironment : byte
+{
+	MAP_ENV_NORMAL,
+	MAP_ENV_UNDERWATER,		// auto includes oxygen
+	MAP_ENV_OXYGEN,			// like underwater, but NOT blue
+	MAP_ENV_SUPERHOT,		// underlava = hurts you periodically!
+	MAP_ENV_OUTERSPACE,		// low gravity
+	MAP_ENV_MAX				// low gravity
+};
+
+enum MapTypeFlags : dword
+{
+	MAP_FLG_STARRY	= 1 << 0,
+	MAP_FLG_WAVY	= 1 << 1,
+};
+
+
 
 // map updating modes
 enum
@@ -158,9 +204,12 @@ class Map
 		word numBrains;
 		word numCandles;
 		word itemDrops;	// how often items drop, a fixshifted percent
+
 		std::array<mapBadguy_t, MAX_MAPMONS> badguy;
 		std::array<special_t, MAX_SPECIAL> special;
-		std::array<marker_t, MAX_MARKER> marker;
+
+		// NEW STUFF GOES DOWN HERE
+		std::array<marker_t, MAX_MARKER> marker; // used to help pathfinding, a WIP!
 
 		std::vector<PathNode> nodes;
 		void InitPathNodes(world_t* world);

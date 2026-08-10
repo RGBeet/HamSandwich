@@ -33,24 +33,51 @@ bool Supreme_GetWorldName(SDL_IOStream *f, StringDestination name, StringDestina
 // SERIALIZED.
 struct IoTerrain
 {
-	word flags;
-	word next;
-};
-static_assert(sizeof(IoTerrain) == 4);
+	TerrainType type;				// base terrain type
+	TerrainChange change;			// animation stuff
 
-static terrain_t LoadOneTerrain(IoTerrain io_terrain)
+	byte transparent;				// is the roof transparent?
+	byte shadowless;				// is the wall shadowless?
+	byte value;
+	word next;
+
+	TerrainRestriction restrict;	// who cannot walk on this
+	word pathType;					// minecart/bunny path stuff
+
+	word stepNoise;
+	byte fancy;
+};
+static_assert(sizeof(IoTerrain) == 16);
+
+static terrain_t LoadOneTerrain(const IoTerrain& io_terrain)
 {
-	terrain_t r = { (TileFlags)io_terrain.flags, static_cast<word>(io_terrain.next & 0x3ff) };
-	if (io_terrain.next & (1 << 15))
-		r.flags |= TF_SHADOWLESS;
+	terrain_t r{};
+
+	r.type = io_terrain.type;
+	r.change = io_terrain.change;
+	r.transparent = io_terrain.transparent;
+	r.shadowless = io_terrain.shadowless;
+	r.value = io_terrain.value;
+	r.next = io_terrain.next;
+	r.restrict = io_terrain.restrict;
+	r.pathType = io_terrain.pathType;
+
 	return r;
 }
 
-static IoTerrain SaveOneTerrain(terrain_t terrain)
+static IoTerrain SaveOneTerrain(const terrain_t& terrain)
 {
-	IoTerrain r = { static_cast<word>(terrain.flags & 0xffffff), terrain.next };
-	if (terrain.flags & TF_SHADOWLESS)
-		r.next |= (1 << 15);
+	IoTerrain r{};
+
+	r.type = terrain.type;
+	r.change = terrain.change;
+	r.transparent = terrain.transparent;
+	r.shadowless = terrain.shadowless;
+	r.value = terrain.value;
+	r.next = terrain.next;
+	r.restrict = terrain.restrict;
+	r.pathType = terrain.pathType;
+
 	return r;
 }
 
@@ -82,23 +109,6 @@ static void LoadTerrain(world_t *world, const char *fname, SDL_IOStream *f)
 		IoTerrain io_terrain;
 		SDL_ReadIO(f, &io_terrain, sizeof(IoTerrain));
 		terrain = LoadOneTerrain(io_terrain);
-	}
-
-	// In 2012, Shadowless Wall was added as an additional meaning of the
-	// Transparent Roof flag. However, only about 10 worlds since then have
-	// used the feature, while about 150 worlds from before that point are at
-	// some risk of unexpected appearance due to the change. Therefore, with
-	// the flags being split in 2023, only autofill the new flag for those
-	// specific worlds, indicated by the presence of this marker file.
-	std::string buf = fname;
-	buf.append(".shadowless");
-	if (AppdataOpen(buf.c_str()))
-	{
-		for (terrain_t &terrain : world->Terrain())
-		{
-			if (terrain.flags & TF_TRANS)
-				terrain.flags |= TF_SHADOWLESS;
-		}
 	}
 }
 
@@ -850,6 +860,7 @@ static bool Supreme_CanSaveMap(const Map *map)
 // Returns false if any limits of the `SUPREME!` .dlw format are exceeded.
 bool Supreme_CanSaveWorld(const world_t *world)
 {
+	return false;
 	// Basics
 	NO_IF(strlen(world->author) > 31);
 	NO_IF(strlen(world->map[0]->name) > 31);
@@ -858,12 +869,7 @@ bool Supreme_CanSaveWorld(const world_t *world)
 
 	// No conditions on tilegfx.
 
-	// Terrain
-	for (const terrain_t &terrain : world->Terrain())
-	{
-		NO_IF(terrain.flags >= (1 << 22)); // See comments in TileFlags enum.
-		NO_IF(terrain.next > UINT16_MAX);
-	}
+	// Does not check terrain.
 
 	// Maps
 	for (const Map *map : world->Maps())

@@ -1502,7 +1502,7 @@ void AI_Autozoid(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 		x = (me->x + me->dx) / (TILE_WIDTH * FIXAMT);
 		y = (me->y + me->dy) / (TILE_HEIGHT * FIXAMT);
-		if (mapTile_t* tile = map->TryGetTile(x, y); tile && !tile->wall && !(GetTerrain(world, tile->floor)->flags & TF_MINECART))
+		if (mapTile_t* tile = map->TryGetTile(x, y); tile && !tile->wall && !(GetTerrain(world, tile->floor)->pathType & TRN_DRIVE))
 		{
 			// you would've gone offroad
 			me->dx = 0;
@@ -2047,14 +2047,14 @@ void AI_Yugo(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	{
 		if (RangeToTarget(me, goodguy) < 32 * FIXAMT && player.vehicle == 0)
 		{
-			if (!(GetTerrain(world, map->GetTile(me->mapx, me->mapy)->floor)->flags & TF_MINECART))
+			if (!(GetTerrain(world, map->GetTile(me->mapx, me->mapy)->floor)->pathType & TRN_DRIVE))
 			{
 				// somehow the car ended up on non-minecart ground.. ridiculous!
 				for (x = me->mapx - 1;x <= me->mapx + 1;x++)
 					for (y = me->mapy - 1;y <= me->mapy + 1;y++)
 					{
 						if (mapTile_t* tile = map->TryGetTile(x, y); tile &&
-							(GetTerrain(world, tile->floor)->flags & TF_MINECART) &&
+							(GetTerrain(world, tile->floor)->pathType & TRN_DRIVE) &&
 							tile->wall == 0 &&
 							!(GetItem(tile->item)->flags & (IF_SOLID | IF_BULLETPROOF)))
 						{
@@ -2095,7 +2095,7 @@ void AI_Yugo(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		y = (me->y + me->dy) / (TILE_HEIGHT * FIXAMT);
 		if (mapTile_t* tile = map->TryGetTile(x, y); tile &&
 			!tile->wall &&
-			!(GetTerrain(world, tile->floor)->flags & TF_MINECART))
+			!(GetTerrain(world, tile->floor)->pathType & TRN_DRIVE))
 		{
 			// you would've gotten off of driveable terrain
 			me->mind3 = 0;
@@ -2145,7 +2145,7 @@ void AI_Yugo(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			return;
 		}
 
-		if (!(GetTerrain(world, map->map[me->mapx + me->mapy * map->width].floor)->flags & TF_ICE) && me->z == 0)
+		if (!(GetTerrain(world, map->map[me->mapx + me->mapy * map->width].floor)->type == TRN_ICE) && me->z == 0)
 		{
 			Dampen(&me->dx, FIXAMT / 8);
 			Dampen(&me->dy, FIXAMT / 8);
@@ -2191,7 +2191,7 @@ void AI_Yugo(Guy* me, Map* map, world_t* world, Guy* goodguy)
 					me->dy += Sine(me->mind2) / 32;
 			}
 		}
-		if ((GetTerrain(world, map->map[me->mapx + me->mapy * map->width].floor)->flags & TF_MUD) && me->z == 0)
+		if ((GetTerrain(world, map->map[me->mapx + me->mapy * map->width].floor)->type == TRN_MUD) && me->z == 0)
 		{
 			Dampen(&me->dx, FIXAMT / 4);
 			Dampen(&me->dy, FIXAMT / 4);
@@ -2201,12 +2201,12 @@ void AI_Yugo(Guy* me, Map* map, world_t* world, Guy* goodguy)
 				SpurtParticles(PART_DIRT, 1, me->x, me->y, FIXAMT * 4, ((me->mind2) + 128) & 255, 3);
 			}
 		}
-		if ((GetTerrain(world, map->map[me->mapx + me->mapy * map->width].floor)->flags & TF_RUBBER) && me->z == 0)
+		if ((GetTerrain(world, map->map[me->mapx + me->mapy * map->width].floor)->type == TRN_MUD) && me->z == 0)
 		{
 			me->dz = FIXAMT * 16;
 			MakeSound(SND_BOING + Random(3), me->x, me->y, SND_CUTOFF, 2);
 		}
-		if ((GetTerrain(world, map->map[me->mapx + me->mapy * map->width].floor)->flags & TF_WATER) && me->z == 0)
+		if ((GetTerrain(world, map->map[me->mapx + me->mapy * map->width].floor)->type & TRN_MUD) && me->z == 0)
 		{
 			goodguy->dx = 0;
 			goodguy->dy = 0;
@@ -4533,26 +4533,26 @@ void AI_Traffic(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		me->x = x;
 		me->y = y;
 		// figure out which directions are valid minecart paths
-		if (me->mapx < map->width - 1 && (GetTerrain(world, map->map[me->mapx + 1 + me->mapy * map->width].floor)->flags & TF_MINECART) &&
-			!(GetTerrain(world, map->map[me->mapx + 1 + me->mapy * map->width].floor)->flags & TF_SOLID) &&
+		if (me->mapx < map->width - 1 && (GetTerrain(world, map->map[me->mapx + 1 + me->mapy * map->width].floor)->pathType & TRN_DRIVE) &&
+			!(GetTerrain(world, map->map[me->mapx + 1 + me->mapy * map->width].floor)->pathType & TF_SOLID) &&
 			!(GetItem(map->map[me->mapx + 1 + me->mapy * map->width].item)->flags & IF_SOLID))
 			ok[0] = 1;
 		else
 			ok[0] = 0;
-		if (me->mapy < map->height - 1 && (GetTerrain(world, map->map[me->mapx + (me->mapy + 1) * map->width].floor)->flags & TF_MINECART) &&
-			!(GetTerrain(world, map->map[me->mapx + (me->mapy + 1) * map->width].floor)->flags & TF_SOLID) &&
+		if (me->mapy < map->height - 1 && (GetTerrain(world, map->map[me->mapx + (me->mapy + 1) * map->width].floor)->pathType & TRN_DRIVE) &&
+			!(GetTerrain(world, map->map[me->mapx + (me->mapy + 1) * map->width].floor)->pathType & TF_SOLID) &&
 			!(GetItem(map->map[me->mapx + (me->mapy + 1) * map->width].item)->flags & IF_SOLID))
 			ok[1] = 1;
 		else
 			ok[1] = 0;
-		if (me->mapx > 0 && (GetTerrain(world, map->map[me->mapx - 1 + me->mapy * map->width].floor)->flags & TF_MINECART) &&
-			!(GetTerrain(world, map->map[me->mapx - 1 + me->mapy * map->width].floor)->flags & TF_SOLID) &&
+		if (me->mapx > 0 && (GetTerrain(world, map->map[me->mapx - 1 + me->mapy * map->width].floor)->pathType & TRN_DRIVE) &&
+			!(GetTerrain(world, map->map[me->mapx - 1 + me->mapy * map->width].floor)->pathType & TF_SOLID) &&
 			!(GetItem(map->map[me->mapx - 1 + me->mapy * map->width].item)->flags & IF_SOLID))
 			ok[2] = 1;
 		else
 			ok[2] = 0;
-		if (me->mapy > 0 && (GetTerrain(world, map->map[me->mapx + (me->mapy - 1) * map->width].floor)->flags & TF_MINECART) &&
-			!(GetTerrain(world, map->map[me->mapx + (me->mapy - 1) * map->width].floor)->flags & TF_SOLID) &&
+		if (me->mapy > 0 && (GetTerrain(world, map->map[me->mapx + (me->mapy - 1) * map->width].floor)->pathType & TRN_DRIVE) &&
+			!(GetTerrain(world, map->map[me->mapx + (me->mapy - 1) * map->width].floor)->pathType & TF_SOLID) &&
 			!(GetItem(map->map[me->mapx + (me->mapy - 1) * map->width].item)->flags & IF_SOLID))
 			ok[3] = 1;
 		else

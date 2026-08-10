@@ -4,6 +4,7 @@
 #include "sound.h"
 #include "bullet.h"
 #include "player.h"
+#include "world.h"
 
 void AI_GoodTurret(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
@@ -361,7 +362,7 @@ void AI_Mattie2Body(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 static byte IsBunnyAble(const mapTile_t* m, world_t* world)
 {
-	if (!(GetTerrain(world, m->floor)->flags & TF_BUNNY))
+	if (!(GetTerrain(world, m->floor)->pathType & TRN_BUNNY))
 		return 0;
 
 	if (GetItem(m->item)->flags & IF_SOLID)
@@ -1561,7 +1562,7 @@ void AI_MossRapido(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			// left
 			if (mapTile_t* tile = map->TryGetTile(x - 1, y); tile &&
 				tile->wall == 0 &&
-				(GetTerrain(world, tile->floor)->flags & (TF_WATER | TF_LAVA | TF_SOLID)) == 0 &&
+				(!IsTerrainAqueousOrSolid(world,tile->floor)) &&
 				!(GetItem(tile->item)->flags & (IF_SOLID | IF_BULLETPROOF))
 				&& (!MossCheck(x - 1, y)))
 			{
@@ -1582,7 +1583,7 @@ void AI_MossRapido(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			// right
 			if (mapTile_t* tile = map->TryGetTile(x + 1, y); tile &&
 				tile->wall == 0 &&
-				(GetTerrain(world, tile->floor)->flags & (TF_WATER | TF_LAVA | TF_SOLID)) == 0 &&
+				(!IsTerrainAqueousOrSolid(world, tile->floor)) &&
 				!(GetItem(tile->item)->flags & (IF_SOLID | IF_BULLETPROOF))
 				&& (!MossCheck(x + 1, y)))
 			{
@@ -1603,7 +1604,7 @@ void AI_MossRapido(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			// up
 			if (mapTile_t* tile = map->TryGetTile(x, y - 1); tile &&
 				tile->wall == 0 &&
-				(GetTerrain(world, tile->floor)->flags & (TF_WATER | TF_LAVA | TF_SOLID)) == 0 &&
+				(!IsTerrainAqueousOrSolid(world, tile->floor)) &&
 				!(GetItem(tile->item)->flags & (IF_SOLID | IF_BULLETPROOF))
 				&& (!MossCheck(x, y - 1)))
 			{
@@ -1624,7 +1625,7 @@ void AI_MossRapido(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			// down
 			if (mapTile_t* tile = map->TryGetTile(x, y + 1); tile &&
 				tile->wall == 0 &&
-				(GetTerrain(world, tile->floor)->flags & (TF_WATER | TF_LAVA | TF_SOLID)) == 0 &&
+				(!IsTerrainAqueousOrSolid(world, tile->floor)) &&
 				!(GetItem(tile->item)->flags & (IF_SOLID | IF_BULLETPROOF))
 				&& (!MossCheck(x, y + 1)))
 			{
@@ -1682,7 +1683,7 @@ void AI_Snowball(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		return;
 	}
 
-	if (GetTerrain(world, map->map[me->mapx + me->mapy * map->width].floor)->flags & (TF_WATER | TF_LAVA))
+	if (IsTerrainAqueous(world, map->map[me->mapx + me->mapy * map->width].floor))
 	{
 		me->hp = 1;
 		me->GetShot(0, 0, 1, map, world);

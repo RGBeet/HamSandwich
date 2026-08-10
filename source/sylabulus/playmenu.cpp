@@ -209,7 +209,7 @@ TASK(void) PlayMenu(MGLDraw *mgl)
 		}
 		if(done==3)  // go to tutorial
 		{
-			AWAIT PlayWorld(mgl, "tutorial.dlw");
+			AWAIT PlayWorld(mgl, "tutorial.psw");
 		}
 		if(done==4)  // campaign not working yet
 		{

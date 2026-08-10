@@ -86,10 +86,10 @@ byte Bulletable(byte type,Map *map,int x,int y)
 	{
 		if(tile->wall)
 		{
-			if(curWorld.terrain[tile->wall].flags&TF_DESTRUCT)
+			if(curWorld.terrain[tile->wall].change==TF_DESTRUCT)
 				tile->wall=curWorld.terrain[tile->wall].next;
 		}
-		if(curWorld.terrain[tile->floor].flags&TF_DESTRUCT)
+		if(curWorld.terrain[tile->floor].change==TF_DESTRUCT)
 			tile->floor=curWorld.terrain[tile->floor].next;
 		return 0;
 	}
@@ -470,9 +470,9 @@ void BulletHitFloor(bullet_t *me,Map *map,world_t *world)
 			me->z=0;
 			x=(me->x>>FIXSHIFT)/TILE_WIDTH;
 			y=(me->y>>FIXSHIFT)/TILE_HEIGHT;
-			if(GetTerrain(world,map->GetTile(x,y)->floor)->flags&TF_WATER)
+			if(GetTerrain(world,map->GetTile(x,y)->floor)->type == TF_WATER)
 				ExplodeParticles(PART_WATER,me->x,me->y,0,8);
-			else if(GetTerrain(world,map->GetTile(x,y)->floor)->flags&TF_LAVA)
+			else if(GetTerrain(world,map->GetTile(x,y)->floor)->type == TF_LAVA)
 				ExplodeParticles(PART_HAMMER,me->x,me->y,0,8);
 			break;
 		case BLT_BOMB:

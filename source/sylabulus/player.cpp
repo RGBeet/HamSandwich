@@ -1168,6 +1168,66 @@ void PlayerFirePowerArmor(Guy *me,byte mode)
 	GoalFire();
 }
 
+void DoJetpackLogic(Guy *me)
+{
+	if (me->mind1 & 1)
+	{
+		me->dx = -me->dx;
+		switch (me->facing)
+		{
+		case 0:
+			me->facing = 4;
+			break;
+		case 1:
+			me->facing = 3;
+			break;
+		case 2:
+		case 6:
+			break;
+		case 3:
+			me->facing = 1;
+			break;
+		case 4:
+			me->facing = 0;
+			break;
+		case 5:
+			me->facing = 7;
+			break;
+		case 7:
+			me->facing = 5;
+			break;
+		}
+	}
+	if (me->mind1 & 2)
+	{
+		me->dy = -me->dy;
+		switch (me->facing)
+		{
+		case 0:
+		case 4:
+			break;
+		case 1:
+			me->facing = 7;
+			break;
+		case 2:
+			me->facing = 6;
+			break;
+		case 3:
+			me->facing = 5;
+			break;
+		case 5:
+			me->facing = 3;
+			break;
+		case 6:
+			me->facing = 2;
+			break;
+		case 7:
+			me->facing = 1;
+			break;
+		}
+	}
+}
+
 void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 {
 	byte c;
@@ -1285,75 +1345,41 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	if(tportclock)
 		tportclock--;
 
-	// ice is slippery
-	if(!(GetTerrain(world,mapTile->floor)->flags&TF_ICE) || (player.hammerFlags&HMR_NOSKID))
+
+	byte terrainType	= GetTerrain(world, mapTile->floor)->type;
+	byte terrainValue	= GetTerrain(world, mapTile->floor)->value;
+
+	if (terrainType == TRN_SKY || terrainType == TRN_CLIFF) // sky
 	{
-		if((player.jetting || (me->z>0 && player.vehicle==0)) && me->mind1)
-		{
-			if(me->mind1&1)
-			{
-				me->dx=-me->dx;
-				switch(me->facing)
-				{
-					case 0:
-						me->facing=4;
-						break;
-					case 1:
-						me->facing=3;
-						break;
-					case 2:
-					case 6:
-						break;
-					case 3:
-						me->facing=1;
-						break;
-					case 4:
-						me->facing=0;
-						break;
-					case 5:
-						me->facing=7;
-						break;
-					case 7:
-						me->facing=5;
-						break;
-				}
-			}
-			if(me->mind1&2)
-			{
-				me->dy=-me->dy;
-				switch(me->facing)
-				{
-					case 0:
-					case 4:
-						break;
-					case 1:
-						me->facing=7;
-						break;
-					case 2:
-						me->facing=6;
-						break;
-					case 3:
-						me->facing=5;
-						break;
-					case 5:
-						me->facing=3;
-						break;
-					case 6:
-						me->facing=2;
-						break;
-					case 7:
-						me->facing=1;
-						break;
-				}
-			}
-		}
-		if(me->z==0 || player.jetting)
-		{
-			Dampen(&me->dx,PLYR_DECEL);
-			Dampen(&me->dy,PLYR_DECEL);
-		}
+		me->dx += (0 - me->dx) / 4;
+		me->dy += ((FIXAMT * 8) - me->dy) / 4;
+		if (terrainType == TRN_CLIFF && me->dy > FIXAMT*3)
+			ExplodeParticles2(PART_DIRT, me->x, me->y, 0, 5, 4);
 	}
-	else
+	if (terrainType >= TRN_CNVYUP && terrainType <= TRN_CNVYRG && me->z == 0) // conveyor terrain
+	{
+		x = 0;
+		y = 0;
+		switch (GetTerrain(world, mapTile->floor)->type)
+		{
+			case TRN_CNVYUP:
+				y = -(4 + terrainValue) * FIXAMT;
+				break;
+			case TRN_CNVYDN:
+				y = (4 + terrainValue) * FIXAMT;
+				break;
+			case TRN_CNVYLF:
+				x = -(4 + terrainValue) * FIXAMT;
+				break;
+			case TRN_CNVYRG:
+				x = (4 + terrainValue) * FIXAMT;
+				break;
+		}
+		// ease towards the intended direction
+		me->dx += (x - me->dx) / 4;
+		me->dy += (y - me->dy) / 4;
+	}
+	else if (terrainType == TRN_ICE && me->z == 0 && !(player.hammerFlags&HMR_NOSKID)) // ice terrain
 	{
 		if(!player.jetting && me->mind1)	// bumped a wall while on ice
 		{
@@ -1363,65 +1389,28 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 				me->dy=-me->dy/8;
 		}
 		if((player.jetting || (me->z>0 && player.vehicle==0)) && me->mind1)
+			DoJetpackLogic(me);
+	}
+	else if (terrainType == TRN_RUBBER && me->z == 0) // rubber terrain
+	{
+		me->dz = 16 * FIXAMT;
+		me->dx += Cosine(me->facing * 32);
+		me->dy += Sine(me->facing * 32);
+		Clamp(&me->dx, PLYR_MAXSPD);
+		Clamp(&me->dy, PLYR_MAXSPD);
+		MakeSound(SND_BOING + Random(3), me->x, me->y, SND_CUTOFF, 2);
+	}
+	else // default terrain
+	{
+		if ((player.jetting || (me->z > 0 && player.vehicle == 0)) && me->mind1)
+			DoJetpackLogic(me);
+		if (me->z == 0 || player.jetting)
 		{
-			if(me->mind1&1)
-			{
-				me->dx=-me->dx;
-				switch(me->facing)
-				{
-					case 0:
-						me->facing=4;
-						break;
-					case 1:
-						me->facing=3;
-						break;
-					case 2:
-					case 6:
-						break;
-					case 3:
-						me->facing=1;
-						break;
-					case 4:
-						me->facing=0;
-						break;
-					case 5:
-						me->facing=7;
-						break;
-					case 7:
-						me->facing=5;
-						break;
-				}
-			}
-			if(me->mind1&2)
-			{
-				me->dy=-me->dy;
-				switch(me->facing)
-				{
-					case 0:
-					case 4:
-						break;
-					case 1:
-						me->facing=7;
-						break;
-					case 2:
-						me->facing=6;
-						break;
-					case 3:
-						me->facing=5;
-						break;
-					case 5:
-						me->facing=3;
-						break;
-					case 6:
-						me->facing=2;
-						break;
-					case 7:
-						me->facing=1;
-						break;
-				}
-			}
+			Dampen(&me->dx, PLYR_DECEL);
+			Dampen(&me->dy, PLYR_DECEL);
 		}
 	}
+
 	me->mind1=0;
 
 	if(me->ouch==4)
@@ -1542,15 +1531,6 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		}
 	}
 
-	if((GetTerrain(world,mapTile->floor)->flags&TF_RUBBER) && me->z==0)
-	{
-		me->dz=16*FIXAMT;
-		me->dx+=Cosine(me->facing*32);
-		me->dy+=Sine(me->facing*32);
-		Clamp(&me->dx,PLYR_MAXSPD);
-		Clamp(&me->dy,PLYR_MAXSPD);
-		MakeSound(SND_BOING+Random(3),me->x,me->y,SND_CUTOFF,2);
-	}
 	// triggering stuff
 	if(me->action==ACTION_BUSY)
 	{
@@ -1676,46 +1656,41 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	// if you are moving indeed
 	if((c&(CONTROL_UP|CONTROL_DN|CONTROL_LF|CONTROL_RT)) && (!player.jetting || me->z==0) && (player.vehicle!=VE_RAFT && player.vehicle!=VE_MINECART))
 	{
-		if(!(GetTerrain(world,mapTile->floor)->flags&TF_ICE) || (player.hammerFlags&HMR_NOSKID))
-		{
-			me->dx+=Cosine(me->facing*32)*3/2;
-			me->dy+=Sine(me->facing*32)*3/2;
-			if((Cosine(me->facing*32)<0 && me->dx>0) || (Cosine(me->facing*32)>0 && me->dx<0))
-				me->dx=0;
-			if((Sine(me->facing*32)<0 && me->dy>0) || (Sine(me->facing*32)>0 && me->dy<0))
-				me->dy=0;
-		}
-		else // ice is slippery
-		{
-			me->dx+=Cosine(me->facing*32)/4;
-			me->dy+=Sine(me->facing*32)/4;
-		}
+		terrainType = GetTerrain(world, mapTile->floor)->type;
 
-		if(!(GetTerrain(world,mapTile->floor)->flags&TF_MUD) || (player.hammerFlags&HMR_NOSKID))
+		if (terrainType == TRN_ICE && !(player.hammerFlags & HMR_NOSKID))
 		{
-			Clamp(&me->dx,PLYR_MAXSPD);
-			Clamp(&me->dy,PLYR_MAXSPD);
-
-			if(player.reload>0 && !(GetTerrain(world,mapTile->floor)->flags&TF_ICE))
+			me->dx += Cosine(me->facing * 32)/4;
+			me->dy += Sine(me->facing * 32)/4;
+			Clamp(&me->dx, PLYR_MAXSPD * 3/2);
+			Clamp(&me->dy, PLYR_MAXSPD * 3/2);
+		}
+		else if ((terrainType == TRN_MUD || terrainType == TRN_QUICKSAND) && !(player.hammerFlags & HMR_NOSKID))
+		{
+			me->dx += Cosine(me->facing * 32)*3/2;
+			me->dy += Sine(me->facing * 32)*3/2;
+			if ((Cosine(me->facing * 32) < 0 && me->dx > 0) || (Cosine(me->facing * 32) > 0 && me->dx < 0))
+				me->dx = 0;
+			if ((Sine(me->facing * 32) < 0 && me->dy > 0) || (Sine(me->facing * 32) > 0 && me->dy < 0))
+				me->dy = 0;
+			Clamp(&me->dx, PLYR_MAXSPD/2);
+			Clamp(&me->dy, PLYR_MAXSPD/2);
+			if (me->z == 0)
 			{
-				Clamp(&me->dx,PLYR_MAXSPD/2);
-				Clamp(&me->dy,PLYR_MAXSPD/2);
+				SpurtParticles(PART_DIRT, 0, me->x, me->y, 0, ((me->facing * 32) + 128) & 255, 8);
+				SpurtParticles(PART_DIRT, 1, me->x, me->y, 0, ((me->facing * 32) + 128) & 255, 8);
 			}
 		}
 		else
 		{
-			Clamp(&me->dx,PLYR_MAXSPD/2);
-			Clamp(&me->dy,PLYR_MAXSPD/2);
-			if(player.reload>0 && !(GetTerrain(world,mapTile->floor)->flags&TF_ICE))
-			{
-				Clamp(&me->dx,PLYR_MAXSPD/4);
-				Clamp(&me->dy,PLYR_MAXSPD/4);
-			}
-			if(me->z==0)
-			{
-				SpurtParticles(PART_DIRT,0,me->x,me->y,0,((me->facing*32)+128)&255,8);
-				SpurtParticles(PART_DIRT,1,me->x,me->y,0,((me->facing*32)+128)&255,8);
-			}
+			me->dx += Cosine(me->facing * 32) * 3 / 2;
+			me->dy += Sine(me->facing * 32) * 3 / 2;
+			if ((Cosine(me->facing * 32) < 0 && me->dx > 0) || (Cosine(me->facing * 32) > 0 && me->dx < 0))
+				me->dx = 0;
+			if ((Sine(me->facing * 32) < 0 && me->dy > 0) || (Sine(me->facing * 32) > 0 && me->dy < 0))
+				me->dy = 0;
+			Clamp(&me->dx, PLYR_MAXSPD);
+			Clamp(&me->dy, PLYR_MAXSPD);
 		}
 
 		if(me->seq!=ANIM_MOVE)
@@ -1729,12 +1704,14 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	}
 	else	// you aren't trying to move
 	{
-		// ice is slippery
-		if(me->z==0 && me->dz==0 && (!(GetTerrain(world,mapTile->floor)->flags&TF_ICE)  || (player.hammerFlags&HMR_NOSKID)))
+		terrainType = GetTerrain(world, mapTile->floor)->type;
+
+		if (me->z == 0 && me->dz == 0 && terrainType != TRN_ICE && !(player.hammerFlags & HMR_NOSKID))
 		{
 			Dampen(&me->dx,PLYR_DECEL/2);
 			Dampen(&me->dy,PLYR_DECEL/2);
 		}
+
 		if(me->seq==ANIM_MOVE)
 		{
 			me->seq=ANIM_IDLE;
@@ -1913,7 +1890,7 @@ void PlayerControlPowerArmor(Guy *me,mapTile_t *mapTile,world_t *world)
 			me->dy=0;
 
 		// move half speed in armor
-		if(!(GetTerrain(world,mapTile->floor)->flags&TF_MUD))
+		if(!(GetTerrain(world,mapTile->floor)->type == TF_MUD))
 		{
 			Clamp(&me->dx,PLYR_MAXSPD/2);
 			Clamp(&me->dy,PLYR_MAXSPD/2);

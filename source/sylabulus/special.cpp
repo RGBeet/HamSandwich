@@ -1583,6 +1583,18 @@ byte IsTriggered(byte chain,special_t *me,Map *map)
 		return 0;
 }
 
+void SetMapFlags(byte type)
+{
+	if (type < MAP_TYPE_MAX)
+	{
+
+	}
+	else if (type < MAP_TYPE_MAX + MAP_WEATHER_MAX)
+	{
+
+	}
+}
+
 void SpecialEffect(special_t *me,Map *map)
 {
 	int i,v,v2;
@@ -1765,7 +1777,7 @@ void SpecialEffect(special_t *me,Map *map)
 				if(!VarMath(me->effect[i].value,me->effect[i].text))
 					PauseGame();	// pause if there's an error in the equation
 				break;
-			case EFF_LEVELFLAG:
+			case EFF_LEVELFLAG: // TODO: uh oh this'll need to get fixed
 				word w,w2;
 				w=1;
 				w2=map->flags;

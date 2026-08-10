@@ -7,6 +7,7 @@
 #include "config.h"
 #include "log.h"
 #include "math_extras.h"
+#include "water.h"
 #include <vector>
 #include <utility>
 
@@ -163,6 +164,8 @@ void Map::Update(byte mode,world_t *world)
 	if(dottedLineOfs>7)
 		dottedLineOfs=0;
 
+	UpdateWater();
+
 	timeToReset++;
 	if(timeToReset<2)
 		return;
@@ -217,9 +220,9 @@ void Map::Update(byte mode,world_t *world)
 			// check for animation
 			if(timeToAnim==2)
 			{
-				if(GetTerrain(world,map[i].floor)->flags&TF_ANIM)
+				if(GetTerrain(world,map[i].floor)->change == TRN_ANIM)
 					map[i].floor=GetTerrain(world,map[i].floor)->next;
-				if(map[i].wall!=0 && GetTerrain(world,map[i].wall)->flags&TF_ANIM)
+				if(map[i].wall!=0 && GetTerrain(world,map[i].wall)->change  == TRN_ANIM)
 					map[i].wall=GetTerrain(world,map[i].wall)->next;
 				if(map[i].item!=ITM_NONE)
 					UpdateItem(&map[i],width,i);
@@ -490,7 +493,9 @@ byte PlaceItemCallback(int x,int y,int cx,int cy,int value,Map *map)
 		return 1;
 	if(map->GetTile(x,y)->wall)
 		return 1;
-	if(GetTerrain(world,map->GetTile(x,y)->floor)->flags&(TF_WATER|TF_LAVA|TF_SOLID))
+
+	byte b = GetTerrain(world, map->GetTile(x, y)->floor)->type;
+	if(b == TRN_WATER || b == TRN_LAVA || b == TRN_SOLID)
 		return 1;
 
 	map->GetTile(x,y)->item=(byte)value;
@@ -986,18 +991,18 @@ void Map::Render(world_t *world,int camX,int camY,MapRenderFlags flags)
 							// time of drawing the front of this wall
 							if (
 								map[i+(j+1)*width].wall &&
-								!(GetTerrain(world,map[i+(j+1)*width].floor)->flags&TF_TRANS) &&
+								!(GetTerrain(world,map[i+(j+1)*width].floor)->transparent) &&
 								!((flags & MAP_SHOWSELECT) && !map[i+(j+1)*width].select)
 							)
 							{
-								if(GetTerrain(world,m->floor)->flags&TF_TRANS)
+								if(GetTerrain(world,m->floor)->transparent)
 									RoofDraw(scrX+camX,scrY+camY,m->floor,lites,
 											DISPLAY_DRAWME|DISPLAY_ROOFTILE|DISPLAY_TRANSTILE);
 								else
 									RoofDraw(scrX+camX,scrY+camY,m->floor,lites,DISPLAY_DRAWME|DISPLAY_ROOFTILE);
 							}
 							else
-								if(GetTerrain(world,m->floor)->flags&TF_TRANS)
+								if(GetTerrain(world,m->floor)->transparent)
 									WallDraw(scrX+camX,scrY+camY,m->wall,m->floor,lites,
 										DISPLAY_DRAWME|DISPLAY_WALLTILE|DISPLAY_TRANSTILE);
 								else
@@ -1007,7 +1012,7 @@ void Map::Render(world_t *world,int camX,int camY,MapRenderFlags flags)
 						// make wall tiles get drawn in sorted order unlike the floor tiles
 						else
 						{
-							if(GetTerrain(world,m->floor)->flags&TF_TRANS)
+							if(GetTerrain(world,m->floor)->transparent)
 								WallDraw(scrX+camX,scrY+camY,m->wall,m->floor,lites,
 									DISPLAY_DRAWME|DISPLAY_WALLTILE|DISPLAY_TRANSTILE);
 							else
@@ -1019,7 +1024,7 @@ void Map::Render(world_t *world,int camX,int camY,MapRenderFlags flags)
 					{
 						byte shdw;
 						// Shadow wall macro: used to determine both a wall is there and it's not marked shadowless
-#define SHADOW_WALL(WALL) ((WALL) && !(GetTerrain(world, (WALL))->flags&TF_SHADOWLESS))
+#define SHADOW_WALL(WALL) ((WALL) && !(GetTerrain(world, (WALL))->shadowless))
 						if(config.shading==0)
 						{
 							if(i<width-1 && SHADOW_WALL(map[i+1+j*width].wall))
@@ -1072,9 +1077,14 @@ void Map::Render(world_t *world,int camX,int camY,MapRenderFlags flags)
 							// point in rendering this floor (unless it is transparent
 							if (
 								(!map[i+(j+1)*width].wall) ||
-								(GetTerrain(world,map[i+(j+1)*width].floor)->flags&TF_TRANS) ||
+								(GetTerrain(world,map[i+(j+1)*width].floor)->transparent) ||
 								((flags & MAP_SHOWSELECT) && !map[i+(j+1)*width].select)
 							)
+							if (world->terrain[map[i + j * width].floor].shadowless)
+							{
+								RenderFloorTileFancyWater(scrX, scrY, m->floor, 1, shdw, lites);
+							}
+								else
 							{
 								RenderFloorTileFancy(scrX,scrY,m->floor,shdw,lites);
 							}
@@ -1082,7 +1092,10 @@ void Map::Render(world_t *world,int camX,int camY,MapRenderFlags flags)
 						else
 						{
 							// if there's a wall to the right, draw a shadow on this tile
-							RenderFloorTileFancy(scrX,scrY,m->floor,shdw,lites);
+							if (world->terrain[map[i + j * width].floor].shadowless) // transparent water
+								RenderFloorTileFancyWater(scrX, scrY, m->floor, 1, shdw, lites);
+							else
+								RenderFloorTileFancy(scrX, scrY, m->floor, shdw, lites);
 						}
 					}
 				}
@@ -1634,6 +1647,7 @@ Guy* GetGuyOnTile(int tx, int ty)
 	return nullptr;
 }
 
+// TODO: make possible for aquatic monsters
 bool CanWalkTile(int x, int y, Map* map, world_t* world)
 {
 	mapTile_t* tile = map->TryGetTile(x, y);
@@ -1641,9 +1655,11 @@ bool CanWalkTile(int x, int y, Map* map, world_t* world)
 	if (!tile)
 		return false;
 
+	byte type = GetTerrain(world, tile->floor)->type;
+
 	return tile->wall == 0
 		&& !(GetItem(tile->item)->flags & IF_SOLID)
-		&& !(GetTerrain(world, tile->floor)->flags & (TF_SOLID | TF_WATER | TF_LAVA));
+		&& !(type == TRN_SOLID || type == TRN_WATER || type == TRN_LAVA);
 }
 
 void Map::InitPathNodes(world_t* world)

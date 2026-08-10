@@ -51,6 +51,13 @@ static const LevelFlags flagNum[]={
 	MAP_STARS,MAP_UNDERWATER,MAP_LAVA,MAP_STEALTH,MAP_WAVY,MAP_OXYGEN,
 };
 
+static const MapWeather weatherType[] = { MAP_WEATHER_NONE, MAP_WEATHER_RAIN, MAP_WEATHER_SNOW, MAP_WEATHER_SAKURA };
+static const MapType levelType[] = { MAP_TYPE_NORMAL, MAP_TYPE_HUB, MAP_TYPE_SECRET, MAP_TYPE_BOSS, MAP_TYPE_KEYCHAIN };
+static const MapLighting lightingType[] = { MAP_LIGHT_NORMAL, MAP_LIGHT_TORCH, MAP_LIGHT_LANTERN, MAP_LIGHT_STEALTH };
+static const MapEnvironment environmentType[] = { MAP_ENV_NORMAL, MAP_ENV_UNDERWATER, MAP_ENV_OXYGEN, MAP_ENV_SUPERHOT, MAP_ENV_OUTERSPACE };
+static const MapTypeFlags flagTypes[] = { MAP_FLG_STARRY, MAP_FLG_WAVY };
+
+
 static byte mapZoom[MAX_MAPSIZE * MAX_MAPSIZE];
 static byte desiredWidth,desiredHeight;
 static sprite_set_t *levelSpr;
@@ -373,20 +380,42 @@ byte ZoomTileColor(int x,int y)
 		return 31;	// white=wall
 	else
 	{
-		if(world->terrain[m->floor].flags&TF_SOLID)
-			return (20);	// grey=solid floor tile
-		if(world->terrain[m->floor].flags&TF_WATER)
-			return (32*3)+8;	// blue=water
-		if(world->terrain[m->floor].flags&TF_LAVA)
-			return (32*4)+8;	// dark red=lava
-		if(world->terrain[m->floor].flags&TF_ICE)
-			return 8;	// really dark grey=ice
-		if(world->terrain[m->floor].flags&TF_MINECART)
-			return (32*1)+5;	// darker green=mine path
-		if(world->terrain[m->floor].flags&TF_BUNNY)
-			return (32*1)+12;	// brighter green=bunny path
+		byte color;
+		switch (world->terrain[m->floor].type)
+		{
+			default:
+				color = (32*1)+8; // green
+				break;
+			case TRN_SOLID:
+				color = (32*0)+12; // grey
+				break;
+			case TRN_WATER:
+				color = (32*3)+8; // blue
+				break;
+			case TRN_LAVA:
+				color = (32*4)+8; // red
+				break;
+			case TRN_ICE:
+				color = (32*7)+8; // cyan
+				break;
+			case TRN_CNVYDN:
+			case TRN_CNVYLF:
+			case TRN_CNVYRG:
+			case TRN_CNVYUP:
+				color = (32*5)+16; // yellow
+				break;
+			case TRN_MUD:
+				color = (32*2)+8; // brown
+				break;
+			case TRN_RUBBER:
+				color = (32*6)+16; // fuschia
+				break;
+		}
 
-		return (32*1)+8;	// dark green=floor
+		if (world->terrain[m->floor].pathType > 0) // has a path type?!
+			color += 4;
+
+		return color;
 	}
 }
 

@@ -47,13 +47,100 @@ static int saveTileStart=0;
 
 static char bmpFilename[FNAMELEN]="";
 
-static const TileFlags flags[]={
+static const TileFlags oldFlags[]={
 	TF_SOLID,TF_ICE,TF_MUD,TF_WATER,TF_LAVA,TF_PUSHY,TF_PUSHON,TF_ANIM,TF_STEP,
 	TF_DESTRUCT,TF_TRANS,TF_MINECART,TF_BUNNY,TF_NOGHOST,TF_NOENEMY,TF_RUBBER,
 	TF_SHADOWLESS,
 };
 
+// singular
+static const TerrainType terrainTypes[] = {
+	TRN_NORMAL,TRN_SOLID,TRN_ICE,TRN_MUD,TRN_WATER,TRN_LAVA,
+	TRN_RUBBER,TRN_QUICKSAND,TRN_CNVYUP,TRN_CNVYDN,TRN_CNVYLF,TRN_CNVYRG,
+	TRN_PUSHABLE,TRN_PUSHON,TRN_SKY,TRN_CLIFF
+};
+static const char terrainTypeNames[][16] = {
+	"Normal","Impassible","Ice","Mud","Water","Lava",
+	"Rubber","Quicksand","Conveyor (U)","Conveyor (D)","Conveyor (L)","Conveyor (R)",
+	"Pushable", "Can Push On", "Sky", "Cliff",
+};
+
+// singular
+static const TerrainChange terrainChange[] = {
+	TRN_NOCHANGE,TRN_ANIM,TRN_STEP,TRN_DESTRUCT,
+};
+static const char terrainChangeNames[][16] = {
+	"N/A", "Animated", "Step to Anim.", "Hit to Anim.",
+};
+
+// singular (?)
+static const TerrainRestriction terrainRestrict[] = {
+	TRN_NORESTRICT,TRN_NOENEMY,TRN_NOGHOST,TRN_NOGOODGUY,
+};
+static const char terrainRestrictNames[][16] = {
+	"N/A", "No Enemies", "No Ghosts", "No Goodguys"
+};
+
+// flag
+static const TerrainPathType terrainPath[] = {
+	TRN_MINECART,TRN_BUNNY,TRN_DRIVE,
+};
+static const char terrainPathNames[][16] = {
+	"N/A", "Minecart Path", "Bunny Path", "Drive Path"
+};
+
 void TerrainSetupButtons(void);
+
+void ArrowButtonClick(int id)
+{
+	int i;
+	printf("ID: %d\n", id);
+
+	switch (id)
+	{
+		case 1:
+			world->terrain[selMin].type = (TerrainType)((world->terrain[selMin].type + NUM_TERRAIN_TYPES - 1) % NUM_TERRAIN_TYPES);
+			break;
+
+		case 2:
+			world->terrain[selMin].type = (TerrainType)((world->terrain[selMin].type + 1) % NUM_TERRAIN_TYPES);
+			break;
+
+		case 3:
+			world->terrain[selMin].change = (TerrainChange)((world->terrain[selMin].change + NUM_TRNCHANGE_TYPES - 1) % NUM_TRNCHANGE_TYPES);
+			break;
+
+		case 4:
+			world->terrain[selMin].change = (TerrainChange)((world->terrain[selMin].change + 1) % NUM_TRNCHANGE_TYPES);
+			break;
+
+		case 5:
+			world->terrain[selMin].restrict = (TerrainRestriction)((world->terrain[selMin].restrict + NUM_TRNRESTRICT_TYPES - 1) % NUM_TRNRESTRICT_TYPES);
+			break;
+
+		case 6:
+			world->terrain[selMin].restrict = (TerrainRestriction)((world->terrain[selMin].restrict + 1) % NUM_TRNRESTRICT_TYPES);
+			break;
+	}
+
+	for (i = selMin+1;i <= selMax;i++)
+		switch (id)
+		{
+			case 1:
+			case 2:
+				world->terrain[i].type = (TerrainType)(world->terrain[selMin].type);
+				break;
+			case 3:
+			case 4:
+				world->terrain[i].change = (TerrainChange)(world->terrain[selMin].change);
+				break;
+			case 5:
+			case 6:
+				world->terrain[i].restrict = (TerrainRestriction)(world->terrain[selMin].restrict);
+				break;
+		}
+	MakeNormalSound(SND_MENUCLICK);
+}
 
 void FlagClick(int id)
 {
@@ -62,21 +149,47 @@ void FlagClick(int id)
 
 	b=GetButtonState(id);
 
-	if(b==CHECK_ON || b==CHECK_MIXED)	// if it's on, or mixed
+	if (b == CHECK_ON || b == CHECK_MIXED)	// if it's on, or mixed
 	{
-		// shut them off
-		for (i=selMin;i<=selMax;i++)
+		for (i = selMin;i <= selMax;i++)
 		{
-			world->terrain[i].flags&=(~flags[id-1]);
+			switch (id)
+			{
+				case 10:
+					world->terrain[i].transparent = 0;
+					break;
+				case 11:
+					world->terrain[i].shadowless = 0;
+					break;
+				case 12:
+					world->terrain[i].pathType &= (~TRN_MINECART);
+					break;
+				case 13:
+					world->terrain[i].pathType &= (~TRN_BUNNY);
+					break;
+			}
 		}
 		SetButtonState(id,CHECK_OFF);
 	}
 	else
 	{
-		// turn them on
-		for (i=selMin;i<=selMax;i++)
+		for (i = selMin;i <= selMax;i++)
 		{
-			world->terrain[i].flags|=flags[id-1];
+			switch (id)
+			{
+			case 10:
+				world->terrain[i].transparent = 1;
+				break;
+			case 11:
+				world->terrain[i].shadowless = 1;
+				break;
+			case 12:
+				world->terrain[i].pathType |= TRN_MINECART;
+				break;
+			case 13:
+				world->terrain[i].pathType |= TRN_BUNNY;
+				break;
+			}
 		}
 		SetButtonState(id,CHECK_ON);
 	}
@@ -279,7 +392,7 @@ void TerrainSetupButtons(void)
 {
 	ClearButtons();
 
-	// terrain flags
+	/*
 	MakeButton(BTN_CHECK,1, 0,4,243+0    ,128,15,"Impassable",FlagClick);
 	MakeButton(BTN_CHECK,2, 0,4,243+15*1 ,128,15,"Icy",FlagClick);
 	MakeButton(BTN_CHECK,3, 0,4,243+15*2 ,128,15,"Muddy",FlagClick);
@@ -298,6 +411,21 @@ void TerrainSetupButtons(void)
 	MakeButton(BTN_CHECK,16,0,4,243+15*15,128,15,"Bouncy",FlagClick);
 
 	MakeButton(BTN_CHECK,17,0,200,243+15*10,128,15,"Shadowless Wall",FlagClick);
+	*/
+
+	MakeButton(BTN_NORMAL, 1, 0, 4, 300, 19, 17, "<<", ArrowButtonClick);
+	MakeButton(BTN_NORMAL, 2, 0, 115, 300, 19, 17, ">>", ArrowButtonClick);
+
+	MakeButton(BTN_NORMAL, 3, 0, 4, 320, 19, 17, "<<", ArrowButtonClick);
+	MakeButton(BTN_NORMAL, 4, 0, 115, 320, 19, 17, ">>", ArrowButtonClick);
+
+	MakeButton(BTN_NORMAL, 5, 0, 4, 340, 19, 17, "<<", ArrowButtonClick);
+	MakeButton(BTN_NORMAL, 6, 0, 115, 340, 19, 17, ">>", ArrowButtonClick);
+
+	MakeButton(BTN_CHECK, 10, 0, 4, 360, 128, 15, "Trasparent", FlagClick);
+	MakeButton(BTN_CHECK, 11, 0, 4, 376, 128, 15, "Shadowless", FlagClick);
+	MakeButton(BTN_CHECK, 12, 0, 4, 392, 128, 15, "Minecart Path", FlagClick);
+	MakeButton(BTN_CHECK, 13, 0, 4, 408, 128, 15, "Friendly Path", FlagClick);
 
 	// next tile button
 	MakeButton(BTN_NORMAL,20,0,200,245,TILE_WIDTH+3,TILE_HEIGHT+3,"",NextTileClick);
@@ -340,37 +468,53 @@ void SetNextTile(word n)
 	}
 }
 
+
+#define MAX_FLAG_CHECKS		4
+
+byte CheckFlag(int id, terrain_t tile)
+{
+	switch (id)
+	{
+		default:
+			return 0;
+		case 10:
+			return tile.transparent;
+		case 11:
+			return tile.shadowless;
+		case 12:
+			return tile.pathType &= (~TRN_MINECART);
+		case 13:
+			return tile.pathType &= (~TRN_BUNNY);
+	}
+}
+
 void TerrainSetFlags(void)
 {
 	int i,j;
-	constexpr int count = std::size(flags);
 
-	byte flagCount[count];	// count how many tiles have each flag set
-
-	for(i=0;i<count;i++)
-		flagCount[i]=0;
-
-	for(i=selMin;i<=selMax;i++)
+	byte flagCount[4];
+	for (i=0;i<MAX_FLAG_CHECKS;i++)
+		flagCount[i] = 0;
+	
+	for (i=selMin;i<=selMax;i++)
 	{
-		for(j=0;j<count;j++)
+		for (j=0;j<MAX_FLAG_CHECKS;j++)
 		{
-			if(world->terrain[i].flags&flags[j])
+			if (CheckFlag(j + 10, world->terrain[i]))
 			{
 				flagCount[j]++;
 			}
 		}
 	}
-
 	i=(selMax-selMin)+1;
-
-	for(j=0;j<count;j++)
+	for(j=0;j<MAX_FLAG_CHECKS;j++)
 	{
 		if(flagCount[j]==0)
-			SetButtonState(j+1,CHECK_OFF);
+			SetButtonState(j+10,CHECK_OFF);
 		else if(flagCount[j]<i)
-			SetButtonState(j+1,CHECK_MIXED);
+			SetButtonState(j+10,CHECK_MIXED);
 		else
-			SetButtonState(j+1,CHECK_ON);
+			SetButtonState(j+10,CHECK_ON);
 	}
 }
 
@@ -388,6 +532,7 @@ void TerrainEdit_Init(world_t *wrld)
 		tileStart=0;
 	noCanPickMsgTime=0;
 	TerrainSetFlags();
+
 	rememberMode=EDITMODE_EDIT;
 	nextUpdate=0;
 	nextTileShow=0;
@@ -540,8 +685,15 @@ void ImportTiles(void)
 
 	for(i=selMin;i<=selMax;i++)
 	{
-		world->terrain[dst].flags={};
-		world->terrain[dst].next=0;
+		//world->terrain[dst].flags={};
+		world->terrain[dst].type		= TRN_NORMAL;
+		world->terrain[dst].restrict	= TRN_NORESTRICT;
+		world->terrain[dst].change		= TRN_NOCHANGE;
+		world->terrain[dst].value		= 0;
+		world->terrain[dst].transparent = 0;
+		world->terrain[dst].shadowless	= 0;
+		world->terrain[dst].pathType	= {};
+		world->terrain[dst].next	= 0;
 		world->tilegfx.SetTile(dst, &bmpScr[(i%20)*TILE_WIDTH + ((i/20)*TILE_HEIGHT) * 640], 640);
 		dst++;
 	}
@@ -899,6 +1051,12 @@ void TerrainEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 	}
 
 	mgl->FillBox(0,240,639,479,0);
+
+	int selection = (mode == TMODE_PICKTILE) ? tileNum : selMin;
+
+	CenterPrint(70,304,terrainTypeNames[world->terrain[selection].type],0,1);
+	CenterPrint(70,324,terrainChangeNames[world->terrain[selection].change],0,1);
+	CenterPrint(70,344,terrainRestrictNames[world->terrain[selection].restrict],0,1);
 
 	sprintf(txt,"Tile #%03d",tileNum);
 	Print(570,262,txt,0,1);

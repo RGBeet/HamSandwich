@@ -44,5 +44,6 @@ void PlotStar(int x,int y,byte col,byte tx,byte ty,word tileNum);
 void RenderFloorTileFancy(int x,int y,int t,byte shadow,const char *light);
 void RenderRoofTileFancy(int x,int y,int t,byte trans,byte wallBelow,const char *theLight);
 void RenderWallTileFancy(int x,int y,int t,const char *light);
+void RenderFloorTileFancyWater(int x, int y, int t, byte water, byte shadow, char *theLight);
 
 #endif
