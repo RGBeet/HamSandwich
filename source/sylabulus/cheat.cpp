@@ -119,7 +119,7 @@ void CheatKey(char c)
 
 void DoCheat(byte w)
 {
-	if(w==CHEAT_WINLEVEL && curMap->flags&MAP_HUB)
+	if(w == CHEAT_WINLEVEL && curMap->type == MAP_TYPE_HUB)
 	{
 		MakeNormalSound(SND_TURRETBZZT);
 		return;

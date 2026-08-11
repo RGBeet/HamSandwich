@@ -725,7 +725,7 @@ void Guy::Update(Map *map,world_t *world)
 
 	if(MonsterFlags(type,aiType)&MF_FLYING)
 	{
-		if(map->flags&MAP_UNDERWATER)
+		if(map->environment == MAP_ENV_UNDERWATER || map->environment == MAP_ENV_OUTERSPACE)
 		{
 			// swimming is slower than flying
 			if(z<20*FIXAMT)	// go up if you need to
@@ -750,7 +750,19 @@ void Guy::Update(Map *map,world_t *world)
 	}
 	else
 	{
-		z+=dz;
+		switch (map->environment)
+		{
+			case MAP_ENV_UNDERWATER:
+				z += (dz > 0) ? dz : dz / 2;
+				break;
+			case MAP_ENV_OUTERSPACE:
+				z += (dz > 0) ? dz : dz / 3;
+				break;
+			default:
+				z += dz;
+				break;
+		}
+		
 		if(z<0)
 		{
 			z=0;
@@ -796,7 +808,7 @@ void Guy::Update(Map *map,world_t *world)
 			}
 		}
 		UpdateCamera(x>>FIXSHIFT,y>>FIXSHIFT,tdx,tdy,map);
-		if((map->flags&MAP_TORCHLIT) || player.spotted)
+		if((map->lighting == MAP_LIGHT_TORCH) || player.spotted)
 		{
 			if(player.spotted)
 				player.spotted--;
@@ -825,7 +837,7 @@ void Guy::Update(Map *map,world_t *world)
 				SetPlayerGlow(b);
 			}
 		}
-		if(map->flags&MAP_WELLLIT)
+		if(map->lighting == MAP_LIGHT_LANTERN)
 		{
 			map->DimTorch(mapx,mapy,20);
 		}
@@ -1397,6 +1409,26 @@ void UpdateGuys(Map *map,world_t *world)
 	speedClock++;
 
 	player.clock++;
+	
+	if(player.timer > 0 && player.clock % 30 == 0)
+	{
+		player.timer--;
+		CalculateMusicSpeed();
+		if (player.timer == 0)
+		{
+			goodguy->hp = 1;
+			goodguy->GetShot(0, 0, 1, map, world);	// ouch!  drowned
+		}
+		else if (!timeRunningOut && player.timer < 100)
+		{
+			timeRunningOut=1;
+			MakeNormalSound(SND_TIMEWARN);
+		}
+		else if (timeRunningOut && player.timer > 99)
+		{
+			timeRunningOut=0;
+		}
+	}
 
 	if(player.ability[ABIL_BRAIN] && profile.brainRadar && goodguy)
 	{
@@ -1422,7 +1454,7 @@ void UpdateGuys(Map *map,world_t *world)
 		}
 	}
 
-	if(map->flags&(MAP_UNDERWATER|MAP_OXYGEN))
+	if (MapHasOxygenMechanic(map))
 	{
 		if(player.oxygen)
 		{
@@ -1452,7 +1484,7 @@ void UpdateGuys(Map *map,world_t *world)
 			}
 		}
 	}
-	if(map->flags&MAP_LAVA)
+	if(map->environment == MAP_ENV_SUPERHOT)
 	{
 		if(player.weapon!=WPN_MINISUB && player.weapon!=WPN_PWRARMOR && player.vehicle!=VE_YUGO)
 		{

@@ -1236,7 +1236,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 	activeBulDX=me->dx;
 	activeBulDY=me->dy;
 
-	if(map->flags&MAP_UNDERWATER)
+	if(map->environment == MAP_ENV_UNDERWATER)
 	{
 		me->x+=me->dx*3/4;
 		if(!BulletCanGo(me->type,me->x,me->y,map,8,me->friendly))
@@ -1569,7 +1569,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 				me->timer--;
 				me->facing=0;
 			}
-			if(map->flags&MAP_UNDERWATER)	// floating mines
+			if(map->environment == MAP_UNDERWATER)	// floating mines
 			{
 				if(me->z<FIXAMT*20)
 					me->dz+=FIXAMT/4;
@@ -1618,7 +1618,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			if(((me->anim>0) && (me->target!=65535)) ||
 				((me->anim>2) && (me->target==65535)))
 			{
-				if(map->flags&MAP_UNDERWATER)
+				if(map->environment == MAP_UNDERWATER)
 					BlowBubble(me->x-me->dx,me->y-me->dy,me->z,FIXAMT/16);
 				else
 					BlowSmoke(me->x-me->dx,me->y-me->dy,me->z,FIXAMT/16);
@@ -2206,7 +2206,7 @@ void RenderBullet(bullet_t *me)
 			curSpr=bulletSpr->GetSprite(SPR_MINE+me->anim/4);
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,me->bright,curSpr,
 					DISPLAY_DRAWME);
-			if(curMap->flags&MAP_UNDERWATER)	// underwater, it has a shadow, since it floats
+			if(curMap->environment == MAP_UNDERWATER)	// underwater, it has a shadow, since it floats
 				SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,0,255,me->bright,curSpr,
 					DISPLAY_DRAWME|DISPLAY_SHADOW);
 			break;
@@ -2701,7 +2701,7 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type,byte friendly)
 			me->dx=0;
 			me->dy=0;
 			me->dz=0;
-			if(curMap->flags&MAP_UNDERWATER)
+			if(curMap->environment == MAP_UNDERWATER)
 				me->z=FIXAMT*10;
 			break;
 		case BLT_GREEN:

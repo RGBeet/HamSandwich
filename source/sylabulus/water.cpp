@@ -6,7 +6,7 @@
 #define WATER_WIDTH	(256)
 #define WATER_HEIGHT (256)
 #define WATERFIX (32)
-#define WATERDAMPEN (31)
+#define WATERDAMPEN (27)
 
 short* water1, * water2;
 static byte* waterbkgd, scrollX, scrollY;
@@ -126,7 +126,7 @@ void UpdateWater(void)
 	scrollY += scrollAmtY;
 
 	for (i = 0;i < 40;i++)
-		WaterBlop((byte)Random(256), (byte)Random(256), (byte)Random(32));
+		WaterBlop((byte)Random(256), (byte)Random(256), (byte)Random(24));
 
 	for (i = 0;i < WATER_WIDTH;i++)
 		for (j = 0;j < WATER_HEIGHT;j++)

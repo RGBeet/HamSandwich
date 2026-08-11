@@ -785,7 +785,7 @@ void PlayerFireWeapon(Guy *me)
 				ScoreEvent(SE_SHOOT,1);
 
 				// turns to bubbles underwater
-				if(curMap->flags&MAP_UNDERWATER)
+				if(curMap->environment == MAP_ENV_UNDERWATER)
 				{
 					if(Random(2)==0)
 					{
@@ -1265,7 +1265,12 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		if (PlayerGetTimeStop() == 30 * 2)
 			MakeSound(SND_TIMEWARN, me->x, me->y, SND_CUTOFF, 1200);
 		else if (PlayerGetTimeStop() == 1)
+		{
+			player.timeStop[0]=0;
+			printf("Time Stop Over");
+			RestoreGameplayGfx();
 			CalculateMusicSpeed();
+		}
 	}
 		
 	if(player.ammoCrate)
@@ -1297,7 +1302,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			c=((me->facing+4)&7)*32;
 			x=me->x+Cosine(c)*10-FIXAMT*10+Random(FIXAMT*20);
 			y=me->y+Sine(c)*10-FIXAMT*10+Random(FIXAMT*20);
-			if(curMap->flags&MAP_UNDERWATER)
+			if (curMap->environment == MAP_ENV_UNDERWATER)
 				FireBullet(x,y,((me->facing+4)&7)*32,BLT_BUBBLE,1);
 			else
 				FireBullet(x,y,(me->facing+4)&7,BLT_FLAME,1);
@@ -1316,7 +1321,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		return;
 	}
 
-	if(mapTile->templight<-5 && (curMap->flags&MAP_STEALTH))
+	if(mapTile->templight<-5 && (curMap->lighting == MAP_LIGHT_STEALTH))
 	{
 		player.stealthy=1;
 	}
@@ -2427,12 +2432,18 @@ byte PlayerHasPowerup()
 	return ((goodguy && goodguy->poison) || player.shield > 0 || PlayerGetAccelerate() > 0 || player.invisibility > 0 || player.ammoCrate > 0 || player.cheesePower > 0 || player.garlic > 0);
 }
 
+word PlayerGetTimer()
+{
+	return player.timer;
+}
+
 // Sets and gets the player time 
 void PlayerSetTimeStop(word amt)
 {
 	player.timeStop[0] = amt;
 	player.timeStop[1] = amt;
 	CalculateMusicSpeed(); // x0.5 speed
+	RestoreGameplayGfx();
 }
 word PlayerGetTimeStop()
 {

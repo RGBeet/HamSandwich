@@ -1583,15 +1583,27 @@ byte IsTriggered(byte chain,special_t *me,Map *map)
 		return 0;
 }
 
-void SetMapFlags(byte type)
+void SetMapFlags(Map *map, word type)
 {
-	if (type < MAP_TYPE_MAX)
+	word index=0;
+	if (type < MAP_TYPE_MAX) // map type
 	{
 
 	}
-	else if (type < MAP_TYPE_MAX + MAP_WEATHER_MAX)
+	index += MAP_TYPE_MAX;
+	if (type < index + MAP_WEATHER_MAX) // map weather
 	{
 
+	}
+	index += MAP_WEATHER_MAX;
+	if (type < index + MAP_LIGHT_MAX) // map light
+	{
+
+	}
+	index += MAP_LIGHT_MAX;
+	if (type < index + MAP_ENV_MAX) // map env
+	{
+		map->environment = (MapEnvironment)(type - index);
 	}
 }
 
@@ -1628,7 +1640,7 @@ void SpecialEffect(special_t *me,Map *map)
 			case EFF_WINLEVEL:
 				if(PlayerBrains()>=map->numBrains)
 				{
-					if(map->flags&MAP_HUB)
+					if (curMap->type == MAP_TYPE_HUB)
 					{
 						MakeNormalSound(SND_GOTOMAP);
 						SendMessageToGame(MSG_GOTOMAP,me->effect[i].value);
@@ -1777,30 +1789,14 @@ void SpecialEffect(special_t *me,Map *map)
 				if(!VarMath(me->effect[i].value,me->effect[i].text))
 					PauseGame();	// pause if there's an error in the equation
 				break;
-			case EFF_LEVELFLAG: // TODO: uh oh this'll need to get fixed
-				word w,w2;
-				w=1;
-				w2=map->flags;
-				for(v2=0;v2<me->effect[i].value;v2++)
-					w*=2;
-				switch(me->effect[i].value2)
-				{
-					case 0:
-						map->flags |= LevelFlags{w};
-						break;
-					case 1:
-						map->flags &= ~LevelFlags{w};
-						break;
-					case 2:
-						map->flags ^= LevelFlags{w};
-						break;
-				}
-				if((w2&(MAP_UNDERWATER|MAP_OXYGEN)) && !(MapHasOxygenMechanic(map)))
-					player.oxygen=127*256;
+			case EFF_LEVELFLAG: // TODO: FIX THE LEVEL FLAG SETTING
 
-				if(map->flags&MAP_UNDERWATER)
+
+
+
+				if (curMap->environment == MAP_ENV_UNDERWATER)
 					WaterPalette(GetDisplayMGL());
-				else if(map->flags&MAP_LAVA)
+				else if (curMap->environment == MAP_ENV_SUPERHOT)
 					LavaPalette(GetDisplayMGL());
 				else
 					GetDisplayMGL()->RealizePalette();

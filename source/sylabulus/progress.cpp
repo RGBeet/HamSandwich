@@ -508,7 +508,7 @@ byte LevelsPassed(worldData_t *world)
 	byte total=0;
 
 	for (const levelData_t &level : world->Levels())
-		if((level.flags&LF_PASSED) && !(curWorld.map[level.levelNum]->flags&(MAP_SECRET|MAP_HUB)))
+		if((level.flags&LF_PASSED) && !(curWorld.map[level.levelNum]->type == MAP_TYPE_SECRET || curWorld.map[level.levelNum]->type == MAP_TYPE_HUB))
 			total++;
 
 	return total;
@@ -531,7 +531,7 @@ void StoreWorldResults(worldData_t *me,world_t *world)
 	int pts=0;
 	int maxPts=0;
 	for (const Map *map : world->Maps())
-		if(!(map->flags&MAP_HUB))
+		if(!(map->type == MAP_TYPE_HUB))
 			maxPts+=1000;
 
 	for (const levelData_t &level : me->Levels())

@@ -45,6 +45,7 @@ byte mapToGoTo;
 byte worldNum;
 byte mapNum;
 world_t curWorld;
+byte timeRunningOut=0;
 
 byte msgFromOtherModules=0;
 byte msgContent;
@@ -165,7 +166,7 @@ byte InitLevel(byte map)
 
 	windingDown=0;
 	windingUp=30;
-	ResetInterface();
+	timeRunningOut=0;
 	InitCheater();
 
 	GetSpecialsFromMapAndWorld(curMap->special, curWorld.special);
@@ -178,6 +179,11 @@ byte InitLevel(byte map)
 
 	ScoreEvent(SE_INIT,curMap->width*curMap->height);
 
+	if (curMap->timer > 0)
+	{
+		player.timer = curMap->timer;
+	}
+
 	strcpy(lastLevelName,curMap->name);
 
 	if(shopping)
@@ -187,17 +193,19 @@ byte InitLevel(byte map)
 	}
 
 	LocateKeychains(&curWorld);
-	RestoreGameplayGfx();
 	if(curMap->numCandles==0)
 		player.levelProg->flags|=LF_CANDLES;
 
-	if(curMap->flags&MAP_SECRET)
+	if(curMap->type == MAP_TYPE_SECRET || curMap->type == MAP_TYPE_KEYCHAIN)
 		CompleteGoal(70);
+	
+	ResetInterface();
 
 	CheckSpecialsAtInit(curMap);
 	SetupWater();
 	curMap->InitPathNodes(&curWorld);
 	GetPathfinder()->SetMap(curMap,&curWorld);
+	RestoreGameplayGfx();
 
 	return 1;
 }
@@ -222,11 +230,13 @@ void ExitLevel(void)
 	}
 	player.activeSlot	= 255; // back to empty slot
 	player.wpnSlots		= 1;
+	player.timer		= 0;
 
 	delete curMap;
 	curMap = nullptr;
 	PurgeMonsterSprites();
 	gamemgl->RealizePalette();
+	timeRunningOut = 0;
 	if(shopping)
 		ExitGallery();
 }
@@ -244,10 +254,11 @@ void RestoreGameplayGfx(void)
 
 	if(curMap)
 	{
-		if(curMap->flags&MAP_UNDERWATER)
+		if(curMap->environment == MAP_ENV_UNDERWATER)
 			WaterPalette(gamemgl);
-		else if(curMap->flags&MAP_LAVA)
+		else if(curMap->environment == MAP_ENV_SUPERHOT)
 			LavaPalette(gamemgl);
+
 	}
 }
 
@@ -299,7 +310,7 @@ TASK(byte) LunaticRun(int *lastTime)
 			if(!editing && !player.cheated && verified)
 			{
 				profile.progress.totalTime++;
-				if((curMap->flags&(MAP_UNDERWATER|MAP_LAVA)) && GetCurrentWeaponType()!=WPN_MINISUB)
+				if(curMap->environment == MAP_ENV_UNDERWATER && GetCurrentWeaponType()!=WPN_MINISUB)
 					profile.progress.underwaterTime++;
 			}
 
@@ -332,9 +343,9 @@ TASK(byte) LunaticRun(int *lastTime)
 			UpdateParticles(curMap);
 			UpdateMessage();
 
-			if(curMap->flags&MAP_SNOWING)
+			if (curMap->weather == MAP_WEATHER_SNOW)
 				MakeItSnow(curMap);
-			if(curMap->flags&MAP_RAIN)
+			else if (curMap->weather == MAP_WEATHER_RAIN)
 			{
 				MakeItRain(curMap);
 				MakeItRain(curMap);
@@ -668,23 +679,24 @@ TASK(void) LunaticDraw(void)
 		tickerTime=d;
 	}
 
+	bool doTheWave = (curMap->environment == MAP_ENV_UNDERWATER || curMap->environment == MAP_ENV_SUPERHOT || curMap->miscFlags & MAP_FLG_WAVY);
 	if(profile.progress.purchase[modeShopNum[MODE_TEENY]]&SIF_ACTIVE)
 	{
-		if(curMap->flags&(MAP_UNDERWATER|MAP_LAVA|MAP_WAVY))
+		if(doTheWave)
 			AWAIT gamemgl->TeensyWaterFlip(updFrameCount/2);
 		else
 			AWAIT gamemgl->TeensyFlip();
 	}
 	else if(profile.progress.purchase[modeShopNum[MODE_RASTER]]&SIF_ACTIVE)
 	{
-		if(curMap->flags&(MAP_UNDERWATER|MAP_LAVA|MAP_WAVY))
+		if(doTheWave)
 			AWAIT gamemgl->RasterWaterFlip(updFrameCount/2);
 		else
 			AWAIT gamemgl->RasterFlip();
 	}
 	else
 	{
-		if(curMap->flags&(MAP_UNDERWATER|MAP_LAVA|MAP_WAVY))
+		if(doTheWave)
 			AWAIT gamemgl->WaterFlip(updFrameCount/2);
 		else
 			AWAIT gamemgl->Flip();

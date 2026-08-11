@@ -91,6 +91,7 @@ enum MapEnvironment : byte
 	MAP_ENV_OXYGEN,			// like underwater, but NOT blue
 	MAP_ENV_SUPERHOT,		// underlava = hurts you periodically!
 	MAP_ENV_OUTERSPACE,		// low gravity
+	MAP_ENV_TEST,			// the testing one?!
 	MAP_ENV_MAX				// low gravity
 };
 
@@ -198,17 +199,22 @@ class Map
 
 		byte width,height;
 		mapTile_t *map;
-		char name[32];
+		char name[64];
 		char song[32];
-		LevelFlags flags;
+
+		MapType type;
+		MapWeather weather;
+		MapLighting lighting;
+		MapEnvironment environment;
+		dword miscFlags;
+
 		word numBrains;
 		word numCandles;
 		word itemDrops;	// how often items drop, a fixshifted percent
+		word timer;
 
 		std::array<mapBadguy_t, MAX_MAPMONS> badguy;
 		std::array<special_t, MAX_SPECIAL> special;
-
-		// NEW STUFF GOES DOWN HERE
 		std::array<marker_t, MAX_MARKER> marker; // used to help pathfinding, a WIP!
 
 		std::vector<PathNode> nodes;

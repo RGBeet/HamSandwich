@@ -162,7 +162,7 @@ void UnpickledMain()
 				for (int x = 0; x < curMap->width; ++x)
 					curMap->GetTile(x, y)->templight = curMap->GetTile(x, y)->light;
 
-			if (curMap->flags & (MAP_TORCHLIT | MAP_WELLLIT))
+			if (curMap->lighting == MAP_LIGHT_TORCH || curMap->lighting == MAP_LIGHT_LANTERN)
 			{
 				// Let torch emit from player
 				for (int i = 0; i < 60; ++i)

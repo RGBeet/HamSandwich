@@ -219,6 +219,7 @@ byte IsGameModeActivated(byte n);
 
 void PlayerSetTimeStop(word amt);
 void PlayerSetAccelerate(word amt);
+word PlayerGetTimer(void);
 word PlayerGetTimeStop(void);
 word PlayerGetAccelerate(void);
 

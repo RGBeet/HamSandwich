@@ -265,6 +265,8 @@ void CryptoTest(void)
 
 // --------------- CHECKSUMMING FUNCTIONS
 
+
+// TODO: What is all this. Oh my goodness
 static word r,c1,c2;
 static dword sum;
 
@@ -323,7 +325,7 @@ dword ChecksumMap(const Map *map)
 
 	AddToSum(map->numBrains);
 	AddToSum(map->numCandles);
-	AddToSum((word)map->flags); static_assert(sizeof(map->flags) == sizeof(word));
+	//AddToSum((word)map->flags); static_assert(sizeof(map->flags) == sizeof(word));
 	AddToSum(map->width);
 	AddToSum(map->height);
 	AddToSum(map->itemDrops);
@@ -651,7 +653,7 @@ void CreateScore(dword score,Map *map)
 	time_t ltime;
 	struct tm *today;
 
-	if(map->flags&MAP_HUB)
+	if(map->type == MAP_TYPE_HUB)
 		return;
 
 	// TODO tzset();
@@ -836,7 +838,7 @@ byte CheckRecords(dword score,dword time,Map *map)
 	if(!config.hiscores)
 		return 0;
 
-	if(map->flags&MAP_HUB)
+	if(map->type == MAP_TYPE_HUB)
 		return 0;
 
 	return CheckHiScore(score,map)|CheckHiTime(time,map);
@@ -934,7 +936,7 @@ void DeleteScores(Map *map)
 	if(!config.hiscores)
 		return;
 
-	if(map->flags&MAP_HUB)
+	if(map->type == MAP_TYPE_HUB)
 		return;	// there are no scores
 
 	chksum=ChecksumMap(map);

@@ -331,7 +331,7 @@ void FetchScores(byte backwards)
 				noScoresAtAll=1;
 				break;
 			}
-			if(tmpWorld.map[level]->flags&MAP_HUB)
+			if(tmpWorld.map[level]->type == MAP_TYPE_HUB)
 			{
 				level++;
 				if(level>=tmpWorld.numMaps)
@@ -348,7 +348,7 @@ void FetchScores(byte backwards)
 				noScoresAtAll=1;
 				break;
 			}
-			if(tmpWorld.map[level]->flags&MAP_HUB)
+			if(tmpWorld.map[level]->type == MAP_TYPE_HUB)
 			{
 				level--;
 				if(level>=tmpWorld.numMaps)

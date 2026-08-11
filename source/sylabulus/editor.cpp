@@ -526,7 +526,7 @@ TASK(byte) EditorRun(int *lastTime)
 	}
 
 	if(curMapNum==0)
-		editorMap->flags|=MAP_HUB;
+		editorMap->type = MAP_TYPE_HUB;
 
 	CO_RETURN CONTINUE;
 }
@@ -750,7 +750,7 @@ void EditorDraw(MGLDraw* mgl)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials(editmgl);
-			RenderLevelDialog(mouseX,mouseY,editmgl);
+			RenderLevelDialog(mouseX,mouseY,&world,editmgl);
 			break;
 		case EDITMODE_EXPORT:
 			editmgl->ResizeBuffer(SCRWID, SCRHEI);

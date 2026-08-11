@@ -91,7 +91,7 @@ static const char terrainPathNames[][16] = {
 
 void TerrainSetupButtons(void);
 
-void ArrowButtonClick(int id)
+static void ArrowButtonClick(int id)
 {
 	int i;
 	printf("ID: %d\n", id);

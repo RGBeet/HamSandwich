@@ -5,8 +5,7 @@
 #include "worldstitch.h"
 #include "log.h"
 #include "appdata.h"
-#include "world_io_supreme.h"
-#include "world_io_sylabulus.h"
+#include "world_io.h"
 #include "map.h"
 #include "special.h"
 
@@ -65,39 +64,16 @@ bool LoadWorld(world_t *world,const char *fname)
 		f.reset();
 		return Syl_LoadWorld(world, fname); // project sylabulus
 	}
-	else if (!strcmp(code, "SUPREME!"))
-	{
-		return Supreme_LoadWorld(world, fname, f.get());
-	}
+	printf("[EDITOR] HUH? Not a Sylabulus World");
 }
 
 bool SaveWorld(const world_t *world, const char *fname)
 {
-	world->map[0]->flags|=MAP_HUB;
-
+	world->map[0]->type = MAP_TYPE_HUB;
 	std::string namebuf;
-	if (!Supreme_CanSaveWorld(world))
-	{
-		// Save Project Sylabulus world.
-		printf("Saving Project Sylabulus world: %s\n", fname);
-		Syl_SaveWorld(world, fname);
-
-		// Save old world as backup.
-		namebuf = fname;
-		namebuf.append("_old");
-		fname = namebuf.c_str();
-	}
-	printf("Saving Supreme world: %s\n", fname);
-
-	auto f = AppdataOpen_Write(fname);
-	if(!f)
-		return false;
-
-	Supreme_SaveWorld(world, f.get());
-
-	f.reset();
+	printf("[EDITOR] Saving World: %s\n", fname);
+	Syl_SaveWorld(world, fname);
 	AppdataSync();
-
 	return true;
 }
 
@@ -112,15 +88,8 @@ bool GetWorldName(const char *fname, StringDestination name, StringDestination a
 	SDL_ReadIO(f,code,8);
 	code[8]='\0';
 
-	if(!strcmp(code,"HAMSWCH!"))
-	{
-		f.reset();
-		return Syl_GetWorldName(fname, name, author); // sylabulus get world
-	}
-	else if(!strcmp(code,"SUPREME!"))
-	{
-		return Supreme_GetWorldName(f.get(), name, author);
-	}
+	f.reset();
+	return Syl_GetWorldName(fname, name, author);
 }
 
 void FreeWorld(world_t *world)
@@ -135,7 +104,6 @@ void FreeWorld(world_t *world)
 
 void InitWorld(world_t *world)
 {
-	printf("INITIALIZING WORLD...\n");
 	SetCurrentTilegfx(&world->tilegfx);
 	FillGlobalSpecialUseData(world->special);
 }

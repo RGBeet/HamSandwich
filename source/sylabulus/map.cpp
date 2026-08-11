@@ -39,7 +39,12 @@ Map::Map(byte width, byte height, const char *name)
 		map[i].select=1;
 
 	strcpy(song,"");
-	flags={};
+	// split the flag into four bytes + a smaller flag
+	type		= MAP_TYPE_NORMAL;
+	weather		= MAP_WEATHER_NONE;
+	lighting	= MAP_LIGHT_NORMAL;
+	environment = MAP_ENV_NORMAL;
+	miscFlags	={};
 	badguy.fill({});
 
 	special.fill({});
@@ -51,6 +56,7 @@ Map::Map(byte width, byte height, const char *name)
 	numBrains=0;
 	numCandles=0;
 	itemDrops=5*FIXAMT;
+	timer=0;
 }
 
 Map::Map(const Map *m)
@@ -58,9 +64,15 @@ Map::Map(const Map *m)
 	, height(m->height)
 {
 	ham_strcpy(song,m->song);
-	flags=m->flags;
+	type = m->type;
+	weather = m->weather;
+	lighting = m->lighting;
+	environment = m->environment;
+	
 	numBrains=m->numBrains;
 	numCandles=m->numCandles;
+	timer=m->timer;
+	
 	itemDrops=m->itemDrops;
 	ham_strcpy(this->name,m->name);
 
@@ -1138,7 +1150,7 @@ void Map::Render(world_t *world,int camX,int camY,MapRenderFlags flags)
 		}
 	}
 
-	if(this->flags&MAP_STARS)
+	if(this->miscFlags & MAP_FLG_STARRY)
 	{
 		RenderStars(camX, camY);
 	}
@@ -1620,9 +1632,10 @@ byte Map::PushSpecials(int x, int y, int dx, int dy)
 	return 1;
 }
 
+// Returns whether to acknowledge the oxygen mechanic
 byte MapHasOxygenMechanic(Map *map)
 {
-	return map->flags & (MAP_UNDERWATER | MAP_OXYGEN);
+	return (map->environment == MAP_ENV_UNDERWATER || map->environment == MAP_ENV_OXYGEN);
 }
 
 Guy* GetGuyOnTile(int tx, int ty)

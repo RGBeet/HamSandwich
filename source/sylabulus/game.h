@@ -65,6 +65,7 @@ extern Map *curMap;
 extern world_t curWorld;
 extern byte shopping,tutorial,verified;
 extern byte doShop;
+extern byte timeRunningOut;
 
 // these are the major inits, just at the beginning and ending of a whole game
 void LunaticInit(MGLDraw *mgl);

@@ -112,6 +112,30 @@ static void LoadMapMons(hamworld::Section* f, mapBadguy_t* mons)
 	f->read_varint();  // ignore extension flags
 }
 
+static void SaveMapMarker(hamworld::Section* f, const marker_t* mrkr)
+{
+	f->write_varint(mrkr->type);
+	f->write_varint(mrkr->x1);
+	f->write_varint(mrkr->y1);
+	f->write_varint(mrkr->x2);
+	f->write_varint(mrkr->y2);
+	f->write_varint(mrkr->value);
+	f->write_varint(mrkr->value2);
+	f->write_varint(0);  // no extension flags
+}
+
+static void LoadMapMarker(hamworld::Section* f, marker_t* mrkr)
+{
+	mrkr->type = f->read_varint();
+	mrkr->x1 = f->read_varint();
+	mrkr->y1 = f->read_varint();
+	mrkr->x2 = f->read_varint();
+	mrkr->y2 = f->read_varint();
+	mrkr->value = f->read_varint();
+	mrkr->value2 = f->read_varint();
+	f->read_varint();  // ignore extension flags
+}
+
 static void SaveMapSpecial(hamworld::Section* f, const special_t* spcl)
 {
 	f->write_varint(spcl->x);
@@ -530,10 +554,16 @@ byte Syl_SaveWorld(const world_t* world, const char* fname)
 		mapsec.write_string(map->name);
 		mapsec.write_string(map->song);
 
-		mapsec.stream.write((const char*)&map->itemDrops, 2);
+		mapsec.write_varint(map->type);
+		mapsec.write_varint(map->weather);
+		mapsec.write_varint(map->lighting);
+		mapsec.write_varint(map->environment);
+		mapsec.write_varint(map->miscFlags);
+
 		mapsec.write_varint(map->numBrains);
 		mapsec.write_varint(map->numCandles);
-		mapsec.write_varint(map->flags);
+		mapsec.stream.write((const char*)&map->itemDrops, 2);
+		mapsec.write_varint(map->timer);
 
 		// badguys
 		size_t badguy_count = 0;
@@ -555,11 +585,22 @@ byte Syl_SaveWorld(const world_t* world, const char* fname)
 			if (spcl.x != 255)
 				SaveMapSpecial(&mapsec, &spcl);
 
+		// markers
+		size_t marker_count = 0;
+		for (const marker_t& mrkr : map->marker)
+			if (mrkr.x1 != 255)
+				++marker_count;
+		mapsec.write_varint(marker_count);
+		for (const marker_t& mrkr : map->marker)
+			if (mrkr.x1 != 255)
+				SaveMapMarker(&mapsec, &mrkr);
+
 		// map data
 		SaveMapData(&mapsec, map);
 		mapsec.write_varint(0);  // no extension flags
 		maps.push_back(std::move(mapsec));
 	}
+
 
 	// global specials
 	hamworld::Section global_specials;
@@ -603,6 +644,7 @@ byte Syl_SaveWorld(const world_t* world, const char* fname)
 	return 1;
 }
 
+// ADD TO BACKWARDS COMPAT MODULE
 terrain_t ConvertOldTerrain(TileFlags flags, word next)
 {
 	terrain_t terrain{};
@@ -658,7 +700,7 @@ byte Syl_LoadWorld(world_t* world, const char* fname)
 	std::string app;
 	if (!load.header(world->author, nullptr, &app))
 	{
-		LogError("Ham_LoadWorld(%s): bad header", fname);
+		LogError("Syl_LoadWorld(%s): bad header", fname);
 		return 0;
 	}
 
@@ -679,7 +721,7 @@ byte Syl_LoadWorld(world_t* world, const char* fname)
 			size_t start = section.read_varint();
 			if (start != NUM_ORIGINAL_ITEMS)
 			{
-				LogError("Ham_LoadWorld(%s): item definition offest NYI (expected %d, got %u)", fname, NUM_ORIGINAL_ITEMS, (unsigned int)(start));
+				LogError("Syl_LoadWorld(%s): item definition offest NYI (expected %d, got %u)", fname, NUM_ORIGINAL_ITEMS, (unsigned int)(start));
 				return false;
 			}
 			size_t item_count = section.read_varint();
@@ -696,7 +738,7 @@ byte Syl_LoadWorld(world_t* world, const char* fname)
 			size_t start = section.read_varint();
 			if (start != CUSTOM_SND_START)
 			{
-				LogError("Ham_LoadWorld(%s): sound definition offest NYI (expected %d, got %u)", fname, CUSTOM_SND_START, (unsigned int)(start));
+				LogError("Syl_LoadWorld(%s): sound definition offest NYI (expected %d, got %u)", fname, CUSTOM_SND_START, (unsigned int)(start));
 				return false;
 			}
 			size_t sound_count = section.read_varint();
@@ -731,22 +773,26 @@ byte Syl_LoadWorld(world_t* world, const char* fname)
 				n++;
 			}
 		}
-		else if (section_name == "terrain_data") // new terrain data
-		{
-			// ???
-		}
 		else if (section_name == "map")
 		{
 			section.read_varint();  // skip uid
 			size_t w = section.read_varint();
 			size_t h = section.read_varint();
 			Map* map = world->map[world->numMaps++] = new Map(w, h, "");
+
 			section.read_string(map->name);
 			section.read_string(map->song);
-			section.stream.read((char*)&map->itemDrops, 2);
+
+			map->type = (MapType)section.read_varint();
+			map->weather = (MapWeather)section.read_varint();
+			map->lighting = (MapLighting)section.read_varint();
+			map->environment = (MapEnvironment)section.read_varint();
+			map->miscFlags = (MapTypeFlags)section.read_varint();
+
 			map->numBrains = section.read_varint();
 			map->numCandles = section.read_varint();
-			map->flags = (LevelFlags)section.read_varint();
+			section.stream.read((char*)&map->itemDrops, 2);
+			map->timer = section.read_varint();
 
 			map->badguy.fill({});
 			size_t badguy_count = section.read_varint();
@@ -758,13 +804,17 @@ byte Syl_LoadWorld(world_t* world, const char* fname)
 			for (size_t i = 0; i < special_count; ++i)
 				LoadMapSpecial(&section, &map->special[i]);
 
+			InitMarkers(map->marker);
+			size_t marker_count = section.read_varint();
+			for (size_t i = 0; i < marker_count; ++i)
+				LoadMapMarker(&section, &map->marker[i]);
+
 			LoadMapData(&section, map);
 
 			section.read_varint();  // ignore extension flags
 		}
 		else if (section_name == "global_specials")
 		{
-			printf("FOUND GLOBAL SPECIALS.");
 			InitGlobalSpecials(world->special);
 			size_t special_count = section.read_varint();
 			for (size_t i = 0; i < special_count; ++i)
@@ -772,7 +822,7 @@ byte Syl_LoadWorld(world_t* world, const char* fname)
 		}
 		else
 		{
-			LogError("Ham_LoadWorld(%s): unknown section: %s", fname, section_name.c_str());
+			LogError("Syl_LoadWorld(%s): unknown section: %s", fname, section_name.c_str());
 			return 0;
 		}
 	}

@@ -184,7 +184,7 @@ void RenderPauseMenu(void)
 	//hello!!
 
 	// world name
-	if (curMap->flags&MAP_HUB)
+	if (curMap->type == MAP_TYPE_HUB)
 	{
 		Print(pauseX + xx, pauseY+yy, curWorld.map[0]->name, 8, 0);
 		yy += 60;
@@ -450,7 +450,7 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 			pauseY = 0;
 	}
 
-	if (curMap->flags & MAP_HUB && !shopping)
+	if (curMap->type == MAP_TYPE_HUB && !shopping)
 		yy += 60;
 	else
 		yy += 68;

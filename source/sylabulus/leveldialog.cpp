@@ -14,6 +14,7 @@
 #define LDMODE_CANDLES	5	// typing in candles
 #define LDMODE_SONGPICK 6	// file dialog to pick a song
 #define LDMODE_ITEMDROP	7	// entering itemdrop %
+#define LDMODE_TIMER	8	// entering timer amt
 
 #define ASK_WIDTH		1	// asking if you should really change width
 #define ASK_HEIGHT		2	// asking about height
@@ -29,10 +30,11 @@
 #define ID_EXIT			9
 #define ID_SONG			10
 #define ID_ITEMDROP		11
+#define ID_TIMER		12
 #define ID_SLIDE		20
 #define ID_FLAG			40
-#define ID_PREV			80
-#define ID_NEXT			81
+#define ID_PREV			180
+#define ID_NEXT			181
 
 #define DLG_X		(100)
 #define DLG_Y		(60)
@@ -54,9 +56,24 @@ static const LevelFlags flagNum[]={
 static const MapWeather weatherType[] = { MAP_WEATHER_NONE, MAP_WEATHER_RAIN, MAP_WEATHER_SNOW, MAP_WEATHER_SAKURA };
 static const MapType levelType[] = { MAP_TYPE_NORMAL, MAP_TYPE_HUB, MAP_TYPE_SECRET, MAP_TYPE_BOSS, MAP_TYPE_KEYCHAIN };
 static const MapLighting lightingType[] = { MAP_LIGHT_NORMAL, MAP_LIGHT_TORCH, MAP_LIGHT_LANTERN, MAP_LIGHT_STEALTH };
-static const MapEnvironment environmentType[] = { MAP_ENV_NORMAL, MAP_ENV_UNDERWATER, MAP_ENV_OXYGEN, MAP_ENV_SUPERHOT, MAP_ENV_OUTERSPACE };
+static const MapEnvironment environmentType[] = { MAP_ENV_NORMAL, MAP_ENV_UNDERWATER, MAP_ENV_OXYGEN, MAP_ENV_SUPERHOT, MAP_ENV_OUTERSPACE, MAP_ENV_TEST };
 static const MapTypeFlags flagTypes[] = { MAP_FLG_STARRY, MAP_FLG_WAVY };
 
+static const char weatherTypeNames[][16] = {
+	"No Weather", "Rain", "Snow", "Sakura Leaves",
+};
+static const char levelTypeNames[][16] = {
+	"Normal Lvl.", "Hub Lvl", "Secret Lvl", "Boss Lvl", "Keychain Lvl",
+};
+static const char lightingTypeNames[][16] = {
+	"Nrml. Light", "Torch Lit", "Lantern Lit", "Stealth Mode",
+};
+static const char environmentTypeNames[][16] = {
+	"Nrml. Env.", "Underwater", "Oxygen Tank", "Super Hot!", "Outer Space", "[TEST]",
+};
+static const char flagTypeNames[][16] = {
+	"Starry", "Wavy",
+};
 
 static byte mapZoom[MAX_MAPSIZE * MAX_MAPSIZE];
 static byte desiredWidth,desiredHeight;
@@ -85,15 +102,62 @@ static void SongClick(int id)
 	}
 }
 
+static void ArrowButtonClick(int id)
+{
+	int i;
+	printf("ID: %d\n", id);
+
+	switch (id-ID_FLAG)
+	{
+	case 0:
+		world->map[mapNum]->type = (MapType)((world->map[mapNum]->type + MAP_TYPE_MAX - 1) % MAP_TYPE_MAX);
+		break;
+
+	case 1:
+		world->map[mapNum]->type = (MapType)((world->map[mapNum]->type + 1) % MAP_TYPE_MAX);
+		break;
+
+	case 2:
+		world->map[mapNum]->weather = (MapWeather)((world->map[mapNum]->weather + MAP_WEATHER_MAX - 1) % MAP_WEATHER_MAX);
+		break;
+
+	case 3:
+		world->map[mapNum]->weather = (MapWeather)((world->map[mapNum]->weather + 1) % MAP_WEATHER_MAX);
+		break;
+
+	case 4:
+		world->map[mapNum]->lighting = (MapLighting)((world->map[mapNum]->lighting + MAP_LIGHT_MAX - 1) % MAP_LIGHT_MAX);
+		break;
+
+	case 5:
+		world->map[mapNum]->lighting = (MapLighting)((world->map[mapNum]->lighting + 1) % MAP_LIGHT_MAX);
+		break;
+
+	case 6:
+		world->map[mapNum]->environment = (MapEnvironment)((world->map[mapNum]->environment + MAP_ENV_MAX - 1) % MAP_ENV_MAX);
+		break;
+
+	case 7:
+		world->map[mapNum]->environment = (MapEnvironment)((world->map[mapNum]->environment + 1) % MAP_ENV_MAX);
+		break;
+	}
+	MakeNormalSound(SND_MENUCLICK);
+}
+
+// TODO: Check this out?
 static void FlagClick(int id)
 {
-	if(flagNum[id-ID_FLAG]==MAP_HUB && mapNum==0)
-		return;	// can't unhub level zero
-
-	world->map[mapNum]->flags^=flagNum[id-ID_FLAG];
-	if (flagNum[id-ID_FLAG] == MAP_STARS)
-		InitStars();
-	LevelDialogButtons();
+	int i;
+	switch (id-ID_FLAG)
+	{
+		case 8:
+			world->map[mapNum]->miscFlags ^= flagTypes[0];
+			break;
+		case 9:
+			world->map[mapNum]->miscFlags ^= flagTypes[1];
+			break;
+	}
+	SetButtonState(id, CHECK_OFF);
 }
 
 static void PrevClick(int id)
@@ -144,6 +208,12 @@ static void ItemDropClick(int id)
 {
 	mode=LDMODE_ITEMDROP;
 	InitTextDialog("Enter chance for enemies to drop items:","",5);
+}
+
+static void TimerClick(int id)
+{
+	mode=LDMODE_TIMER;
+	InitTextDialog("Enter countdown length (0 = nothing, or 10-999):", "", 3);
 }
 
 static bool CountsDouble(int type)
@@ -334,11 +404,28 @@ void LevelDialogButtons(void)
 	MakeButton(BTN_NORMAL,ID_SONG,0,DLG_X+2,DLG_Y+37,50,15,"Song",SongClick);
 	MakeButton(BTN_STATIC,ID_STATIC,0,DLG_X+54,DLG_Y+37,50,15,world->map[mapNum]->song,SongClick);
 
+	/*
 	for(i=0;i<NUM_LVL_FLAGS;i++)
 	{
 		MakeButton(BTN_CHECK,ID_FLAG+i,((world->map[mapNum]->flags&flagNum[i])!=0)*CHECK_ON,DLG_X+2,DLG_Y+66+16*i,
 			150,15,MapFlagName(i),FlagClick);
 	}
+	*/
+
+	MakeButton(BTN_NORMAL, ID_FLAG, 0, DLG_X+2, DLG_Y+66, 19, 17, "<", ArrowButtonClick);
+	MakeButton(BTN_NORMAL, ID_FLAG+1, 0, DLG_X+123, DLG_Y+66, 19, 17, ">", ArrowButtonClick);
+
+	MakeButton(BTN_NORMAL, ID_FLAG+2, 0, DLG_X+2, DLG_Y+85, 19, 17, "<", ArrowButtonClick);
+	MakeButton(BTN_NORMAL, ID_FLAG+3, 0, DLG_X+123, DLG_Y+85, 19, 17, ">", ArrowButtonClick);
+
+	MakeButton(BTN_NORMAL, ID_FLAG+4, 0, DLG_X+2, DLG_Y+104, 19, 17, "<", ArrowButtonClick);
+	MakeButton(BTN_NORMAL, ID_FLAG+5, 0, DLG_X+123, DLG_Y+104, 19, 17, ">", ArrowButtonClick);
+
+	MakeButton(BTN_NORMAL, ID_FLAG+6, 0, DLG_X+2, DLG_Y+123, 19, 17, "<", ArrowButtonClick);
+	MakeButton(BTN_NORMAL, ID_FLAG+7, 0, DLG_X+123, DLG_Y+123, 19, 17, ">", ArrowButtonClick);
+
+	MakeButton(BTN_CHECK, ID_FLAG+8, 0, DLG_X+2, DLG_Y+181, 128, 15, "Star BG", FlagClick);
+	MakeButton(BTN_CHECK, ID_FLAG+9, 0, DLG_X+2, DLG_Y+197, 128, 15, "Wavy", FlagClick);
 
 	MakeButton(BTN_NORMAL,ID_PREV,0,DLG_X2-104,DLG_Y+2,50,15,"Prev",PrevClick);
 	MakeButton(BTN_NORMAL,ID_NEXT,0,DLG_X2-52,DLG_Y+2,50,15,"Next",NextClick);
@@ -351,9 +438,14 @@ void LevelDialogButtons(void)
 	sprintf(s,"%d",world->map[mapNum]->height);
 	MakeButton(BTN_STATIC,ID_STATIC,0,DLG_X2-211+162,DLG_Y2-240,50,15,s,NULL);
 
-	MakeButton(BTN_NORMAL,ID_ITEMDROP,0,DLG_X+2,DLG_Y+262,75,15,"Item Drops",ItemDropClick);
-	sprintf(s,"%0.2f%%",(float)world->map[mapNum]->itemDrops/(float)FIXAMT);
-	MakeButton(BTN_STATIC,ID_STATIC,0,DLG_X+81,DLG_Y+262,40,15,s,NULL);
+	sprintf(s, "%0.2f%%", (float)world->map[mapNum]->itemDrops / (float)FIXAMT);
+	MakeButton(BTN_NORMAL, ID_ITEMDROP, 0, DLG_X + 2, DLG_Y + 247, 50, 15, "Drop%", ItemDropClick);
+	MakeButton(BTN_STATIC, ID_STATIC, 0, DLG_X + 81, DLG_Y + 247, 40, 15, s, NULL);
+
+	sprintf(s, "%ds (%02d:%02d)", world->map[mapNum]->timer, world->map[mapNum]->timer/60, world->map[mapNum]->timer%60);
+	MakeButton(BTN_NORMAL, ID_TIMER, 0, DLG_X + 2, DLG_Y + 262, 50, 15, "Timer", TimerClick);
+	MakeButton(BTN_STATIC, ID_STATIC, 0, DLG_X + 81, DLG_Y + 262, 40, 15, s, NULL);
+
 
 	MakeButton(BTN_NORMAL,ID_BRAINS,0,DLG_X+2,DLG_Y+280,55,15,"Brains",BrainsClick);
 	sprintf(s,"%d",world->map[mapNum]->numBrains);
@@ -468,13 +560,18 @@ void RenderLevelDialogZoom(MGLDraw *mgl, world_t *world_, byte mapNum_)
 		memcpy(mgl->GetScreen() + mgl->GetWidth() * y, &mapZoom[y * MAX_MAPSIZE], mgl->GetWidth());
 }
 
-void RenderLevelDialog(int msx,int msy,MGLDraw *mgl)
+void RenderLevelDialog(int msx,int msy, world_t *wrld,MGLDraw *mgl)
 {
 	int i;
 
 	// box for the whole dialog
 	mgl->FillBox(DLG_X,DLG_Y,DLG_X2,DLG_Y2,8);
 	mgl->Box(DLG_X,DLG_Y,DLG_X2,DLG_Y2,31);
+
+	CenterPrint(DLG_X+76, DLG_Y+69, levelTypeNames[wrld->map[mapNum]->type], 0, 1);
+	CenterPrint(DLG_X+76, DLG_Y+89, weatherTypeNames[wrld->map[mapNum]->weather], 0, 1);
+	CenterPrint(DLG_X+76, DLG_Y+109, lightingTypeNames[wrld->map[mapNum]->lighting], 0, 1);
+	CenterPrint(DLG_X+76, DLG_Y+129, environmentTypeNames[wrld->map[mapNum]->environment], 0, 1);
 
 	if(PointInRect(msx,msy,DLG_X2-211,DLG_Y2-220,DLG_X2-10,DLG_Y2-211))
 		levelSpr->GetSprite(4)->DrawBright(DLG_X2-219,DLG_Y2-220,mgl,8);
@@ -524,6 +621,7 @@ void RenderLevelDialog(int msx,int msy,MGLDraw *mgl)
 		case LDMODE_BRAINS:
 		case LDMODE_CANDLES:
 		case LDMODE_ITEMDROP:
+		case LDMODE_TIMER:
 			RenderButtons(-1,-1,mgl);
 			RenderTextDialog(msx,msy,mgl);
 			break;
@@ -609,6 +707,7 @@ byte LevelDialogKey(char key)
 		case LDMODE_BRAINS:
 		case LDMODE_CANDLES:
 		case LDMODE_ITEMDROP:
+		case LDMODE_TIMER:
 			TextDialogKey(key);
 			if(TextDialogCommand()==TM_OKAY)
 			{
@@ -655,6 +754,12 @@ byte LevelDialogKey(char key)
 				else if(mode==LDMODE_CANDLES)
 				{
 					world->map[mapNum]->numCandles=(word)atoi(GetText());
+				}
+				else if(mode==LDMODE_TIMER)
+				{
+					world->map[mapNum]->timer=(word)atoi(GetText());
+					if(world->map[mapNum]->timer > 0 && world->map[mapNum]->timer < 10)
+						world->map[mapNum]->timer = 10;
 				}
 				else if(mode==LDMODE_ITEMDROP)
 				{

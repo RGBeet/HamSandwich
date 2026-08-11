@@ -163,7 +163,7 @@ void DoRage(Guy *me)
 			cy-=240;
 			for(i=0;i<3;i++)
 			{
-				if(curMap->flags&MAP_UNDERWATER)
+				if(curMap->environment == MAP_ENV_UNDERWATER)
 					FireBullet((cx+Random(640))<<FIXSHIFT,(cy+Random(480))<<FIXSHIFT,
 								(byte)Random(256),BLT_BUBBLE,1);
 				else
@@ -231,7 +231,7 @@ void DoRage(Guy *me)
 			break;
 		case WPN_JETPACK:
 			for(i=0;i<8;i++)
-				if(curMap->flags&MAP_UNDERWATER)
+				if (curMap->environment == MAP_ENV_UNDERWATER)
 					FireBullet(me->x,me->y,i*32,BLT_BUBBLE,1);
 				else
 					FireBullet(me->x,me->y,i,BLT_FLAME,1);

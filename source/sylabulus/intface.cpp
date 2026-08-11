@@ -289,6 +289,9 @@ void ResetInterface(void)
 		if (intf[i].ty >= SCRHEI/2)
 			intf[i].ty += h - SCRHEI;
 	}
+
+	intf[INTF_COUNTDOWN].value		= player.timer;
+	intf[INTF_COUNTDOWN].vDesired	= player.timer;
 }
 
 void DrawLifeMeter(int x,int y,byte amt)
@@ -868,7 +871,7 @@ void DrawHammers(int x,int y,MGLDraw *mgl)
 
 void DrawStealth(int x, int y, MGLDraw* mgl)
 {
-	if (curMap && curMap->flags & MAP_STEALTH)
+	if (curMap && curMap->lighting == MAP_LIGHT_STEALTH)
 	{
 		if (player.stealthy)
 			intfaceSpr->GetSprite(SPR_STEALTH)->Draw(x, y, mgl);
@@ -889,7 +892,7 @@ void UpdateInterface(Map *map)
 	int xx=0,yy=1;
 
 	// don't show score on hub level (can't do squat with it anyways!)
-	if (map->flags & MAP_HUB)
+	if (map->type == MAP_TYPE_HUB)
 	{
 		intf[INTF_SCORE].tx = SCRWID-20;
 		intf[INTF_SCORE].ty = -50;
@@ -997,7 +1000,7 @@ void UpdateInterface(Map *map)
 	}
 
 	// stealth
-	if (curMap && curMap->flags & MAP_STEALTH)
+	if (curMap && curMap->lighting == MAP_LIGHT_STEALTH)
 	{
 		intf[INTF_STEALTH].tx = 1;
 		intf[INTF_STEALTH].ty = yy;
@@ -1355,7 +1358,7 @@ void RenderCollectedStuff(int x,int y,MGLDraw *mgl)
 	int xx=0, yy=20;
 
 	// draw the level info (only if it's not a hub level)
-	if (curMap->flags & MAP_HUB)
+	if (curMap->type == MAP_TYPE_HUB)
 	{
 		// hub level
 	}

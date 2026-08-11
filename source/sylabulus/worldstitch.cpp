@@ -1,6 +1,6 @@
 #include "worldstitch.h"
 #include "editor.h"
-#include "world_io_supreme.h"
+#include "world_io.h"
 
 static world_t *world2;
 static int stitchTileOffset,stitchSoundOffset,stitchItemOffset;
@@ -200,8 +200,11 @@ void UpdateSpecials(world_t *world,int levelOffset)
 
 byte AddWorldIn(world_t *world1,const char *fname)
 {
+	SetStitchError("Feature currently disabled. Sorry!");
+	return 0;
 	int i;
 
+	/*
 	EditorSaveWorld("worlds/backup_load.dlw");
 	stitchTileOffset = world1->tilegfx.numTiles;
 	stitchSoundOffset = GetNumCustomSounds();
@@ -262,4 +265,5 @@ byte AddWorldIn(world_t *world1,const char *fname)
 	free(world2);
 	EditorSelectMap(0);
 	return 1;
+	*/
 }

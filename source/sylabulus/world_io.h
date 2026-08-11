@@ -1,5 +1,5 @@
-#ifndef WORLD_IO_SYLABULUS_H
-#define WORLD_IO_SYLABULUS_H
+#ifndef WORLD_IO_H
+#define WORLD_IO_H
 
 #include "jamultypes.h"
 #include "string_extras.h"

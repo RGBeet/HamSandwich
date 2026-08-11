@@ -228,6 +228,9 @@ void CalculateMusicSpeed()
 {
 	float speed = 1.0f;
 
+	if (PlayerGetTimer() > 0 && PlayerGetTimer() < 100)
+		speed *= 1.2;
+
 	if (PlayerGetTimeStop() > 1)
 		speed *= 0.5;
 
