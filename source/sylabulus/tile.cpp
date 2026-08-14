@@ -283,10 +283,14 @@ static inline byte PickDiscoColor(void)
 }
 
 // --- RENDERING!
+byte CanDoDisco()
+{
+	return 0;
+}
 
 byte ModifyDiscoColor(byte color, byte disco)
 {
-	if (profile.progress.purchase[modeShopNum[MODE_DISCO]]&SIF_ACTIVE) return (color & 31) | disco;
+	if (CanDoDisco()) return (color & 31) | disco;
 	else return color;
 }
 
@@ -304,7 +308,7 @@ void RenderFloorTile(int x, int y, int t, char light)
 		return RenderEmptyTile(x, y, 0);
 	}
 
-	if (light == 0 && !(profile.progress.purchase[modeShopNum[MODE_DISCO]]&SIF_ACTIVE))
+	if (light == 0 && !CanDoDisco())
 	{
 		return RenderFloorTileUnlit(x, y, t);
 	}
@@ -924,7 +928,7 @@ void RenderFloorTileFancy(int x,int y,int t,byte shadow,const char *theLight)
 		light[7]-=8;
 	}
 
-	if(profile.progress.purchase[modeShopNum[MODE_DISCO]]&SIF_ACTIVE)
+	if(CanDoDisco())
 	{
 		GouraudBoxDisco(x,y,current->GetTileData(t),light[0],light[1],light[3],light[4]);
 		GouraudBoxDisco(x+GB_WID,y,current->GetTileData(t)+GB_WID,light[1],light[2],light[4],light[5]);
@@ -983,7 +987,7 @@ void RenderWallTileFancy(int x,int y,int t,const char *theLight)
 	light[2]=light[5];
 	light[1]=light[4];
 
-	if(profile.progress.purchase[modeShopNum[MODE_DISCO]]&SIF_ACTIVE)
+	if(CanDoDisco())
 	{
 		GouraudBoxDisco(x,y,current->GetTileData(t),light[0],light[1],light[3],light[4]);
 		GouraudBoxDisco(x+GB_WID,y,current->GetTileData(t)+GB_WID,light[1],light[2],light[4],light[5]);
@@ -1039,7 +1043,7 @@ void RenderRoofTileFancy(int x,int y,int t,byte trans,byte wallBelow,const char 
 			light[i]=(light[4]+light[i])/2;	// average each one with this tile's central light
 	}
 
-	if(profile.progress.purchase[modeShopNum[MODE_DISCO]]&SIF_ACTIVE)
+	if(CanDoDisco())
 	{
 		if(!trans)
 		{

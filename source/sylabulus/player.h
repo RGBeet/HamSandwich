@@ -212,8 +212,6 @@ byte PlayerAddPockets(int amt);
 byte PlayerCanThrowHammers(void);
 byte PlayerHasPowerup(void);
 
-byte IsGameModeActivated(byte n);
-
 #define ANY_BUTTONS		(CONTROL_B1|CONTROL_B2|CONTROL_B3|CONTROL_B4)
 #define ATK_BUTTONS		(CONTROL_B1|CONTROL_B2)
 

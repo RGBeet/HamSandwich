@@ -197,6 +197,7 @@ static void SaveMapSpecial(hamworld::Section* f, const special_t* spcl)
 
 static void LoadMapSpecial(hamworld::Section* f, special_t* spcl)
 {
+
 	spcl->x = f->read_varint();
 	spcl->y = f->read_varint();
 	spcl->uses = f->read_varint();

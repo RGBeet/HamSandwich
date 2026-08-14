@@ -212,10 +212,10 @@ void InitProfMenu(MGLDraw *mgl)
 		memcpy(&backgd[i*640],&mgl->GetScreen()[i*mgl->GetWidth()],640);
 
 	ScanProfiles();
-	recordBook=ItemPurchased(SHOP_MAJOR,MAJOR_RECORDBOOK);
-	candleRadar=ItemPurchased(SHOP_ABILITY,ABIL_CANDLE);
-	brainRadar=ItemPurchased(SHOP_ABILITY,ABIL_BRAIN);
-	moveNShoot=ItemPurchased(SHOP_ABILITY,ABIL_MOVESHOOT);
+	recordBook = 1;
+	candleRadar = 1;
+	brainRadar = 1;
+	moveNShoot = 1;
 
 	curButton = ButtonId::None;
 	oldc = ~0;
@@ -457,16 +457,13 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 				switch (curButton)
 				{
 					case ButtonId::BrainRadar:
-						if(ItemPurchased(SHOP_ABILITY,ABIL_BRAIN))
-							profile.brainRadar=1-profile.brainRadar;
+						profile.brainRadar=1-profile.brainRadar;
 						break;
 					case ButtonId::CandleRadar:
-						if(ItemPurchased(SHOP_ABILITY,ABIL_CANDLE))
-							profile.candleRadar=1-profile.candleRadar;
+						profile.candleRadar=1-profile.candleRadar;
 						break;
 					case ButtonId::MoveNShoot:
-						if(ItemPurchased(SHOP_ABILITY,ABIL_MOVESHOOT))
-							profile.moveNShoot=1-profile.moveNShoot;
+						profile.moveNShoot=1-profile.moveNShoot;
 						break;
 					case ButtonId::Records:
 						if(recordBook)
@@ -481,12 +478,6 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 						profile.playAs++;
 						if(profile.playAs>5)
 							profile.playAs=0;
-						while(profile.playAs!=PLAY_BOUAPHA && !ItemPurchased(SHOP_PLAYABLE,profile.playAs))
-						{
-							profile.playAs++;
-							if(profile.playAs>5)
-								profile.playAs=0;
-						}
 						break;
 					case ButtonId::Playlist:
 						return 2;
@@ -524,10 +515,10 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 					FreeProfile();
 					profChoice=i;
 					LoadProfile(ShortName(&fileList[i*PRFNAME_LEN]));
-					recordBook=ItemPurchased(SHOP_MAJOR,MAJOR_RECORDBOOK);
-					candleRadar=ItemPurchased(SHOP_ABILITY,ABIL_CANDLE);
-					brainRadar=ItemPurchased(SHOP_ABILITY,ABIL_BRAIN);
-					moveNShoot=ItemPurchased(SHOP_ABILITY,ABIL_MOVESHOOT);
+					recordBook = 1;
+					candleRadar = 1;
+					brainRadar = 1;
+					moveNShoot = 1;
 				}
 			}
 
@@ -585,10 +576,10 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 						else	// load profile #1 if you just deleted #0
 							LoadProfile(ShortName(&fileList[PRFNAME_LEN]));
 						ScanProfiles();
-						recordBook=ItemPurchased(SHOP_MAJOR,MAJOR_RECORDBOOK);
-						candleRadar=ItemPurchased(SHOP_ABILITY,ABIL_CANDLE);
-						brainRadar=ItemPurchased(SHOP_ABILITY,ABIL_BRAIN);
-						moveNShoot=ItemPurchased(SHOP_ABILITY,ABIL_MOVESHOOT);
+						recordBook = 1;		//ItemPurchased(SHOP_MAJOR, MAJOR_RECORDBOOK);
+						candleRadar = 1;	//ItemPurchased(SHOP_ABILITY, ABIL_CANDLE);
+						brainRadar = 1;		//ItemPurchased(SHOP_ABILITY, ABIL_BRAIN);
+						moveNShoot = 1;		//ItemPurchased(SHOP_ABILITY, ABIL_MOVESHOOT);
 					}
 					mode=PROF_NORMAL;
 					curButton = mb ? ButtonId::None : ButtonId::Exit;

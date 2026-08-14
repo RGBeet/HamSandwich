@@ -1167,8 +1167,8 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world, bool bypass
 	ouch=4;
 	hp-=damage;
 
-	if(aiType==MONS_BOUAPHA && (profile.progress.purchase[modeShopNum[MODE_LUDICROUS]]&SIF_ACTIVE))
-		hp=0;	// die instantly!
+	//if(aiType==MONS_BOUAPHA && (profile.progress.purchase[modeShopNum[MODE_LUDICROUS]]&SIF_ACTIVE))
+	//	hp=0;	// die instantly!
 
 	if(!(MonsterFlags(type,aiType)&MF_NOMOVE))
 	{
@@ -1271,8 +1271,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world, bool bypass
 		}
 
 		ScoreEvent(SE_KILL,1);
-		if(player.rage<127*256-512 && player.rageClock==0 && (player.weapon!=WPN_PWRARMOR && player.weapon!=WPN_MINISUB) &&
-			player.ability[ABIL_RAGE])
+		if(player.rage<127*256-512 && player.rageClock==0 && (player.weapon!=WPN_PWRARMOR && player.weapon!=WPN_MINISUB))
 			player.rage+=512;	// and crank up the rage
 		if(!editing && !player.cheated && verified)
 		{
@@ -1430,7 +1429,7 @@ void UpdateGuys(Map *map,world_t *world)
 		}
 	}
 
-	if(player.ability[ABIL_BRAIN] && profile.brainRadar && goodguy)
+	if(profile.brainRadar && goodguy)
 	{
 		if(player.brainTime)
 			player.brainTime--;
@@ -1442,7 +1441,7 @@ void UpdateGuys(Map *map,world_t *world)
 		}
 	}
 
-	if(player.ability[ABIL_CANDLE] && profile.candleRadar && goodguy)
+	if(profile.candleRadar && goodguy)
 	{
 		if(player.candleTime)
 			player.candleTime--;

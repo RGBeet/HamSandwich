@@ -21,6 +21,11 @@ Particle::~Particle(void)
 {
 }
 
+byte CanDoSplatter()
+{
+	return 0;
+}
+
 void Particle::SpurtGo(byte type,int x,int y,int z,byte angle,byte force)
 {
 	byte fforce;
@@ -52,7 +57,7 @@ void Particle::Go(byte type,int x,int y,int z,byte angle,byte force)
 
 	this->type=type;
 	size=2;
-	if(profile.progress.purchase[modeShopNum[MODE_SPLATTER]]&SIF_ACTIVE)
+	if(CanDoSplatter())
 		size=20;
 
 	fforce=force/4;
@@ -77,7 +82,7 @@ void Particle::GoExact(byte type,int x,int y,int z,byte angle,byte force)
 
 	this->type=type;
 	size=6;
-	if(profile.progress.purchase[modeShopNum[MODE_SPLATTER]]&SIF_ACTIVE)
+	if(CanDoSplatter())
 		size=20;
 
 	fforce=force/4;
@@ -122,7 +127,7 @@ void Particle::GoRandom(byte type,int x,int y,int z,byte force)
 	this->dy=(Random(force)-force/2)<<FIXSHIFT;
 	this->dz=Random(force*2)<<FIXSHIFT;
 	this->life=Random(force)+20;
-	if(profile.progress.purchase[modeShopNum[MODE_SPLATTER]]&SIF_ACTIVE)
+	if(CanDoSplatter())
 		size=20;
 
 	// Might be rendered before being updated, so don't leave color uninitialized.
@@ -145,7 +150,7 @@ void Particle::GoRandomColor(byte color,int x,int y,int z,byte force)
 	this->dz=Random(force*2)<<FIXSHIFT;
 	this->life=Random(force)+20;
 	this->size=this->life/2;
-	if(profile.progress.purchase[modeShopNum[MODE_SPLATTER]]&SIF_ACTIVE)
+	if(CanDoSplatter())
 		size=20;
 	this->color=color*32+16;
 	this->type=PART_COLOR;
@@ -261,13 +266,13 @@ void Particle::Update(Map *map)
 				break;
 			case PART_HAMMER:
 				color=128+24;
-				if(profile.progress.purchase[modeShopNum[MODE_SPLATTER]]&SIF_ACTIVE)
+				if(CanDoSplatter())
 					size=life/4;
 				else
 					size=life/8;
 				break;
 			case PART_COLOR:
-				if(profile.progress.purchase[modeShopNum[MODE_SPLATTER]]&SIF_ACTIVE)
+				if(CanDoSplatter())
 					size=life/4;
 				else
 					size=life/8;
@@ -295,7 +300,7 @@ void Particle::Update(Map *map)
 					size=0;
 				else
 					size=1;
-				if(profile.progress.purchase[modeShopNum[MODE_SPLATTER]]&SIF_ACTIVE)
+				if(CanDoSplatter())
 					size=life/4;
 				break;
 			case PART_SNOW2:
@@ -325,7 +330,7 @@ void Particle::Update(Map *map)
 					size=0;
 				else
 					size=1;
-				if(profile.progress.purchase[modeShopNum[MODE_SPLATTER]]&SIF_ACTIVE)
+				if(CanDoSplatter())
 					size=life/4;
 				break;
 			case PART_RAIN:
@@ -347,7 +352,7 @@ void Particle::Update(Map *map)
 					size=0;
 				else
 					size=1;
-				if(profile.progress.purchase[modeShopNum[MODE_SPLATTER]]&SIF_ACTIVE)
+				if(CanDoSplatter())
 					size=life/4;
 				break;
 			case PART_SNOW:
@@ -423,14 +428,14 @@ void Particle::Update(Map *map)
 				break;
 			case PART_AKSPLAT:		// used for ak-8087 bullets
 				color = 32*7 + 24;
-				if (profile.progress.purchase[modeShopNum[MODE_SPLATTER]] & SIF_ACTIVE)
+				if (CanDoSplatter())
 					size = life / 8;
 				else
 					size = life / 16;
 				break;
 			case PART_SHRAPNEL:		// used for explosive weapons
 				color = 16;
-				if (profile.progress.purchase[modeShopNum[MODE_SPLATTER]] & SIF_ACTIVE)
+				if (CanDoSplatter())
 					size = life / 4;
 				else
 					size = life / 8;
@@ -449,7 +454,7 @@ void Particle::Update(Map *map)
 				else
 					color = 128 + life;
 
-				if (profile.progress.purchase[modeShopNum[MODE_SPLATTER]] & SIF_ACTIVE)
+				if (CanDoSplatter())
 					size = life / 4;
 				else
 					size = life / 8;
@@ -468,10 +473,38 @@ void Particle::Update(Map *map)
 				else
 					color = 32 + 4;
 
-				if (profile.progress.purchase[modeShopNum[MODE_SPLATTER]] & SIF_ACTIVE)
+				if (CanDoSplatter())
 					size = life / 8;
 				else
 					size = life / 16;
+
+				break;
+			case PART_PETAL:
+				dz+=FIXAMT; // no gravity
+				if (life > 20)
+					size = 2;
+				else if (life < 10)
+					size = 0;
+				else
+					size = 1;
+				break;
+			case PART_FOG:
+				dx += Random(FIXAMT / 4) - FIXAMT / 8;
+				dy += Random(FIXAMT / 4) - FIXAMT / 8;
+				Dampen(&dx, FIXAMT / 16);
+				Dampen(&dy, FIXAMT / 16);
+				dz += FIXAMT;
+
+				// gradually grow, then shrink
+				if (life > 170)
+					size = (200 - life) / 3; // 0 -> 10
+				else if (life < 30)
+					size = life / 3; // 10 -> 0
+				else
+					size = 10;
+
+				if (size < 1)
+					size = 1;
 
 				break;
 		}
@@ -1093,7 +1126,7 @@ void ExplodeParticles(byte type,int x,int y,int z,byte force)
 
 	amt=force;
 
-	if(profile.progress.purchase[modeShopNum[MODE_SPLATTER]]&SIF_ACTIVE)
+	if(CanDoSplatter())
 	{
 		amt*=4;
 		force*=2;
@@ -1116,7 +1149,7 @@ void ExplodeParticles2(byte type,int x,int y,int z,byte num,byte force)
 	if(num==0)
 		return;
 
-	if(profile.progress.purchase[modeShopNum[MODE_SPLATTER]]&SIF_ACTIVE)
+	if(CanDoSplatter())
 	{
 		num*=4;
 		force*=2;
@@ -1140,7 +1173,7 @@ void ExplodeParticlesColor(byte color,int x,int y,int z,byte num,byte force)
 	if(num==0)
 		return;
 
-	if(profile.progress.purchase[modeShopNum[MODE_SPLATTER]]&SIF_ACTIVE)
+	if(CanDoSplatter())
 	{
 		num*=4;
 		force*=2;
@@ -1165,7 +1198,7 @@ void ColorRing(byte color,int x,int y,int z,byte num,byte force)
 	if(num==0)
 		return;
 
-	if(profile.progress.purchase[modeShopNum[MODE_SPLATTER]]&SIF_ACTIVE)
+	if(CanDoSplatter())
 	{
 		num*=4;
 		force*=2;
@@ -1194,7 +1227,7 @@ void HealRing(byte color,int x,int y,int z,byte num,byte force)
 	if(num==0)
 		return;
 
-	if(profile.progress.purchase[modeShopNum[MODE_SPLATTER]]&SIF_ACTIVE)
+	if(CanDoSplatter())
 	{
 		num*=4;
 		force*=2;
@@ -1232,7 +1265,7 @@ void StopwatchRing(int x, int y, int z, byte num, byte force)
 	if (num == 0)
 		return;
 
-	if (profile.progress.purchase[modeShopNum[MODE_SPLATTER]] & SIF_ACTIVE)
+	if (CanDoSplatter())
 	{
 		num *= 4;
 		force *= 2;
@@ -1273,7 +1306,7 @@ void TeamChangeRing(byte color,int x,int y,int z,byte num,byte force)
 	if(num==0)
 		return;
 
-	if(profile.progress.purchase[modeShopNum[MODE_SPLATTER]]&SIF_ACTIVE)
+	if(CanDoSplatter())
 	{
 		num*=4;
 		force*=2;
@@ -1379,6 +1412,75 @@ void MakeItRain(Map *map)
 			particleList[i].life=50+Random(50);
 			particleList[i].type=PART_RAIN;
 			particleList[i].color=3*32+16;
+			break;
+		}
+	}
+}
+
+void MakeFog(Map* map)
+{
+	int wid = GetDisplayMGL()->GetWidth();
+	int hei = GetDisplayMGL()->GetHeight();
+
+	// Don't spawn fog too quickly.
+	if (Random(100) > 20)
+		return;
+
+	auto [cx, cy] = GetCamera();
+	cx -= wid / 2;
+	cy -= hei / 2;
+
+	for (int i = 0; i < maxParticles; i++)
+	{
+		if (!particleList[i].Alive())
+		{
+			particleList[i].x = (Random(wid) + cx) << FIXSHIFT;
+			particleList[i].y = (Random(hei) + cy) << FIXSHIFT;
+			particleList[i].z = (20 + Random(40)) << FIXSHIFT;
+
+			// Slow horizontal drift.
+			particleList[i].dx = FIXAMT / 4 + Random(FIXAMT / 4);
+			particleList[i].dy = FIXAMT / 4 + Random(FIXAMT / 4);
+
+			particleList[i].dz = 0;
+			particleList[i].size =
+				5 + Random(5);
+			particleList[i].life =
+				150 + Random(100);
+
+			particleList[i].type = PART_FOG;
+			particleList[i].color = 12 + Random(8)*2;
+
+			break;
+		}
+	}
+}
+
+void DoFallingPetals(Map* map)
+{
+	int wid = GetDisplayMGL()->GetWidth(), hei = GetDisplayMGL()->GetHeight();
+
+	// only 25% of particles may be rain
+	if (Random(100) > 30 || snowCount > maxParticles / 4)
+		return;
+
+	auto [cx, cy] = GetCamera();
+	cx -= wid / 2;
+	cy -= hei / 2;
+	for (int i = 0;i < maxParticles;i++)
+	{
+		if (!particleList[i].Alive())
+		{
+			particleList[i].x = (Random(wid) + cx) << FIXSHIFT;
+			particleList[i].y = (Random(hei) + cy) << FIXSHIFT;
+			particleList[i].z = (300 + Random(300)) << FIXSHIFT;
+			particleList[i].dx = FIXAMT*Random(6)/2;
+			particleList[i].dy = FIXAMT*Random(4)/3;
+			particleList[i].dz = -FIXAMT/4;
+			particleList[i].size = 2;
+			particleList[i].life = 50 + Random(50);
+			particleList[i].type = PART_PETAL;
+			particleList[i].color = 6 * 32 + 31;
 			break;
 		}
 	}
@@ -1712,6 +1814,12 @@ void DoParticleEffect(int x, int y, byte type)
 			break;
 		case PART_LIGHT:
 			ExplodeParticles2(PART_LIGHT, xx, yy, 0, 6, 12);
+			break;
+		case PART_PETAL:
+			ExplodeParticles2(PART_PETAL, xx, yy, z + FIXAMT * 40, 10, 8);
+			break;
+		case PART_FOG:
+			ExplodeParticles2(PART_FOG, xx, yy, z + FIXAMT * 40, 10, 8);
 			break;
 		default:
 			break;
