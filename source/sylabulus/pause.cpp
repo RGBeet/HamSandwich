@@ -275,6 +275,14 @@ static void SetupOptionItems()
 				else
 					strcpy(menu[i].text,"Wpn Lock: Off");
 				break;
+			case PE_HUDCHOICE:
+				if(profile.progress.hudChoice == HudChoice::Advanced)
+					strcpy(menu[i].text,"HUD: Advanced");
+				else if(profile.progress.hudChoice == HudChoice::Classic)
+					strcpy(menu[i].text,"HUD: Classic");
+				else
+					strcpy(menu[i].text,"HUD: Supreme");
+				break;
 		}
 	}
 }
@@ -296,7 +304,7 @@ void FillPauseMenu(const pauseItem_t *src)
 			if(menu[i].effect>=PE_CHEATS)
 			{
 				// squigglize cheats that aren't owned
-				if(!editing)
+				if(!ItemPurchased(SHOP_CHEAT,menu[i].effect-PE_CHEATS) && !editing)
 				{
 					strcpy(menu[i].text,"????????");
 					menu[i].effect=PE_BZZT;
@@ -334,7 +342,7 @@ void InitPauseMenu(void)
 	menu.push_back({ PE_SNDVOL, "" });
 	menu.push_back({ PE_MUSIC, "Music Options" });
 
-	if (editing) // editing OR cheats purchased
+	if (editing || ItemPurchased(SHOP_MAJOR, MAJOR_CHEATMENU)) // editing OR cheats purchased
 		menu.push_back({ PE_CHEAT, "Cheats!!" });
 
 	if (!shopping)
@@ -500,6 +508,24 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 			case PE_SONG:
 				PlayPrevSong();
 				break;
+			case PE_HUDCHOICE:
+				MakeNormalSound(SND_MENUSELECT);
+				switch (profile.progress.hudChoice)
+				{
+					case HudChoice::Supreme:
+						profile.progress.hudChoice = HudChoice::Classic;
+						break;
+					case HudChoice::Advanced:
+						profile.progress.hudChoice = HudChoice::Supreme;
+						break;
+					case HudChoice::Classic:
+						profile.progress.hudChoice = HudChoice::Advanced;
+						break;
+					default:
+						profile.progress.hudChoice = HudChoice::Supreme;
+				}
+				SetupOptionItems();
+				break;
 		}
 		SetupSoundItems();
 	}
@@ -519,6 +545,24 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 				break;
 			case PE_SONG:
 				PlayNextSong();
+				break;
+			case PE_HUDCHOICE:
+				MakeNormalSound(SND_MENUSELECT);
+				switch (profile.progress.hudChoice)
+				{
+					case HudChoice::Supreme:
+						profile.progress.hudChoice = HudChoice::Advanced;
+						break;
+					case HudChoice::Advanced:
+						profile.progress.hudChoice = HudChoice::Classic;
+						break;
+					case HudChoice::Classic:
+						profile.progress.hudChoice = HudChoice::Supreme;
+						break;
+					default:
+						profile.progress.hudChoice = HudChoice::Supreme;
+				}
+				SetupOptionItems();
 				break;
 		}
 		SetupSoundItems();
@@ -586,7 +630,12 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 				{
 					if(!shopping && !editing)
 					{
-						FillPauseMenu(gamePause);
+						// if cheats are available, use cheat game list instead
+						if(ItemPurchased(SHOP_MAJOR,MAJOR_CHEATMENU))
+							FillPauseMenu(gameCheatPause);
+						else
+							FillPauseMenu(gamePause);
+
 					}
 					else if(!shopping)
 					{
@@ -624,7 +673,12 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 				{
 					if(!editing)
 					{
-						FillPauseMenu(gamePause);
+						// if cheats are available, use cheat game list instead
+						if(ItemPurchased(SHOP_MAJOR,MAJOR_CHEATMENU))
+							FillPauseMenu(gameCheatPause);
+						else
+							FillPauseMenu(gamePause);
+
 					}
 					else
 					{
@@ -648,6 +702,23 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 				break;
 			case PE_WPNLOCK:
 				profile.progress.wpnLock = !profile.progress.wpnLock;
+				SetupOptionItems();
+				break;
+			case PE_HUDCHOICE:
+				switch (profile.progress.hudChoice)
+				{
+					case HudChoice::Supreme:
+						profile.progress.hudChoice = HudChoice::Advanced;
+						break;
+					case HudChoice::Advanced:
+						profile.progress.hudChoice = HudChoice::Classic;
+						break;
+					case HudChoice::Classic:
+						profile.progress.hudChoice = HudChoice::Supreme;
+						break;
+					default:
+						profile.progress.hudChoice = HudChoice::Supreme;
+				}
 				SetupOptionItems();
 				break;
 		}

@@ -170,22 +170,13 @@ bool Load::section(std::string *name, Section *sec)
 	// read that much
 	std::string buffer(len, '\0');
 	if (!input.read(buffer.data(), len))
-	{
-		std::streamsize read_bytes = input.gcount();
-		LogError("Load::section: failed to read requested %u bytes for section, got %u", (unsigned)len, (unsigned)read_bytes);
-		sec->stream.clear();
-		sec->stream.str(buffer.substr(0, static_cast<size_t>(read_bytes)));
 		return false;
-	}
 
 	sec->stream.clear();
 	sec->stream.str(buffer);
 
 	if (!sec->read_string(name))
-	{
-		LogError("Load::section: failed to read section name from buffer of size %u", (unsigned)buffer.size());
 		return false;
-	}
 
 	return true;
 }

@@ -21,9 +21,6 @@
 #define CONTINUE 0
 #define QUITGAME 1
 
-#define BYTE_MAX	255
-#define WORD_MAX	65535
-
 #define TIME_PER_FRAME (1000/30)
 
 #define GAMEMODE_PLAY	0
@@ -104,8 +101,5 @@ void EnterPickMenu(void);
 
 int GetVisFrames(void);
 dword GetGameClock(void);
-
-byte CanDoRaster();
-byte CanDoTeeny();
 
 #endif

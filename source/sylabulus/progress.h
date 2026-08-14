@@ -111,15 +111,15 @@ struct progress_t
 
 	int num_worlds;
 	worldData_t *world;
-	word kills[NUM_PROFILE_MONSTERS];		// how many times you've killed each type
-	byte scanned[NUM_PROFILE_MONSTERS];		// has each type been scanned?
-	byte purchase[512];						// which things you have purchased
-	byte movie[20];							// which movies you've seen for theater purposes
-	byte goal[100];							// whether you've done each of the 100 goals
+	word kills[NUM_PROFILE_MONSTERS];	// how many times you've killed each type
+	byte scanned[NUM_PROFILE_MONSTERS];	// has each type been scanned?
+	byte purchase[256];			// which things you have purchased
+	byte movie[20];				// which movies you've seen for theater purposes
+	byte goal[100];				// whether you've done each of the 100 goals
 
 	dword cheats;				// how often you've cheated
 	byte wpnLock;				// weapon lock
-	//HudChoice hudChoice;
+	HudChoice hudChoice;
 	byte moreControl[2][2];
 	byte moreJoyCtrl[2];
 	byte expansion[1012];		// unused space for possible future expansion
@@ -149,21 +149,17 @@ struct profile_t
 	// important stuff
 	byte control[2][6];	// key scancodes
 	byte joyCtrl[2];	// joystick 'codes' for the buttons
-
 	byte sound;			// sound volume
 	byte music;			// music volume
 	byte musicMode;		// music playing mode
 
 	char lastWorld[32];	// name of the last world visited
 	playList_t playList[NUM_PLAYLISTS];	// song playlists
-
 	byte difficulty;
 	byte playAs;
 	byte moveNShoot,candleRadar,brainRadar;
 	byte nameVerified;
-
 	progress_t progress;
-
 	char motd[1024];	// message of the day
 };
 

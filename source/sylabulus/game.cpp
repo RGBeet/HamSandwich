@@ -241,25 +241,15 @@ void ExitLevel(void)
 		ExitGallery();
 }
 
-byte CanDoRaster()
-{
-	return 0;
-}
-
-byte CanDoTeeny()
-{
-	return 0;
-}
-
 void RestoreGameplayGfx(void)
 {
-	if(CanDoRaster())
+	if(profile.progress.purchase[modeShopNum[MODE_TEENY]]&SIF_ACTIVE)
 	{
 		gamemgl->ClearScreen();
 		GetDisplayMGL()->LoadBMP("graphics/gamepal.bmp");
 		gamemgl->BufferFlip();
 	}
-	if(CanDoTeeny())
+	if(profile.progress.purchase[modeShopNum[MODE_RASTER]]&SIF_ACTIVE)
 		gamemgl->ClearScreen();
 
 	if(curMap)
@@ -304,8 +294,8 @@ TASK(byte) LunaticRun(int *lastTime)
 
 	*lastTime-=frmsToRun*TIME_PER_FRAME;
 
-	//if(gameMode==GAMEMODE_PLAY && (profile.progress.purchase[modeShopNum[MODE_MANIC]]&SIF_ACTIVE))
-	//	frmsToRun*=2;	// run twice as many frames
+	if(gameMode==GAMEMODE_PLAY && (profile.progress.purchase[modeShopNum[MODE_MANIC]]&SIF_ACTIVE))
+		frmsToRun*=2;	// run twice as many frames
 
 	while(frmsToRun--)//(*lastTime>=TIME_PER_FRAME)
 	{
@@ -353,25 +343,13 @@ TASK(byte) LunaticRun(int *lastTime)
 			UpdateParticles(curMap);
 			UpdateMessage();
 
-			int i;
-			switch(curMap->weather)
+			if (curMap->weather == MAP_WEATHER_SNOW)
+				MakeItSnow(curMap);
+			else if (curMap->weather == MAP_WEATHER_RAIN)
 			{
-				case MAP_WEATHER_SNOW:
-					for(int i=0;i<2;i++)
-						MakeItSnow(curMap);
-					break;
-				case MAP_WEATHER_RAIN:
-					for(int i=0;i<3;i++)
-						MakeItRain(curMap);
-					break;
-				case MAP_WEATHER_SAKURA:
-					for(int i=0;i<2;i++)
-						DoFallingPetals(curMap);
-					break;
-				case MAP_WEATHER_FOG:
-					for(int i=0;i<4;i++)
-						MakeFog(curMap);
-					break;
+				MakeItRain(curMap);
+				MakeItRain(curMap);
+				MakeItRain(curMap);
 			}
 
 			if(windingDown)
@@ -702,14 +680,14 @@ TASK(void) LunaticDraw(void)
 	}
 
 	bool doTheWave = (curMap->environment == MAP_ENV_UNDERWATER || curMap->environment == MAP_ENV_SUPERHOT || curMap->miscFlags & MAP_FLG_WAVY);
-	if(CanDoTeeny())
+	if(profile.progress.purchase[modeShopNum[MODE_TEENY]]&SIF_ACTIVE)
 	{
 		if(doTheWave)
 			AWAIT gamemgl->TeensyWaterFlip(updFrameCount/2);
 		else
 			AWAIT gamemgl->TeensyFlip();
 	}
-	else if(CanDoRaster())
+	else if(profile.progress.purchase[modeShopNum[MODE_RASTER]]&SIF_ACTIVE)
 	{
 		if(doTheWave)
 			AWAIT gamemgl->RasterWaterFlip(updFrameCount/2);

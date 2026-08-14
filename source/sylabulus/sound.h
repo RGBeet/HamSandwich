@@ -483,7 +483,6 @@
 
 #define SND_SPHINXOUCH			579
 #define SND_SPHINXDIE			580
-#define SND_GONG				581
 
 #define MAX_SOUNDS				1024	// doesn't mean a thing lol
 

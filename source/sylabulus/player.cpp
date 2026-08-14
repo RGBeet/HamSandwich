@@ -24,6 +24,11 @@ static byte oldControls,newControls,checkTheControls;
 int maxAmmo[MAX_WEAPONS]={1000,20,99,5,50,1000,15,40,20,30,8,3,1,40,10,3,50,5,1000,5,1,25,5,10,15,4,3,10,16,3};
 Guy* intfaceEnemy;
 
+byte IsGameModeActivated(byte n)
+{
+	return profile.progress.purchase[modeShopNum[MODE_MANIC]] & SIF_ACTIVE;
+}
+
 void ShouldCheckControls(byte n)
 {
 	byte c;
@@ -129,7 +134,7 @@ void InitPlayer(byte level,const char *fname)
 	
 	for(i=1;i<6;i++)
 	{
-		player.ability[i] = 1;
+		player.ability[i]=ItemPurchased(SHOP_ABILITY,i);
 	}
 
 	player.brainTime=30*30;
@@ -1574,7 +1579,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	if(!player.jetting)
 		DoPlayerFacing(c,me);
 
-	if((c&ATK_BUTTONS)==ATK_BUTTONS && (player.rage/256)>=player.life)
+	if((c&ATK_BUTTONS)==ATK_BUTTONS && (player.rage/256)>=player.life && player.ability[ABIL_RAGE])
 	{
 		// RAGE!!!!!!!
 		ScoreEvent(SE_RAGE,1);
@@ -1588,7 +1593,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	}
 	if((c&CONTROL_B1) && PlayerCanThrowHammers())	// pushed hammer throw button
 	{
-		if(me->type!=MONS_BOUAPHA && profile.moveNShoot)
+		if(me->type!=MONS_BOUAPHA || (player.ability[ABIL_MOVESHOOT] && profile.moveNShoot))
 		{
 			if(!(c&(CONTROL_UP|CONTROL_DN|CONTROL_LF|CONTROL_RT)))
 			{
@@ -2232,8 +2237,6 @@ static const char particleName[][24] = {
 	"Shrapnel",
 	"Light",
 	"Swap Particle",
-	"Suck Particle",
-	"Falling Petal",
 	"???"
 };
 

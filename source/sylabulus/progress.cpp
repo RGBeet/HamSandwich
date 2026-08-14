@@ -55,8 +55,8 @@ void InitProfile(void)
 	LoadProfile(name);
 	ApplyControlSettings();
 
-	//for(i=0;i<7;i++)
-		//modeShopNum[i]=ShopItemNumber(SHOP_MODE,i);
+	for(i=0;i<7;i++)
+		modeShopNum[i]=ShopItemNumber(SHOP_MODE,i);
 }
 
 void FreeProfile(void)
@@ -272,6 +272,7 @@ void ClearProgress(void)
 	profile.progress.cheats=0;
 
 	profile.progress.wpnLock=0;
+	profile.progress.hudChoice = HudChoice::Supreme;
 	for(i=0;i<NUM_PROFILE_MONSTERS;i++)
 	{
 		profile.progress.kills[i]=0;

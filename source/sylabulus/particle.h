@@ -33,8 +33,6 @@ enum : byte
 	PART_LIGHT,
 	PART_SWAP,			// used to spice up swapguns a little
 	PART_SUCK,			// black hole gun
-	PART_PETAL,			// pink petals
-	PART_FOG,			// fog particles
 	MAX_PARTICLES		// MAX PARTICLES
 };
 
@@ -102,10 +100,7 @@ void DoParticleEffect(int x,int y, byte type);
 
 void SmokeTile(int x,int y);
 void JackFrostWeather(int x,int y);
-
 void Burn(int x, int y, int z);
-void DoFallingPetals(Map* map);
-void MakeFog(Map* map);
 
 int CountParticles();
 

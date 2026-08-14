@@ -414,7 +414,6 @@ static SoundDesc soundInfo2[512] = { // starts from index 512, doing this for no
 	{/*SND_,*/ "Combo:Toasty",ST_VOCAL | ST_EFFECT},
 	{/*SND_,*/ "Sphinxter Ouch",ST_MONSTER},
 	{/*SND_,*/ "Sphinxter Die",ST_MONSTER},
-	{/*SND_,*/ "Gong!!",ST_EFFECT},
 };
 
 static int numCustom;
@@ -448,22 +447,12 @@ void ClearCustomSounds(void)
 	numCustom=0;
 }
 
-byte CanReverseSound()
-{
-	return 0;
-}
-
-byte CanSpeedUpSound()
-{
-	return 0;
-}
-
 int GlobalFlags()
 {
 	int result = 0;
-	if (CanReverseSound())
+	if (profile.progress.purchase[modeShopNum[MODE_REVERSE]]&SIF_ACTIVE)
 		result |= SND_BACKWARDS;
-	if (CanSpeedUpSound())
+	if (profile.progress.purchase[modeShopNum[MODE_MANIC]]&SIF_ACTIVE)
 		result |= SND_DOUBLESPEED;
 	return result;
 }

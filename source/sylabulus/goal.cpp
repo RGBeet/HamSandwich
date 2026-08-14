@@ -10,22 +10,115 @@
 #include "steam.h"
 
 static const char goalDesc[][48]={
-	"Rising Star", "beating Noh-Mann in the Demo",
-	"Justice Imagined", "beating EDISON in the Demo",
-	"Field Research", "scanning every monster in the Demo",
-	"Cranium Mania", "... collecting 500 brains?! Yuck!",
-	"Killer Combo", "getting a x20 combo",
-	"Treasure Hunt", "buying everything in Triton's Treasures",
-	"Anger Management", "raging 30 times",
-	"Perfect Marks", "getting a Perfect bonus",
-	"Marathon Man", "walking 5 miles in Bouapha's shoes",
-	"Bullet Time", "beating a monster while time is stopped",
-	"Deep Blue Shield", "die while using an Energy Shield",
-	"Uber Eater", "eating 9,000 calories",
-	"Ice To Meet You", "freezing five monsters at once",
-	"Easy as Pumpkin Pie", "beating a keychain level without taking damage",
-	"Around the World", "getting 100% on all included worlds",
-	"Marshmallow Head", "completing a Campaign with all modifiers",
+	"Good Score","earning 5,000 points",
+	"Crazy Score","earning 20,000 points",
+	"Abject Failure","getting ZERO points",
+	"Perfection","getting a Perfect Bonus",
+	"Annihilation","getting 100% Destruction",
+	"Utter Perfection","Perfect & 100% Destruction",
+	"Quickie","finishing in under 15 seconds",
+	"Zaptastic","earning 5,000 points in Zappo Raiders",
+	"ULTRA ZAP!","earning 10,000 points in Zappo Raiders",
+	"Goal In The Net","earning 100 points in the Net Game",
+	//10
+	"Combo Plate","getting a 20 Combo",
+	"Super Combo Platter","getting a 100 Combo",
+	"Family-Size Combo","getting a 500 Combo",
+	"Variety Pack","beating one of everything",
+	"Lunatic Addict","reaching 1 hour of playtime",
+	"Obsessive-Compulsive","reaching 10 hours of playtime",
+	"Long Walk","walking a mile in Bouapha's shoes",
+	"Worn Out Moccassins","traveling over 100 miles on foot",
+	"Over The Bounding Main","rafting over one mile",
+	"Road Trip","driving and carting over five miles",
+	//20
+	"Worlds Apart","buying all Worlds",
+	"Frozen With Fury","buying all Frozen Yogurts",
+	"Smart Shopper","buying all Major Awards",
+	"Massive Cheater","buying all Cheats",
+	"Two Thumbs Up","seeing all Movies",
+	"Privacy Violation","opening every locker",
+	"Shop Til You Drop","emptying out the entire mall",
+	"Dig Man Fever","getting 500,000 points on Dig Man IV",
+	"Cave Crasher","getting 75,000 points on Cave Zoomer",
+	"Locker Knocker","opening a certain locker",
+	//30
+	"Spider Squish","beating Matilda",
+	"Supreme Spider Squish","beating Matilda-X",
+	"Thingamajig","beating The Thing",
+	"Himalayan Hijinks","beating Sven & Bjorn",
+	"Desert Duel","beating Sphinxter",
+	"Monkeyshines","beating Kongor",
+	"Treehouse Of Terror","beating The Countess",
+	"Mad Scientist","beating Dr. Lunatic",
+	"Crab Legs For All!","beating Crabby Patty",
+	"Crossing The Streams","beating Dozer",
+	//40
+	"Robot Rampage","beating the Loonybot 5000",
+	"French Toast","beating King Cone",
+	"Unhappy Stick","beating Happy Stick Man 10 times",
+	"Self-Destruction","beating 10 Evil Clones",
+	"Sucks, Don't It?","beating the Dust Devil",
+	"D.U.I.","Running over 100 monsters",
+	"Monster Slayer","beating 1,000 monsters",
+	"Mega Monster Slayer","beating 10,000 monsters",
+	"Ultra Monster Slayer","beating 50,000 monsters",
+	"Ultimate Supreme Slayer","beating 100,000 monsters (wow!)",
+	//50
+	"Buddy System","beating a level with an alternate character",
+	"Shroom Of Doom","beating a level as Shtupid Shroom",
+	"Bullet Time","beating a monster while time is stopped",
+	"Molten Irony","beating a fiery monster with the Toaster",
+	"Bitterly Cold Irony","beating an icy monster while it's frozen",
+	"Vampire Slayer","beating 200 of all Vampire types combined",
+	"Mmm, Garlic Stake","spearing a Vampire while Garlic'd",
+	"Deep Blue Shield","falling in water with an Energy Barrier on",
+	"Huge Moron","winning \"Who Doesn't Want To Be A Moron?\"",
+	"Lock Around The Clock","opening a certain locker",
+	//60
+	"Blue In The Face","holding your breath for an hour",
+	"Passing On The Right","passing 25 levels",
+	"Passing Grade","passing 100 levels",
+	"Hail Mary Pass!","passing 1,000 levels",
+	"One Hundred Club","getting 100% on a world",
+	"100 Club Treasurer","getting 100% on 10 worlds",
+	"100 Club President","getting 100% on 50 worlds",
+	"Supreme Completion!","getting 100% on all worlds",
+	"Door Prize","opening a certain locker",
+	"Other Door Prize","opening a different locker",
+	//70
+	"Secret Service","entering a secret level",
+	"Zorkin' Around","completing the Super Secret Surprise",
+	"Lotta Loonykeys","getting 10 Keys Of Lunacy",
+	"Key To Success","collecting 100 keys of any color",
+	"Knock Knock","opening 100 doors",
+	"Caught 'Em All!","getting all 4 keychains",
+	"The Man With 500 Brains","collecting 500 brains",
+	"BRRAAAIINNSS!","collecting 5,000 brains",
+	"Candelabra","collecting 500 candles",
+	"CAAANNNDDLLES!","collecting 5,000 candles",
+	//80
+	"Heads & Tails","collecting 20 coins in a level",
+	"Bouapha Rockefeller","earning 10,000 coins total",
+	"King Midas","earning 100,000 coins total",
+	"Penny Pincher","holding 25,000 coins in hand",
+	"Pig Out","eating 50,000 calories",
+	"Scan-O-Rama","scanning every monster",
+	"Petting Zoo Peril","surviving the Petting Zoo",
+	"Cruisin'","masterful driving skills at the Mall",
+	"World Peace","solving world hunger",
+	"Lawnmower","chopping 100 grasses",
+	//90
+	"Burst Their Bubble","beating something with bubbles",
+	"Hammer Time","throwing 5,000 hammers",
+	"Half Past Hammer Time","throwing 50,000 hammers",
+	"Raging Rage","raging 50 times",
+	"Ragingly Raging Rage","raging 500 times",
+	"Thrash Rock","smashing a Roly Poly to bits",
+	"Trigger Happy","firing 5,000 special weapons",
+	"Trigger Ecstatic","firing 50,000 special weapons",
+	"Keep Trying","dying 100 times",
+	"GOOOOAAALLLL!!","getting the other 99 goals",
 };
 
 void PrintGoalInfo(int x,int y,byte goal)
@@ -51,9 +144,6 @@ void PrintGoalInfo(int x,int y,byte goal)
 
 void CompleteGoal(byte goal)
 {
-	// reworking
-	return;
-
 	int i,t;
 
 	if(goal!=99)
@@ -259,8 +349,27 @@ void GoalTimeDist(void)
 
 void GoalPurchase(void)
 {
+	if(AllOfTypePurchased(SHOP_WORLD))
+		CompleteGoal(20);
+	if(AllOfTypePurchased(SHOP_ABILITY))
+		CompleteGoal(21);
+	if(AllOfTypePurchased(SHOP_MAJOR))
+		CompleteGoal(22);
+	if(AllOfTypePurchased(SHOP_CHEAT))
+		CompleteGoal(23);
+	if(AllMoviesSeen())
+		CompleteGoal(24);
+	if(AllLockersOpen())
+		CompleteGoal(25);
 	if(AllPurchased())
 		CompleteGoal(26);
+
+	if(profile.progress.totalCoins>=10000)
+		CompleteGoal(81);
+	if(profile.progress.totalCoins>=100000)
+		CompleteGoal(82);
+	if(profile.progress.totalCoins-profile.progress.coinsSpent>=25000)
+		CompleteGoal(83);
 }
 
 void GoalWinLevel(void)

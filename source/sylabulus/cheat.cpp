@@ -93,14 +93,20 @@ void CheatKey(char c)
 			switch(i)
 			{
 				case 0:	// cheats
+					profile.progress.purchase[ShopItemNumber(SHOP_MAJOR,MAJOR_CHEATMENU)]|=SIF_BOUGHT;
+					profile.progress.purchase[ShopItemNumber(SHOP_MAJOR,MAJOR_CHEATMENU)]&=(~SIF_AVAILABLE);
 					for(j=0;j<NUM_CHEATS;j++)
 					{
-						// cheater!!
+						profile.progress.purchase[ShopItemNumber(SHOP_CHEAT,j)]|=SIF_BOUGHT;
+						profile.progress.purchase[ShopItemNumber(SHOP_CHEAT,j)]&=(~SIF_AVAILABLE);
 					}
+					NewBigMessage("YOU ARE DIRTY SCUM!!",60);
 					SetupShops(curMap);
 					SetupGalPix(curMap);
 					break;
 				case 1:	// editor
+					profile.progress.purchase[ShopItemNumber(SHOP_MAJOR,MAJOR_EDITOR)]|=SIF_BOUGHT;
+					profile.progress.purchase[ShopItemNumber(SHOP_MAJOR,MAJOR_EDITOR)]&=(~SIF_AVAILABLE);
 					NewBigMessage("THE EDITOR IS YOURS!",60);
 					break;
 			}
