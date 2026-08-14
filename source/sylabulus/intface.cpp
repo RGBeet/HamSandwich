@@ -945,7 +945,7 @@ void UpdateInterface(Map *map)
 	}
 
 	// then rage bar
-	if (player.rage > 0 && player.ability[ABIL_RAGE])
+	if (player.rage > 0)
 	{
 		intf[INTF_RAGE].tx = 38;
 		intf[INTF_RAGE].ty = yy;
@@ -1033,11 +1033,11 @@ void UpdateInterface(Map *map)
 
 	if (player.timer > 0)
 	{
-		intf[INTF_COUNTDOWN].ty = SCRHEI-20;
+		intf[INTF_COUNTDOWN].ty = SCRHEI-22;
 	}
 	else
 	{
-		intf[INTF_COUNTDOWN].ty = SCRHEI+20;
+		intf[INTF_COUNTDOWN].ty = SCRHEI+22;
 	}
 
 	if (player.comboClock && player.combo > 1)
@@ -1345,7 +1345,7 @@ void RenderShoppingStuff(int x, int y, MGLDraw *mgl)
 	PrintSimpleShadow(x+32, y+yy, combo, 1);
 
 	yy += 27;
-	sprintf(combo, "%u/%u Shopped", NumPurchased(), NUMSHOPITEMS);
+	sprintf(combo, "%u/%u Shopped", NumPurchased(), NUM_SHOP_ITEMS);
 	PrintSimpleShadow(x, y + yy, combo, 1);
 
 

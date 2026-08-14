@@ -237,8 +237,8 @@ void CalculateMusicSpeed()
 	if (PlayerGetAccelerate() > 1)
 		speed *= 1.5;
 
-	if (profile.progress.purchase[modeShopNum[MODE_MANIC]] & SIF_ACTIVE)
-		speed *= 2;
+	//if (CanDoManic())
+	//	speed *= 2;
 
 	SetMusicFrequency(speed);
 }

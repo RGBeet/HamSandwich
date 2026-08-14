@@ -998,10 +998,7 @@ void InstaRenderItem(int x,int y,int type,char bright,MGLDraw *mgl)
 
 void DrawRedX(int x,int y,bool candle,MGLDraw *mgl)
 {
-	if (profile.progress.hudChoice == HudChoice::Classic)
-		itmSpr->GetSprite(8)->Draw(x - 5, y, mgl);
-	else
-		itmSpr->GetSprite(140+candle)->Draw(x+61,y+71,mgl);
+	itmSpr->GetSprite(140+candle)->Draw(x+61,y+71,mgl);
 }
 
 item_t *GetItem(int type)

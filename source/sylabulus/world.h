@@ -6,7 +6,7 @@
 #include "string_extras.h"
 #include "bitflags.h"
 
-constexpr int MAX_MAPS = 64;
+constexpr int MAX_MAPS = 99; // up from 64 maps...
 
 
 enum TerrainType : byte // up to 256 different terrain types?! WOW!!
@@ -95,15 +95,13 @@ struct terrain_t
 {
 	TerrainType type;				// base terrain type
 	TerrainChange change;			// animation stuff
+	TerrainRestriction restrict;	// who cannot walk on this
+	word pathType;					// minecart/bunny path stuff
 
 	byte transparent;				// is the roof transparent?
 	byte shadowless;				// is the wall shadowless?
 	byte value;
 	word next;
-
-	TerrainRestriction restrict;	// who cannot walk on this
-	word pathType;					// minecart/bunny path stuff
-	
 	word stepNoise;					// what noise it makes when stepped on
 	byte fancy;						// does it use fancy fx?
 };

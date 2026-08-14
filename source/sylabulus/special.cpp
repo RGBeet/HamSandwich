@@ -2127,9 +2127,7 @@ void RenderSpecialXes(Map *map)
 								break;
 							}
 
-						byte k=0;
-						if(player.ability[ABIL_KEYCHAIN])
-							k=keyChainInLevel[effect.value]&(~player.worldProg->keychains);
+						byte k=keyChainInLevel[effect.value]&(~player.worldProg->keychains);
 
 						if(k&15)
 							DrawRedX(special.x*TILE_WIDTH-camx+TILE_WIDTH/2-4+Random(9),
