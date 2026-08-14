@@ -10,6 +10,23 @@
 #include "gallery.h"
 #include "goal.h"
 
+struct ShopItem
+{
+	const char name[32];
+	const char description[128];
+	word cost;	// how many Y$
+	byte type;	// what type
+	byte item;	// which # of the items of "type" it is
+};
+
+struct Shop
+{
+	const char name[32];
+	int keeperSprite;				// which init frame of shopkeeper.jsp to use
+	byte x;
+	byte y;
+	std::vector<ShopItem*> items;	// the currently available items
+};
 
 static const ShopItem shop[NUM_SHOP_ITEMS] = {
 	{ SHOP_DEMO, 100, STYP_MODIFIER, MDFY_ENEMYDMG },
@@ -31,25 +48,6 @@ static const ShopItem shop[NUM_SHOP_ITEMS] = {
 	{ SHOP_DEMO, 100, STYP_CHEAT, CHET_KEYMASTER },
 	{ SHOP_DEMO, 2000, STYP_CHARACTER, 1 },
 	{ SHOP_DEMO, 2000, STYP_CHARACTER, 2 },
-};
-
-
-struct Shop
-{
-	const char name[32];
-	int keeperSprite;				// which init frame of shopkeeper.jsp to use
-	byte x;
-	byte y;
-	std::vector<ShopItem*> items;	// the currently available items
-};
-
-struct ShopItem
-{
-	const char name[32];
-	const char description[128];
-	word cost;	// how many Y$
-	byte type;	// what type
-	byte item;	// which # of the items of "type" it is
 };
 
 ShopItem shopItems[NUM_SHOP_ITEMS] = {
