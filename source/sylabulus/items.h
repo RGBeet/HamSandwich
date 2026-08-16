@@ -5,168 +5,202 @@
 #include "jamulspr.h"
 #include "bitflags.h"
 
-#define ITM_NONE	 0
-#define ITM_HAMMERUP 1
-#define ITM_PANTS	 2
-#define ITM_REVERSE  3
-#define ITM_REFLECT  4
-#define ITM_MISSILES 5
-#define ITM_AK8087	 6
-#define ITM_TAKEOUT  7
-#define ITM_SHIELD   8
-#define ITM_BOMBS	 9
-#define ITM_FLAME	 10
-#define ITM_BRAIN	 11
-#define ITM_KEYCH1	 12
-#define ITM_KEYCH2	 13
-#define ITM_KEYCH3	 14
-#define ITM_KEYCH4	 15
-#define ITM_KEY		 16
-#define ITM_KEYR	 17
-#define ITM_KEYG	 18
-#define ITM_KEYB	 19
-#define ITM_LOONYKEY 20
-#define ITM_BIGAXE	 21
-#define ITM_PWRARMOR 22
-#define ITM_LIGHTNING 23
-#define ITM_SPEAR	 24
-#define ITM_MACHETE	 25
-#define ITM_MINES	 26
-#define ITM_GARLIC	 27
-#define ITM_ORBITER  28
-#define ITM_ACCEL	 29
+enum ItemType : word
+{
+	IT_NONE,
+	// Basic items
+	IT_HAMMERUP,
+	IT_PANTS,
+	IT_BRAIN,
+	IT_CANDLE,
+	IT_COIN,
+	// Hammer powerups
+	IT_PROJMIRROR,
+	IT_PROJBOUNCE,
+	IT_UNHAMMER,
+	IT_UNPANTS,
+	// Weapons
+	IT_MISSILES,
+	IT_LASERGUN,
+	IT_BOMBS,
+	IT_TOASTER,
+	IT_BIGAXE,
+	IT_LIGHTNING,
+	IT_SPEARS,
+	IT_MACHETE,
+	IT_MINES,
+	IT_FREEZERAY,
+	// New weapons
+	IT_BOOMERANG,
+	IT_MEGAPHONE,
+	IT_ROCKETEER,
+	IT_LUNCHBOX,
+	// Fancy weapons
+	IT_TORCH,
+	IT_TURRETWPN,
+	IT_MINDCONTROL,
+	IT_REFLECTOR,
+	IT_JETPACK,
+	IT_SWAPGUN,
+	IT_SCANNER,
+	IT_STOPWATCH,
+	IT_RAINBOWGUN,
+	IT_BLACKHOLE,
+	IT_GLUEGUN,
+	IT_BFG,
+	IT_REGENERATOR,
+	IT_DESTABILIZER,
+	IT_DECOY,
+	// Mech weapons
+	IT_PWRARMOR,
+	IT_MINISUB,
+	// Food + powerups
+	IT_TAKEOUT,
+	IT_SHIELD,
+	IT_RADIOFOOD,
+	IT_PIZZA,
+	IT_GARLIC,
+	IT_ORBREG,
+	IT_ORBEXPL,
+	IT_ORBSHCK,
+	IT_ACCEL,
+	IT_STRONG,
+	IT_INVIS,
+	IT_AMMOSML,
+	IT_AMMOMED,
+	IT_INFAMMO,
+	IT_SCUBA,
+	IT_SUPREME,
+	IT_WATERBOOTS,
+	IT_POCKET,
+	IT_BIGBRAIN,
+	IT_BIGCANDLE,
+	IT_BIGCOIN,
+	// Keys
+	IT_KEYONE,
+	IT_KEYRED,
+	IT_KEYGRN,
+	IT_KEYBLU,
+	IT_KEYCH1,
+	IT_KEYCH2,
+	IT_KEYCH3,
+	IT_KEYCH4,
+	IT_KEYCH5,
+	IT_LOONYKEY,
+	// Buildings / exits
+	IT_EXITDOOR,
+	IT_HOLETREE,
+	IT_HOUSE,
+	IT_CASTLE,
+	IT_IGLOO,
+	// Terrain / scenery
+	IT_GRASS1,
+	IT_GRASS2,
+	IT_CONE,
+	IT_CONEFALLEN,
+	IT_MAILBOX,
+	IT_BLUEBOX,
+	IT_HYDRANT,
+	IT_METALBARREL,
+	IT_TOXICWASTE,
+	IT_OILDRUM,
+	IT_CRATEWOOD,
+	IT_CRATEMETAL,
+	// Signs / street objects
+	IT_WOODPOST,
+	IT_SIGNMETAL,
+	IT_SIGNLETTERS,
+	IT_SIGNSKULL,
+	IT_SIGNLEFTWOOD,
+	IT_SIGNRIGHTWOOD,
+	IT_SIGNINFOWOOD,
+	IT_SIGNDANGER,
+	IT_STOPSIGN,
+	IT_DONOTENTER,
+	IT_SIGNLEFT,
+	IT_SIGNRIGHT,
+	IT_SIGNDOWN,
+	IT_SIGNUP,
+	IT_STREETLIGHT,
+	IT_PATHSIGN1,
+	IT_PATHSIGN2,
+	IT_WOODBARREL,
+	IT_LEVER1,
+	IT_LEVER2,
+	IT_SCONCE,
+	IT_TRAFFIC1,
+	IT_TRAFFIC2,
+	IT_TRAFFIC3,
+	// Trees / plants
+	IT_TREE1,
+	IT_TREE2,
+	IT_TREE3,
+	IT_BUSH1,
+	IT_BUSH2,
+	IT_BUSH3,
+	IT_PALM1,
+	IT_PALM2,
+	IT_PALMFAT1,
+	IT_PALMFAT2,
+	IT_PINETREE,
+	IT_XMASTREE,
+	IT_FALLENTREE,
+	IT_DEADTREE1,
+	IT_DEADTREE2,
+	IT_STUMP,
+	IT_SEAWEED1,
+	IT_SEAWEED2,
+	IT_SEAWEED3,
+	IT_CATTAILS,
+	IT_TOADSTOOL,
+	// Rocks
+	IT_ROCKS1,
+	IT_ROCKS2,
+	IT_ROCKS3,
+	IT_BRNROCKTAL,
+	IT_BRNROCKSML,
+	IT_FLATROCK,
+	IT_PEBBLE,
+	IT_BUBBLES,
+	// Doors / blocks
+	IT_DOORFONE,
+	IT_DOORFRED,
+	IT_DOORFGRN,
+	IT_DOORFBLU,
+	IT_DOORSONE,
+	IT_DOORSRED,
+	IT_DOORSGRN,
+	IT_DOORSBLU,
+	// Furniture / miscellaneous
+	IT_CHAIRDR,
+	IT_CHAIRDL,
+	IT_CHAIRUL,
+	IT_CHAIRUR,
+	IT_TABLE,
+	IT_TRASHCAN1,
+	IT_TRASHCAN2,
+	IT_TARGET,
+	// Potions / collectibles
+	IT_MANAPOTION,
+	IT_RAGEPOTION,
+	IT_PRESENT,
+	IT_GEMSTONESML,
+	IT_GEMSTONELRG,
+	// Miscellaneous scenery
+	IT_MINEBLOCK,
+	IT_TALLGRASS,
+	IT_HAYBALE,
+	IT_POWDERKEG,
+	IT_SAKURA1,
+	IT_SAKURA2,
+	IT_CRYSTAL1,
+	IT_CRYSTAL2,
+	IT_GONG,
+	NUM_ORIGINAL_ITEMS
+};
 
-#define ITM_SMLROCKS 30
-#define ITM_HOLETREE 31
-#define ITM_IGLOO	 32
-#define ITM_WEB		 33
-#define ITM_WEB2	 34
-#define ITM_WEB3	 35
-#define ITM_WEB4	 36
-#define ITM_GRASS	 37
-#define ITM_GRASS2	 38
-#define ITM_VILLAGE  39
-
-#define ITM_COIN	 40
-#define ITM_CANDLE	 41
-#define ITM_ORBITER2 42
-#define ITM_PIZZA	 43
-#define ITM_TORCH	 44
-#define ITM_CONE	 45
-#define ITM_FALLENCONE	 46
-#define ITM_BUBBLES	 47
-#define ITM_SCUBA	 48
-#define ITM_MAILBOX  49
-
-#define ITM_BOX		 50
-#define ITM_STUMP	 51
-#define ITM_BUSH	 52
-#define ITM_BIGROCKS 53
-#define ITM_POST	 54
-#define ITM_CHAIR1	 55
-#define ITM_CHAIR2   56
-#define ITM_WALLGRASS 57
-#define ITM_BARREL	 58
-#define ITM_BARREL2	 59
-#define ITM_BARREL3	 60
-#define ITM_TRASHCAN 61
-#define ITM_TRASHCAN2 62
-#define ITM_CRATE	 63
-#define ITM_CRATE2	 64
-#define ITM_BUSH2	 65
-#define ITM_BUSH3	 66
-#define ITM_BRWNROCK 67
-
-#define ITM_MAILBOX2 68
-
-#define ITM_PALM	 69
-#define ITM_TREE	 70
-#define ITM_DOOR1	 71
-#define ITM_DOOR1R	 72
-#define ITM_DOOR1G	 73
-#define ITM_DOOR1B	 74
-#define ITM_DOOR2	 75
-#define ITM_DOOR2R	 76
-#define ITM_DOOR2G	 77
-#define ITM_DOOR2B	 78
-#define ITM_SIGN	 79
-#define ITM_PINE	 80
-#define ITM_DEADTREE 81
-#define ITM_DEADTREE2 82
-#define ITM_FATPALM	 83
-#define ITM_TREE2	 84
-#define ITM_MINEBLOCK 85
-#define ITM_SIGN2	 86
-#define ITM_SIGN3	 87
-#define ITM_SIGN4	 88
-#define ITM_SIGN5	 89
-#define ITM_SIGN6	 90
-#define ITM_BIGROCK	 91
-
-#define ITM_TURRETWPN 92
-#define ITM_MINDCONTROL 93
-#define ITM_REFLECTOR 94
-#define ITM_INVIS	  95
-#define ITM_JETPACK	  96
-#define ITM_UNHAMMER  97
-#define ITM_UNPANTS	  98
-#define ITM_SWAPGUN	  99
-#define ITM_BADCHINESE 100
-#define ITM_MAILBOX3	101
-#define ITM_SCANNER		102
-#define ITM_MINISUB		103
-#define ITM_HYDRANT		104
-#define ITM_TRAFFICLT1	105
-#define ITM_TRAFFICLT2	106
-#define ITM_TRAFFICLT3	107
-#define ITM_AMMOCRATE	108
-#define ITM_AMMOPAK		109
-#define ITM_FLATROCK	110
-#define ITM_FLATROCK2	111
-#define ITM_SEAWEED		112
-#define ITM_SEAWEED2	113
-#define ITM_SEAWEED3	114
-#define ITM_FREEZERAY	115
-#define ITM_ROADSIGN1	116
-#define ITM_ROADSIGN2	117
-#define ITM_ROADSIGN3	118
-#define ITM_ROADSIGN4	119
-#define ITM_ROADSIGN5	120
-#define ITM_ROADSIGN6	121
-#define ITM_ROADSIGN7	122
-#define ITM_ROADSIGN8	123
-#define ITM_ROADSIGN9	124
-#define ITM_ROADSIGN10	125
-#define ITM_ROADSIGN11	126
-#define ITM_ROADSIGN12	127
-#define ITM_ROADSIGN13	128
-#define ITM_ROADSIGN14	129
-#define ITM_ROADSIGN15	130
-#define ITM_STOPWATCH	131
-#define ITM_STRTLIGHT	132
-#define ITM_SUPREME		133
-// unused items
-#define ITM_UNUSED2		134
-#define ITM_UNUSED3		135
-#define ITM_UNUSED4		136
-#define ITM_UNUSED5		137
-#define ITM_UNUSED6		138
-#define ITM_UNUSED7		139
-#define ITM_UNUSED8		140
-#define ITM_UNUSED9		141
-#define ITM_UNUSED10	142
-#define ITM_UNUSED11	143
-#define ITM_UNUSED12	144
-#define ITM_UNUSED13	145
-#define ITM_UNUSED14	146
-#define ITM_UNUSED15	147
-#define ITM_UNUSED16	148
-#define ITM_UNUSED17	149
-
-#define NUM_ORIGINAL_ITEMS	150
+#define IT_RANDOM	255 //todo: extend to 999?
 #define MAX_ITEMS	255
-
-#define ITM_RANDOM	MAX_ITEMS		// the item number for random item drops
 
 // item flags
 enum ItemFlags : word
@@ -187,23 +221,19 @@ BITFLAGS(ItemFlags)
 // themes
 enum ItemThemes : dword
 {
-	IT_PICKUP	   = 1 << 0,	// items you can collect
-	IT_DECOR	   = 1 << 1,	// not obstacles or bulletproof
-	IT_OBSTACLE    = 1 << 2,	// obstacles
-	IT_BULLETPROOF = 1 << 3,	// obstacles you can't shoot through
-	IT_DOOR		   = 1 << 4,	// doors
-	IT_TREE		   = 1 << 5,	// vegetation
-	IT_ROCK		   = 1 << 6,	// rocks
-	IT_CRATE	   = 1 << 7,	// crates & barrels & trashcans
-	IT_SIGN		   = 1 << 8,	// signposts, etc
-	IT_WEAPON	   = 1 << 9,	// player pickup: weapons
-	IT_POWERUP	   = 1 << 10,	// player pickup: powerups
-	IT_KEY		   = 1 << 11,	// player pickup: keys
-	IT_COLLECT	   = 1 << 12,	// player pickup: collectibles
-	IT_FOOD		   = 1 << 13,	// player pickup: food
-	IT_ENTRANCE	   = 1 << 14,	// entrance type items, like hollow trees
-	IT_CHAIR	   = 1 << 15,	// chairs
-	IT_CUSTOM	   = 1 << 16,	// the custom theme, "My Theme"
+	ITH_COLLECTIBLE		= 1 << 0,	// player pickup: collectibles+keys
+	ITH_WEAPON			= 1 << 1,	// player pickup: weapons
+	ITH_POWERUP			= 1 << 2,	// player pickup: powerups+food
+	ITH_OBSTACLE		= 1 << 3,	// obstacles
+	ITH_BULLETPROOF		= 1 << 4,	// obstacles: cannot shoot thru
+	ITH_PLANTS			= 1 << 5,	// obstacles: vegetation
+	ITH_ROCKS			= 1 << 6,	// obstacles: rocks
+	ITH_URBAN			= 1 << 7,	// obstacles: urban
+	ITH_SIGNS			= 1 << 8,	// obstacles: signage
+	ITH_DECOR			= 1 << 9,	// decoration (not obstacles or pickups)
+	ITH_ENTRANCE		= 1 << 10,	// decoration: entrances
+	ITH_LARGE			= 1 << 11,	// very big item, usually obstacles.
+	ITH_CUSTOM			= 1 << 12,	// custom items! YAY!
 };
 BITFLAGS(ItemThemes)
 
@@ -352,5 +382,6 @@ ItemRenderExtents GetItemRenderExtents();
 void CalculateItemRenderExtents();
 
 sprite_t* GetItemSprite(int spr);
+sprite_t* GetAnimatedItemSprite(int spr);
 
 #endif

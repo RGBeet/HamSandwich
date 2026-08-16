@@ -50,7 +50,7 @@ TASK(int) main(int argc, char* argv[])
 	g_HamExtern.SoundLoadOverride = SoundLoadOverride;
 	g_HamExtern.AfterFlip = AfterFlip;
 
-	bool windowedGame = false;
+	bool windowedGame = true; // too lazy!!!
 	bool unpickled = false;
 
 	for (int i = 1; i < argc; ++i)

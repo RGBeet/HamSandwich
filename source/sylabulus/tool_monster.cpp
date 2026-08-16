@@ -18,7 +18,7 @@ MonsterTool::MonsterTool(void)
 	monster[3]=MONS_ZOMBIE;
 
 	itemMode=1;
-	specificItem=ITM_HAMMERUP;
+	specificItem=IT_HAMMERUP;
 	pickingItem=0;
 	lastX=-1;
 	lastY=-1;
@@ -145,7 +145,7 @@ void MonsterTool::Render(int msx,int msy)
 			Print(mgl->GetWidth()-178+2+23,mgl->GetHeight()-38+4,"E",0,1);
 			break;
 		case 1:
-			InstaRenderItem(mgl->GetWidth()-178+32/2,mgl->GetHeight()-38+10,ITM_RANDOM,0,mgl);
+			InstaRenderItem(mgl->GetWidth()-178+32/2,mgl->GetHeight()-38+10,IT_RANDOM,0,mgl);
 			break;
 		case 2:
 			InstaRenderItem(mgl->GetWidth()-178+32/2,mgl->GetHeight()-38+10,specificItem,0,mgl);
@@ -227,17 +227,17 @@ void MonsterTool::PlopOne(int x,int y)
 					switch(itemMode)
 					{
 						case 0:
-							guy.item=ITM_NONE;
+							guy.item=IT_NONE;
 							break;
 						case 1:
-							guy.item=ITM_RANDOM;
+							guy.item=IT_RANDOM;
 							break;
 						case 2:
 							guy.item=specificItem;
 							break;
 					}
 					if(guy.type==MONS_BOUAPHA)
-						guy.item=ITM_NONE;	// bouapha can't drop items
+						guy.item=IT_NONE;	// bouapha can't drop items
 					break;
 				}
 		}
@@ -362,7 +362,7 @@ void MonsterTool::BrushUp(void)
 void MonsterTool::ItemWasDeleted(int item)
 {
 	if(item==specificItem)
-		specificItem=ITM_HAMMERUP;
+		specificItem=IT_HAMMERUP;
 	if(specificItem>item)
 		specificItem--;
 }

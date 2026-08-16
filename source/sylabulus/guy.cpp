@@ -1233,18 +1233,18 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world, bool bypass
 		// possible item drop
 		if(type==MONS_ZOMBIE || type==MONS_MUTANT)	// zombies always drop a brain
 		{
-			if(!map->DropItem(mapx,mapy,ITM_BRAIN))
+			if(!map->DropItem(mapx,mapy,IT_BRAIN))
 			{
 				PlayerGetBrain(1);	// if you can't drop it, just give it to the player!
 			}
 		}
 		else if(type==MONS_SUPERZOMBIE)	// super zombies always drop 2 brains
 		{
-			if(!map->DropItem(mapx,mapy,ITM_BRAIN))
+			if(!map->DropItem(mapx,mapy,IT_BRAIN))
 			{
 				PlayerGetBrain(1);
 			}
-			if(!map->DropItem(mapx,mapy,ITM_BRAIN))
+			if(!map->DropItem(mapx,mapy,IT_BRAIN))
 			{
 				PlayerGetBrain(1);
 			}
@@ -1258,12 +1258,12 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world, bool bypass
 		}
 		if(aiType!=MONS_CRAZYPANTS || mind==3)
 		{
-			if(item==ITM_RANDOM)
+			if(item==IT_RANDOM)
 			{
 				if(Random(100*FIXAMT)<map->itemDrops)
 					map->DropItem(mapx,mapy,GetRandomItem());
 			}
-			else if(item!=ITM_NONE)
+			else if(item!=IT_NONE)
 			{
 				if(!map->DropItem(mapx,mapy,item))
 					map->GetTile(mapx,mapy)->item=item;	// force the drop if it failed
@@ -1761,7 +1761,7 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 			guys[i].ID=i;
 			guys[i].mapx=(guys[i].x>>FIXSHIFT)/TILE_WIDTH;
 			guys[i].mapy=(guys[i].y>>FIXSHIFT)/TILE_HEIGHT;
-			guys[i].item=ITM_RANDOM;
+			guys[i].item=IT_RANDOM;
 			ham_strcpy(guys[i].name,MonsterName(type));
 			guys[i].fromColor=255;
 			guys[i].brtChange=MonsterBrightnessChange(type);
@@ -2113,7 +2113,7 @@ void AddMapGuys(Map *map)
 				g->bright=map->GetTile(map->badguy[i].x,map->badguy[i].y)->light;
 				if(g->type==MONS_BOUAPHA)
 				{
-					g->item=ITM_NONE;
+					g->item=IT_NONE;
 					PutPlayerAtStart(g);
 				}
 				if(g->type==MONS_LOONYBOT)
@@ -2152,7 +2152,7 @@ void AddMapGuys(Map *map)
 		g=AddGuy((TILE_WIDTH/2)*FIXAMT,(TILE_HEIGHT/2)*FIXAMT,0,MONS_BOUAPHA,2);
 		if(g)
 		{
-			g->item=ITM_NONE;
+			g->item=IT_NONE;
 			PutPlayerAtStart(g);
 		}
 	}
@@ -2748,8 +2748,8 @@ void MonsterDropItem(Guy *monstr)
 		for (int j = 0; j < brains; j++)
 		{
 			// drop the item, force the drop if failed.
-			if (!curMap->DropItem(monstr->mapx, monstr->mapy + j, ITM_BRAIN) && monstr->mapy + j < curMap->height)
-				curMap->GetTile(monstr->mapx, monstr->mapy + j)->item = ITM_BRAIN; // should only fail in major situations
+			if (!curMap->DropItem(monstr->mapx, monstr->mapy + j, IT_BRAIN) && monstr->mapy + j < curMap->height)
+				curMap->GetTile(monstr->mapx, monstr->mapy + j)->item = IT_BRAIN; // should only fail in major situations
 		}
 	}
 
@@ -2760,13 +2760,13 @@ void MonsterDropItem(Guy *monstr)
 				curMap->GetTile(monstr->mapx, monstr->mapy)->item = monstr->mind3;	// force the drop if it failed
 	}
 
-	if (monstr->item == ITM_RANDOM)
+	if (monstr->item == IT_RANDOM)
 	{
 		if (Random(100 * FIXAMT) < curMap->itemDrops)
 			curMap->DropItem(monstr->mapx, monstr->mapy, GetRandomItem());
 	}
 
-	else if (monstr->item != ITM_NONE)
+	else if (monstr->item != IT_NONE)
 	{
 		if (!curMap->DropItem(monstr->mapx, monstr->mapy, monstr->item))
 			curMap->GetTile(monstr->mapx, monstr->mapy)->item = monstr->item;	// force the drop if it failed
@@ -3533,7 +3533,7 @@ void FindMonsterBrain(int myx,int myy)
 					j=(myx-player.brainX)*(myx-player.brainX)+(myy-player.brainY)*(myy-player.brainY);
 				}
 			}
-			else if(guys[i].item<ITM_RANDOM && GetItem(guys[i].item)->effect==IE_BRAIN &&
+			else if(guys[i].item<IT_RANDOM && GetItem(guys[i].item)->effect==IE_BRAIN &&
 				GetItem(guys[i].item)->effectAmt>0 && ((myx-guys[i].mapx)*(myx-guys[i].mapx)+(myy-guys[i].mapy)*(myy-guys[i].mapy))<j)
 			{
 				player.brainX=guys[i].mapx;
@@ -3557,7 +3557,7 @@ void FindMonsterCandle(int myx,int myy)
 	{
 		if(guys[i].type && guys[i].hp && !EntityIsPlayer(guys[i].aiType))
 		{
-			if(guys[i].item<ITM_RANDOM && GetItem(guys[i].item)->effect==IE_CANDLE &&
+			if(guys[i].item<IT_RANDOM && GetItem(guys[i].item)->effect==IE_CANDLE &&
 				GetItem(guys[i].item)->effectAmt>0 && ((myx-guys[i].mapx)*(myx-guys[i].mapx)+(myy-guys[i].mapy)*(myy-guys[i].mapy))<j)
 			{
 				player.candleX=guys[i].mapx;

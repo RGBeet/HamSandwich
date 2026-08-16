@@ -419,13 +419,15 @@ TASK(void) ViewWorldLeaderboard(MGLDraw *mgl, const world_t* world, WorldLeaderb
 			if (score.keychains & KC_LOONY)
 				intfaceSpr.GetSprite(SPR_LOONYKEY)->Draw(457,y+1,mgl);
 			if (score.keychains & KC_KEYCH1)
-				intfaceSpr.GetSprite(SPR_KEYCH+3)->Draw(429,y-13,mgl);
+				intfaceSpr.GetSprite(SPR_KEYCH)->Draw(429,y-13,mgl);
 			if (score.keychains & KC_KEYCH2)
-				intfaceSpr.GetSprite(SPR_KEYCH)->Draw(408,y,mgl);
+				intfaceSpr.GetSprite(SPR_KEYCH+1)->Draw(408,y,mgl);
 			if (score.keychains & KC_KEYCH3)
 				intfaceSpr.GetSprite(SPR_KEYCH+2)->Draw(419,y-13,mgl);
 			if (score.keychains & KC_KEYCH4)
-				intfaceSpr.GetSprite(SPR_KEYCH+1)->Draw(418,y,mgl);
+				intfaceSpr.GetSprite(SPR_KEYCH+3)->Draw(418,y,mgl);
+			if (score.keychains & KC_KEYCH5)
+				intfaceSpr.GetSprite(SPR_KEYCH+4)->Draw(418,y,mgl);
 
 			RenderButton(mgl, 640-20-80, y-2, 80, "Details >>", curButton == ButtonId::Details + i);
 

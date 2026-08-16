@@ -244,7 +244,7 @@ void MainMenuDisplay(MGLDraw *mgl)
 		PrintSimpleShadow(2, 2, "DEMO Version", 1);
 	#endif
 	#ifndef NDEBUG
-		PrintSimpleShadow(2, 2, "DEBUG Version", 1);
+		PrintSimpleShadow(2, 2, "DEBUG?! Version", 1);
 	#endif
 
 	titleClock++;

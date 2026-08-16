@@ -101,7 +101,7 @@ void UpdateItems(world_t *world)
 		}
 		for(i=0;i<MAX_MAPMONS;i++)
 		{
-			if(world->map[lvl]->badguy[i].item>=NUM_ORIGINAL_ITEMS && world->map[lvl]->badguy[i].item!=ITM_RANDOM)
+			if(world->map[lvl]->badguy[i].item>=NUM_ORIGINAL_ITEMS && world->map[lvl]->badguy[i].item!=IT_RANDOM)
 			{
 				world->map[lvl]->badguy[i].item+=stitchItemOffset-NUM_ORIGINAL_ITEMS;
 				GetItem(world->map[lvl]->badguy[i].item);
@@ -138,19 +138,19 @@ void UpdateItems(world_t *world)
 				{
 					if(world->map[lvl]->special[i].effect[j].type==EFF_ITEM)
 					{
-						if(world->map[lvl]->special[i].effect[j].value!=ITM_RANDOM &&
+						if(world->map[lvl]->special[i].effect[j].value!=IT_RANDOM &&
 							world->map[lvl]->special[i].effect[j].value>=NUM_ORIGINAL_ITEMS)
 							world->map[lvl]->special[i].effect[j].value+=stitchItemOffset-NUM_ORIGINAL_ITEMS;
 					}
 					else if(world->map[lvl]->special[i].effect[j].type==EFF_SUMMON)
 					{
-						if(world->map[lvl]->special[i].effect[j].value2!=ITM_RANDOM &&
+						if(world->map[lvl]->special[i].effect[j].value2!=IT_RANDOM &&
 							world->map[lvl]->special[i].effect[j].value2>=NUM_ORIGINAL_ITEMS)
 							world->map[lvl]->special[i].effect[j].value2+=stitchItemOffset-NUM_ORIGINAL_ITEMS;
 					}
 					else if(world->map[lvl]->special[i].effect[j].type==EFF_MONSITEM)
 					{
-						if(world->map[lvl]->special[i].effect[j].value2!=ITM_RANDOM &&
+						if(world->map[lvl]->special[i].effect[j].value2!=IT_RANDOM &&
 							world->map[lvl]->special[i].effect[j].value2>=NUM_ORIGINAL_ITEMS)
 							world->map[lvl]->special[i].effect[j].value2+=stitchItemOffset-NUM_ORIGINAL_ITEMS;
 					}

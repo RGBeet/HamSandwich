@@ -1177,22 +1177,31 @@ void UpdateInterface(Map *map)
 void RenderInterfaceShopping(MGLDraw *mgl)
 {
 	char combo[16];
+	int yoff = 18;
 
-	InstaRenderItem(639-TILE_WIDTH/2,479-8,ITM_COIN,0,mgl);
-	sprintf(combo,"%u",profile.progress.totalCoins-profile.progress.coinsSpent);
-	Print(639-TILE_WIDTH-GetStrLength(combo,2)-1,479-18,combo,-32,2);
-	Print(639-TILE_WIDTH-GetStrLength(combo,2)+1,479-18,combo,-32,2);
-	Print(639-TILE_WIDTH-GetStrLength(combo,2),479-18+1,combo,-32,2);
-	Print(639-TILE_WIDTH-GetStrLength(combo,2),479-18-1,combo,-32,2);
-	Print(639-TILE_WIDTH-GetStrLength(combo,2),479-18,combo,0,2);
 
-	InstaRenderItem(639-TILE_WIDTH/2,479-38,ITM_LOONYKEY,0,mgl);
-	sprintf(combo,"%u",profile.progress.loonyKeys-profile.progress.loonyKeysUsed);
-	Print(639-TILE_WIDTH-GetStrLength(combo,2)-1,479-38,combo,-32,2);
-	Print(639-TILE_WIDTH-GetStrLength(combo,2)+1,479-38,combo,-32,2);
-	Print(639-TILE_WIDTH-GetStrLength(combo,2),479-38+1,combo,-32,2);
-	Print(639-TILE_WIDTH-GetStrLength(combo,2),479-38-1,combo,-32,2);
-	Print(639-TILE_WIDTH-GetStrLength(combo,2),479-38,combo,0,2);
+	InstaRenderItem(639-TILE_WIDTH/2-2,479-yoff+12,IT_COIN,0,mgl);
+
+	sprintf(combo,"%u $Y",profile.progress.totalCoins-profile.progress.coinsSpent);
+	Print(639-TILE_WIDTH-GetStrLength(combo,2)-2,479-yoff-9,combo,0,2);
+
+	int loonyKeys = profile.progress.loonyKeys - profile.progress.loonyKeysUsed;
+	if (loonyKeys > 0) // has at least one loonykey!
+	{
+		yoff += 20;
+		InstaRenderItem(639-TILE_WIDTH/2-8,479-yoff,IT_LOONYKEY,0,mgl);
+
+		sprintf(combo, "x%u", profile.progress.loonyKeys - profile.progress.loonyKeysUsed);
+		Print(639-TILE_WIDTH-GetStrLength(combo,2),479-yoff-8,combo,0,2);
+	}
+
+	if (CheatBookPurchased()) // cheat menu is available
+	{
+		yoff+=25;
+		sprintf(combo,"%u $C",profile.progress.totalCheatzies-profile.progress.cheatziesSpent);
+		GetAnimatedItemSprite(194+((timeGetTime()/60)%7))->DrawOffColor(639-TILE_WIDTH/2-5,479-yoff,mgl,0,3,0);
+		Print(639-TILE_WIDTH-GetStrLength(combo,2)-16,479-yoff-10,combo,0,2);
+	}
 }
 
 void RenderInterface(MGLDraw *mgl)
@@ -1324,7 +1333,7 @@ void DrawFancyLine(int x, int y, int color, int width, MGLDraw* mgl)
 
 void RenderShoppingStuff(int x, int y, MGLDraw *mgl)
 {
-	char combo[16];
+	char combo[32];
 	int p;
 	int yy = 20;
 
@@ -1335,14 +1344,22 @@ void RenderShoppingStuff(int x, int y, MGLDraw *mgl)
 	DrawFancyLine(x, y+yy, 7, 100, mgl);
 	yy += 15;
 
-	InstaRenderItem(x, y+yy+6, ITM_COIN, 0, GetDisplayMGL());
-	sprintf(combo,"D$%u",profile.progress.totalCoins-profile.progress.coinsSpent);
+	InstaRenderItem(x+14, y+yy+18, IT_COIN, 0, GetDisplayMGL());
+	sprintf(combo,"$Y %u (Yerfbucks)",profile.progress.totalCoins-profile.progress.coinsSpent);
 	PrintSimpleShadow(x+32, y+yy, combo, 1);
 
 	yy += 27;
-	InstaRenderItem(x, y+yy+4, ITM_LOONYKEY, 0, GetDisplayMGL());
-	sprintf(combo,"%u LoonyKeys",profile.progress.loonyKeys-profile.progress.loonyKeysUsed);
-	PrintSimpleShadow(x+32, y+yy, combo, 1);
+	InstaRenderItem(x, y+yy+4, IT_LOONYKEY, 0, GetDisplayMGL());
+	sprintf(combo,"x%u LoonyKeys",profile.progress.loonyKeys-profile.progress.loonyKeysUsed);
+	PrintSimpleShadow(x+32+1, y+yy, combo, 1);
+
+	if (CheatBookPurchased())
+	{
+		yy += 25;
+		sprintf(combo, "$C %u (Cheatzies)", profile.progress.totalCheatzies - profile.progress.cheatziesSpent);
+		GetItemSprite(194 + ((timeGetTime() / 60) % 7))->DrawOffColor(x, y + yy + 8, mgl, 0, 3, 0);
+		PrintSimpleShadow(x + 32, y + yy, combo, 1);
+	}
 
 	yy += 27;
 	sprintf(combo, "%u/%u Shopped", NumPurchased(), NUM_SHOP_ITEMS);

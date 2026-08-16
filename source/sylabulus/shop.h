@@ -94,6 +94,8 @@ TASK(void) InitShopping(int x,int y);
 TASK(byte) UpdateShopping(MGLDraw *mgl);
 void RenderShopping(MGLDraw *mgl);
 
+void ResetAllPurchases(void); // need this for cheat.cpp
+
 float ShopPercent(void);
 
 #define NUM_SHOP_ITEMS		(24)

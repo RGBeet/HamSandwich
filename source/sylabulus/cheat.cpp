@@ -24,7 +24,7 @@ const char cheatName[NUM_CHEATS][16]={
 	"Max. Rage",
 };
 
-#define NUM_TYPE_CHEATS	2
+#define NUM_TYPE_CHEATS	5
 
 char cheatCode[NUM_TYPE_CHEATS][12]={
 #ifdef IGF
@@ -33,6 +33,9 @@ char cheatCode[NUM_TYPE_CHEATS][12]={
 #else
 	"scummypunk",	// get all cheats
 	"leartiste",	// get the editor
+	"rosebud",		// get $100
+	"loadsamoney",	// get $500
+	"reset",		// get $100
 #endif
 };
 
@@ -102,6 +105,19 @@ void CheatKey(char c)
 					break;
 				case 1:	// editor
 					NewBigMessage("THE EDITOR IS YOURS!",60);
+					break;
+				case 2:	// rosebud
+					profile.progress.totalCoins += 100;
+					MakeNormalSound(SND_COINGET);
+					break;
+				case 3:	// loadsamoney
+					profile.progress.totalCoins += 500;
+					MakeNormalSound(SND_COINGET);
+					break;
+				case 4:	// reset
+					ResetAllPurchases();
+					MakeNormalSound(SND_TURNEVIL);
+					NewBigMessage("RESET!",60);
 					break;
 			}
 #endif

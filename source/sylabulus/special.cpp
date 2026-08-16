@@ -69,9 +69,9 @@ void GetSpecialsFromMap(std::span<special_t> list)
 		{
 			numSpecials=i+1;
 			for (effect_t &eff : me.effect)
-				if(eff.type==EFF_SUMMON && eff.value2>ITM_RANDOM)
+				if(eff.type==EFF_SUMMON && eff.value2>IT_RANDOM)
 				{
-					eff.value2=ITM_NONE;
+					eff.value2=IT_NONE;
 				}
 		}
 	}
@@ -169,7 +169,7 @@ void DefaultTrigger(trigger_t *trig,int x,int y)
 			trig->value2=x+y*256;
 			break;
 		case TRG_HAVEITEM:
-			trig->value=ITM_HAMMERUP;
+			trig->value=IT_HAMMERUP;
 			trig->value2=1;
 			break;
 		case TRG_PASSLEVELS:
@@ -227,7 +227,7 @@ void DefaultTrigger(trigger_t *trig,int x,int y)
 			trig->x=255;
 			break;
 		case TRG_ITEMS:
-			trig->value=ITM_HAMMERUP;
+			trig->value=IT_HAMMERUP;
 			trig->value2=1;
 			break;
 		case TRG_COMPMAP:
@@ -243,7 +243,7 @@ void DefaultTrigger(trigger_t *trig,int x,int y)
 			trig->value2=0;
 			break;
 		case TRG_ITEMRECT:
-			trig->value=ITM_HAMMERUP;
+			trig->value=IT_HAMMERUP;
 			break;
 		case TRG_DIFFICULTY:
 			trig->value=0;
@@ -331,7 +331,7 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 			break;
 		case EFF_SUMMON:
 			eff->value=MONS_ANYBODY;
-			eff->value2=ITM_RANDOM;
+			eff->value2=IT_RANDOM;
 			break;
 		case EFF_PICTURE:
 			eff->value=TEXTFILE_NORMAL;
@@ -393,7 +393,7 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 		case EFF_MONSITEM:
 			eff->value=MONS_ANYBODY;
 			eff->x=255;
-			eff->value2=ITM_RANDOM;
+			eff->value2=IT_RANDOM;
 			break;
 		case EFF_TILEVAR:
 			eff->value=0;
@@ -546,14 +546,14 @@ void RepairSpecialToItem(std::span<special_t> list, int n)
 				{
 					if(eff.value2==n)
 						eff.value2=0;
-					else if(eff.value2>n && eff.value2!=ITM_RANDOM)
+					else if(eff.value2>n && eff.value2!=IT_RANDOM)
 						eff.value2--;
 				}
 				if(eff.type==EFF_MONSITEM)
 				{
 					if(eff.value2==n)
 						eff.value2=0;
-					else if(eff.value2>n && eff.value2!=ITM_RANDOM)
+					else if(eff.value2>n && eff.value2!=IT_RANDOM)
 						eff.value2--;
 				}
 			}
@@ -862,6 +862,8 @@ byte CheckForItem(byte item,int count,byte flags)
 					amt=KC_KEYCH3;
 				else if(amt==3)
 					amt=KC_KEYCH4;
+				else if(amt==4)
+					amt=KC_KEYCH5;
 
 				if(player.worldProg->keychains&amt)
 					return 1;

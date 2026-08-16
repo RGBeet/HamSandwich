@@ -285,20 +285,24 @@ byte PlayerPowerup(int powerup)
 		switch(powerup)
 		{
 			case PU_REVERSE:
+				if (player.hammerFlags&HMR_REVERSE) // has reverse
+					return 0;
 				player.hammerFlags|=HMR_REVERSE;
-				break;
+				return 1;
 			case PU_REFLECT:
+				if (player.hammerFlags&HMR_REFLECT) // has reflect
+					return 0;
 				player.hammerFlags|=HMR_REFLECT;
 				break;
 			case PU_SHIELD:
-				player.shield=240;
+				player.shield=255;
 				break;
 			case PU_GARLIC:
 				player.garlic=255;
 				break;
 			case PU_SPEED:
 				PlayerSetAccelerate(30*10);
-				CalculateMusicSpeed();
+				CalculateMusicSpeed(); // speed up music
 				break;
 			case PU_INVISO:
 				player.invisibility=255;
@@ -320,19 +324,19 @@ byte PlayerPowerup(int powerup)
 				SetPoisonFrames(goodguy,goodguy->poison+60*5);
 				break;
 			case PU_IGNITE:
-				SetIgniteFrames(goodguy, goodguy->ignite+60*5);
+				SetIgniteFrames(goodguy,goodguy->ignite+60*5);
 				break;
 			case PU_FROZEN:
-				SetFreezeFrames(goodguy, goodguy->frozen+60*5);
+				SetFreezeFrames(goodguy,goodguy->frozen+60*5);
 				break;
 			case PU_WEAKEN:
-				SetWeakenFrames(goodguy, goodguy->weaken+60*5);
+				SetWeakenFrames(goodguy,goodguy->weaken+60*5);
 				break;
 			case PU_SLOW:
-				SetSlownessFrames(goodguy, goodguy->slow+60*5);
+				SetSlownessFrames(goodguy,goodguy->slow+60*5);
 				break;
 			case PU_STRENGTH:
-				SetStrengthFrames(goodguy, goodguy->strength+60*5);
+				SetStrengthFrames(goodguy,goodguy->strength+60*5);
 				break;
 			case PU_WATRWALK:
 				player.waterWalk=255;
@@ -344,34 +348,79 @@ byte PlayerPowerup(int powerup)
 		switch(-powerup)
 		{
 			case PU_REVERSE:
+				if (!(player.hammerFlags & HMR_REVERSE)) // no reverse to take
+					return 0;
 				player.hammerFlags^=HMR_REVERSE;
-				break;
+				return 1;
 			case PU_REFLECT:
+				if (!(player.hammerFlags & HMR_REVERSE)) // no reverse to take
+					return 0;
 				player.hammerFlags^=HMR_REFLECT;
-				break;
+				return 1;
 			case PU_SHIELD:
+				if (!player.shield) // no shield to take
+					return 0;
 				player.shield=0;
-				break;
+				return 1;
 			case PU_GARLIC:
+				if (!player.garlic) // no shield to take
+					return 0;
 				player.garlic=0;
-				break;
+				return 1;
 			case PU_SPEED:
-				player.speed[0]=0;
-				player.speed[1]=1;
+				if (!goodguy->speed) // no speed to take
+					return 0;
+				goodguy->speed = 0;
+				player.speed[1] = 0;
 				CalculateMusicSpeed();
-				break;
+				return 1;
 			case PU_INVISO:
+				if (!player.invisibility)
+					return 0;
 				player.invisibility=0;
-				break;
+				return 1;
 			case PU_AMMO:
+				if (!player.ammoCrate)
+					return 0;
 				player.ammoCrate=0;
-				break;
+				return 1;
 			case PU_AMMO2:
-				RemoveCurrentWeapon();
-				break;
+				return RemoveCurrentWeapon();
 			case PU_POISON:
+				if (!goodguy->poison)
+					return 0;
 				goodguy->poison=0;
-				break;
+				return 1;
+			case PU_IGNITE:
+				if (!goodguy->ignite)
+					return 0;
+				goodguy->ignite = 0;
+				return 1;
+			case PU_FROZEN:
+				if (!goodguy->frozen)
+					return 0;
+				goodguy->frozen = 0;
+				return 1;
+			case PU_WEAKEN:
+				if (!goodguy->weaken)
+					return 0;
+				goodguy->weaken = 0;
+				return 1;
+			case PU_SLOW:
+				if (!goodguy->slow)
+					return 0;
+				goodguy->slow = 0;
+				return 1;
+			case PU_STRENGTH:
+				if (!goodguy->strength)
+					return 0;
+				goodguy->strength = 0;
+				return 1;
+			case PU_WATRWALK:
+				if (!player.waterWalk)
+					return 0;
+				player.waterWalk = 0;
+				return 1;
 		}
 	}
 	return 1;
@@ -452,7 +501,7 @@ void PlayerChineseFood(void)
 	}
 }
 
-void PlayerGetBrain(int amt)
+byte PlayerGetBrain(int amt)
 {
 	int total;
 
@@ -494,10 +543,12 @@ void PlayerGetBrain(int amt)
 			MakeNormalSound(SND_LUNABRAINS);
 
 		playerGlow=127;
+		return 2;
 	}
+	return 1;
 }
 
-void PlayerGetCandle(int amt)
+byte PlayerGetCandle(int amt)
 {
 	int total;
 
@@ -530,11 +581,16 @@ void PlayerGetCandle(int amt)
 		StoreWorldResults(player.worldProg,&curWorld);
 		SaveProfile();
 		playerGlow=127;
+		return 2;
 	}
+	return 1;
 }
 
-void PlayerGetCoin(int amt)
+byte PlayerGetCoin(int amt)
 {
+	if ((amt < 0 && player.coins == 0) || (amt > 0 && player.coins >= 999))
+		return 0;
+
 	player.coins += amt;
 
 	if(player.coins<0)
@@ -543,8 +599,9 @@ void PlayerGetCoin(int amt)
 	if(player.coins>999)
 		player.coins=999;
 
-	if(player.coins>=50)
-		CompleteGoal(80);
+	//if(player.coins>=50)
+	//	CompleteGoal(80);
+	return 1;
 }
 
 void ToggleWaterwalk(void)
@@ -2027,7 +2084,7 @@ void PlayerControlMiniSub(Guy *me,mapTile_t *mapTile,world_t *world)
 	me->mind1=0;
 }
 
-byte StealWeapon(void)
+word StealWeapon(void)
 {
 	byte r;
 
@@ -2044,28 +2101,28 @@ byte StealWeapon(void)
 				if(player.hammers>0)
 				{
 					player.hammers--;
-					return ITM_HAMMERUP;
+					return IT_HAMMERUP;
 				}
 				break;
 			case 1:
 				if(player.hamSpeed<16)
 				{
 					player.hamSpeed+=4;
-					return ITM_PANTS;
+					return IT_PANTS;
 				}
 				break;
 			case 2:
 				if(player.hammerFlags&HMR_REVERSE)
 				{
 					player.hammerFlags&=(~HMR_REVERSE);
-					return ITM_REVERSE;
+					return IT_PROJMIRROR;
 				}
 				break;
 			case 3:
 				if(player.hammerFlags&HMR_REFLECT)
 				{
 					player.hammerFlags&=(~HMR_REFLECT);
-					return ITM_REFLECT;
+					return IT_PROJBOUNCE;
 				}
 				break;
 		}
@@ -2467,4 +2524,121 @@ Guy* GetInterfaceEnemy()
 void SetInterfaceEnemy(Guy *g)
 {
 	intfaceEnemy = g;
+}
+
+byte PlayerGetKey(byte type, int amt)
+{
+	type = (type & 3);
+	if (amt > 0)
+	{
+		if (player.keys[type])
+			return 0;
+		else
+		{
+			if (!editing && !player.cheated && verified && ++profile.progress.keysFound >= 100)
+				CompleteGoal(73);
+			player.keys[type] = 1;
+			return 1;
+		}
+	}
+	else
+	{
+		if (!player.keys[type])
+			return 0;
+		else
+		{
+			player.keys[type] = 0;
+			return 1;
+		}
+	}
+}
+
+byte PlayerGetHammer(int amt)
+{
+	// would do absolutely nothing
+	if ((amt > 0 && player.hammers >= 5) || (amt < 0 && player.hammers == 0))
+		return 0;
+
+	if (player.hammers + amt > 5)
+		player.hammers = 5;
+	else if (player.hammers + amt < 0)
+		player.hammers = 0;
+	else
+		player.hammers += amt;
+	if (!GetCurrentWeaponAmmo() && !GetCurrentWeaponType()) // if player has no weapon, switch to hammer
+		player.activeSlot = 255;
+
+	return 1;
+}
+
+byte PlayerGetPants(int amt)
+{
+	// would do absolutely nothing
+	if ((amt > 0 && player.hamSpeed == 0) || (amt < 0 && player.hamSpeed == 16))
+		return 0;
+
+	if (!player.hamSpeed) // max fire rate
+		return 0;
+	if (player.hamSpeed - amt * 4 < 0)
+		player.hamSpeed = 0;
+	else if (player.hamSpeed - amt * 4 > 16)
+		player.hamSpeed = 16;
+	else
+		player.hamSpeed -= amt * 4;
+	return 1;
+}
+
+byte PlayerGetOxygen(int amt)
+{
+	// would do absolutely nothing
+	if ((amt < 0 && player.oxygen == 0) || (amt > 0 && player.oxygen == 127 * 256))
+		return 0;
+
+	if (player.oxygen + amt < 0)
+		player.oxygen = 0;
+	else if (player.oxygen + amt > 127*256)
+		player.oxygen = 127*256;
+	else
+		player.oxygen += amt;
+	return 1;
+}
+
+byte PlayerGetRage(int amt)
+{
+	// would do absolutely nothing
+	if ((amt < 0 && player.rage == 0) || (amt > 0 && player.rage == 127 * 256))
+		return 0;
+
+	if (player.rage + amt < 0)
+		player.rage = 0;
+	else if (player.rage + amt > 127 * 256)
+		player.rage = 127 * 256;
+	else
+		player.rage += amt;
+	return 1;
+}
+
+byte PlayerGetKeychain(byte type)
+{
+	switch (type)
+	{
+		case 0:		// pumpkin keychain (spispopd)
+			player.worldProg->keychains |= KC_KEYCH1;
+			break;
+		case 1:		// shroom keychain (EG,KM)
+			player.worldProg->keychains |= KC_KEYCH2;
+			break;
+		case 2:		// murp keychain (RWK)
+			player.worldProg->keychains |= KC_KEYCH3;
+			break;
+		case 3:		// frog keychain (LL1,SH,KH)
+			player.worldProg->keychains |= KC_KEYCH4;
+			break;
+		case 4:		// bodzha keychain (loonyland 2)
+			player.worldProg->keychains |= KC_KEYCH5;
+			break;
+	}
+	KeyChainAllCheck();
+	// keychain get effect
+	return 1;
 }

@@ -52,27 +52,16 @@
 #define ID_PICKSPR	608
 
 static const ItemThemes themes[]={
-	IT_PICKUP,IT_DECOR,IT_OBSTACLE,IT_BULLETPROOF,IT_DOOR,IT_TREE,IT_ROCK,
-	IT_CRATE,IT_SIGN,IT_WEAPON,IT_POWERUP,IT_KEY,IT_COLLECT,IT_FOOD,IT_ENTRANCE,
-	IT_CHAIR,IT_CUSTOM};
+	ITH_COLLECTIBLE,ITH_WEAPON,ITH_POWERUP,ITH_OBSTACLE,
+	ITH_BULLETPROOF,ITH_PLANTS,ITH_ROCKS,ITH_URBAN,
+	ITH_SIGNS,ITH_DECOR,ITH_ENTRANCE,ITH_LARGE,
+	ITH_CUSTOM
+};
 static const char * const themeNames[] = {
-	"Pick-Ups",
-	"Decorations",
-	"Obstacles",
-	"Bulletproof",
-	"Doors",
-	"Vegetation",
-	"Rocks",
-	"Crates, Etc.",
-	"Signs",
-	"Weapons",
-	"Power-Ups",
-	"Keys",
-	"Collectibles",
-	"Food",
-	"Entrances",
-	"Chairs",
-	"Extras",
+	"Collectibles","Weapons","Power-Ups","Obstacles",
+	"Bulletproof","Vegetation","Rocks","Urban",
+	"Signage","Decoration","Entrances","Large Props",
+	"Custom"
 };
 static constexpr int NUM_THEMES = std::min(std::size(themes), std::size(themeNames));
 
@@ -155,11 +144,12 @@ static const char keyColorName[4][16]={
 	"Blue",
 };
 
-static const char keychainName[4][16]={
+static const char keychainName[5][16]={
 	"Pumpkin",
-	"Hammer",
-	"Rocket",
-	"Squash",
+	"Shroom",
+	"Martian",
+	"Frog",
+	"Bodzha",
 };
 
 static const char directionName[4][16]={
@@ -173,13 +163,13 @@ static byte itemList[256];
 static word itemsInList,itemStart=0,itemsShown;
 static byte justPicking;
 static byte mode;
-static ItemThemes curTheme = IT_PICKUP;
+static ItemThemes curTheme = ITH_COLLECTIBLE;
 static world_t *world;
 static byte curItem;
 static byte backColor;
 static byte realClick;
 
-static ItemThemes saveCurTheme = IT_PICKUP;
+static ItemThemes saveCurTheme = ITH_COLLECTIBLE;
 static byte saveCurItem=1,rememberMode,helpRemember;
 static word saveItemStart=0;
 
@@ -208,7 +198,7 @@ static void FlagClick(int id)
 		SetButtonState(id,CHECK_OFF);
 
 		if(GetItem(curItem)->theme==0)	// can't be on zero themes, it'd be unpickable
-			GetItem(curItem)->theme=IT_CUSTOM;	// so throw it into custom
+			GetItem(curItem)->theme=ITH_CUSTOM;	// so throw it into custom
 	}
 	else
 	{
@@ -299,7 +289,7 @@ static void NewClick(int id)
 	{
 		MakeNormalSound(SND_MENUSELECT);
 		curItem=i;
-		curTheme=IT_CUSTOM;
+		curTheme=ITH_CUSTOM;
 		MakeItemList();
 		ItemSetFlags();
 	}
@@ -318,11 +308,11 @@ static void CopyClick(int id)
 	{
 		MakeNormalSound(SND_MENUSELECT);
 		memcpy(GetItem(i),GetItem(curItem),sizeof(item_t));
-		GetItem(i)->theme=IT_CUSTOM;	// copy everything but the theme
+		GetItem(i)->theme=ITH_CUSTOM;	// copy everything but the theme
 		sprintf(s,"Copy of %s",GetItem(curItem)->name);
 		SDL_strlcpy(GetItem(i)->name, s, sizeof(GetItem(i)->name));
 		curItem=i;
-		curTheme=IT_CUSTOM;
+		curTheme=ITH_CUSTOM;
 		MakeItemList();
 		ItemSetFlags();
 	}
@@ -544,23 +534,22 @@ static void ItemEditSetupButtons(void)
 	ClearButtons();
 
 	// theme selection
-	MakeButton(BTN_RADIO,ID_PICKTHEME+0,0,2+158*0,2+18*0,156,16,"Pick-ups",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+1,0,2+158*1,2+18*0,156,16,"Decorations",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+2,0,2+158*2,2+18*0,156,16,"Obstacles",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+3,0,2+158*3,2+18*0,156,16,"Bulletproof",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+4,0,2+158*0,2+18*1,156,16,"Doors",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+5,0,2+158*1,2+18*1,156,16,"Vegetation",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+6,0,2+158*2,2+18*1,156,16,"Rocks",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+7,0,2+158*3,2+18*1,156,16,"Crates, Etc.",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+8,0,2+158*0,2+18*2,156,16,"Signs",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+9,0,2+158*1,2+18*2,156,16,"Weapons",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+10,0,2+158*2,2+18*2,156,16,"Power-Ups",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+11,0,2+158*3,2+18*2,156,16,"Keys",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+12,0,2+158*0,2+18*3,156,16,"Collectibles",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+13,0,2+158*1,2+18*3,156,16,"Food",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+14,0,2+158*2,2+18*3,156,16,"Entrances",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+15,0,2+158*3,2+18*3,156,16,"Chairs",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+16,0,2+158*0,2+18*4,156,16,"Extras",PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+0,0,2+158*0,2+18*0,156,16,themeNames[0], PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+1,0,2+158*1,2+18*0,156,16,themeNames[1],PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+2,0,2+158*2,2+18*0,156,16,themeNames[2],PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+3,0,2+158*3,2+18*0,156,16,themeNames[3],PickThemeClick);
+	
+	MakeButton(BTN_RADIO,ID_PICKTHEME+4,0,2+158*0,2+18*1,156,16,themeNames[4],PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+5,0,2+158*1,2+18*1,156,16,themeNames[5],PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+6,0,2+158*2,2+18*1,156,16,themeNames[6],PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+7,0,2+158*3,2+18*1,156,16,themeNames[7],PickThemeClick);
+	
+	MakeButton(BTN_RADIO,ID_PICKTHEME+8,0,2+158*0,2+18*2,156,16,themeNames[8],PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+9,0,2+158*1,2+18*2,156,16,themeNames[9],PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+10,0,2+158*2,2+18*2,156,16,themeNames[10],PickThemeClick);
+	MakeButton(BTN_RADIO,ID_PICKTHEME+11,0,2+158*3,2+18*2,156,16,themeNames[11],PickThemeClick);
+	
+	MakeButton(BTN_RADIO,ID_PICKTHEME+12,0,2+158*0,2+18*3,156,16,themeNames[12],PickThemeClick);
 
 	// delete, move, and exit
 	if(mode!=IMODE_SELECT)
@@ -930,7 +919,7 @@ void ItemEdit_Init(byte modeFrom,world_t *wrld,byte picking)
 	curTheme=saveCurTheme;
 	if(curItem>=NumItems())
 	{
-		curItem=ITM_HAMMERUP;
+		curItem=IT_HAMMERUP;
 		curTheme={};
 	}
 	backColor=1;

@@ -21,7 +21,8 @@ enum KeychainFlags : byte
 	KC_KEYCH2 = 1 << 1,
 	KC_KEYCH3 = 1 << 2,
 	KC_KEYCH4 = 1 << 3,
-	KC_LOONY  = 1 << 4,
+	KC_KEYCH5 = 1 << 4,
+	KC_LOONY  = 1 << 5,
 };
 BITFLAGS(KeychainFlags)
 
@@ -38,7 +39,7 @@ BITFLAGS(KeychainFlags)
 
 // world percentage is:
 // 100 points per level (you get the level percentage's worth of those 100)
-// 25 points per keychain (so all four equals 1 level)
+// 20 points per keychain (so all five equals 1 level)
 // 100 points for loonykey (get free credit for it, and instantly get it, if you enter a world
 //							that lacks one)
 
@@ -122,7 +123,9 @@ struct progress_t
 	//HudChoice hudChoice;
 	byte moreControl[2][2];
 	byte moreJoyCtrl[2];
-	byte expansion[1012];		// unused space for possible future expansion
+
+	dword totalCheatzies,cheatziesSpent;
+	byte expansion[1004];		// unused space for possible future expansion (1004/1012)
 };
 
 struct playList_t
@@ -165,6 +168,9 @@ struct profile_t
 	progress_t progress;
 
 	char motd[1024];	// message of the day
+
+	// hahaha
+	dword randomSeed;	// seed
 };
 
 extern profile_t profile;
@@ -195,5 +201,6 @@ dword CountLevelsPassed(void);
 void CalcFinishedWorlds(void);
 
 void ApplyControlSettings();
+byte CheatBookPurchased(void); // does the player have cheat book?
 
 #endif

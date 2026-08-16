@@ -391,7 +391,7 @@ void Scan_Effect(world_t *world,Map *map,int num,effect_t *me)
 			break;
 		case EFF_MONSITEM:
 			SDL_IOprintf(scanF,"Give %s at (%03d,%03d) the item ",MonsterName(me->value),me->x,me->y);
-			if(me->value2==ITM_RANDOM)
+			if(me->value2==IT_RANDOM)
 				SDL_IOprintf(scanF,"Random");
 			else
 				SDL_IOprintf(scanF,"%s",GetItem(me->value2)->name);
@@ -481,10 +481,10 @@ void Scan_Badguy(world_t *world,Map *map,int num,mapBadguy_t *me)
 	SDL_IOprintf(scanF,"#%03d (%03d,%03d) %s (item: ",num,me->x,me->y,MonsterName(me->type));
 	switch(me->item)
 	{
-		case ITM_RANDOM:
+		case IT_RANDOM:
 			SDL_IOprintf(scanF,"random");
 			break;
-		case ITM_NONE:
+		case IT_NONE:
 			SDL_IOprintf(scanF,"none");
 			break;
 		default:
@@ -532,7 +532,7 @@ byte Scan_Level(world_t *world,Map *map)
 	memset(itemCount,0,MAX_ITEMS*sizeof(word));
 	for (const mapTile_t &tile : map->Tiles())
 	{
-		if(tile.item!=ITM_NONE)
+		if(tile.item!=IT_NONE)
 		{
 			itemCount[tile.item]++;
 			totalMons++;
@@ -645,7 +645,7 @@ byte Scan_Vars(world_t *world)
 							var_checks[effect.value]++;
 							break;
 						case EFF_ITEM:	// changes items, said items might change variables
-							if(effect.value!=ITM_NONE &&
+							if(effect.value!=IT_NONE &&
 								(GetItem(effect.value)->effect==IE_INCVAR ||
 								GetItem(effect.value)->effect==IE_DECVAR))
 							{
@@ -654,8 +654,8 @@ byte Scan_Vars(world_t *world)
 							break;
 						case EFF_SUMMON:	// summon a monster, who might hold a var-changing item
 						case EFF_MONSITEM:	// give a monster a possibly var-changing item
-							if(effect.value2!=ITM_NONE &&
-								effect.value2!=ITM_RANDOM &&
+							if(effect.value2!=IT_NONE &&
+								effect.value2!=IT_RANDOM &&
 								(GetItem(effect.value2)->effect==IE_INCVAR ||
 								GetItem(effect.value2)->effect==IE_DECVAR))
 							{
@@ -770,7 +770,7 @@ byte Scan_Vars(world_t *world)
 									VarName(effect.value));
 							break;
 						case EFF_ITEM:	// changes items, said items might change variables
-							if(effect.value!=ITM_NONE &&
+							if(effect.value!=IT_NONE &&
 								(GetItem(effect.value)->effect==IE_INCVAR ||
 								GetItem(effect.value)->effect==IE_DECVAR))
 							{
@@ -781,8 +781,8 @@ byte Scan_Vars(world_t *world)
 							}
 							break;
 						case EFF_SUMMON:	// summon a monster, who might hold a var-changing item
-							if(effect.value2!=ITM_NONE &&
-								effect.value2!=ITM_RANDOM &&
+							if(effect.value2!=IT_NONE &&
+								effect.value2!=IT_RANDOM &&
 								(GetItem(effect.value2)->effect==IE_INCVAR ||
 								GetItem(effect.value2)->effect==IE_DECVAR))
 							{
@@ -793,8 +793,8 @@ byte Scan_Vars(world_t *world)
 							}
 							break;
 						case EFF_MONSITEM:	// give a monster a possibly var-changing item
-							if(effect.value2!=ITM_NONE &&
-								effect.value2!=ITM_RANDOM &&
+							if(effect.value2!=IT_NONE &&
+								effect.value2!=IT_RANDOM &&
 								(GetItem(effect.value2)->effect==IE_INCVAR ||
 								GetItem(effect.value2)->effect==IE_DECVAR))
 							{

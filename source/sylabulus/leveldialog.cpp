@@ -225,7 +225,7 @@ static bool CountsDouble(int type)
 
 static int BrainsForMonster(int type, int item)
 {
-	int result = 0, brainsPerBrain = BrainsGiven(ITM_BRAIN), brainsForItem = BrainsGiven(item);
+	int result = 0, brainsPerBrain = BrainsGiven(IT_BRAIN), brainsForItem = BrainsGiven(item);
 	if (type == MONS_ZOMBIE || type == MONS_ZOMBONI || type == MONS_MUTANT)
 		result += brainsPerBrain;
 	if (type == MONS_SUPERZOMBIE)

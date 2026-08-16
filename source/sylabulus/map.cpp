@@ -106,15 +106,15 @@ void Map::Init(world_t *wrld)
 
 	for(i=0;i<width*height;i++)
 	{
-		if(map[i].item==ITM_KEYCH1 && PlayerKeyChain(0))	// keychains only appear once
+		if(map[i].item==IT_KEYCH1 && PlayerKeyChain(0))	// keychains only appear once
 			map[i].item=0;
-		if(map[i].item==ITM_KEYCH2 && PlayerKeyChain(1))	// keychains only appear once
+		if(map[i].item==IT_KEYCH2 && PlayerKeyChain(1))	// keychains only appear once
 			map[i].item=0;
-		if(map[i].item==ITM_KEYCH3 && PlayerKeyChain(2))	// keychains only appear once
+		if(map[i].item==IT_KEYCH3 && PlayerKeyChain(2))	// keychains only appear once
 			map[i].item=0;
-		if(map[i].item==ITM_KEYCH4 && PlayerKeyChain(3))	// keychains only appear once
+		if(map[i].item==IT_KEYCH4 && PlayerKeyChain(3))	// keychains only appear once
 			map[i].item=0;
-		if(map[i].item==ITM_LOONYKEY && PlayerKeyChain(4))	// loonykeys only appear once
+		if(map[i].item==IT_LOONYKEY && PlayerKeyChain(4))	// loonykeys only appear once
 			map[i].item=0;
 		map[i].templight=-32;	// make it all black so it'll fade in
 		map[i].select=1;
@@ -236,7 +236,7 @@ void Map::Update(byte mode,world_t *world)
 					map[i].floor=GetTerrain(world,map[i].floor)->next;
 				if(map[i].wall!=0 && GetTerrain(world,map[i].wall)->change  == TRN_ANIM)
 					map[i].wall=GetTerrain(world,map[i].wall)->next;
-				if(map[i].item!=ITM_NONE)
+				if(map[i].item!=IT_NONE)
 					UpdateItem(&map[i],width,i);
 			}
 		}
@@ -511,7 +511,7 @@ byte PlaceItemCallback(int x,int y,int cx,int cy,int value,Map *map)
 		return 1;
 
 	map->GetTile(x,y)->item=(byte)value;
-	if(value!=ITM_BRAIN && (GetItem(value)->flags&IF_PICKUP))
+	if(value!=IT_BRAIN && (GetItem(value)->flags&IF_PICKUP))
 		MakeSound(SND_ITEMDROP,(x*TILE_WIDTH)<<FIXSHIFT,(y*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,500);
 	return 0;	// all done, you placed the item
 }
@@ -1233,7 +1233,7 @@ byte Map::ItemChange(int x,int y,byte item,byte fx)
 		return item;
 	}
 	else
-		return ITM_NONE;
+		return IT_NONE;
 }
 
 void Map::TileChange(int x,int y,int floor,int wall,byte fx)
@@ -1433,19 +1433,19 @@ byte Map::Keychains(void)
 				}
 				if(effect.type==EFF_SUMMON)
 				{
-					if(effect.value2!=ITM_RANDOM)
+					if(effect.value2!=IT_RANDOM)
 					{
-						if(effect.value2>ITM_RANDOM)
-							effect.value2=ITM_NONE;
+						if(effect.value2>IT_RANDOM)
+							effect.value2=IT_NONE;
 						result |= ItemKeychain(effect.value2);
 					}
 				}
 				if(effect.type==EFF_MONSITEM)
 				{
-					if(effect.value2!=ITM_RANDOM)
+					if(effect.value2!=IT_RANDOM)
 					{
-						if(effect.value2>ITM_RANDOM)
-							effect.value2=ITM_NONE;
+						if(effect.value2>IT_RANDOM)
+							effect.value2=IT_NONE;
 						result |= ItemKeychain(effect.value2);
 					}
 				}
@@ -1457,7 +1457,7 @@ byte Map::Keychains(void)
 	{
 		if(guy.type)
 		{
-			if(guy.item && guy.item<ITM_RANDOM)
+			if(guy.item && guy.item<IT_RANDOM)
 			{
 				result |= ItemKeychain(guy.item);
 			}

@@ -44,7 +44,7 @@ void RepairItems(int n)
 		{
 			if (badguy.item == n)
 				badguy.item = 0;
-			else if (badguy.item > n && badguy.item != ITM_RANDOM)
+			else if (badguy.item > n && badguy.item != IT_RANDOM)
 				badguy.item--;
 		}
 	}

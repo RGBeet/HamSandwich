@@ -174,7 +174,8 @@ void ToggleWaterwalk(void);
 byte PlayerCanWaterwalk(void);
 void SetTportClock(byte tp);
 byte GetTportClock(void);
-byte StealWeapon(void);
+
+word StealWeapon(void); // byte->word
 
 byte GetCurrentWeaponType();
 int GetCurrentWeaponAmmo();
@@ -188,9 +189,17 @@ byte PlayerPowerup(int powerup);
 void PlayerRadioactiveFood(void);
 void PlayerChineseFood(void);
 void KeyChainAllCheck(void);
-void PlayerGetBrain(int amt);
-void PlayerGetCandle(int amt);
-void PlayerGetCoin(int amt);
+
+byte PlayerGetBrain(int amt);
+byte PlayerGetCandle(int amt);
+byte PlayerGetCoin(int amt);
+// new!
+byte PlayerGetKey(byte type, int amt);
+byte PlayerGetHammer(int amt);
+byte PlayerGetPants(int amt);
+byte PlayerGetOxygen(int amt);
+byte PlayerGetRage(int amt);
+byte PlayerGetKeychain(byte type);
 
 void SetPlayerStart(int x,int y);
 void PutPlayerAtStart(Guy *g);

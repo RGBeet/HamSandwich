@@ -400,6 +400,8 @@ void DefaultProfile(const char *name)
 	SaveProfile();
 	JamulSoundVolume(profile.sound);
 	SetMusicVolume(profile.music);
+
+	profile.randomSeed = Random(65536);
 }
 
 void DefaultLevelProgress(levelData_t *me,byte levelNum)
@@ -629,4 +631,9 @@ const char* GetDifficultyName(int difficulty)
 byte GetDifficulty()
 {
 	return profile.difficulty;
+}
+
+byte CheatBookPurchased()
+{
+	return (profile.progress.purchase[9] & SIF_BOUGHT); // cheat menu is available
 }

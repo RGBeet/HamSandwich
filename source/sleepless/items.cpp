@@ -1278,13 +1278,7 @@ byte TriggerItem(Guy *me,mapTile_t *m,int x,int y)
 			return PlayerGetWeapon(items[m->item].effectAmt,x,y);
 			break;
 		case IE_HAMMER:
-			if(player.hammers+items[m->item].effectAmt>10)
-				player.hammers=10;
-			else if(player.hammers+items[m->item].effectAmt<0)
-				player.hammers=0;
-			else
-				player.hammers+=items[m->item].effectAmt;
-			return 1;
+			return PlayerGetHammer(items[m->item].effectAmt, x, y);
 			break;
 		case IE_PANTS:
 			if(player.hamSpeed>4)

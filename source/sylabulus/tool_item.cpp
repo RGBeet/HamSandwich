@@ -10,10 +10,10 @@ ItemTool::ItemTool(void)
 	active=0;
 	brush=0;
 	plopMode=PLOP_NORMAL;
-	item[0]=ITM_HAMMERUP;
-	item[1]=ITM_PANTS;
-	item[2]=ITM_BRAIN;
-	item[3]=ITM_CANDLE;
+	item[0]=IT_HAMMERUP;
+	item[1]=IT_PANTS;
+	item[2]=IT_BRAIN;
+	item[3]=IT_CANDLE;
 
 	lastX=-1;
 	lastY=-1;
@@ -303,7 +303,7 @@ void ItemTool::ItemWasDeleted(int i)
 	for(n=0;n<4;n++)
 	{
 		if(item[n]==i)
-			item[n]=ITM_HAMMERUP;
+			item[n]=IT_HAMMERUP;
 		if(item[n]>i && item[n]!=256)
 			item[n]--;
 	}

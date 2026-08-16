@@ -754,12 +754,12 @@ static void MonsItemClick(int id)
 
 	if(rightClick)
 	{
-		if(spcl.effect[curEff].value2==ITM_NONE)
-			spcl.effect[curEff].value2=ITM_RANDOM;
-		else if(spcl.effect[curEff].value2==ITM_RANDOM)
-			spcl.effect[curEff].value2=ITM_HAMMERUP;
+		if(spcl.effect[curEff].value2==IT_NONE)
+			spcl.effect[curEff].value2=IT_RANDOM;
+		else if(spcl.effect[curEff].value2==IT_RANDOM)
+			spcl.effect[curEff].value2=IT_HAMMERUP;
 		else
-			spcl.effect[curEff].value2=ITM_NONE;
+			spcl.effect[curEff].value2=IT_NONE;
 
 		SetupEffectButtons(curEff-effStart,(curEff-effStart)*38+264);
 		return;
@@ -2076,7 +2076,7 @@ static void SetupEffectButtons(int t,int y)
 			sprintf(s,"%d, %d",effect.x,effect.y);
 			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,268,y+17,70,14,s,XYClick);
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+4+100*t,0,342,y+17,1,1,"with",NULL);
-			if(effect.value2==ITM_RANDOM)
+			if(effect.value2==IT_RANDOM)
 				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+5+100*t,0,375,y+17,120,14,"Random",MonsItemClick);
 			else
 				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+5+100*t,0,375,y+17,120,14,GetItem(effect.value2)->name,MonsItemClick);
@@ -2358,7 +2358,7 @@ static void SetupEffectButtons(int t,int y)
 				sprintf(s,"%d, %d",effect.x,effect.y);
 			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,248,y+17,75,14,s,XY3Click);
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+4+100*t,0,327,y+17,1,1,"the item",NULL);
-			if(effect.value2==ITM_RANDOM)
+			if(effect.value2==IT_RANDOM)
 				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+5+100*t,0,390,y+17,110,14,"Random",MonsItemClick);
 			else
 				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+5+100*t,0,390,y+17,110,14,GetItem(effect.value2)->name,MonsItemClick);
