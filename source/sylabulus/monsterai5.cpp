@@ -914,6 +914,15 @@ void AI_GlueTrap(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 	if (me->action == ACTION_BUSY)
 	{
+		if (me->seq == ANIM_ATTACK && me->frm == 4 && me->frmTimer < 63)
+		{
+			x = me->x + Cosine(me->facing * 32) * 12;
+			y = me->y + Sine(me->facing * 32) * 12;
+			MakeSound(SND_MISSILELAUNCH, me->x, me->y, SND_CUTOFF, 1200);
+			FireBullet(x, y, me->facing * 32, BLT_GLUESHOT, me->friendly);
+			me->reload = 40;
+			return;
+		}
 		if (me->seq == ANIM_DIE && me->frmTimer < 63)
 		{
 			x = me->x >> FIXSHIFT;
@@ -933,14 +942,20 @@ void AI_GlueTrap(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	}
 	else
 	{
-		if (!me->reload)
+		if (RangeToTarget(me, goodguy) > 500 * FIXAMT)
+			me->mind = 0;
+
+		if (!me->reload && me->seq == ANIM_IDLE)
 		{
-			x = me->x + Cosine(me->facing * 32) * 12;
-			y = me->y + Sine(me->facing * 32) * 12;
-			MakeSound(SND_MISSILELAUNCH, me->x, me->y, SND_CUTOFF, 1200);
-			FireBullet(x, y, me->facing*32, BLT_GLUESHOT, me->friendly);
-			me->reload = 80;
-			return;
+			// get him!!
+			me->seq = ANIM_ATTACK;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 128;
+			me->action = ACTION_BUSY;
+			me->dx = 0;
+			me->dy = 0;
+			me->reload = 0;
 		}
 		FaceGoodguy3(me, goodguy);
 	}

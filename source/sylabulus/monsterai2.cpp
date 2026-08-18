@@ -2464,29 +2464,7 @@ void AI_Turret(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	
 	if (me->action == ACTION_BUSY)
 	{
-		if (me->seq == ANIM_DIE && me->frmTimer < 63)
-		{
-			x = me->x >> FIXSHIFT;
-			y = me->y >> FIXSHIFT;
-			BlowUpGuy(x + me->rectx, y + me->recty, x + me->rectx2, y + me->recty2, me->z, 1);
-		}
-		return;	// can't do nothin' right now
-	}
-
-	if (me->mind == 0)
-	{
-		if (goodguy && RangeToTarget(me, goodguy) < 800 * FIXAMT)
-		{
-			me->mind = 1;
-			if (me->aiType != MONS_DEATHTURRET)
-				me->reload = (byte)Random(60);
-			else
-				me->reload = 5;
-		}
-	}
-	else
-	{
-		if (me->reload == 0)
+		if (me->seq == ANIM_ATTACK && me->frm == 4 && me->frmTimer < 63)
 		{
 			x = me->x + Cosine(me->facing * 32) * 12;
 			y = me->y + Sine(me->facing * 32) * 12;
@@ -2511,6 +2489,43 @@ void AI_Turret(Guy* me, Map* map, world_t* world, Guy* goodguy)
 				}
 				break;
 			}
+		}
+		if (me->seq == ANIM_DIE && me->frmTimer < 63)
+		{
+			x = me->x >> FIXSHIFT;
+			y = me->y >> FIXSHIFT;
+			BlowUpGuy(x + me->rectx, y + me->recty, x + me->rectx2, y + me->recty2, me->z, 1);
+		}
+		return;	// can't do nothin' right now
+	}
+
+	if (me->mind == 0)
+	{
+		if (goodguy && RangeToTarget(me, goodguy) < 800 * FIXAMT)
+		{
+			me->mind = 1;
+			if (me->aiType != MONS_DEATHTURRET)
+				me->reload = (byte)Random(60);
+			else
+				me->reload = 5;
+		}
+	}
+	else
+	{
+		if (RangeToTarget(me, goodguy) > 500 * FIXAMT)
+			me->mind = 0;
+
+		if (!me->reload && me->seq == ANIM_IDLE)
+		{
+			// get him!!
+			me->seq = ANIM_ATTACK;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 128;
+			me->action = ACTION_BUSY;
+			me->dx = 0;
+			me->dy = 0;
+			me->reload = 0;
 		}
 		FaceGoodguy3(me, goodguy);
 	}

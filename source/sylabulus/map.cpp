@@ -510,7 +510,7 @@ byte PlaceItemCallback(int x,int y,int cx,int cy,int value,Map *map)
 	if(b == TRN_WATER || b == TRN_LAVA || b == TRN_SOLID)
 		return 1;
 
-	map->GetTile(x,y)->item=(byte)value;
+	map->GetTile(x,y)->item=(word)value;
 	if(value!=IT_BRAIN && (GetItem(value)->flags&IF_PICKUP))
 		MakeSound(SND_ITEMDROP,(x*TILE_WIDTH)<<FIXSHIFT,(y*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,500);
 	return 0;	// all done, you placed the item
@@ -688,7 +688,7 @@ byte MapCheckCallback(int x, int y, int cx, int cy, int value, Map* map)
 	return (x != (value % 1024) || y != (value / 1024));
 }
 
-byte Map::DropItem(int x,int y,byte itm)
+byte Map::DropItem(int x,int y,word itm)
 {
 	return LOS(x,y,10,itm,PlaceItemCallback);
 }
@@ -839,7 +839,7 @@ void Map::Copy(int sx,int sy,int blkwidth,int blkheight,int dx,int dy)
 	}
 }
 
-int Map::ItemCount(byte itm)
+int Map::ItemCount(word itm)
 {
 	int i,cnt;
 
@@ -852,7 +852,7 @@ int Map::ItemCount(byte itm)
 	return cnt;
 }
 
-int Map::ItemCountInRect(byte itm,int x,int y,int x2,int y2)
+int Map::ItemCountInRect(word itm,int x,int y,int x2,int y2)
 {
 	int i,j,cnt;
 
@@ -1223,7 +1223,7 @@ byte Map::Resize(byte w,byte h)
 	return 1;
 }
 
-byte Map::ItemChange(int x,int y,byte item,byte fx)
+byte Map::ItemChange(int x,int y,word item,byte fx)
 {
 	if (mapTile_t *tile = TryGetTile(x, y))
 	{

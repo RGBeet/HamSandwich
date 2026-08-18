@@ -21,6 +21,13 @@ void AI_GoodTurret(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 	if (me->action == ACTION_BUSY)
 	{
+		if (me->seq == ANIM_ATTACK && me->frm == 4 && me->frmTimer < 63)
+		{
+			MakeSound(SND_ROBOSHOOT, me->x, me->y, SND_CUTOFF, 1200);
+			FireBullet(me->x + Cosine(me->facing * 32) * 20, me->y + Sine(me->facing * 32) * 17,
+				me->facing * 32, BLT_GREEN, me->friendly);
+			me->reload = 10;
+		}
 		if (me->seq == ANIM_DIE && me->frmTimer < 63)
 		{
 			FireBullet(me->x - FIXAMT * 30 + Random(FIXAMT * 60), me->y - FIXAMT * 22 + Random(FIXAMT * 44),
@@ -42,12 +49,17 @@ void AI_GoodTurret(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		if (RangeToTarget(me, goodguy) > 500 * FIXAMT)
 			me->mind = 0;
 
-		if (me->reload == 0)
+		if (!me->reload && me->seq == ANIM_IDLE)
 		{
-			MakeSound(SND_ROBOSHOOT, me->x, me->y, SND_CUTOFF, 1200);
-			FireBullet(me->x + Cosine(me->facing * 32) * 20, me->y + Sine(me->facing * 32) * 17,
-				me->facing * 32, BLT_GREEN, me->friendly);
-			me->reload = 10;
+			// get him!!
+			me->seq = ANIM_ATTACK;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 128;
+			me->action = ACTION_BUSY;
+			me->dx = 0;
+			me->dy = 0;
+			me->reload = 0;
 		}
 		FaceGoodguy3(me, goodguy);
 	}

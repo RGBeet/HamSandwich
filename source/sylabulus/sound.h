@@ -484,6 +484,9 @@
 #define SND_SPHINXOUCH			579
 #define SND_SPHINXDIE			580
 #define SND_GONG				581
+#define SND_BIGBRAIN			582
+#define SND_BIGCANDLE			583
+#define SND_BIGCOIN				584
 
 #define MAX_SOUNDS				1024	// doesn't mean a thing lol
 

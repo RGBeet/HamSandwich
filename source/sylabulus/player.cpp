@@ -2177,45 +2177,45 @@ static const char wpnName[][32] = {
 	"Lunchbox",
 	"Abyssinator",
 
-	"Glue Shooter",
+	"Glue Gun",
 	"Throwing Stars",
 	"Bouapha's Favorite Gun"
 };
 
 static const int wpnIcons[] = {
 	8,		// none
-	6,		// missiles
-	33,		// ak-8087
-	35,		// bombs
-	34,		// toaster
-	43,		// power armor
-	44,		// big axe
-	46,		// zap wand
-	45,		// spears
-	47,		// machete
-	48,		// mines
-	68,		// turrets
-	69,		// mind control ray,
-	67,		// reflect shield
-	71,		// jetpack
-	70,		// swapgun
-	96,		// torch
-	113,	// scanner
-	104,	// minisub,
-	112,	// freeze ray
-	129,	// stopwatch,
+	7,		// missiles
+	8,		// ak-8087
+	9,		// bombs
+	10,		// toaster
+	36,		// power armor
+	11,		// big axe
+	12,		// zap wand
+	13,		// spears
+	14,		// machete
+	15,		// mines
+	22,		// turrets
+	23,		// mind control ray
+	24,		// reflect shield
+	25,		// jetpack
+	26,		// swapgun
+	21,		// torch
+	27,		// scanner
+	37,		// minisub,
+	16,		// freeze ray
+	28,		// stopwatch,
 
-	8,		
-	8,
-	8,
+	17,		// boomerang	
+	18,		// megaphone
+	19,		// rocket launcher
 
-	8,
-	8,
-	8,
+	29,		// r.g.blaster
+	20,		// lunchbox
+	30,		// abyssinator
 
-	8,
-	8,
-	8
+	31,		// glue gun
+	33,		// throwing stars
+	32		// bouapha's favorite gun
 };
 
 const char* GetWeaponName(byte weapon)
@@ -2229,11 +2229,11 @@ const char* GetWeaponName(byte weapon)
 
 const int GetWeaponIcon(byte weapon)
 {
-	if (weapon < MAX_WEAPONS)
+	if (weapon > 0 && weapon < MAX_WEAPONS)
 		return wpnIcons[weapon];
 	else if (weapon == 255)
 		return 0;
-	return 8;
+	return 173; // the green X
 }
 
 static const char afflictName[][16] = {
@@ -2255,12 +2255,13 @@ const char* GetAfflictName(byte afflict)
 
 static const char keychainName[][24] = {
 	"Pumpkin Keychain",
-	"Hammer Keychain",
-	"Rocket Keychain",
-	"Squash Keychain",
+	"Shroom Keychain",
+	"Martian Keychain",
+	"Frog Keychain",
+	"Bodzha Keychain",
 	"Key of Lunacy"
 };
-static_assert(std::size(keychainName) == 5, "Must give new keychain a name");
+static_assert(std::size(keychainName) == 6, "Must give new keychain a name");
 
 const char* GetKeychainName(byte keychain)
 {

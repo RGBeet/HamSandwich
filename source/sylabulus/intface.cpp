@@ -1199,7 +1199,7 @@ void RenderInterfaceShopping(MGLDraw *mgl)
 	{
 		yoff+=25;
 		sprintf(combo,"%u $C",profile.progress.totalCheatzies-profile.progress.cheatziesSpent);
-		GetAnimatedItemSprite(194+((timeGetTime()/60)%7))->DrawOffColor(639-TILE_WIDTH/2-5,479-yoff,mgl,0,3,0);
+		InstaRenderItem(639-TILE_WIDTH/2-5,479-yoff,IT_GEMSTONESML,0,mgl);
 		Print(639-TILE_WIDTH-GetStrLength(combo,2)-16,479-yoff-10,combo,0,2);
 	}
 }
@@ -1357,7 +1357,7 @@ void RenderShoppingStuff(int x, int y, MGLDraw *mgl)
 	{
 		yy += 25;
 		sprintf(combo, "$C %u (Cheatzies)", profile.progress.totalCheatzies - profile.progress.cheatziesSpent);
-		GetItemSprite(194 + ((timeGetTime() / 60) % 7))->DrawOffColor(x, y + yy + 8, mgl, 0, 3, 0);
+		InstaRenderItem(x, y+yy+8,IT_GEMSTONESML,0,mgl);
 		PrintSimpleShadow(x + 32, y + yy, combo, 1);
 	}
 

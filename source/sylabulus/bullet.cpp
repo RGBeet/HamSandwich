@@ -159,6 +159,7 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_ORBITER:
 		case BLT_ORBITER2:
+		case BLT_ORBITER3:
 		case BLT_SWAP:
 		case BLT_SCANSHOT:
 			me->x-=me->dx;
@@ -315,6 +316,7 @@ void BulletHitWallY(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_ORBITER:
 		case BLT_ORBITER2:
+		case BLT_ORBITER3:
 		case BLT_SWAP:
 		case BLT_SCANSHOT:
 			me->y-=me->dy;
@@ -511,6 +513,7 @@ void BulletHitFloor(bullet_t *me,Map *map,world_t *world)
 		case BLT_MINE:
 		case BLT_ORBITER:
 		case BLT_ORBITER2:
+		case BLT_ORBITER3:
 		case BLT_BALLLIGHTNING:
 		case BLT_REFLECT:
 		case BLT_SWAP:
@@ -733,6 +736,7 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 		case BLT_MINE:
 		case BLT_ORBITER:
 		case BLT_ORBITER2:
+		case BLT_ORBITER3:
 			MakeSound(SND_BOMBBOOM,me->x,me->y,SND_CUTOFF,2000);
 			me->dx=0;
 			me->dy=0;
@@ -1779,11 +1783,13 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			{
 				me->timer--;
 				me->anim = 45;
-				me->target = LockOnEvil(me->x >> FIXSHIFT, me->y >> FIXSHIFT);
-				if (me->target != 65535)
+				w=LockOnEvil2(me->x>>FIXSHIFT,me->y>>FIXSHIFT);
+				if(w!=65535)
 				{
-					MakeSound(SND_BALLLIGHTNING,me->x,me->y,SND_CUTOFF,600);
-					FireBullet(me->x, me->y, me->facing * 32, BLT_BALLLIGHTNING, me->friendly);
+					GetGuy(w)->GetShot(0,0,5,map,world);
+					LightningBolt(me->x,me->y-FIXAMT*20,GetGuy(w)->x,
+						GetGuy(w)->y-FIXAMT*10-GetGuy(w)->z);
+					MakeSound(SND_ZAP,GetGuy(w)->x,GetGuy(w)->y,SND_CUTOFF,1000);
 				}
 			}
 			if (me->target != 65535)
@@ -2223,7 +2229,7 @@ void RenderBullet(bullet_t *me)
 			if((me->timer<8) && (me->timer&1))
 				return;	// flicker when almost gone
 			curSpr=bulletSpr->GetSprite(SPR_ORBITER+me->facing);
-			SprDrawOff(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,1,4,me->bright,curSpr,
+			SprDrawOff(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,1,4,me->bright-2,curSpr,
 					DISPLAY_DRAWME);
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,0,255,me->bright,curSpr,
 					DISPLAY_DRAWME|DISPLAY_SHADOW);
@@ -2232,7 +2238,7 @@ void RenderBullet(bullet_t *me)
 			if ((me->timer < 8) && (me->timer & 1))
 				return;	// flicker when almost gone
 			curSpr = bulletSpr->GetSprite(SPR_ORBITER + me->facing);
-			SprDrawOff(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 1, 3, me->bright, curSpr,
+			SprDrawOff(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 1, 7, me->bright+4, curSpr,
 				DISPLAY_DRAWME);
 			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 0, 255, me->bright, curSpr,
 				DISPLAY_DRAWME | DISPLAY_SHADOW);
@@ -2714,10 +2720,11 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type,byte friendly)
 			break;
 		case BLT_ORBITER:
 		case BLT_ORBITER2:
+		case BLT_ORBITER3:
 			me->anim=15;
 			me->timer=40;
-			if(me->type==BLT_ORBITER2)
-				me->timer=10;
+			if(me->type!=BLT_ORBITER)
+				me->timer=20;
 			me->z=FIXAMT*20;
 			me->dx=Cosine(me->facing*32)*8+Sine(me->facing*32)*4;
 			me->dy=Sine(me->facing*32)*8+Cosine(me->facing*32)*4;

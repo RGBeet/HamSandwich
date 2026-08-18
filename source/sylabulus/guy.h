@@ -80,7 +80,7 @@ class Guy final
 
 		int rectx,recty,rectx2,recty2;	// for collision checks
 		word ID;	// just a copy of the guy's number
-		byte item;	// what item you're carrying
+		word item;	// what item you're carrying
 
 		// 255 = 8.5 seconds? too short!
 

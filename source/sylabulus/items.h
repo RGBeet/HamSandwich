@@ -196,11 +196,11 @@ enum ItemType : word
 	IT_CRYSTAL1,
 	IT_CRYSTAL2,
 	IT_GONG,
-	NUM_ORIGINAL_ITEMS
+	NUM_ORIGINAL_ITEMS = 175,
+	IT_RANDOM = 65535
 };
-
-#define IT_RANDOM	255 //todo: extend to 999?
-#define MAX_ITEMS	255
+#define MAX_ITEMS			1000
+#define CUSTOM_ID_START		1000
 
 // item flags
 enum ItemFlags : word
@@ -279,15 +279,18 @@ BITFLAGS(ItemTriggers)
 #define IE_KEYCHAIN 21	// gives you keychain N (1-4), use -N to remove the keychain
 #define IE_DOOR		22	// door of color N (0=yellow, 123=RGB), disappears if you trigger it with
 						// the right key in hand.  If not, it does nothing
-#define IE_ORBITER	23	// summon N orbiters, -N will remove them
-#define IE_ORBITER2 24	// summon N orbit bombers, -N will remove them
+#define IE_ORBITER	23	// summon orbiter of type N (fixed)
+#define IE_ORBITER2 24	// TODO: replace?
 #define IE_PUSH		25	// get pushed
 #define IE_INCVAR	26	// increment variable N
 #define IE_DECVAR	27	// decrement variable N
 #define IE_MOVE		28	// move up/down/left/right (only if it could move there as a pushable item)
 #define IE_POCKET	29 	// gives N slots (player can have max of 8, starts with 1) 
 
-#define IE_MAX		29	// max # of effects
+#define IE_SCORE	30
+#define IE_EXPLODE	31
+
+#define IE_MAX		31	// max # of effects
 
 // Power ups. SERIALIZED in custom item definitions.
 enum : int

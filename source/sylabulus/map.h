@@ -117,7 +117,7 @@ struct mapTile_t
 {
 	word floor;
 	word wall;
-	byte item;
+	word item;		// byte -> word
 	char light;
 	char templight;
 	byte opaque;
@@ -129,7 +129,7 @@ struct mapBadguy_t
 {
 	byte x,y;
 	dword type;
-	byte item;
+	word item;		// byte -> word
 };
 
 struct world_t;
@@ -147,7 +147,7 @@ class Map
 		void Render(world_t *world,int camX,int camY,MapRenderFlags flags);
 		void RenderSelect(world_t *world,int camX,int camY,MapRenderFlags flags);
 
-		byte DropItem(int x,int y,byte itm);
+		byte DropItem(int x,int y,word itm);
 		void PermaTorch(int x,int y,char brt);
 		void TempTorch(int x,int y,char brt);
 		void BrightTorch(int x,int y,char brt,byte size);
@@ -161,8 +161,8 @@ class Map
 		byte TightestLOS(int x,int y,int radius,int value,byte (*DoIt)(int,int,int,int,int,Map *));
 		byte CheckLOS(int x,int y,int radius,int x2,int y2);
 
-		int  ItemCount(byte itm);
-		int  ItemCountInRect(byte itm,int x,int y,int x2,int y2);
+		int  ItemCount(word itm);
+		int  ItemCountInRect(word itm,int x,int y,int x2,int y2);
 
 		void Swap(int sx,int sy,int blkwidth,int blkheight,int dx,int dy);
 		void Copy(int sx,int sy,int blkwidth,int blkheight,int dx,int dy);
@@ -170,7 +170,7 @@ class Map
 		void ContiguousTileChange(int x,int y,int floor,int wall,byte fx);
 		void AllTileChange(int x,int y,int floor,int wall,byte fx);
 
-		byte ItemChange(int x,int y,byte item,byte fx);
+		byte ItemChange(int x,int y, word item,byte fx);
 		byte ContiguousItemChange(int x,int y,byte item,byte fx);
 		byte AllItemChange(int x,int y,byte item,byte fx);
 

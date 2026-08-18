@@ -172,10 +172,10 @@ static const item_t baseItems[] = {
 	{"Orbit Shooter",0,0,43,0,0,0, // TODO: make sprite
 		0,IF_PICKUP,ITH_POWERUP,ITR_GET,
 		IE_ORBITER,0,"",SND_SHIELD}, // little orbiter noise
-	{"Orbit Bomber",0,0,43,1,4,0,
+	{"Orbit Bomber",0,0,43,1,4,-2,
 		0,IF_PICKUP,ITH_POWERUP,ITR_GET,
 		IE_ORBITER,1,"",SND_SHIELD}, // TODO: rework orbiter editor logic
-	{"Orbit Zapper",0,0,43,1,4,0,
+	{"Orbit Zapper",0,0,43,1,7,4,
 		0,IF_PICKUP,ITH_POWERUP,ITR_GET,
 		IE_ORBITER,2,"",SND_SHIELD},
 	{"Particle Accelerator",0,0,44,0,0,0, // TODO: make sprite
@@ -211,13 +211,13 @@ static const item_t baseItems[] = {
 	// larger versions of brain/coin/candle
 	{"Brain:Big",0,0,54,0,0,0, // animated
 		0,IF_PICKUP,ITH_COLLECTIBLE,ITR_GET,
-		IE_BRAIN,4,"",SND_GETBRAIN},
+		IE_BRAIN,4,"",SND_BIGBRAIN},
 	{"Candle:Big",0,0,55,0,0,0, // animated
 		0,IF_PICKUP,ITH_COLLECTIBLE,ITR_GET,
-		IE_CANDLE,4,"",SND_CANDLEGET},
+		IE_CANDLE,4,"",SND_BIGCANDLE},
 	{"Coin:Big",0,0,56,0,0,0, // TODO: animate.
 		20,IF_PICKUP,ITH_COLLECTIBLE,ITR_GET,
-		IE_COIN,5,"",SND_COINGET},
+		IE_COIN,5,"",SND_BIGCOIN},
 
 	// Keys
 	{"Key:Yellow",0,0,57,0,0,0, // animated
@@ -228,10 +228,10 @@ static const item_t baseItems[] = {
 		IE_RKEY,1,"",SND_GETKEY},
 	{"Key:Green",0,0,59,0,0,0, // animated
 		0,IF_PICKUP,ITH_COLLECTIBLE,ITR_GET,
-		IE_KEY,1,"",SND_GETKEY},
+		IE_GKEY,1,"",SND_GETKEY},
 	{"Key:Blue",0,0,60,0,0,0, // animated
 		0,IF_PICKUP,ITH_COLLECTIBLE,ITR_GET,
-		IE_KEY,1,"",SND_GETKEY},
+		IE_BKEY,1,"",SND_GETKEY},
 	{"Keychain:Pumpkin",0,0,61,0,0,0, // TODO: make sprite, animate.
 		0,IF_PICKUP,ITH_COLLECTIBLE,ITR_GET,
 		IE_KEYCHAIN,0,"COOL! A Pumpkin Keychain!!",SND_GETKEYCHAIN},
@@ -240,136 +240,337 @@ static const item_t baseItems[] = {
 		IE_KEYCHAIN,1,"COOL! A Shroom Keychain!!",SND_GETKEYCHAIN},
 	{"Keychain:Martian",0,0,63,0,0,0, // TODO: make sprite, animate.
 		0,IF_PICKUP,ITH_COLLECTIBLE,ITR_GET,
-		IE_KEYCHAIN,1,"COOL! A Martian Keychain!!",SND_GETKEYCHAIN},
+		IE_KEYCHAIN,2,"COOL! A Martian Keychain!!",SND_GETKEYCHAIN},
 	{"Keychain:Frog",0,0,64,0,0,0, // TODO: make sprite, animate.
 		0,IF_PICKUP,ITH_COLLECTIBLE,ITR_GET,
-		IE_KEYCHAIN,1,"COOL! A Frog Keychain!!",SND_GETKEYCHAIN},
+		IE_KEYCHAIN,3,"COOL! A Frog Keychain!!",SND_GETKEYCHAIN},
 	{"Keychain:Bodzha",0,0,65,0,0,0, // TODO: make sprite, animate.
-		0,IF_PICKUP|IF_LOONYCOLOR,ITH_COLLECTIBLE,ITR_GET,
-		IE_KEYCHAIN,1,"COOL! A Bodzha Keychain!!",SND_GETKEYCHAIN},
-	{"Key of Lunacy",0,0,65,0,0,0, // TODO: animate.
 		0,IF_PICKUP,ITH_COLLECTIBLE,ITR_GET,
+		IE_KEYCHAIN,4,"COOL! A Bodzha Keychain!!",SND_GETKEYCHAIN},
+	{"Key of Lunacy",0,0,66,0,0,0, // TODO: animate.
+		0,IF_PICKUP|IF_LOONYCOLOR,ITH_COLLECTIBLE,ITR_GET,
 		IE_LOONYKEY,1,"KEY OF LUNACY!!!",SND_LOONYKEY},
 
 	// Buildings / exits
-	{"Exit Door",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Hollow Tree",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"House",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Castle",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Igloo",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
+	{"Exit Door",0,0,67,0,0,0, // TODO: make.
+		0,IF_SHADOW,ITH_DECOR|ITH_ENTRANCE,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Hollow Tree",0,0,68,0,0,0,
+		0,IF_SHADOW,ITH_DECOR|ITH_ENTRANCE,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"House",0,0,69,0,0,0,
+		0,IF_SHADOW,ITH_DECOR|ITH_ENTRANCE,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Castle",0,0,70,0,0,0,
+		0,IF_SHADOW,ITH_DECOR|ITH_ENTRANCE,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Igloo",0,0,71,0,0,0,
+		0,IF_SHADOW,ITH_DECOR|ITH_ENTRANCE,ITR_NONE,
+		IE_NONE,0,"",0},
 
 	// Terrain / scenery
-	{"Grass 1",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Grass 2",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Cone",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Cone:Fallen",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Mailbox",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Mailbox:Collection",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Hydrant",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Barrel:Metal",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Barrel:Toxic Waste",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Barrel:Oil Drum",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Crate:Wood",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Crate:Metal",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
+	{"Grass 1",0,0,72,0,0,0,
+		0,{},ITH_DECOR|ITH_PLANTS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Grass 2",0,0,73,0,0,0,
+		0,{},ITH_DECOR|ITH_PLANTS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Cone",0,0,74,0,0,0,
+		0,IF_SOLID|IF_SHADOW,ITH_OBSTACLE|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Cone:Fallen",0,0,75,0,0,0,
+		0,{},ITH_OBSTACLE|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Mailbox",0,0,77,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Mailbox:Collection",0,0,79,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Hydrant",0,0,80,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Barrel:Metal",0,0,81,0,0,0,
+		0,IF_SOLID|IF_SHADOW,ITH_OBSTACLE|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Barrel:Toxic Waste",0,0,83,0,0,0,
+		0,IF_SOLID|IF_SHADOW,ITH_OBSTACLE|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Barrel:Oil Drum",0,0,82,0,0,0,
+		0,IF_SOLID,ITH_OBSTACLE|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Crate:Wood",0,0,84,0,0,0,
+		0,IF_SOLID,ITH_OBSTACLE|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Crate:Metal",0,0,85,0,0,0,
+		0,IF_SOLID,ITH_OBSTACLE|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
 
-	// Signs / street objects
-	{"Wooden Post",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Sign:Metal",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Wooden Sign:Text",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Wooden Sign:Skull",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Wooden Sign:Left",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Wooden Sign:Right",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Wooden Sign:Info",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Sign:Danger",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Sign:Stop",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Sign:Do Not Enter",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Sign:Left",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Sign:Right",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Sign:Down",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Sign:Up",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Streetlight",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Sign:Path1",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Sign:Path2",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Wooden Barrel",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Lever:Left",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Lever:Right",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Sconce",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Traffic 1",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Traffic 2",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Traffic 3",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
+	{"Wooden Post",0,0,86,0,0,0,
+		0,IF_SOLID,ITH_OBSTACLE|ITH_SIGNS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Sign:Metal",0,0,87,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_SIGNS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Wooden Sign:Text",0,0,88,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_SIGNS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Wooden Sign:Skull",0,0,89,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_SIGNS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Wooden Sign:Left",0,0,90,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_SIGNS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Wooden Sign:Right",0,0,91,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_SIGNS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Wooden Sign:Info",0,0,92,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_SIGNS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Sign:Danger",0,0,93,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_URBAN|ITH_SIGNS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Sign:Stop",0,0,94,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_URBAN|ITH_SIGNS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Sign:Do Not Enter",0,0,95,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_URBAN|ITH_SIGNS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Sign:Left",0,0,96,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_URBAN|ITH_SIGNS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Sign:Right",0,0,97,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_URBAN|ITH_SIGNS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Sign:Down",0,0,98,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_URBAN|ITH_SIGNS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Sign:Up",0,0,99,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_URBAN|ITH_SIGNS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Streetlight",0,0,100,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Sign:Path1",0,0,101,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Sign:Path2",0,0,102,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Wooden Barrel",0,0,103,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Lever:Left",0,0,105,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Lever:Right",0,0,106,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Streetlight:Dim",0,0,100,5,0,-4,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Traffic Light:Red",0,0,108,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Traffic Light:Yellow",0,0,109,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Traffic Light:Green",0,0,110,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF|IF_SHADOW,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
 
 	// Trees / plants
-	{"Tree 1",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Tree 2",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Tree 3",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Bush 1",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Bush 2",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Bush 3",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Palm 1",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Palm 2",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Fat Palm 1",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Fat Palm 2",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Pine Tree",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Pine Tree:Christmas",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Fallen Tree",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Dead Tree 1",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Dead Tree 2",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Stump",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Seaweed 1",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Seaweed 2",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Seaweed 3",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Cattails",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Toadstool",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
+	{"Tree 1",0,0,111,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_PLANTS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Tree 2",0,0,112,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_PLANTS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Tree 3",0,0,113,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_PLANTS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Bush 1",0,0,114,0,0,0,
+		0,IF_SOLID,ITH_OBSTACLE|ITH_PLANTS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Bush 2",0,0,115,0,0,0,
+		0,IF_SOLID,ITH_OBSTACLE|ITH_PLANTS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Bush 3",0,0,116,0,0,0,
+		0,IF_SOLID,ITH_OBSTACLE|ITH_PLANTS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Palm Tree 1",0,0,117,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_PLANTS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Palm Tree 2",0,0,118,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_PLANTS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Fat Palm 1",0,0,119,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_PLANTS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Fat Palm 2",0,0,120,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_PLANTS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Pine Tree",0,0,121,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_PLANTS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Pine Tree:Christmas",0,0,122,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_PLANTS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Fallen Tree",0,0,123,0,0,0,
+		0,IF_SOLID,ITH_OBSTACLE|ITH_PLANTS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Dead Tree 1",0,0,124,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_PLANTS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Dead Tree 2",0,0,125,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_PLANTS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Tree Stump",0,0,126,0,0,0,
+		0,IF_SOLID,ITH_OBSTACLE|ITH_PLANTS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Seaweed 1",0,0,127,0,0,0,
+		0,IF_SOLID,ITH_OBSTACLE|ITH_PLANTS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Seaweed 2",0,0,128,0,0,0,
+		0,IF_SOLID,ITH_OBSTACLE|ITH_PLANTS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Seaweed 3",0,0,129,0,0,0,
+		0,IF_SOLID,ITH_OBSTACLE|ITH_PLANTS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Cattails",0,0,130,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_PLANTS,ITR_SHOOT,
+		IE_DESTROY,1,"",SND_ACIDSPLAT},
+	{"Toadstool",0,0,131,0,0,0,
+		0,IF_SOLID,ITH_OBSTACLE|ITH_PLANTS,ITR_NONE,
+		IE_NONE,0,"",0},
 
 	// Rocks
-	{"Rocks:Large",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Rocks:Small",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Boulder:Tall",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Boulder:Short",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Flat Rock",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Pebble",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Bubbles",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
+	{"Rocks:Large",0,0,132,0,0,0,
+		0,IF_SOLID,ITH_OBSTACLE|ITH_ROCKS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Rocks:Small",0,0,133,0,0,0,
+		0,IF_SOLID,ITH_OBSTACLE|ITH_ROCKS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Boulder:Tall",0,0,135,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_ROCKS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Boulder:Short",0,0,136,0,0,0,
+		0,IF_SOLID,ITH_OBSTACLE|ITH_ROCKS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Rocks:Huge",0,0,138,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_ROCKS|ITH_LARGE,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Pebble",0,0,137,0,0,0,
+		0,{},ITH_DECOR|ITH_ROCKS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Bubbles",0,0,139,0,0,0,
+		0,IF_GLOW|IF_BUBBLES,ITH_DECOR,ITR_NONE,
+		IE_NONE,0,"",0},
 
 	// Doors / blocks
-	{"Yellow Door:Front",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Red Door:Front",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Green Door:Front",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Blue Door:Front",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Yellow Door:Side",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Red Door:Side",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Green Door:Side",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Blue Door:Side",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
+	{"Yellow Door:Front",0,0,140,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_BULLETPROOF|ITH_OBSTACLE|ITH_COLLECTIBLE,ITR_PLAYERBUMP,
+		IE_DOOR,0,"",0},
+	{"Red Door:Front",0,0,141,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_BULLETPROOF|ITH_OBSTACLE|ITH_COLLECTIBLE,ITR_PLAYERBUMP,
+		IE_DOOR,1,"",0},
+	{"Green Door:Front",0,0,142,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_BULLETPROOF|ITH_OBSTACLE|ITH_COLLECTIBLE,ITR_PLAYERBUMP,
+		IE_DOOR,2,"",0},
+	{"Blue Door:Front",0,0,143,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_BULLETPROOF|ITH_OBSTACLE|ITH_COLLECTIBLE,ITR_PLAYERBUMP,
+		IE_DOOR,3,"",0},
+	{"Yellow Door:Side",0,0,144,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_BULLETPROOF|ITH_OBSTACLE|ITH_COLLECTIBLE,ITR_PLAYERBUMP,
+		IE_DOOR,0,"",0},
+	{"Red Door:Side",0,0,145,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_BULLETPROOF|ITH_OBSTACLE|ITH_COLLECTIBLE,ITR_PLAYERBUMP,
+		IE_DOOR,1,"",0},
+	{"Green Door:Side",0,0,146,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_BULLETPROOF|ITH_OBSTACLE|ITH_COLLECTIBLE,ITR_PLAYERBUMP,
+		IE_DOOR,2,"",0},
+	{"Blue Door:Side",0,0,147,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_BULLETPROOF|ITH_OBSTACLE|ITH_COLLECTIBLE,ITR_PLAYERBUMP,
+		IE_DOOR,3,"",0},
 
 	// Furniture / miscellaneous
-	{"Chair:DownRight",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Chair:DownLeft",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Chair:UpLeft",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Chair:UpRight",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Wooden Table",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Trash Can ",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Trash Can:Filled",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Target",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
+	{"Chair:DownRight",0,0,148,0,0,0,
+		0,IF_SOLID,ITH_OBSTACLE|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Chair:DownLeft",0,0,149,0,0,0,
+		0,IF_SOLID,ITH_OBSTACLE|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Chair:UpLeft",0,0,150,0,0,0,
+		0,IF_SOLID,ITH_OBSTACLE|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Chair:UpRight",0,0,151,0,0,0,
+		0,IF_SOLID,ITH_OBSTACLE|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Wooden Table",0,0,152,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Trash Can",0,0,153,0,0,0,
+		0,IF_SOLID,ITH_OBSTACLE|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Trash Can:Filled",0,0,154,0,0,0,
+		0,IF_SOLID,ITH_OBSTACLE|ITH_URBAN,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Target",0,0,155,0,0,0,
+		0,IF_SOLID,ITH_OBSTACLE|ITH_BULLETPROOF,ITR_NONE,
+		IE_NONE,0,"",0},
 
 	// Potions / collectibles
-	{"Mana Potion",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Rage Potion",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Present",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Small Gemstone",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Large Gemstone",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
+	{"Mana Potion",0,0,156,0,0,0, // TODO: make item effect
+		0,IF_PICKUP,ITH_POWERUP,ITR_GET,
+		IE_NONE,1,"",0},
+	{"Rage Potion",0,0,156,0,0,0, // TODO: animate
+		0,IF_PICKUP,ITH_POWERUP,ITR_GET,
+		IE_RAGE,128,"",0},
+	{"Present",0,0,158,0,0,0, // TODO: make item effect (random weapon)
+		0,IF_PICKUP,ITH_POWERUP|ITH_WEAPON,ITR_GET,
+		IE_NONE,128,"",0},
+	{"Small Gemstone",0,0,159,0,0,0, // TODO: make add score effect
+		0,IF_PICKUP,ITH_COLLECTIBLE,ITR_GET,
+		IE_NONE,128,"",0},
+	{"Large Gemstone",0,0,160,0,0,0, // TODO: make add score effect
+		0,IF_PICKUP,ITH_COLLECTIBLE,ITR_GET,
+		IE_NONE,128,"",0},
 
 	// Miscellaneous scenery
-	{"Mine Block",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Tall Grass",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Hay Bale",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Powder Keg",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Sakura Tree 1",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Sakura Tree 2",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Jade Crystals 1",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Jade Crystals 2",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
-	{"Gong",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
+	{"Mine Block",0,0,161,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_OBSTACLE|ITH_BULLETPROOF,ITR_MINECART,
+		IE_DESTROY,2,"",0},
+	{"Tall Grass",0,0,162,0,0,0,
+		0,IF_SOLID,ITH_OBSTACLE|ITH_PLANTS,ITR_CHOP,
+		IE_DESTROY,1,"",0},
+	{"Hay Bale",0,0,163,0,0,0, // todo: have them burn
+		0,IF_SOLID,ITH_OBSTACLE,ITR_NONE,
+		IE_DESTROY,5,"",0},
+	{"Powder Keg",0,0,164,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_OBSTACLE|ITH_BULLETPROOF,ITR_CHOP,
+		IE_DESTROY,1,"",0},
+	{"Sakura Tree 1",0,0,165,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_PLANTS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Sakura Tree 2",0,0,166,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_PLANTS,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Jade Crystals 1",0,0,167,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_ROCKS|ITH_LARGE,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Jade Crystals 2",0,0,168,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_ROCKS|ITH_LARGE,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"Gong",0,0,169,0,0,0,
+		0,IF_SOLID|IF_BULLETPROOF,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_LARGE,ITR_NONE,
+		IE_NONE,0,"",0},
+	{"New1",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
+	{"New2",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
+	{"New3",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
+	{"New4",0,0,0,0,0,0,0,{},{},ITR_NONE,0,0,"",0},
 };
 
-static_assert(std::size(baseItems) == NUM_ORIGINAL_ITEMS-1);
+static_assert(std::size(baseItems) == NUM_ORIGINAL_ITEMS);
 
 static const item_t emptyItem=
 	{"Custom Item",0,0,0,0,0,0,
@@ -442,7 +643,7 @@ int NewItem(void)
 
 void DeleteItem(int itm)
 {
-	if(itm<NUM_ORIGINAL_ITEMS)
+	if(itm<CUSTOM_ID_START)
 		return;
 	if(itm>=NumItems())
 		return;
@@ -562,6 +763,7 @@ void RenderAnimatedItem(int x, int y, word start, byte frames, byte type, char b
 #define ASPR_KEYRGB		40
 #define ASPR_SPRING		48
 #define ASPR_CHEATZY	56	// todo: make 8 frames!
+#define ASPR_BIGBRAIN	64
 
 void RenderItem(int x,int y,int type,char bright,MapRenderFlags flags)
 {
@@ -646,6 +848,9 @@ void RenderItem(int x,int y,int type,char bright,MapRenderFlags flags)
 				return;
 			case IT_PROJBOUNCE:
 				RenderAnimatedItem((x + items[type].xofs) * FIXAMT, (y + items[type].yofs) * FIXAMT, ASPR_SPRING, 8, type, bright, flags);
+				return;
+			case IT_BIGBRAIN:
+				RenderAnimatedItem((x + items[type].xofs) * FIXAMT, (y + items[type].yofs) * FIXAMT, ASPR_BIGBRAIN, 8, type, bright, flags);
 				return;
 		}
 		if(items[type].flags&IF_SHADOW)
@@ -741,7 +946,7 @@ void InstaRenderItem(int x,int y,int type,char bright,MGLDraw *mgl)
 
 void DrawRedX(int x,int y,bool candle,MGLDraw *mgl)
 {
-	itmSpr->GetSprite(140+candle)->Draw(x+61,y+71,mgl);
+	itmSpr->GetSprite(171)->Draw(x-5,y-11,mgl);
 }
 
 item_t *GetItem(int type)
@@ -805,7 +1010,7 @@ int GetTotalRarity(void)
 
 const item_t *GetBaseItem(int type)
 {
-	if(type<0 || type>=NUM_ORIGINAL_ITEMS)
+	if(type<0 || type>=CUSTOM_ID_START)
 		return NULL;
 	return &baseItems[type];
 }
@@ -1030,22 +1235,20 @@ byte TriggerItem(Guy *me,mapTile_t *m,int x,int y)
 			}
 			else return 0;
 		case IE_ORBITER:
-			if(items[m->item].effectAmt<0)
-				RemoveOrbiters(-items[m->item].effectAmt,1,BLT_ORBITER);
-			else
-			{
-				for(i=0;i<items[m->item].effectAmt;i++)
-					FireBullet(goodguy->x,goodguy->y,Random(8),BLT_ORBITER,1);
-			}
+				switch(items[m->item].effectAmt)
+				{
+					case 0:
+						FireBullet(goodguy->x, goodguy->y, Random(8), BLT_ORBITER, goodguy->friendly);
+						break;
+					case 1:
+						FireBullet(goodguy->x, goodguy->y, Random(8), BLT_ORBITER2, goodguy->friendly);
+						break;
+					case 2:
+						FireBullet(goodguy->x, goodguy->y, Random(8), BLT_ORBITER3, goodguy->friendly);
+						break;
+				}
 			return 1;
-		case IE_ORBITER2:
-			if(items[m->item].effectAmt<0)
-				RemoveOrbiters(-items[m->item].effectAmt,1,BLT_ORBITER2);
-			else
-			{
-				for(i=0;i<items[m->item].effectAmt;i++)
-					FireBullet(goodguy->x,goodguy->y,Random(8),BLT_ORBITER2,1);
-			}
+		case IE_ORBITER2: // merged into IE_ORBITER
 			return 1;
 		case IE_PUSH:
 			if(!me)
@@ -1174,6 +1377,11 @@ void MoveMovableItem(int x,int y,Map *map,world_t *world)
 	}
 }
 
+byte IsCustomItem(word type)
+{
+	return type >= CUSTOM_ID_START;
+}
+
 byte InteractWithItem(Guy *me,mapTile_t *m,int x,int y)
 {
 	byte result;
@@ -1181,7 +1389,7 @@ byte InteractWithItem(Guy *me,mapTile_t *m,int x,int y)
 
 	type=m->item;
 
-	if(shopping && type>=NUM_ORIGINAL_ITEMS && me->aiType==MONS_BOUAPHA)
+	if(shopping && IsCustomItem(type) && me->aiType==MONS_BOUAPHA)
 	{
 		coro::launch(std::bind(InitShopping, x, y));	// bumped a shoppable item in the mall
 		printf("Bumped into mall item\n");

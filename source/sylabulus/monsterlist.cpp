@@ -1130,14 +1130,14 @@ MonsterType monsType[NUM_MONSTERS]=
 				{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,255},	// attack (summon)
 				{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,255},	// attack (summon)
 			},0},
-		{"Turret",255,255,0,AI_Turret,
-		 10,1,80,200,"graphics/turret.jsp",0,MF_NOMOVE,
+		{"Turret",255,255,0,AI_Turret, // NEW GRAPHICS?!
+		 10,8,80,200,"graphics/turret.jsp",0,MF_NOMOVE,
 		 MT_EVIL|MT_TRAP|MT_HIGHTECH,
 			{
 				{0,255},	// idle
 				{0,255},	// move
-				{0,255},	// attack
-				{0,0,0,255},	// die
+				{0,1,2,3,4,5,6,7,255},	// attack
+				{0,1,2,3,4,5,255},	// die
 				{0,255},	// attack
 				{0,255},	// attack
 				{0,255},	// attack
@@ -1275,13 +1275,13 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},	// attack
 			},0},
 		{"Good Turret",4,1,5,AI_GoodTurret,
-		 10,1,30,200,"!82",0,MF_NOMOVE,
+		 10,8,30,200,"!82",0,MF_NOMOVE,
 		 MT_GOOD|MT_TRAP|MT_HIGHTECH,
 			{
 				{0,255},	// idle
 				{0,255},	// move
-				{0,255},	// attack
-				{0,0,0,255},	// die
+				{0,1,2,3,4,5,6,7,255},	// attack
+				{0,1,2,3,4,5,255},	// die
 				{0,255},	// attack
 				{0,255},	// attack
 				{0,255},	// attack
@@ -2563,28 +2563,28 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,10,11,12,12,13,13,255},	// attack
 				{7,8,9,10,11,12,12,13,13,255},	// attack
 			},0},
-		{"Missile Turret",0,3,4,AI_Turret,
-		 10,1,80,200,"!82",0,MF_NOMOVE,
+		{"Missile Turret",4,3,4,AI_Turret,
+		 10,8,80,200,"!82",0,MF_NOMOVE,
 		 MT_EVIL|MT_TRAP|MT_HIGHTECH,
 			{
 				{0,255},	// idle
 				{0,255},	// move
-				{0,255},	// attack
-				{0,0,0,255},	// die
+				{0,1,2,3,4,5,6,7,255},	// attack
+				{0,1,2,3,4,5,255},	// die
 				{0,255},	// attack
 				{0,255},	// attack
 				{0,255},	// attack
 				{0,255},	// attack
 				{0,255},	// attack
 			},0},
-		{"Death Turret",0,7,-4,AI_Turret,
-		 10,1,80,200,"!82",0,MF_NOMOVE,
+		{"Death Turret",4,7,-4,AI_Turret,
+		 10,8,80,200,"!82",0,MF_NOMOVE,
 		 MT_EVIL|MT_TRAP|MT_HIGHTECH,
 			{
 				{0,255},	// idle
 				{0,255},	// move
-				{0,255},	// attack
-				{0,0,0,255},	// die
+				{0,1,2,3,4,5,6,7,255},	// attack
+				{0,1,2,3,4,5,255},	// die
 				{0,255},	// attack
 				{0,255},	// attack
 				{0,255},	// attack
@@ -3245,13 +3245,13 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},
 			}},
 		{"Glue Trap",4,3,-5,AI_GlueTrap,
-		 10,1,80,200,"graphics/turret.jsp",0,MF_NOMOVE,
+		 10,8,80,200,"graphics/turret.jsp",0,MF_NOMOVE,
 		 MT_EVIL|MT_TRAP|MT_HIGHTECH,
 			{
 				{0,255},	// idle
 				{0,255},	// move
-				{0,255},	// attack
-				{0,0,0,255},	// die
+				{0,1,2,3,4,5,6,7,255},	// attack
+				{0,1,2,3,4,5,255},	// die
 				{0,255},	// attack
 				{0,255},	// attack
 				{0,255},	// attack

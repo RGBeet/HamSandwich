@@ -2076,6 +2076,7 @@ void InitSpecialsForPlay(void)
 	tagged=NULL;
 }
 
+#define SPR_MAPX	171
 byte outXes = 0, lastSpecialShown = 33;
 void RenderSpecialXes(Map *map)
 {
