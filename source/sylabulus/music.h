@@ -44,3 +44,21 @@ void InitPauseMenuSong(void);
 void ExitPauseMenuSong(bool resume);
 
 #endif
+/*
+	OST:
+	- title
+	- mall music
+	- hub 1
+	- level 1a
+	- level 1b
+	- boss 1
+	- hub 2
+	- level 2a
+	- level 2b
+	- boss 2
+	- pumpkin level
+	- secret level
+
+
+
+*/

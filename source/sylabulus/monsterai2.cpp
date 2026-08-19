@@ -2468,26 +2468,24 @@ void AI_Turret(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		{
 			x = me->x + Cosine(me->facing * 32) * 12;
 			y = me->y + Sine(me->facing * 32) * 12;
-			switch (me->aiType)
+			switch ((EntityType)me->aiType)
 			{
-			case MONS_TURRET:
-				MakeSound(SND_ROBOSHOOT, me->x, me->y, SND_CUTOFF, 1200);
-				FireExactBullet(x, y, FIXAMT * 4, Cosine(me->facing * 32) * 8, Sine(me->facing * 32) * 8, 0, 0, 30, me->facing * 32, BLT_ENERGY, me->friendly);
-				me->reload = 30;
-				break;
-			case MONS_MISLTURRET:
-				FireBullet(x, y, me->facing, BLT_MISSILE, me->friendly);
-				me->reload = 60;
-				break;
-			case MONS_DEATHTURRET:
-				if (RangeToTarget(me, goodguy) < 400 * FIXAMT)
-				{
+				case EntityType::Turret:
+					MakeSound(SND_ROBOSHOOT, me->x, me->y, SND_CUTOFF, 1200);
+					FireExactBullet(x, y, FIXAMT * 4, Cosine(me->facing * 32) * 8, Sine(me->facing * 32) * 8, 0, 0, 30, me->facing * 32, BLT_ENERGY, me->friendly);
+					me->reload = 30;
+					break;
+				case EntityType::MissileTurret:
+					FireBullet(x, y, me->facing, BLT_MISSILE, me->friendly);
+					me->reload = 60;
+					break;
+				case EntityType::DeathTurret:
+					if (RangeToTarget(me, goodguy) < 400 * FIXAMT)
 					MakeSound(SND_ROBOSHOOT, me->x, me->y, SND_CUTOFF, 1200);
 					a = (me->facing * 32 - 16 + Random(33)) & 255;
-					FireExactBullet(x, y, FIXAMT * 4, Cosine(a) * 4, Sine(a) * 4, 0, 0, 60, a / 16, BLT_MISSILE, me->friendly);
-					me->reload = 5;
-				}
-				break;
+					FireExactBullet(x, y, FIXAMT*12, Cosine(a) * 10, Sine(a) * 10, 0, 0, 60, a/16, BLT_BIGSHELL, me->friendly);
+					me->reload = 2;
+					break;
 			}
 		}
 		if (me->seq == ANIM_DIE && me->frmTimer < 63)
@@ -2504,7 +2502,7 @@ void AI_Turret(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		if (goodguy && RangeToTarget(me, goodguy) < 800 * FIXAMT)
 		{
 			me->mind = 1;
-			if (me->aiType != MONS_DEATHTURRET)
+			if ((EntityType)me->aiType != EntityType::DeathTurret)
 				me->reload = (byte)Random(60);
 			else
 				me->reload = 5;
@@ -2521,7 +2519,16 @@ void AI_Turret(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			me->seq = ANIM_ATTACK;
 			me->frm = 0;
 			me->frmTimer = 0;
-			me->frmAdvance = 128;
+
+			switch ((EntityType)me->aiType)
+			{
+				case EntityType::DeathTurret:
+					me->frmAdvance = 512;
+					break;
+				default:
+					me->frmAdvance = 256;
+					break;
+			}
 			me->action = ACTION_BUSY;
 			me->dx = 0;
 			me->dy = 0;

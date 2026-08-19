@@ -302,6 +302,108 @@
 #define MONS_EDISONCORE		254
 #define MONS_LAWYER			255
 
+enum class EntityType {
+	None,
+	Player,
+
+	// world 1
+	Dummy,
+	Bonehead,
+	Mumble,
+	Zombie,
+	Lantern,
+	Hardhat,
+	Pelican,
+	WeeNinja,
+	Kaptana,
+	Aquazoid,
+	Tsuchizoid,
+	Bunny,
+	BunnyPath,
+	BunnyFollow,
+	BunnyJimbo,
+	Ninjabread,
+	Pumpkin,
+	Kabocha,
+	CrazyBush,
+	Umbrello,
+	EyeballTree,
+	Gingersnap,
+	HappyStickNinja,
+	NohMannComedy,
+	NohMannTragedy,
+	NohMannArmLeft,
+	NohMannArmRight,
+
+	// recolors and misc
+	YerfdogHelper,
+	YerfdogBoss,
+	Nobody,				// used in case player goes invisible
+	Spider,
+	BigSpider,
+	EggSac,
+	MamaSpider,
+	Shroom,
+	Shroomlord,
+	MushKing,
+	Crazybone,
+	ManicMumble,
+	Bombie,
+	BobBiscuit,
+	PumpkinPatch,
+	Boomkin,
+	Squash,
+	Jalapeno,
+	MutantHardhat,
+	Madkap,
+	PurpleKaptana,
+	ThornBush,
+	HotNSour,
+	Deathcap,
+	TreasureChest,
+	SharkChest,
+	Turret,
+	MissileTurret,
+	DeathTurret,
+	GoodTurret,
+	EvilBouapha,
+
+	// vehciles/mechs
+	Minecart,
+	PowerArmor,			// used when player is in power armor
+	Submarine,			// used when player is in mini submarine
+	YouGo,
+	PlayLunachick,		// play as: lunachick
+	PlayShroom,			// play as: shtupid shroom
+
+	// world 2
+	CreepingCone,
+	Autozoid,
+	CarParked,
+	CarTraffic,
+	Mailboxer,
+	WetWilly,
+	StopSign,
+	OilDrum,
+	Bodzha,
+	PunkBunny,
+	Moley,
+	Gargoyle,
+	NastyTree,
+	SpikeBall,
+	Foreman,
+	MechaTruck,
+	KingCone,
+	Teckhead,
+	EdisonCoil,
+	EdisonBoss,
+	EdisonBrain,
+	Punkin,
+	ChefAngelo,
+
+	MaxId // number of monster slots
+};
+
 #define NUM_MONSTERS	243					// Can grow as needed
 #define NUM_PROFILE_MONSTERS 211			// Do not change without redoing the profile format
 
@@ -386,6 +488,44 @@ enum MonsterThemes : dword
 	MT_FLYING	= 1 << 26,
 	MT_BITS		= 1 << 27,
 };
+
+
+/*
+	Remove themes:
+	- thingy, vampire, zoid, pygmy (too specific, pygmies are also replaced by gnomes)
+
+	new theme roster:
+	0. goodguy
+	1. badguy
+	2. spooky (+thingy/vampire)
+	3. vegetation (+pumpkin)
+	4. oriental
+	5. urban
+	6. puzzle
+	7. boss
+	8. miniboss
+	9. aquatic
+	10. flying
+	11. generator
+	12. cosmic
+	13. human
+	14. wacky
+	16. bits
+
+	- goodguy (they help bouapha)
+	- badguy (self-explanatory)
+	- spooky (common theme, all typical undead creatures)
+	- boss
+	- miniboss (not as bossy)
+	- pumpkin (for keychain levels)
+	- oriental/urban (for each world)
+	- trap (for puzzles)
+	- generate (function categories)
+	- machine
+	- human
+	- aquatic
+*/
+
 BITFLAGS(MonsterThemes)
 constexpr int NUM_MONSTHEMES = 28;
 

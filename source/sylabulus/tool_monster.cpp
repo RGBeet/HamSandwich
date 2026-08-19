@@ -12,10 +12,10 @@ MonsterTool::MonsterTool(void)
 	active=0;
 	brush=0;
 	plopMode=PLOP_NORMAL;
-	monster[0]=MONS_BOUAPHA;
-	monster[1]=MONS_BONEHEAD;
-	monster[2]=MONS_BIGSPDR;
-	monster[3]=MONS_ZOMBIE;
+	monster[0]=(short)EntityType::Player;
+	monster[1]=(short)EntityType::Bonehead;
+	monster[2]=(short)EntityType::Mumble;
+	monster[3]=(short)EntityType::Zombie;
 
 	itemMode=1;
 	specificItem=IT_HAMMERUP;

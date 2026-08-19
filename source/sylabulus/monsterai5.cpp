@@ -36,21 +36,102 @@ void AI_Lantern(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	if (me->ouch == 4)
 	{
 		if (me->hp > 0)
-			MakeSound(SND_ZOMBIEOUCH, me->x, me->y, SND_CUTOFF, 1200);
+			MakeSound(SND_GHOSTOUCH, me->x, me->y, SND_CUTOFF, 1200);
 		else
 			MakeSound(SND_LANTERNDIE, me->x, me->y, SND_CUTOFF, 1200);
 	}
 
 	if (me->action == ACTION_BUSY)
 	{
+		if (me->seq == ANIM_ATTACK && (me->frm >= 5 && me->frm <= 8) && goodguy)
+		{
+			// spit stuff
+			x = me->x + Cosine(me->facing * 32) * 8;
+			y = me->y + Sine(me->facing * 32) * 8;
+			FireBulletZ(x, y, FIXAMT * 12, me->facing, BLT_FLAME, me->friendly);
+			me->reload = 15;
+			me->mind = 0;
+		}
 		return;	// can't do nothin' right now
 	}
 
-	if (me->mind == 0) // doing NOTHING!
+	if (me->mind == 0)	// not currently aware of goodguy
 	{
-
+		if (RangeToTarget(me, goodguy) < 320 * FIXAMT || me->ouch > 0)
+		{
+			// if the goodguy is near, or he shot me
+			me->mind = 1;	// start hunting
+			if (me->ouch == 0)
+				me->mind1 = 60;	// for 2 seconds minimum
+			else
+				me->mind1 = 120;	// 4 seconds, because they HATE getting shot
+			FaceGoodguy2(me, goodguy);
+		}
+		me->dx = 0;
+		me->dy = 0;
 	}
+	else if (me->mind == 1)
+	{
+		FaceGoodguy2(me, goodguy);
 
+		if (me->ouch && me->mind1 < 240)
+			me->mind1 += 10;
+		if (me->mind1)
+			me->mind1--;
+		else
+		{
+			if (RangeToTarget(me, goodguy) > 256 * FIXAMT)
+				me->mind = 0;	// get bored again
+			else
+				me->mind1 = 20;	// stay on trail a little longer
+			return;
+		}
+		me->dx = Cosine(me->facing * 32) * 3;
+		me->dy = Sine(me->facing * 32) * 3;
+
+		if (RangeToTarget(me, goodguy) < 140 * FIXAMT && Random(20) == 1)
+		{
+			// scream
+			MakeSound(SND_GHOSTYELL, me->x, me->y, SND_CUTOFF, 1200);
+			me->action = ACTION_BUSY;
+			me->seq = ANIM_ATTACK;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 72;
+			me->dx = 0;
+			me->dy = 0;
+			return;
+		}
+
+		if (RangeToTarget(me, goodguy) < 140 * FIXAMT && Random(20) == 1)
+		{
+			// scream
+			MakeSound(SND_GHOSTYELL, me->x, me->y, SND_CUTOFF, 1200);
+			me->action = ACTION_BUSY;
+			me->seq = ANIM_ATTACK;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 72;
+			me->dx = 0;
+			me->dy = 0;
+			return;
+		}
+	}
+	else if (me->mind == 2)
+	{
+		if (me->mind1)
+			me->mind1--;
+		else
+		{
+			if (RangeToTarget(me, goodguy) > 256 * FIXAMT)
+				me->mind = 0;	// get bored again
+			else
+			{
+				me->mind = 1;
+				me->mind1 = 20;	// stay on trail a little longer
+			}
+		}
+	}
 }
 
 void AI_Hardhat(Guy* me, Map* map, world_t* world, Guy* goodguy)

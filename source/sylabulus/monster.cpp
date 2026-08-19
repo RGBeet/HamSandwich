@@ -118,6 +118,7 @@ word MonsterHP(dword type)
 
 const char *MonsterName(short type)
 {
+	EntityType realType = (EntityType)type;
 	// These special monster IDs used in specials have hardcoded names.
 	switch (type)
 	{
@@ -137,66 +138,20 @@ const char *MonsterName(short type)
 	// These monsters have different names in the editor.
 	if (editing)
 	{
-		switch (type)
+		switch (realType)
 		{
-		case MONS_ROLLER2:
-			return "Roly Poly Rvs";
-		case MONS_ROLLER4:
-			return "Rumbly Tumbly Rvs";
-		case MONS_SNOWBALL2:
-			return "Snowball Rvs";
-		case MONS_PUFFYFISH2:
-			return "Puffyfish Rvs";
-		case MONS_GENERATOR1:
-			return "Generator-1s";
-		case MONS_GENERATOR2:
-			return "Generator-5s";
-		case MONS_GENERATOR3:
-			return "Generator-15s";
-		case MONS_GENERATOR4:
-			return "Generator-30s";
-		case MONS_FRIENDLY2:
-			return "Buddy Bunny:Determined";
-		case MONS_FOLLOWBUNNY:
-			return "Buddy Bunny:Follow";
-		case MONS_SNKYSHRK2:
-			return "Sneaky Shark: Chest";
-		case MONS_UNDERZOID:
-			return "Aquazoid Underwater";
-		case MONS_PATCH2:
-			return "Pumpkin Patch Fast";
-		case MONS_UNDERMAGMA:
-			return "Magmazoid Underwater";
-		case MONS_PARKED2:
-			return "Parked Car2";
-		case MONS_TRAFFIC:
-			return "Traffic: Clockwise";
-		case MONS_TRAFFIC2:
-			return "Traffic: Counterclockwise";
-		case MONS_PATROLLR:
-			return "Patrol Mumble Horiz.";
-		case MONS_PATROLUD:
-			return "Patrol Mumble Vert.";
-		case MONS_DPATROLLR:
-			return "Death Patrol Horiz.";
-		case MONS_DPATROLUD:
-			return "Death Patrol Vert.";
-		case MONS_NOHMANN1:
-			return "Noh-Mann";
-		case MONS_NOHMANN2:
-			return "Noh-Mann:AltForm";
-		case MONS_NOHARML:
-			return "Noh-Mann's Arm:Left";
-		case MONS_NOHARMR:
-			return "Noh-Mann's Arm:Right";
-		case MONS_MATCLAW1:
-			return "Matilda's Claw:Left";
-		case MONS_MATCLAW2:
-			return "Matilda's Claw:Right";
-		case MONS_THINGTENTTIP:
-			return "Tentacle:Tip";
-		case MONS_YERFBOSS:
-			return "Yerfdog:Boss";
+			case EntityType::BunnyPath:
+				return "Buddy Bunny:Determined";
+			case EntityType::BunnyFollow:
+				return "Buddy Bunny:Follow";
+			case EntityType::SharkChest:
+				return "Sneaky Shark:Chest";
+			case EntityType::NohMannComedy:
+				return "Noh-Mann:Comedy";
+			case EntityType::NohMannTragedy:
+				return "Noh-Mann:Tragedy";
+			case EntityType::YerfdogBoss:
+				return "Yerfdog:Boss";
 		}
 	}
 	// Otherwise the monster name is in its type definition.
