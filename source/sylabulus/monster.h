@@ -277,8 +277,7 @@
 #define MONS_GINGERSNAP	234
 #define MONS_PURPLKAPPA	235
 
-// world 2
-#define MONS_ISOZOIDBIG	236
+#define MONS_URBOZOID	236
 #define MONS_FLAMINGO	237
 #define MONS_CROQUETBAL	238
 #define MONS_NASTYTREE	239
@@ -286,9 +285,24 @@
 
 #define MONS_MINIZOMB	241
 #define MONS_MINISKEL	242
-#define MONS_PATHFINDER	243
 
-#define NUM_MONSTERS	244					// Can grow as needed
+// world 2
+
+#define MONS_BODZHA			243
+#define MONS_MOLEY			244
+#define MONS_FOREMAN		245
+#define MONS_HARDHAT2		246
+#define MONS_STOPSIGN		247
+#define MONS_OILDRUM		248
+#define MONS_TRUCK			249
+#define MONS_EDICOIL		250
+#define MONS_TEKBRO			251
+#define MONS_EDISON			252
+#define MONS_EDISONBRAIN	253
+#define MONS_EDISONCORE		254
+#define MONS_LAWYER			255
+
+#define NUM_MONSTERS	243					// Can grow as needed
 #define NUM_PROFILE_MONSTERS 211			// Do not change without redoing the profile format
 
 // fake monster codes

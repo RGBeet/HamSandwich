@@ -54,7 +54,7 @@ static const item_t baseItems[] = {
 
 	// Weapons
 	{"Missiles",0,0,7,0,0,0,
-		0,IF_PICKUP,ITH_POWERUP,ITR_GET,
+		0,IF_PICKUP,ITH_WEAPON,ITR_GET,
 		IE_WEAPON,WPN_MISSILES,"Missile Pack!",SND_WEAPON},
 	{"AK-Laser",0,0,8,0,0,0, // TODO: make sprite
 		0,IF_PICKUP,ITH_WEAPON,ITR_GET,
@@ -62,9 +62,9 @@ static const item_t baseItems[] = {
 	{"Bombs",0,0,9,0,0,0,
 		0,IF_PICKUP,ITH_WEAPON,ITR_GET,
 		IE_WEAPON,WPN_BOMBS,"Cherry Bombs!",SND_WEAPON},
-	{"Toaster",0,0,9,0,0,0,
+	{"Toaster",0,0,10,0,0,0,
 		0,IF_PICKUP,ITH_WEAPON,ITR_GET,
-		IE_WEAPON,WPN_BOMBS,"Cherry Bombs!",SND_WEAPON},
+		IE_WEAPON,WPN_FLAME,"Toaster!",SND_WEAPON},
 	{"BIG Axe",0,0,11,0,0,0,
 		0,IF_PICKUP,ITH_WEAPON,ITR_GET,
 		IE_WEAPON,WPN_BIGAXE,"BIG Axe!",SND_WEAPON},
@@ -90,7 +90,7 @@ static const item_t baseItems[] = {
 		IE_WEAPON,WPN_BOOMERANG,"Boomerang!",SND_WEAPON},
 	{"Megaphone",0,0,18,0,0,0, // TODO: make sprite
 		0,IF_PICKUP,ITH_WEAPON,ITR_GET,
-		IE_WEAPON,WPN_MEGAPHONE,"Boomerang!",SND_WEAPON},
+		IE_WEAPON,WPN_MEGAPHONE,"Megaphone!",SND_WEAPON},
 	{"Rocket Launcher",0,0,19,0,0,0, // TODO: make sprite
 		0,IF_PICKUP,ITH_WEAPON,ITR_GET,
 		IE_WEAPON,WPN_ROCKETEER,"Rocket Launcher!",SND_WEAPON},
@@ -102,7 +102,7 @@ static const item_t baseItems[] = {
 	{"Torch",0,0,21,0,0,0, // TODO: make sprite
 		0,IF_PICKUP,ITH_WEAPON,ITR_GET,
 		IE_WEAPON,WPN_TORCH,"Torch!",SND_WEAPON},
-	{"Turrets",0,0,22,0,0,0, // TODO: make sprite
+	{"Turrets",0,0,22,4,1,5, // TODO: make sprite
 		0,IF_PICKUP,ITH_WEAPON,ITR_GET,
 		IE_WEAPON,WPN_TURRET,"Turrets!",SND_WEAPON},
 	{"Mind Control Ray",0,0,23,0,0,0, // TODO: make sprite

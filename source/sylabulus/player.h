@@ -49,6 +49,7 @@ enum : byte
 	WPN_THROWSTARS,		// throwing stars
 	WPN_BFG,			// bouapha's favorite gun (shoots mini hammers!?)
 	WPN_DESTABILIZER,	// molecular destabilizer (from the great pumpkin's field)
+	WPN_DECOYKIT,		// decoy kit
 
 	MAX_WEAPONS
 };

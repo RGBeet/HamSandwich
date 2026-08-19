@@ -40,10 +40,11 @@ constexpr int SPR_BUBBLE    = 375;
 constexpr int SPR_SCANSHOT  = 384;
 constexpr int SPR_SCANLOCK  = 387;
 
-constexpr int SPR_BOOMERANG = 388;
-constexpr int SPR_TORNADO	= 404;
-constexpr int SPR_ROCKET	= 412;
-constexpr int SPR_GLUESHOT	= 428;
+constexpr int SPR_BOOMERANG		= 388;
+constexpr int SPR_TORNADO		= 404;
+constexpr int SPR_ROCKET		= 412;
+constexpr int SPR_GLUESHOT		= 428;
+constexpr int SPR_RAINBOWSHOT	= 429;
 
 static bullet_t *bullet;
 static sprite_set_t *bulletSpr;
@@ -293,6 +294,10 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 		case BLT_BIGSNOW:
 			BulletRanOut(me,map,world);
 			break;
+		case BLT_RAINBOWSHOT:
+			me->x -= me->dx;
+			me->dx = -me->dx;
+			break;
 	}
 }
 
@@ -450,6 +455,10 @@ void BulletHitWallY(bullet_t *me,Map *map,world_t *world)
 		case BLT_BIGSNOW:
 			BulletRanOut(me,map,world);
 			break;
+		case BLT_RAINBOWSHOT:
+			me->y -= me->dy;
+			me->dy = -me->dy;
+			break;
 	}
 }
 
@@ -576,6 +585,9 @@ void BulletHitFloor(bullet_t *me,Map *map,world_t *world)
 		case BLT_SNOWBALL:
 		case BLT_BIGSNOW:
 			BulletRanOut(me,map,world);
+			break;
+		case BLT_RAINBOWSHOT:
+			me->z = 0;
 			break;
 	}
 }
@@ -780,6 +792,11 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_BOOMERANG:
 			ExplodeParticles(PART_DIRT, me->x, me->y, me->z, 8);
+			me->type = 0;
+			break;
+		case BLT_RAINBOWSHOT:
+			MakeSound(SND_ACIDSPLAT, me->x, me->y, SND_CUTOFF, 850);
+			ExplodeParticles(PART_COLOR, me->x, me->y, me->z, 6);
 			me->type = 0;
 			break;
 	}
@@ -1156,6 +1173,13 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 				BulletRanOut(me,map,world);	// detonate
 			}
 			break;
+		case BLT_RAINBOWSHOT:
+			ReflectBullets(me->x, me->y, 128, me->friendly);
+			if(Guy *victim = FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,8,me->dx/2,me->dy/2,0,map,world,me->friendly))
+			{
+				MakeSound(SND_PAINTSPLAT,me->x,me->y,SND_CUTOFF,950);
+				BulletRanOut(me,map,world);	// detonate
+			}
 	}
 	attackType=BLT_NONE;
 }
@@ -1890,6 +1914,75 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			}
 			me->dx=me->dy=me->dz=0;
 			break;
+		case BLT_RAINBOWSHOT:
+			me->anim++;
+			if(me->anim>11)
+				me->anim=0;
+			if (me->anim%4==2)
+				ColorDrop((byte)Random(8),me->x,me->y,me->z);
+
+			if(me->target==65535)
+			{
+				if(me->friendly)
+					me->target=LockOnEvil2(me->x>>FIXSHIFT,me->y>>FIXSHIFT);
+				else
+					me->target=LockOnGood2(me->x>>FIXSHIFT,me->y>>FIXSHIFT);
+			}
+			map->BrightTorch((me->x/TILE_WIDTH)>>FIXSHIFT,
+							 (me->y/TILE_HEIGHT)>>FIXSHIFT,8,4);
+
+			HitBadguys(me,map,world);
+			if(!GetGuyPos(me->target,&mapx,&mapy))
+				me->target=65535;
+			else
+			{
+				if(me->x>mapx)
+					me->dx-=FIXAMT;
+				else
+					me->dx+=FIXAMT;
+				if(me->y>mapy)
+					me->dy-=FIXAMT;
+				else
+					me->dy+=FIXAMT;
+
+				Clamp(&me->dx,FIXAMT*12);
+				Clamp(&me->dy,FIXAMT*12);
+
+				if(me->dx>0)
+				{
+					if(me->facing>8)
+						me->facing++;
+					else
+						me->facing--;
+				}
+				if(me->dx<0)
+				{
+					if(me->facing>8)
+						me->facing--;
+					else
+						me->facing++;
+				}
+				if(me->dy>0)
+				{
+					if(me->facing>11 || me->facing<4)
+						me->facing++;
+					else
+						me->facing--;
+				}
+				if(me->dy<0)
+				{
+					if(me->facing>11 || me->facing<4)
+						me->facing--;
+					else
+						me->facing++;
+				}
+
+				if(me->facing>200)
+					me->facing+=16;
+				if(me->facing>15)
+					me->facing-=16;
+			}
+			break;
 	}
 }
 
@@ -2014,10 +2107,10 @@ void RenderBullet(bullet_t *me)
 			break;
 		case BLT_LASER:
 			curSpr=bulletSpr->GetSprite(me->facing+SPR_LASER);
-			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,me->bright,curSpr,
-					DISPLAY_DRAWME);
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,0,255,me->bright,curSpr,
 					DISPLAY_DRAWME|DISPLAY_SHADOW);
+			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,me->bright+4,curSpr,
+					DISPLAY_DRAWME|DISPLAY_GLOW);
 			break;
 		case BLT_PAPER:
 			curSpr=bulletSpr->GetSprite(me->anim/2+SPR_PAPER);
@@ -2303,6 +2396,12 @@ void RenderBullet(bullet_t *me)
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,0,255,me->bright,curSpr,
 					DISPLAY_DRAWME|DISPLAY_SHADOW);
 			break;
+		case BLT_RAINBOWSHOT:
+			curSpr = bulletSpr->GetSprite(me->anim + SPR_RAINBOWSHOT);
+			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,me->bright,curSpr,
+					DISPLAY_DRAWME);
+			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,0,255,me->bright,curSpr,
+					DISPLAY_DRAWME|DISPLAY_SHADOW);
 	}
 }
 
@@ -2761,21 +2860,27 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type,byte friendly)
 			me->dx=Cosine(me->facing)*8;
 			me->dy=Sine(me->facing)*8;
 			me->dz=8*FIXAMT;
-			break;
-
+			break;\
 		case BLT_LILBOOM:
 		case BLT_LILBOOM2:
 			// Fix the little booms to show proper sprites when fired manually
 			me->timer=9;
 			break;
-
 		case BLT_BUBBLEPOP:
 			// Likewise with bubble pops
 			me->timer=10;
 			break;
-
 		case BLT_TORCH:
 			me->timer=15;
+			break;
+		case BLT_RAINBOWSHOT:
+			me->anim=0;
+			me->timer=120;
+			me->z=FIXAMT*20;
+			me->target=65535;
+			me->dx=Cosine(me->facing*32)*10;
+			me->dy=Sine(me->facing*32)*10;
+			me->dz=0;
 			break;
 	}
 }

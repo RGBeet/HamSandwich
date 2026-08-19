@@ -111,7 +111,15 @@ void RenderPickMenu(MGLDraw* mgl)
 		y += SCRHEI/2;
 
 		GetIntfaceSprite(119)->Draw(x, y, mgl);
-		GetItemSprite(GetWeaponIcon(picks[i].weapon))->DrawBright(x, y, mgl, i==wpnPick ? pickBright : 0);
+		switch (picks[i].weapon)
+		{
+			default:
+				GetItemSprite(GetWeaponIcon(picks[i].weapon))->DrawBright(x, y, mgl, i == wpnPick ? pickBright : 0);
+				break;
+			case WPN_TURRET:
+				GetItemSprite(GetWeaponIcon(WPN_TURRET))->DrawOffColor(x, y, mgl, 4, 1, (i == wpnPick ? pickBright : 0)+5);
+				break;
+		}
 		CenterPrint(x, y + 20, GetWeaponName(picks[i].weapon), 0, 2);
 
 		switch(picks[i].weapon)

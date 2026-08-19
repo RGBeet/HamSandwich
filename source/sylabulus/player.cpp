@@ -956,7 +956,8 @@ void PlayerFireWeapon(Guy *me)
 				}
 				else
 				{
-					MakeSound(SND_MINELAY,me->x,me->y,SND_CUTOFF,1200);
+					MakeSound(SND_DEPLOY,me->x,me->y,SND_CUTOFF,1200);
+					g->facing = me->facing;
 					ReduceCurrentWeaponAmmo(1);
 					AddShotFiredToProfile();
 				}
@@ -1086,13 +1087,28 @@ void PlayerFireWeapon(Guy *me)
 			}
 			break;
 		case WPN_RAINBOWGUN:
-			if (GetCurrentWeaponAmmo())
+			if(GetCurrentWeaponAmmo())
 			{
-				ScoreEvent(SE_SHOOT, 1);
-				// do the attack
+				ScoreEvent(SE_SHOOT,1);
+				MakeSound(SND_MINDWIPE,me->x,me->y,SND_CUTOFF,1200);
+				FireBullet(me->x,me->y,me->facing,BLT_RAINBOWSHOT,me->friendly);
 				ReduceCurrentWeaponAmmo(1);
 				AddShotFiredToProfile();
 			}
+			me->z+=FIXAMT*Random(4);
+			me->dx+=FIXAMT/2-Random(FIXAMT);
+			me->dy+=FIXAMT/2-Random(FIXAMT);
+			c=GetControls();
+			if(c&CONTROL_B2)	// fire is held
+			{
+				player.wpnReload=2;
+				me->frmTimer=0;
+			}
+			else
+			{
+				player.wpnReload=10;
+			}
+			DoPlayerFacing(c,me);
 			break;
 		case WPN_LUNCHBOX:
 			if (GetCurrentWeaponAmmo())
@@ -1119,6 +1135,8 @@ void PlayerFireWeapon(Guy *me)
 			if (GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT, 1);
+				MakeSound(SND_DEATHRAY, me->x, me->y, SND_CUTOFF, 1200);
+				FireBullet(me->x, me->y, me->facing, BLT_GLUESHOT, me->friendly);
 				// do the attack
 				ReduceCurrentWeaponAmmo(1);
 				AddShotFiredToProfile();
