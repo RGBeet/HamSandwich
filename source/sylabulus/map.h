@@ -160,6 +160,7 @@ class Map
 		byte TightLOS(int x,int y,int radius,int value,byte (*DoIt)(int,int,int,int,int,Map *));
 		byte TightestLOS(int x,int y,int radius,int value,byte (*DoIt)(int,int,int,int,int,Map *));
 		byte CheckLOS(int x,int y,int radius,int x2,int y2);
+		byte GetOpaqueCheck(int x, int y);
 
 		int  ItemCount(word itm);
 		int  ItemCountInRect(word itm,int x,int y,int x2,int y2);

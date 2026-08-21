@@ -202,6 +202,48 @@ enum ItemType : word
 #define MAX_ITEMS			1000
 #define CUSTOM_ID_START		1000
 
+enum ItemAppearance : byte
+{
+	ITA_NONE,			// no shadow
+	ITA_SHADOW,			// shadow
+	ITA_GLOWING,		// glow draw
+	ITA_LOONYKEY,		// loonycolor + shadow
+	ITA_TILEIMG			// tile image (conflicts with glowing/loonykey/shadow)
+};
+
+enum ItemPassability : byte
+{
+	ITP_FREEWALK,		// does not impair movement
+	ITP_SOLID,			// cannot walk through
+	ITP_BULLETPROOF,	// solid + no bullets
+	ITP_BARRIER,		// free walk + no bullets
+	ITP_PICKUP			// can pick up (conflicts with solid)
+};
+
+enum ItemTrigger : byte
+{
+	ITRG_NONE,
+	ITRG_PICKUP,		// if the player picks it up... (requires ITP_PICKUP!)
+	ITRG_PROJECTILE,	// if any bullet hits the item
+	ITRG_PLAYERBUMP,	// if player bumps into the item
+	ITRG_FRIENDBUMP,	// if an entity on player team bumps into the item
+	ITRG_ENEMYBUMP,		// if an entity outside player team bumps into the item
+	ITRG_ENTITYBUMP,	// if any entity bumps into item, regardless of team
+	ITRG_MINECART,		// if hit by a "vehicle"
+	ITRG_MACHETE,		// if hit by a machete blade...
+	ITRG_EXPLOSION,		// if hit by an explosion...
+	ITRG_FIRE,			// if hit by a fire bullet...
+	ITRG_FREEZE,		// if hit by an icy bullet...
+	ITRG_ALWAYS			// always happens whenever tiles animate
+};
+
+enum ItemBehavior : word
+{
+	ITB_NONE,
+	ITB_BUBBLES,		// bubble particle, for bubble spots
+	ITB_FIRE			// fire particle, for sconces
+};
+
 // item flags
 enum ItemFlags : word
 {
@@ -318,14 +360,19 @@ const char* GetPowerupName(int powerup);
 struct item_t
 {
 	char name[32];
-	char xofs,yofs;	// draw it offset by some pixels
+	char xofs,yofs,zofs;	// draw it offset by some pixels
 	word sprNum;	// which sprite
 	byte fromColor,toColor;	// if you want it to use offcolors
 	char bright;	// if you don't want it to use normal brightness
 	byte rarity;	// if can be dropped by monsters, how often?
-	ItemFlags flags;		// what special flags it has
-	ItemThemes theme;		// flags for which themes it goes in
-	ItemTriggers trigger;	// what triggers it
+
+	ItemThemes		theme;			// FLAGS for which themes it goes in
+	ItemAppearance	appearance;		// how does it draw?
+	ItemPassability passability;	// how do you pass thru it (or NOT!)
+	ItemTrigger		triggerType;	// how do you trigger its effect
+	ItemBehavior	behavior;		// misc behaviors
+	byte			customJSP;		// does it use custom jsp
+
 	byte effect;	// what it does when triggered
 	int effectAmt;	// a modifier for the effect
 	char msg[64];	// message when effect occurs
@@ -368,7 +415,6 @@ void SetCustomItemSprites(const char* filename);
 
 byte InteractWithItem(Guy *me,mapTile_t *m,int x,int y);
 byte TriggerItem(Guy *me,mapTile_t *m,int x,int y);
-byte BulletHitItem(byte bulType,mapTile_t *m,int x,int y);
 
 class SwapTable;
 void RepairItemToItem(int n);	// when item N is deleted, repair references to it and others in

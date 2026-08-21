@@ -226,6 +226,22 @@ void AI_MineCart(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	}
 }
 
+byte RaftCheckTile(mapTile_t *tile)
+{
+	if (!tile || tile->wall>0)
+		return 0;
+	if (!tile->item)
+		return 1;
+	switch(GetItem(tile->item)->passability)
+	{
+		case ITP_SOLID:
+		case ITP_BULLETPROOF:
+			return 0;
+		default:
+			return 1;
+	}
+}
+
 void AI_Raft(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
 	int x, y;
@@ -277,12 +293,8 @@ void AI_Raft(Guy* me, Map* map, world_t* world, Guy* goodguy)
 					y--;
 					break;
 				}
-				if (mapTile_t* tile = map->TryGetTile(x, y); tile &&
-					tile->wall == 0 &&
-					!(GetItem(tile->item)->flags & IF_SOLID))
-				{
+				if (mapTile_t* tile = map->TryGetTile(x, y); tile && RaftCheckTile(tile))
 					tries = 10;	// we're okay!
-				}
 				else
 				{
 					me->x -= me->dx;
@@ -312,9 +324,7 @@ void AI_Raft(Guy* me, Map* map, world_t* world, Guy* goodguy)
 						y--;
 						break;
 					}
-					if (mapTile_t* tile = map->TryGetTile(x, y); tile &&
-						tile->wall == 0 &&
-						!(GetItem(tile->item)->flags & IF_SOLID))
+					if (mapTile_t* tile = map->TryGetTile(x, y); tile && RaftCheckTile(tile))
 					{
 						terrain = GetTerrain(world, tile->floor)->type;
 						if (terrain == TRN_SOLID || terrain == TRN_WATER || terrain == TRN_LAVA)
@@ -337,7 +347,7 @@ void AI_Raft(Guy* me, Map* map, world_t* world, Guy* goodguy)
 				if (tries == 4)	// there was no spot to put the player
 				{
 					NewMessage("Your raft broke!", 60, 0);
-					me->type = MONS_NONE;
+					me->type = (short)EntityType::None;
 					player.vehicle = 0;
 					return;
 				}

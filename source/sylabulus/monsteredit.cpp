@@ -318,8 +318,8 @@ void MonsterEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 
 	CenterPrint(317,270,MonsterName(curMons),0,1);
 	mgl->FillBox(170,286,460,286,31);
-	if(profile.progress.scanned[curMons])
-	{
+	//if(profile.progress.scanned[curMons])
+	//{
 		PrintRect(164,290,470,479,13,MonsterNotes(curMons),1);
 
 		if(MonsterFlags(curMons,curMons)&MF_NOHIT)
@@ -331,9 +331,9 @@ void MonsterEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 			sprintf(s,"Life: %d",MonsterHP(curMons));
 			Print(164,464,s,0,1);
 		}
-	}
-	else
-		PrintRect(164,290,470,479,13,"NO DATA ON MONSTER!",1);
+	//}
+	//else
+	//	PrintRect(164,290,470,479,13,"NO DATA ON MONSTER!",1);
 
 	RenderButtons(mouseX,mouseY,mgl);
 

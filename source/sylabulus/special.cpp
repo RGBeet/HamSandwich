@@ -683,7 +683,7 @@ static byte TeleportGuy(Guy *victim,int x,int y,Map *map,byte noFX, bool sphinxE
 	if(victim==NULL)
 		return 0;	// nobody to teleport
 
-	if(victim->aiType==MONS_NOBODY)
+	if(victim->aiType==(short)EntityType::Nobody)
 		return 0;	// NOBODY to teleport
 
 	if(victim->aiType==MONS_BOUAPHA)

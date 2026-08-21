@@ -1755,7 +1755,7 @@ void AI_Moss(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			// left
 			if (x > 0 && map->GetTile(x - 1, y)->wall == 0 &&
 				(!IsTerrainAqueousOrSolid(world, map->GetTile(x - 1, y)->floor)) &&
-				!(GetItem(map->GetTile(x - 1, y)->item)->flags & (IF_SOLID | IF_BULLETPROOF))
+				!TileHasObstacle(map, x, y)
 				&& (!MossCheck(x - 1, y)))
 			{
 				baby = AddBaby(me->x, me->y, 0, MONS_MOSS, me);
@@ -1775,7 +1775,7 @@ void AI_Moss(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			// right
 			if (x < map->width - 1 && map->GetTile(x + 1, y)->wall == 0 &&
 				(!IsTerrainAqueousOrSolid(world, map->GetTile(x + 1, y)->floor)) &&
-				!(GetItem(map->GetTile(x + 1, y)->item)->flags & (IF_SOLID | IF_BULLETPROOF))
+				!TileHasObstacle(map,x,y)
 				&& (!MossCheck(x + 1, y)))
 			{
 				baby = AddBaby(me->x, me->y, 0, MONS_MOSS, me);
@@ -1795,7 +1795,7 @@ void AI_Moss(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			// up
 			if (y > 0 && map->GetTile(x, y - 1)->wall == 0 &&
 				(!IsTerrainAqueousOrSolid(world, map->GetTile(x, y - 1)->floor)) &&
-				!(GetItem(map->GetTile(x, y - 1)->item)->flags & (IF_SOLID | IF_BULLETPROOF))
+				!TileHasObstacle(map, x, y)
 				&& (!MossCheck(x, y - 1)))
 			{
 				baby = AddBaby(me->x, me->y, 0, MONS_MOSS, me);
@@ -1815,7 +1815,7 @@ void AI_Moss(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			// down
 			if (y < map->height - 1 && map->GetTile(x, y + 1)->wall == 0 &&
 				(!IsTerrainAqueousOrSolid(world, map->GetTile(x, y + 1)->floor)) &&
-				!(GetItem(map->GetTile(x, y + 1)->item)->flags & (IF_SOLID | IF_BULLETPROOF))
+				!TileHasObstacle(map, x, y)
 				&& (!MossCheck(x, y + 1)))
 			{
 				baby = AddBaby(me->x, me->y, 0, MONS_MOSS, me);
@@ -1879,7 +1879,7 @@ void AI_MossGrande(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		// left
 		if (x > 0 && map->GetTile(x - 1, y)->wall == 0 &&
 			(!IsTerrainAqueousOrSolid(world, map->GetTile(x - 1, y)->floor)) &&
-			!(GetItem(map->GetTile(x - 1, y)->item)->flags & (IF_SOLID | IF_BULLETPROOF))
+			!TileHasObstacle(map, x, y)
 			&& (!MossCheck(x - 1, y)))
 		{
 			baby = AddBaby(me->x, me->y, 0, MONS_MOSS, me);
@@ -1897,7 +1897,7 @@ void AI_MossGrande(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		// right
 		if (x < map->width - 1 && map->GetTile(x + 1, y)->wall == 0 &&
 			(!IsTerrainAqueousOrSolid(world, map->GetTile(x + 1, y)->floor)) &&
-			!(GetItem(map->GetTile(x + 1, y)->item)->flags & (IF_SOLID | IF_BULLETPROOF))
+			!TileHasObstacle(map, x, y)
 			&& (!MossCheck(x + 1, y)))
 		{
 			baby = AddBaby(me->x, me->y, 0, MONS_MOSS, me);
@@ -1915,7 +1915,7 @@ void AI_MossGrande(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		// up
 		if (y > 0 && map->GetTile(x, y - 1)->wall == 0 &&
 			(!IsTerrainAqueousOrSolid(world, map->GetTile(x, y - 1)->floor)) &&
-			!(GetItem(map->GetTile(x, y - 1)->item)->flags & (IF_SOLID | IF_BULLETPROOF))
+			!TileHasObstacle(map, x, y)
 			&& (!MossCheck(x, y - 1)))
 		{
 			baby = AddBaby(me->x, me->y, 0, MONS_MOSS, me);
@@ -1933,7 +1933,7 @@ void AI_MossGrande(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		// down
 		if (y < map->height - 1 && map->GetTile(x, y + 1)->wall == 0 &&
 			(!IsTerrainAqueousOrSolid(world, map->GetTile(x, y + 1)->floor)) &&
-			!(GetItem(map->GetTile(x, y + 1)->item)->flags & (IF_SOLID | IF_BULLETPROOF))
+			!TileHasObstacle(map, x, y)
 			&& (!MossCheck(x, y + 1)))
 		{
 			baby = AddBaby(me->x, me->y, 0, MONS_MOSS, me);

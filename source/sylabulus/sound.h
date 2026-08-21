@@ -421,6 +421,7 @@
 
 #define SND_LANTERNSPIT			532
 #define SND_LANTERNDIE			533
+#define SND_LANTERNOUCH			586	// bro...
 
 #define SND_HARDHATTAUNT		534
 #define SND_HARDHATSHOOT		535

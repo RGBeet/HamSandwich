@@ -168,14 +168,17 @@ void ItemTool::PlopOne(int x,int y)
 	if (mapTile_t *target = m->TryGetTile(x, y); target && target->select && item[active]<256)//		m->map[x+y*m->width].wall==0)
 	{
 		target->item=(byte)item[active];
-		if(GetItem(item[active])->flags&IF_SOLID)
+		switch (GetItem(item[active])->passability)
 		{
-			for (mapBadguy_t &guy : m->badguy)
-				if(guy.type && guy.x==x && guy.y==y)
-				{
-					// delete a guy if he's here - this item is solid
-					guy.type=0;
-				}
+			case ITP_SOLID:
+			case ITP_BULLETPROOF:
+				for (mapBadguy_t& guy : m->badguy)
+					if (guy.type && guy.x == x && guy.y == y)
+					{
+						// delete a guy if he's here - this item is solid
+						guy.type = 0;
+					}
+				break;
 		}
 	}
 

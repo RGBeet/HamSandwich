@@ -31,7 +31,8 @@ bool IsAnimationFrames(Guy* me, byte seq,						// ditto, but for a range of fram
 
 bool TargetWithinRange(Guy* me, Guy* target, int range);	// returns TRUE if the target is within range of the guy
 
-
+byte TileHasObstacle(Map* map, int x, int y);
+byte TerrainIsDrivable(Guy* me, world_t* world, Map* map, int mapx, int mapy);
 
 // ai functions for each monster type
 void AI_Bonehead(Guy *me,Map *map,world_t *world,Guy *goodguy);

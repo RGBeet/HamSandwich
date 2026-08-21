@@ -947,12 +947,12 @@ void PlayerFireWeapon(Guy *me)
 
 				// set down good turret
 				g=AddGuy(me->x+Cosine(me->facing*32)*32,me->y+Sine(me->facing*32)*32,
-					FIXAMT*10,MONS_GOODTURRET,me->friendly);
+					FIXAMT*10,(short)EntityType::GoodTurret, me->friendly);
 				if(g==NULL || !g->CanWalk(g->x,g->y,curMap,&curWorld)) // can't set down turret
 				{
 					MakeSound(SND_TURRETBZZT,me->x,me->y,SND_CUTOFF,1200);
 					if(g)
-						g->type=MONS_NONE;
+						g->type=(short)EntityType::None;
 				}
 				else
 				{

@@ -220,16 +220,22 @@ static bool CountsDouble(int type)
 {
 	// Enemies that drop 1 baby on death count 2x, once for them and once for baby.
 	// Enemies with infinite babies are impossible to account for, so don't bother.
-	return type == MONS_ZOMBONI || type == MONS_COFFIN || type == MONS_DARKCOFFIN || type == MONS_XENOEGG;
+	return 0;
 }
 
 static int BrainsForMonster(int type, int item)
 {
 	int result = 0, brainsPerBrain = BrainsGiven(IT_BRAIN), brainsForItem = BrainsGiven(item);
-	if (type == MONS_ZOMBIE || type == MONS_ZOMBONI || type == MONS_MUTANT)
-		result += brainsPerBrain;
-	if (type == MONS_SUPERZOMBIE)
-		result += 2 * brainsPerBrain;
+	
+	// get entity type
+	switch((EntityType)type)
+	{
+		case EntityType::Zombie:
+		case EntityType::Bombie:
+			result += 1;
+			break;
+	}
+	
 	if (brainsForItem > 0 && type)
 		result += (CountsDouble(type) ? 2 : 1) * brainsForItem;
 	return result;
@@ -461,13 +467,14 @@ byte ZoomTileColor(int x,int y)
 {
 	mapTile_t *m = world->map[mapNum]->GetTile(x, y);
 
-	if(GetItem(m->item)->flags&IF_SOLID)
+	switch (GetItem(m->item)->passability)
 	{
-		if(GetItem(m->item)->flags&IF_BULLETPROOF)
-			return 31;	// white=completely solid object
-		else
-			return 20;	// grey=solid object that bullets can fly over
+		case ITP_SOLID:
+			return 31;	// white = completely solid object
+		case ITP_BULLETPROOF:
+			return 20;	// grey = solid object that bullets can fly over
 	}
+
 	if(m->wall)
 		return 31;	// white=wall
 	else

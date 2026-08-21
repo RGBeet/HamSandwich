@@ -377,10 +377,14 @@ static byte IsBunnyAble(const mapTile_t* m, world_t* world)
 	if (!(GetTerrain(world, m->floor)->pathType & TRN_BUNNY))
 		return 0;
 
-	if (GetItem(m->item)->flags & IF_SOLID)
-		return 0;
-
-	return 1;
+	switch(GetItem(m->item)->passability)
+	{
+		case ITP_SOLID:
+		case ITP_BULLETPROOF:
+			return 0;
+		default:
+			return 1;
+	}
 }
 
 void AI_BuddyBunny(Guy* me, Map* map, world_t* world, Guy* goodguy)
@@ -1575,7 +1579,7 @@ void AI_MossRapido(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			if (mapTile_t* tile = map->TryGetTile(x - 1, y); tile &&
 				tile->wall == 0 &&
 				(!IsTerrainAqueousOrSolid(world,tile->floor)) &&
-				!(GetItem(tile->item)->flags & (IF_SOLID | IF_BULLETPROOF))
+				!TileHasObstacle(map, x, y)
 				&& (!MossCheck(x - 1, y)))
 			{
 				baby = AddBaby(me->x, me->y, 0, MONS_MOSS2, me);
@@ -1596,7 +1600,7 @@ void AI_MossRapido(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			if (mapTile_t* tile = map->TryGetTile(x + 1, y); tile &&
 				tile->wall == 0 &&
 				(!IsTerrainAqueousOrSolid(world, tile->floor)) &&
-				!(GetItem(tile->item)->flags & (IF_SOLID | IF_BULLETPROOF))
+				!TileHasObstacle(map, x, y)
 				&& (!MossCheck(x + 1, y)))
 			{
 				baby = AddBaby(me->x, me->y, 0, MONS_MOSS2, me);
@@ -1617,7 +1621,7 @@ void AI_MossRapido(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			if (mapTile_t* tile = map->TryGetTile(x, y - 1); tile &&
 				tile->wall == 0 &&
 				(!IsTerrainAqueousOrSolid(world, tile->floor)) &&
-				!(GetItem(tile->item)->flags & (IF_SOLID | IF_BULLETPROOF))
+				!TileHasObstacle(map, x, y)
 				&& (!MossCheck(x, y - 1)))
 			{
 				baby = AddBaby(me->x, me->y, 0, MONS_MOSS2, me);
@@ -1638,7 +1642,7 @@ void AI_MossRapido(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			if (mapTile_t* tile = map->TryGetTile(x, y + 1); tile &&
 				tile->wall == 0 &&
 				(!IsTerrainAqueousOrSolid(world, tile->floor)) &&
-				!(GetItem(tile->item)->flags & (IF_SOLID | IF_BULLETPROOF))
+				!TileHasObstacle(map, x, y)
 				&& (!MossCheck(x, y + 1)))
 			{
 				baby = AddBaby(me->x, me->y, 0, MONS_MOSS2, me);

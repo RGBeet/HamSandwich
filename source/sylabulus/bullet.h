@@ -90,6 +90,7 @@ enum BulletType : byte
 	BLT_ORBITER3		= 72,		// new type of orbiter?!
 	BLT_TORNADO			= 73,
 	BLT_ROCKETBOOM		= 74,		// slightly larger boom for the rocket
+	BLT_CLAWHAMMER		= 75,		// claw hammer for the hardhat
 
 	NUM_BULLETS // how many bullets there are in total. Put new types BEFORE this one!
 };
@@ -148,7 +149,7 @@ void HappyLaunch(int x, int y, byte facing, byte count, byte flags);
 void ShroomSpew(int x, int y, byte facing, byte count, byte flags);
 void ReflectBullets(int x, int y, byte size, byte friendly);
 void RemoveOrbiters(int n, byte f, byte t);
-void FireScanShots(Guy *victim);
+void FireScanShots(Guy* victim);
 void MakeRadar(int rx, int ry, byte w);
 
 void ReflectShot(void);
@@ -161,6 +162,7 @@ int CountBulletsInRect(byte type, int x, int y, int x2, int y2); // for specials
 void ChangeBullet(byte fx, int x, int y, int type, int newtype); // for specials to change bullets
 byte BulletFacingType(byte type);                                // To check if a type of bullet uses none, 0-7, or 0-255 facings
 const char* BulletName(int type);
+byte BulletHitItem(bullet_t* me, mapTile_t* m, int x, int y);
 
 void GetBulletDeltas(int *bdx, int *bdy);
 

@@ -197,7 +197,8 @@ void MonsterTool::PlopOne(int x,int y)
 
 	if (mapTile_t *target = m->TryGetTile(x, y); target && target->select && monster[active] != MONS_NONE)
 	{
-		if((!target->item || !(GetItem(target->item)->flags&IF_SOLID))
+		byte passability = GetItem(target->item)->passability;
+		if((!target->item || !(passability == ITP_SOLID|| passability == ITP_BULLETPROOF))
 			&& !target->wall)
 		{
 			for (mapBadguy_t &guy : m->badguy)

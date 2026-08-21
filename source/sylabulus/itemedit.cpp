@@ -189,52 +189,42 @@ static void FlagClick(int id)
 	if(b==CHECK_ON)	// if it's on
 	{
 		// shut it
-		if(id<ID_THEMES)
-			GetItem(curItem)->flags&=(~flags[id-ID_FLAGS]);
-		else if(id<ID_TRIGGERS)
+		if(id<ID_TRIGGERS)
 			GetItem(curItem)->theme&=(~themes[id-ID_THEMES]);
-		else
-			GetItem(curItem)->trigger&=(~trigs[id-ID_TRIGGERS]);
-		SetButtonState(id,CHECK_OFF);
 
 		if(GetItem(curItem)->theme==0)	// can't be on zero themes, it'd be unpickable
 			GetItem(curItem)->theme=ITH_CUSTOM;	// so throw it into custom
 	}
 	else
 	{
-		// turn them on
-		if(id<ID_THEMES)
-			GetItem(curItem)->flags|=flags[id-ID_FLAGS];
-		else if(id<ID_TRIGGERS)
+		if(id<ID_TRIGGERS)
 			GetItem(curItem)->theme|=themes[id-ID_THEMES];
-		else
-			GetItem(curItem)->trigger|=trigs[id-ID_TRIGGERS];
 		SetButtonState(id,CHECK_ON);
 	}
 
 	if(id==ID_FLAGS+6)	// TILE flag
 	{
 		// prevent it from using an illegal sprite
-		if(!(GetItem(curItem)->flags&IF_TILE))
+		if(!(GetItem(curItem)->appearance == ITA_TILEIMG))
 		{
 			if(GetItem(curItem)->sprNum>=NumItemSprites())
 				GetItem(curItem)->sprNum=0;
 		}
 		else
 		{
-			GetItem(curItem)->flags&=(~IF_USERJSP); // can't combine tile and JSP
+			GetItem(curItem)->customJSP = 0; // can't combine tile and JSP
 		}
 	}
 	else if(id==ID_FLAGS+7)	// USERJSP flag
 	{
 		// prevent it from using an illegal sprite
-		if(GetItem(curItem)->flags&IF_USERJSP)
+		if(GetItem(curItem)->customJSP)
 		{
 			int numCust = NumCustomSprites();
 			if (numCust == 0)
 			{
 				MakeNormalSound(SND_TURRETBZZT);
-				GetItem(curItem)->flags&=(~IF_USERJSP);
+				GetItem(curItem)->customJSP = 0;
 				SetButtonState(id,CHECK_OFF);
 
 				helpRemember = mode;
@@ -243,7 +233,7 @@ static void FlagClick(int id)
 			}
 			else
 			{
-				GetItem(curItem)->flags&=(~IF_TILE); // can't combine tile and JSP
+				GetItem(curItem)->appearance = ITA_NONE; // can't combine tile and JSP
 				if(GetItem(curItem)->sprNum>=numCust)
 					GetItem(curItem)->sprNum=0;
 			}
@@ -601,7 +591,7 @@ static void TileClick(int id)
 
 static void SpriteClick(int id)
 {
-	int max = (GetItem(curItem)->flags & IF_USERJSP) ? NumCustomSprites() : NumItemSprites();
+	int max = GetItem(curItem)->customJSP ? NumCustomSprites() : NumItemSprites();
 	GetItem(curItem)->sprNum++;
 	if(GetItem(curItem)->sprNum>=max)
 		GetItem(curItem)->sprNum=0;
@@ -609,7 +599,7 @@ static void SpriteClick(int id)
 
 static void SpriteRightClick(int id)
 {
-	int max = (GetItem(curItem)->flags & IF_USERJSP) ? NumCustomSprites() : NumItemSprites();
+	int max = GetItem(curItem)->customJSP ? NumCustomSprites() : NumItemSprites();
 	GetItem(curItem)->sprNum--;
 	if(GetItem(curItem)->sprNum>=max)
 		GetItem(curItem)->sprNum=max-1;
@@ -873,7 +863,7 @@ static void ItemSetFlags(void)
 	sprintf(t,"%d in %d (%0.2f%%)",GetItem(curItem)->rarity,GetTotalRarity(),(float)GetItem(curItem)->rarity*100.0f/(float)GetTotalRarity());
 	MakeButton(BTN_STATIC,ID_NAME2,0,216,136+20*16,50,15,t,NULL);
 
-	if(GetItem(curItem)->flags&IF_TILE)
+	if(GetItem(curItem)->appearance == ITA_TILEIMG)
 		MakeButton(BTN_NORMAL,ID_PICKSPR,0,480,140,120,15,"Choose Tile",TileClick);
 	else
 		MakeButton(BTN_NORMAL,ID_PICKSPR,0,480,140,120,15,"Change Sprite",SpriteClick);
@@ -882,19 +872,6 @@ static void ItemSetFlags(void)
 	MakeButton(BTN_NORMAL,ID_FROMCOL,0,536,160,16,16,"",ColorClick);
 	MakeButton(BTN_STATIC,ID_NAME2,0,554,165,10,10,"With",NULL);
 	MakeButton(BTN_NORMAL,ID_TOCOL,0,590,160,16,16,"",ColorClick);
-
-	for(i=0;i<9;i++)
-		if(GetItem(curItem)->flags&flags[i])
-			SetButtonState(ID_FLAGS+i,CHECK_ON);
-	/*
-	for(i=0;i<17;i++)
-		if(GetItem(curItem)->theme&themes[i])
-			SetButtonState(ID_THEMES+i,CHECK_ON);
-			*/
-
-	for(i=0;i<8;i++)
-		if(GetItem(curItem)->trigger&trigs[i])
-			SetButtonState(ID_TRIGGERS+i,CHECK_ON);
 
 	MakeItemList();
 }
@@ -956,7 +933,7 @@ void ItemEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 			{
 				CheckButtonCallback(mouseX,mouseY,ID_ITEMEFF,EffectRightClick);
 				CheckButtonCallback(mouseX,mouseY,ID_ITEMEFFMOD,EffModRightClick);
-				if(!(GetItem(curItem)->flags&IF_TILE))
+				if(!(GetItem(curItem)->appearance == ITA_TILEIMG))
 					CheckButtonCallback(mouseX,mouseY,ID_PICKSPR,SpriteRightClick);
 
 				for(i = 0; i < NUM_THEMES; ++i)

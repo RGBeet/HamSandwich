@@ -363,6 +363,12 @@ byte Map::LOS(int x,int y,int radius,int value,byte (*DoIt)(int,int,int,int,int,
 	return 0;
 }
 
+byte Map::GetOpaqueCheck(int x, int y)
+{
+	byte passability = GetItem(map[x + y * width].item)->passability;
+	return (map[x + y * width].wall || passability == ITP_SOLID || passability == ITP_BULLETPROOF || passability == ITP_BARRIER);
+}
+
 byte Map::TightLOS(int x,int y,int radius,int value,byte (*DoIt)(int,int,int,int,int,Map *))
 {
 	int p1x,p1y,p2x,p2y;
@@ -393,11 +399,7 @@ byte Map::TightLOS(int x,int y,int radius,int value,byte (*DoIt)(int,int,int,int
 				}
 				else
 				{
-					if(map[curx+cury*width].wall ||
-						(GetItem(map[curx+cury*width].item)->flags&IF_BULLETPROOF))	// there's a wall here, so opaque
-						map[curx+cury*width].opaque=1;
-					else
-						map[curx+cury*width].opaque=0;
+					map[curx + cury * width].opaque = GetOpaqueCheck(x, y);
 					// do what you have to, it's in sight
 					if(!DoIt(curx,cury,x,y,value,this))
 						return 1;	// DoIt returns zero if it wants you to quit
@@ -417,11 +419,7 @@ byte Map::TightLOS(int x,int y,int radius,int value,byte (*DoIt)(int,int,int,int
 				}
 				else
 				{
-					if(map[curx+cury*width].wall ||
-						(GetItem(map[curx+cury*width].item)->flags&IF_BULLETPROOF))	// there's a wall here, so opaque
-						map[curx+cury*width].opaque=1;
-					else
-						map[curx+cury*width].opaque=0;
+					map[curx + cury * width].opaque = GetOpaqueCheck(x, y);
 					// do what you have to, it's in sight
 					if(!DoIt(curx,cury,x,y,value,this))
 						return 1;
@@ -461,11 +459,7 @@ byte Map::TightestLOS(int x,int y,int radius,int value,byte (*DoIt)(int,int,int,
 				}
 				else
 				{
-					if(map[curx+cury*width].wall ||
-						(GetItem(map[curx+cury*width].item)->flags&(IF_SOLID|IF_BULLETPROOF)))	// there's a wall here, so opaque
-						map[curx+cury*width].opaque=1;
-					else
-						map[curx+cury*width].opaque=0;
+					map[curx + cury * width].opaque = GetOpaqueCheck(x, y);
 					// do what you have to, it's in sight
 					if(!DoIt(curx,cury,x,y,value,this))
 						return 1;	// DoIt returns zero if it wants you to quit
@@ -485,11 +479,7 @@ byte Map::TightestLOS(int x,int y,int radius,int value,byte (*DoIt)(int,int,int,
 				}
 				else
 				{
-					if(map[curx+cury*width].wall ||
-						(GetItem(map[curx+cury*width].item)->flags&(IF_SOLID|IF_BULLETPROOF)))	// there's a wall here, so opaque
-						map[curx+cury*width].opaque=1;
-					else
-						map[curx+cury*width].opaque=0;
+					map[curx + cury * width].opaque = GetOpaqueCheck(x, y);
 					// do what you have to, it's in sight
 					if(!DoIt(curx,cury,x,y,value,this))
 						return 1;
@@ -511,7 +501,7 @@ byte PlaceItemCallback(int x,int y,int cx,int cy,int value,Map *map)
 		return 1;
 
 	map->GetTile(x,y)->item=(word)value;
-	if(value!=IT_BRAIN && (GetItem(value)->flags&IF_PICKUP))
+	if(value!=IT_BRAIN && (GetItem(value)->passability == ITP_PICKUP))
 		MakeSound(SND_ITEMDROP,(x*TILE_WIDTH)<<FIXSHIFT,(y*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,500);
 	return 0;	// all done, you placed the item
 }
@@ -520,8 +510,12 @@ byte FindGuyCallback(int x,int y,int cx,int cy,int value,Map *map)
 {
 	Guy *g;
 
-	if(GetItem(map->GetTile(x,y)->item)->flags&IF_BULLETPROOF)
-		return 1;	// can't see through it
+	switch (GetItem(map->GetTile(x, y)->item)->passability)
+	{
+		case ITP_BULLETPROOF:
+		case ITP_BARRIER:
+			return 1; // can't see through it
+	}
 
 	if(map->GetTile(x,y)->wall)
 		return 1;
@@ -1647,7 +1641,7 @@ Guy* GetGuyOnTile(int tx, int ty)
 		if (!g)
 			continue;
 
-		if (g->type == MONS_NOBODY)
+		if (g->type == (short)EntityType::Nobody)
 			continue;
 
 		if (g->hp <= 0)
@@ -1668,10 +1662,11 @@ bool CanWalkTile(int x, int y, Map* map, world_t* world)
 	if (!tile)
 		return false;
 
-	byte type = GetTerrain(world, tile->floor)->type;
+	byte type	= GetTerrain(world, tile->floor)->type;
+	byte pass	= GetItem(tile->item)->passability;
 
 	return tile->wall == 0
-		&& !(GetItem(tile->item)->flags & IF_SOLID)
+		&& !(pass == ITP_SOLID || pass == ITP_BULLETPROOF || pass == ITP_BARRIER)
 		&& !(type == TRN_SOLID || type == TRN_WATER || type == TRN_LAVA);
 }
 

@@ -22,20 +22,6 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,10,11,12,13,14,15,16,255},	// attack
 				NULL_ANIM,
 			},0},
-		{"Dummy",255,255,0,AI_Mumble,
-		 15,28,30,100,"graphics/mumble.jsp",0,MF_NOMOVE,
-		 MT_EVIL | MT_TRAP,
-			{
-				{0,255},	// idle
-				{1,2,3,4,5,0,6,7,8,9,10,0,255},	// move
-				{11,12,13,14,15,16,17,18,255},	// attack=head crush
-				{19,20,21,22,23,24,25,26,27,255},	// die
-				{11,12,13,14,15,16,17,18,255},	// attack=head crush
-				{11,12,13,14,15,16,17,18,255},	// attack=head crush
-				{11,12,13,14,15,16,17,18,255},	// attack=head crush
-				NULL_ANIM,
-				NULL_ANIM,
-			},0},
 		{"Bonehead",255,255,0,AI_Bonehead,
 		 8,38,10,50,"graphics/skeleton.jsp",0,{},
 		 MT_SPOOKY | MT_EVIL,
@@ -92,15 +78,15 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Hard Hat",255,255,0,AI_Hardhat, // not yet implemented
-		 8,38,10,50,"graphics/hardhat.jsp",0,{},
+		{"Hardhat",255,255,0,AI_Hardhat, // not yet implemented
+		 11,30,50,50,"graphics/hardhat.jsp",0,{},
 		 MT_EVIL | MT_HUMAN,
 			{
 				{0,255},	// idle
-				{0,255},	// move
-				{0,255},	// attack 1
-				{0,255},	// defeated
-				NULL_ANIM,
+				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
+				{19,20,21,22,23,24,25,26,27,28,29,255},	// attack 1
+				{7,8,9,10,11,12,13,255},	// defeated
+				{14,15,16,17,18,18,18,17,16,15,14,255},	// taunt
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
@@ -159,18 +145,18 @@ MonsterType monsType[NUM_MONSTERS]=
 				{4,5,6,7,8,9,10,11,12,255},	// spit
 				{4,5,6,7,8,9,10,11,12,255},	// spit
 				{4,5,6,7,8,9,10,11,12,255},	// spit
-				{0,255},
-				{0,255},
+				NULL_ANIM,
+				NULL_ANIM,
 			},0},
 		{"Tsuchizoid",255,255,0,AI_Tsuchizoid, // not yet implemented
-		 8,38,10,50,"graphics/tsuchizoid.jsp",0,{},
+		 13,24,40,200,"graphics/tsuchizoid.jsp",0,{},
 		 MT_EVIL | MT_ANIMAL | MT_ZOID,
 			{
 				{0,255},	// idle
-				{0,255},	// move
-				{0,255},	// attack 1
-				{0,255},	// defeated
-				NULL_ANIM,
+				{0,1,2,1,3,4,5,4,255},	// move
+				{6,7,8,9,10,10,10,9,8,7,6,255},	// attack 1
+				{16,17,18,19,20,21,22,23,255},	// defeated
+				{6,7,8,9,10,11,12,13,14,15,255},	// attack 1
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
@@ -555,7 +541,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Manic Mumble",0,7,4,AI_Mumble,
-		 15,28,20,100,"!4",0,MF_NOMOVE,
+		 15,28,20,100,"!3",0,MF_NOMOVE,
 		 MT_EVIL | MT_SPOOKY | MT_DESERT,
 			{
 				{0,255},	// idle
@@ -948,7 +934,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Parked Car",4,3,0,AI_ParkedCar,
-		 15,16,15,1000,"!152",0,MF_NOMOVE,
+		 15,16,15,1000,"!63",0,MF_NOMOVE,
 		 MT_VEHICLE | MT_TRAP | MT_URBAN,
 			{
 				{0,255},	// idle
@@ -962,7 +948,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Traffic",4,6,0,AI_Traffic,
-		 11,16,200,1000,"!152",0,MF_NOMOVE | MF_WALLWALK,
+		 11,16,200,1000,"!63",0,MF_NOMOVE | MF_WALLWALK,
 		 MT_VEHICLE | MT_TRAP | MT_EVIL | MT_URBAN,
 			{
 				{0,255},	// idle

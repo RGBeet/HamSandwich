@@ -189,8 +189,9 @@ void LoadMySprite(dword type)
 		else
 			monsType[type].spr=new sprite_set_t(monsType[type].sprName);
 
-		if(monsType[type].spr==NULL || monsType[type].spr->GetSprite(0)==NULL)
-			FatalError("Out of memory or sprites missing!");
+		if(monsType[type].spr==NULL)
+			FatalError("Out of memory?");
+		//if (monsType[type].spr->GetSprite(0)==NULL)
 	}
 }
 

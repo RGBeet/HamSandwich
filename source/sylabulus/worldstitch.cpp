@@ -88,7 +88,7 @@ void UpdateItems(world_t *world)
 		}
 		if(GetItem(i)->sound>=CUSTOM_SND_START)
 			GetItem(i)->sound+=stitchSoundOffset;
-		if(GetItem(i)->flags&IF_TILE)
+		if(GetItem(i)->appearance == ITA_TILEIMG)
 			GetItem(i)->sprNum+=stitchTileOffset;
 	}
 

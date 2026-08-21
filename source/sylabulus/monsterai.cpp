@@ -128,3 +128,39 @@ bool TargetWithinRange(Guy* me, Guy* target, int range)
 {
 	return (abs(me->x - goodguy->x) + abs(me->y - goodguy->y)) <= range * FIXAMT;
 }
+
+// used for moss, to check if tile has an obstacle that would prevent spawning
+byte TileHasObstacle(Map* map, int x, int y)
+{
+	switch (GetItem(map->GetTile(x + 1, y)->item)->passability)
+	{
+	case ITP_SOLID:
+	case ITP_BULLETPROOF:
+		return 1;
+	default:
+		return 0;
+	}
+}
+
+// can the vehicle drive on the terrain?
+byte TerrainIsDrivable(Guy* me, world_t* world, Map* map, int mapx, int mapy)
+{
+	terrain_t* terrain = GetTerrain(world, map->map[mapx + mapy * map->width].floor);
+
+	if (TileHasObstacle(map, mapx, mapy)); // obstacle = no path!
+	{
+		return 0; // only allow path if ghost??
+	}
+
+	switch (terrain->pathType)
+	{
+		case TRN_BUNNY:
+			return me->aiType == (short)EntityType::BunnyPath;
+		case TRN_MINECART:
+			return me->aiType == (short)EntityType::Minecart;
+		case TRN_DRIVE:
+			return me->aiType == (short)EntityType::YouGo;
+		default:
+			return 0;
+	}
+}

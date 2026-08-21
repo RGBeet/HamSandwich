@@ -238,7 +238,8 @@ byte Walkable(Guy *me,int x,int y,Map *map,world_t *world)
 
 	if(MonsterFlags(me->type,me->aiType)&MF_FLYING)
 	{
-		if((m->wall || (GetItem(m->item)->flags&IF_BULLETPROOF)) && (!(MonsterFlags(me->type,me->aiType)&MF_WALLWALK)))
+		byte passability = GetItem(m->item)->passability;
+		if((m->wall || passability == ITP_BULLETPROOF || passability == ITP_BARRIER) && (!(MonsterFlags(me->type,me->aiType)&MF_WALLWALK)))
 			result=0;
 	}
 	else if(MonsterFlags(me->type,me->aiType)&MF_AQUATIC)
@@ -251,7 +252,7 @@ byte Walkable(Guy *me,int x,int y,Map *map,world_t *world)
 
 	if(!result)	// bumped a wall, see if that triggers a special
 	{
-		if((x!=me->lastBumpX || y!=me->lastBumpY) && me->type!=MONS_NOBODY)
+		if((x!=me->lastBumpX || y!=me->lastBumpY) && me->type!=(short)EntityType::Nobody)
 			EventOccur(EVT_STEP,me->ID,x,y,me);
 		me->lastBumpX=x;
 		me->lastBumpY=y;
@@ -523,29 +524,26 @@ byte EntityIsPlayer(int type)
 // entity does not exist.
 byte EntityIsNoneOrNobody(int type)
 {
-	return type == MONS_NONE || type == MONS_NOBODY;
+	return type == (short)EntityType::None || type == (short)EntityType::Nobody;
 }
 
 // entity is type typically put on team 1 (the goodguy team)
 byte EntityIsGoodguy(int type)
 {
-	switch (type)
+	switch ((EntityType)type)
 	{
-	case MONS_BOUAPHA: // player
-	case MONS_FRIENDLY:
-	case MONS_GOODTURRET:
-	case MONS_WIZARD:
-	case MONS_GOODROBOT:
-	case MONS_GOODROBOT2:
-	case MONS_FRIENDLY2:
-	case MONS_FOLLOWBUNNY:
-	case MONS_MINECART:
-	case MONS_RAFT:
-	case MONS_YUGO:
-	case MONS_PUNKBUNNY:
-		return 1;
-	default:
-		return 0;
+		case EntityType::Player:
+		case EntityType::Bunny:
+		case EntityType::BunnyPath:
+		case EntityType::BunnyFollow:
+		case EntityType::BunnyJimbo:
+		case EntityType::PunkBunny:
+		case EntityType::GoodTurret:
+		case EntityType::Minecart:
+		case EntityType::YouGo:
+			return 1;
+		default:
+			return 0;
 	}
 }
 
@@ -580,10 +578,10 @@ void Guy::Update(Map *map,world_t *world)
 	byte b;
 	static byte burnFlip=0;
 
-	if(type==MONS_NONE)
+	if((EntityType)type == EntityType::None)
 		return;
 
-	if(type!=MONS_NOBODY)
+	if(type!=(short)EntityType::Nobody)
 	{
 		if(x<0)
 			x=0;
@@ -594,7 +592,7 @@ void Guy::Update(Map *map,world_t *world)
 		if(y>=(map->height*TILE_HEIGHT*FIXAMT))
 			y=map->height*TILE_HEIGHT*FIXAMT-1;
 	}
-	if(hp==0 && seq!=ANIM_DIE && (aiType!=MONS_BOUAPHA || seq!=ANIM_A3))
+	if(hp==0 && seq!=ANIM_DIE && ((EntityType)aiType!=EntityType::Player || seq!=ANIM_A3))
 	{
 		// MEGA HACK!?  Why on earth?!?!?!!?!?!!?  Something to do with mine cart kills
 		// resurrecting the little bastard bats
@@ -602,9 +600,9 @@ void Guy::Update(Map *map,world_t *world)
 		return;
 	}
 
-	if(parent && parent->type==0)
+	if(parent && (EntityType)parent->type==EntityType::None)
 	{
-		if(aiType==MONS_BOUAPHA)
+		if((EntityType)aiType!=EntityType::Player)
 			player.vehicle=0;
 		parent=NULL;	// disparentize!
 	}
@@ -683,17 +681,19 @@ void Guy::Update(Map *map,world_t *world)
 	if(!CanWalk(x,y,map,world))
 	{
 		x-=dx;
-		if(aiType==MONS_MINECART)
+		if((EntityType)aiType==EntityType::Minecart)
 			x=(mapx*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT;
 
-		if(aiType==MONS_ROLLER || aiType==MONS_ROLLER2 || aiType==MONS_CENTIHEAD || aiType==MONS_DRL ||
-			aiType==MONS_BOUAPHA || aiType==MONS_VAMPIRE || aiType==MONS_PKSTEIN || aiType==MONS_TRICEROID ||
-			aiType==MONS_BUNNY || aiType==MONS_LOONYSHIP || aiType==MONS_FRIENDLY || aiType==MONS_SNOWBALL ||
-			aiType==MONS_SNOWBALL2 || aiType==MONS_ROLLER3 || aiType==MONS_ROLLER4 || aiType==MONS_DARKVAMP ||
-			aiType==MONS_FRIENDLY2 || aiType==MONS_CRAZYPANTS || aiType==MONS_AUTOZOID || aiType==MONS_YUGO ||
-			aiType==MONS_PATTY || aiType==MONS_PATROLLR || aiType==MONS_PATROLUD || aiType==MONS_DPATROLLR || aiType==MONS_DPATROLUD ||
-			aiType==MONS_MINIWACKO || aiType==MONS_JACKFROST)
-			mind1=1;	// tell it that it hit a wall
+		switch ((EntityType)aiType)
+		{
+			case EntityType::Player:
+			case EntityType::Bunny:
+			case EntityType::BunnyPath:
+			case EntityType::Autozoid:
+			case EntityType::YouGo:
+				mind1 = 1; // tell it that it hit a wall
+		}
+
 		b=1;
 	}
 
@@ -705,14 +705,15 @@ void Guy::Update(Map *map,world_t *world)
 		if(aiType==MONS_MINECART)
 			y=(mapy*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT;
 
-		if(aiType==MONS_ROLLER || aiType==MONS_ROLLER2 || aiType==MONS_CENTIHEAD || aiType==MONS_DRL ||
-			aiType==MONS_BOUAPHA || aiType==MONS_VAMPIRE || aiType==MONS_PKSTEIN || aiType==MONS_TRICEROID ||
-			aiType==MONS_BUNNY || aiType==MONS_LOONYSHIP || aiType==MONS_FRIENDLY || aiType==MONS_SNOWBALL ||
-			aiType==MONS_SNOWBALL2 || aiType==MONS_ROLLER3 || aiType==MONS_ROLLER4 || aiType==MONS_DARKVAMP ||
-			aiType==MONS_FRIENDLY2 || aiType==MONS_CRAZYPANTS || aiType==MONS_AUTOZOID || aiType==MONS_YUGO ||
-			aiType==MONS_PATTY || aiType==MONS_PATROLLR || aiType==MONS_PATROLUD || aiType==MONS_DPATROLLR || aiType==MONS_DPATROLUD ||
-			aiType==MONS_MINIWACKO || aiType==MONS_JACKFROST)
-			mind1+=2;	// tell it that it hit a wall
+		switch ((EntityType)aiType)
+		{
+			case EntityType::Player:
+			case EntityType::Bunny:
+			case EntityType::BunnyPath:
+			case EntityType::Autozoid:
+			case EntityType::YouGo:
+				mind1 += 2; // tell it that it hit a wall
+		}
 		b=1;
 	}
 
@@ -781,7 +782,7 @@ void Guy::Update(Map *map,world_t *world)
 		frmTimer-=255;
 		NextFrame();
 	}
-	if(type==MONS_NONE)
+	if((EntityType)type== EntityType::None)
 	{
 		facing=0;
 		return;	// NextFrame may have killed you
@@ -790,7 +791,7 @@ void Guy::Update(Map *map,world_t *world)
 	mapx=(x>>FIXSHIFT)/TILE_WIDTH;
 	mapy=(y>>FIXSHIFT)/TILE_HEIGHT;
 
-	if(aiType==MONS_BOUAPHA)	// special case, Bouapha is the player, follow him
+	if((EntityType)aiType==EntityType::Player)	// special case, Bouapha is the player, follow him
 	{
 		if(player.vehicle==0 && !editing && !player.cheated)
 		{
@@ -916,7 +917,7 @@ void Guy::Update(Map *map,world_t *world)
 			map->GetTile(mapx,mapy)->floor=GetTerrain(world,map->GetTile(mapx,mapy)->floor)->next;
 		}
 	}
-	if((oldmapx!=mapx || oldmapy!=mapy) && type!=MONS_NOBODY)
+	if((oldmapx!=mapx || oldmapy!=mapy) && type!=(short)EntityType::Nobody)
 		EventOccur(EVT_STEP,ID,mapx,mapy,this);
 
 	if(mapx<map->width && mapy<map->height)
@@ -946,7 +947,7 @@ void Guy::Render(byte light)
 	if(aiType==MONS_BOUAPHA && (player.vehicle==VE_YUGO || player.vehicle==VE_MINECART))
 		return;	// don't render him if he's in a car or minecart
 
-	if(aiType==MONS_MINECART && player.vehicle==VE_MINECART && goodguy->parent==this)
+	if((EntityType)aiType==EntityType::Minecart && player.vehicle==VE_MINECART && goodguy->parent==this)
 	{
 		goodguy->x=x;
 		goodguy->y=y+1;
@@ -962,44 +963,32 @@ void Guy::Render(byte light)
 	dword t = type, t2 = type;
 	if(type==MONS_BOUAPHA)
 	{
-		if(player.playAs==PLAY_LUNATIC)
-			t=MONS_DRL;
-		else if(player.playAs==PLAY_HAPPY)
-			t=MONS_STICKMAN;
-		else if(player.playAs==PLAY_MECHA)
-			t=MONS_PLAYMECHA;
-		else if(player.playAs==PLAY_SHROOM)
-			t=MONS_PLAYSHROOM;
+		if(player.playAs==PLAY_SHROOM)
+			t=(short)EntityType::PlayShroom;
 		else if(player.playAs==PLAY_LUNACHIK)
-			t=MONS_LUNACHICK;
-		else
-			t=MONS_BOUAPHA;
+			t=(short)EntityType::PlayLunachick;
+		else // bouapha is player
+			t=(short)EntityType::Player;
 
 		if(player.weapon==WPN_PWRARMOR)
-			t=MONS_PWRBOUAPHA;
+			t=(short)EntityType::PowerArmor;
 		if(player.weapon==WPN_MINISUB)
-			t=MONS_MINISUB;
+			t=(short)EntityType::MiniSub;
 	}
 
-	bool isBouapha = aiType == MONS_BOUAPHA;
+	bool isBouapha = (EntityType)aiType==EntityType::Player;
 	if(isBouapha)
 	{
 		if(player.weapon==WPN_PWRARMOR)
-			t2=MONS_PWRBOUAPHA;
+			t2=(short)EntityType::PowerArmor;
 		else if(player.weapon==WPN_MINISUB)
-			t2=MONS_MINISUB;
-		else if(type==MONS_BOUAPHA)
+			t2=(short)EntityType::MiniSub;
+		else if((EntityType)type==EntityType::Player)
 		{
-			if(player.playAs==PLAY_LUNATIC)
-				t2=MONS_DRL;
-			else if(player.playAs==PLAY_HAPPY)
-				t2=MONS_STICKMAN;
-			else if(player.playAs==PLAY_MECHA)
-				t2=MONS_PLAYMECHA;
-			else if(player.playAs==PLAY_SHROOM)
-				t2=MONS_PLAYSHROOM;
+			if(player.playAs==PLAY_SHROOM)
+				t2=(short)EntityType::PlayShroom;
 			else if(player.playAs==PLAY_LUNACHIK)
-				t2=MONS_LUNACHICK;
+				t2=(short)EntityType::PlayLunachick;
 		}
 	}
 
@@ -1231,43 +1220,16 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world, bool bypass
 			type==MONS_TROOPER2 || type==MONS_PATTY || type==MONS_SCARAB)
 			facing=2;	// these can only die facing forward, artistically speaking
 		// possible item drop
-		if(type==MONS_ZOMBIE || type==MONS_MUTANT)	// zombies always drop a brain
+
+		switch((EntityType)type)
 		{
-			if(!map->DropItem(mapx,mapy,IT_BRAIN))
-			{
-				PlayerGetBrain(1);	// if you can't drop it, just give it to the player!
-			}
-		}
-		else if(type==MONS_SUPERZOMBIE)	// super zombies always drop 2 brains
-		{
-			if(!map->DropItem(mapx,mapy,IT_BRAIN))
-			{
-				PlayerGetBrain(1);
-			}
-			if(!map->DropItem(mapx,mapy,IT_BRAIN))
-			{
-				PlayerGetBrain(1);
-			}
-		}
-		if(aiType==MONS_GNOME)
-		{
-			if(mind3!=0)	// drop what you stole!
-				if(!map->DropItem(mapx,mapy,mind3))
-					map->GetTile(mapx,mapy)->item=mind3;
-							// if the drop failed, just force it
-		}
-		if(aiType!=MONS_CRAZYPANTS || mind==3)
-		{
-			if(item==IT_RANDOM)
-			{
-				if(Random(100*FIXAMT)<map->itemDrops)
-					map->DropItem(mapx,mapy,GetRandomItem());
-			}
-			else if(item!=IT_NONE)
-			{
-				if(!map->DropItem(mapx,mapy,item))
-					map->GetTile(mapx,mapy)->item=item;	// force the drop if it failed
-			}
+			case EntityType::Zombie:
+			case EntityType::Bombie:
+				if (!map->DropItem(mapx, mapy, IT_BRAIN))
+				{
+					PlayerGetBrain(1);	// if you can't drop it, just give it to the player!
+				}
+				break;
 		}
 
 		ScoreEvent(SE_KILL,1);
@@ -1635,25 +1597,25 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 
 	if(type==MONS_ANYBODY)
 	{
-		type=MONS_NOBODY;
+		type=(short)EntityType::Nobody;
 		while(EntityIsNoneOrNobody(type) || (MonsterTheme(type) == MT_NONE))
 			type=Random(NUM_MONSTERS);
 	}
 	else if(type==MONS_NONPLAYER)
 	{
-		type=MONS_NOBODY;
+		type=(short)EntityType::Nobody;
 		while(EntityIsNoneOrNobody(type) || EntityIsPlayer(type) || (MonsterTheme(type) == MT_NONE))
 			type=Random(NUM_MONSTERS);
 	}
 	else if(type==MONS_BADGUY)
 	{
-		type=MONS_NOBODY;
+		type=(short)EntityType::Nobody;
 		while(EntityIsNoneOrNobody(type) || EntityIsGoodguy(type) || (MonsterTheme(type) == MT_NONE))
 			type=Random(NUM_MONSTERS);
 	}
 	else if(type==MONS_GOODGUY)
 	{
-		type=MONS_NOBODY;
+		type=(short)EntityType::Nobody;
 		while(EntityIsNoneOrNobody(type) || !EntityIsGoodguy(type) || EntityIsPlayer(type) || (MonsterTheme(type) == MT_NONE))
 			type=Random(NUM_MONSTERS);
 	}
@@ -1768,268 +1730,6 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 			guys[i].customSpr=nullptr;
 			guys[i].pushStamp=0;
 
-			if(type==MONS_ISOZOID && editing!=1)
-			{
-				guys[i].seq=ANIM_A2;		// start hidden!
-				guys[i].frm=0;
-				guys[i].frmTimer=0;
-				guys[i].frmAdvance=1;
-			}
-			if(type==MONS_GENERATOR1)
-				guys[i].mind2=1;
-			if(type==MONS_GENERATOR2)
-				guys[i].mind2=5;
-			if(type==MONS_GENERATOR3)
-				guys[i].mind2=15;
-			if(type==MONS_GENERATOR4)
-				guys[i].mind2=30;
-
-			if(type==MONS_MATHEAD)	// Matilda, need to add all the parts
-			{
-				guys[i].z=32*FIXAMT;
-				g=AddGuy(x,y-32*FIXAMT,0,MONS_MATBODY,friendly);
-				if(g)
-					g->parent=&guys[i];
-				g=AddGuy(x-40*FIXAMT,y-1*FIXAMT,32*FIXAMT,MONS_MATCLAW1,friendly);
-				if(g)
-					g->parent=&guys[i];
-				g=AddGuy(x+40*FIXAMT,y-1*FIXAMT,32*FIXAMT,MONS_MATCLAW2,friendly);
-				if(g)
-					g->parent=&guys[i];
-				g=AddGuy(x,y-96*FIXAMT,32*FIXAMT,MONS_MATTAIL,friendly);
-				if(g)
-					g->parent=&guys[i];
-			}
-
-			if(type==MONS_CRABPUFF || type==MONS_BEETLE)
-			{
-				guys[i].seq=ANIM_MOVE;
-				guys[i].frm=Random(8);
-			}
-			if(type==MONS_MAT2HEAD)	// Matilda, need to add all the parts
-			{
-				guys[i].z=32*FIXAMT;
-				g=AddGuy(x,y-32*FIXAMT,0,MONS_MAT2BODY,friendly);
-				if(g)
-					g->parent=&guys[i];
-
-				for(k=0;k<2;k++)
-				{
-					// lower left tentacle
-					g=AddGuy(x-40*FIXAMT,y-1*FIXAMT,32*FIXAMT,MONS_THINGTENT,friendly);
-					if(!g)
-						return &guys[i];
-					g->parent=&guys[i];
-					g->facing=6;
-					// mind tells them which tentacle they are (to constrain rotation)
-					g->mind=0+3*(k==1);
-					g->mind1=128;
-					for(j=0;j<3;j++)
-					{
-						g2=g;
-						// adding them all overlapping, they'll move into place when updated
-						g=AddGuy(x-40*FIXAMT,y-1*FIXAMT,32*FIXAMT,MONS_THINGTENT,friendly);
-						if(!g)
-							return &guys[i];
-						g->parent=g2;
-						g->facing=6;
-						g->mind=0;
-					}
-					g2=AddGuy(x-40*FIXAMT,y-1*FIXAMT,32*FIXAMT,MONS_THINGTENTTIP,friendly);
-					if(!g2)
-						return &guys[i];
-					g2->parent=g;
-					g2->facing=6;
-					g2->mind=0;
-
-					// lower right tentacle
-					g=AddGuy(x+40*FIXAMT,y-1*FIXAMT,32*FIXAMT,MONS_THINGTENT,friendly);
-					if(!g)
-						return &guys[i];
-					g->parent=&guys[i];
-					g->facing=2;
-					g->mind=1+1*(k==1);
-					g->mind1=128;
-					for(j=0;j<3;j++)
-					{
-						g2=g;
-						// adding them all overlapping, they'll move into place when updated
-						g=AddGuy(x+40*FIXAMT,y-1*FIXAMT,32*FIXAMT,MONS_THINGTENT,friendly);
-						if(!g)
-							return &guys[i];
-						g->parent=g2;
-						g->facing=2;
-						g->mind=1;
-					}
-					g2=AddGuy(x+40*FIXAMT,y-1*FIXAMT,32*FIXAMT,MONS_THINGTENTTIP,friendly);
-					if(!g2)
-						return &guys[i];
-					g2->parent=g;
-					g2->facing=2;
-					g2->mind=1;
-				}
-
-				g=AddGuy(x,y-96*FIXAMT,32*FIXAMT,MONS_MAT2TAIL,friendly);
-				if(g)
-					g->parent=&guys[i];
-			}
-
-			if(type==MONS_THING)	// The Thing needs to add tentacles
-			{
-				// lower left tentacle
-				g=AddGuy(x-64*FIXAMT,y+48*FIXAMT,12*FIXAMT,MONS_THINGTENT,friendly);
-				if(!g)
-					return &guys[i];
-				g->parent=&guys[i];
-				g->facing=6;
-				g->mind=0;	// mind tells them which tentacle they are (to constrain rotation)
-				g->mind1=128;
-				for(j=0;j<3;j++)
-				{
-					g2=g;
-					// adding them all overlapping, they'll move into place when updated
-					g=AddGuy(x-64*FIXAMT,y+48*FIXAMT,12*FIXAMT,MONS_THINGTENT,friendly);
-					if(!g)
-						return &guys[i];
-					g->parent=g2;
-					g->facing=6;
-					g->mind=0;
-				}
-				g2=AddGuy(x-64*FIXAMT,y+48*FIXAMT,12*FIXAMT,MONS_THINGTENTTIP,friendly);
-				if(!g2)
-					return &guys[i];
-				g2->parent=g;
-				g2->facing=6;
-				g2->mind=0;
-				// lower right tentacle
-				g=AddGuy(x+64*FIXAMT,y+48*FIXAMT,12*FIXAMT,MONS_THINGTENT,friendly);
-				if(!g)
-					return &guys[i];
-				g->parent=&guys[i];
-				g->facing=2;
-				g->mind=1;
-				g->mind1=128;
-				for(j=0;j<3;j++)
-				{
-					g2=g;
-					// adding them all overlapping, they'll move into place when updated
-					g=AddGuy(x+64*FIXAMT,y+48*FIXAMT,12*FIXAMT,MONS_THINGTENT,friendly);
-					if(!g)
-						return &guys[i];
-					g->parent=g2;
-					g->facing=2;
-					g->mind=1;
-				}
-				g2=AddGuy(x+64*FIXAMT,y+48*FIXAMT,12*FIXAMT,MONS_THINGTENTTIP,friendly);
-				if(!g2)
-					return &guys[i];
-				g2->parent=g;
-				g2->facing=2;
-				g2->mind=1;
-				// upper right tentacle
-				g=AddGuy(x+64*FIXAMT,y-20*FIXAMT,12*FIXAMT,MONS_THINGTENT,friendly);
-				if(!g)
-					return &guys[i];
-				g->parent=&guys[i];
-				g->facing=14;
-				g->mind=2;
-				g->mind1=128;
-				for(j=0;j<3;j++)
-				{
-					g2=g;
-					// adding them all overlapping, they'll move into place when updated
-					g=AddGuy(x+64*FIXAMT,y-20*FIXAMT,12*FIXAMT,MONS_THINGTENT,friendly);
-					if(!g)
-						return &guys[i];
-					g->parent=g2;
-					g->facing=14;
-					g->mind=2;
-				}
-				g2=AddGuy(x+64*FIXAMT,y-20*FIXAMT,12*FIXAMT,MONS_THINGTENTTIP,friendly);
-				if(!g2)
-					return &guys[i];
-				g2->parent=g;
-				g2->facing=14;
-				g2->mind=2;
-				// upper left (and last!) tentacle
-				g=AddGuy(x-64*FIXAMT,y-20*FIXAMT,12*FIXAMT,MONS_THINGTENT,friendly);
-				if(!g)
-					return &guys[i];
-				g->parent=&guys[i];
-				g->facing=10;
-				g->mind=3;
-				g->mind1=128;
-				for(j=0;j<3;j++)
-				{
-					g2=g;
-					// adding them all overlapping, they'll move into place when updated
-					g=AddGuy(x-64*FIXAMT,y-20*FIXAMT,12*FIXAMT,MONS_THINGTENT,friendly);
-					if(!g)
-						return &guys[i];
-					g->parent=g2;
-					g->facing=10;
-					g->mind=3;
-				}
-				g2=AddGuy(x-64*FIXAMT,y-20*FIXAMT,12*FIXAMT,MONS_THINGTENTTIP,friendly);
-				if(!g2)
-					return &guys[i];
-				g2->parent=g;
-				g2->facing=10;
-				g2->mind=3;
-			}
-			if(type==MONS_SPHINX)
-			{
-				// left arm
-				g=AddGuy(x-108*FIXAMT,y+22*FIXAMT,0,MONS_SPHXARM1,friendly);
-				if(!g)
-				{
-					return &guys[i];
-				}
-				g->parent=&guys[i];
-				// right arm
-				g=AddGuy(x+108*FIXAMT,y+22*FIXAMT,0,MONS_SPHXARM2,friendly);
-				if(!g)
-				{
-					return &guys[i];
-				}
-				g->parent=&guys[i];
-			}
-			if(type==MONS_CENTIHEAD)
-			{
-				// add on 15 body parts
-				g=&guys[i];
-				for(j=0;j<15;j++)
-				{
-					g2=AddGuy(x,y,0,MONS_CENTIBODY,friendly);
-					if(!g2)
-						return &guys[i];
-					g2->parent=g;
-					g=g2;
-				}
-			}
-			if(type==MONS_LOONYBOT)
-			{
-				g=AddGuy(x,y,0,MONS_LOONYCORE,friendly);
-				if(g)
-				{
-					// the core is the parent of them all
-					guys[i].parent=g;
-					g->item=guys[i].item;
-				}
-				g=AddGuy(x-87*FIXAMT,y,48*FIXAMT,MONS_LOONYGUN,friendly);
-				if(g)
-				{
-					g->parent=&guys[i];
-					g->mind3=0;
-				}
-				g=AddGuy(x+92*FIXAMT,y,48*FIXAMT,MONS_LOONYGUN,friendly);
-				if(g)
-				{
-					g->parent=&guys[i];
-					g->mind3=1;
-				}
-			}
-
 			return &guys[i];
 		}
 	return NULL;
@@ -2073,7 +1773,7 @@ void AddMapGuys(Map *map)
 	goodguy=NULL;
 
 	// add a nobody in case the player goes invisible
-	nobody=AddGuy(0,0,0,MONS_NOBODY,1);
+	nobody=AddGuy(0,0,0,(short)EntityType::Nobody,1);
 	nobody->item=0;
 
 	// discover what type for each generator, and remove the template monster
@@ -2189,13 +1889,9 @@ Guy *FindVictim(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t
 		{
 			if(CheckHit(size,x,y,&guys[i]))
 			{
-				switch(guys[i].aiType)
+				switch((EntityType)guys[i].aiType)
 				{
-					case MONS_KNIGHT:
-						MakeSound(SND_GLASSBLOCK, x << FIXSHIFT, y << FIXSHIFT, SND_CUTOFF, 1200);
-						ReflectShot();
-						break;
-					case MONS_TSUCHIZOID:
+					case EntityType::Tsuchizoid:
 						PrimaryWeaponCheck();
 						if (damage > 0)
 						{
@@ -2203,7 +1899,7 @@ Guy *FindVictim(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t
 							guys[i].mind2 += damage/2;
 						}
 						break;
-					case MONS_NASTYTREE:
+						case EntityType::NastyTree:
 						if(guys[i].mind>0)
 							guys[i].GetShot(dx, dy, damage, map, world);
 						break;
@@ -3071,7 +2767,7 @@ byte StealthyCheck(Guy* goodguy)
 // is the good guy in sight?!
 byte GoodguyInSight(Guy* me, Guy* goodguy, byte facing)
 {
-	if (!goodguy || goodguy->type == MONS_NOBODY or StealthyCheck(goodguy))
+	if (!goodguy || goodguy->type == (short)EntityType::Nobody or StealthyCheck(goodguy))
 		return 0;
 
 	static const int dirX[8] = { 1, 1, 0,-1,-1,-1, 0, 1 };
@@ -3307,7 +3003,7 @@ Guy *FindMonster(int x,int y,int type)
 	Guy *g;
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i].type!=MONS_NONE && guys[i].type!=MONS_NOBODY && (x==255 || (guys[i].mapx==x && guys[i].mapy==y)))
+		if(guys[i].type!=MONS_NONE && guys[i].type!=(short)EntityType::Nobody && (x==255 || (guys[i].mapx==x && guys[i].mapy==y)))
 		{
 			g=&guys[i];
 			if (!CheckMonsterType(g, x, y, type))

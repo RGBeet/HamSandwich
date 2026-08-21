@@ -18,6 +18,7 @@ static void SaveItem(hamworld::Section* f, const item_t* item)
 
 	f->stream.put(item->xofs);
 	f->stream.put(item->yofs);
+	f->stream.put(item->zofs);
 	f->write_varint(item->sprNum);
 	f->stream.put(item->bright);
 
@@ -27,9 +28,14 @@ static void SaveItem(hamworld::Section* f, const item_t* item)
 	f->stream.write((char*)colors, 8);
 
 	f->write_varint(item->rarity);
-	f->write_varint(item->flags);
+
 	f->write_varint(item->theme);
-	f->write_varint(item->trigger);
+	f->write_varint(item->appearance);
+	f->write_varint(item->passability);
+	f->write_varint(item->triggerType);
+	f->write_varint(item->behavior);
+	f->write_varint(item->customJSP);
+
 	f->write_varint(item->effect);
 	f->write_varint(item->effectAmt);
 	f->write_varint(SoundToDescIndex(item->sound));
@@ -43,6 +49,7 @@ static void LoadItem(hamworld::Section* f, item_t* item)
 
 	item->xofs = f->stream.get();
 	item->yofs = f->stream.get();
+	item->zofs = f->stream.get();
 	item->sprNum = f->read_varint();
 	item->bright = f->stream.get();
 
@@ -57,11 +64,15 @@ static void LoadItem(hamworld::Section* f, item_t* item)
 			item->toColor = colors[i];
 			break;
 		}
+	item->rarity		= f->read_varint();
 
-	item->rarity = f->read_varint();
-	item->flags = (ItemFlags)f->read_varint();
-	item->theme = (ItemThemes)f->read_varint();
-	item->trigger = (ItemTriggers)f->read_varint();
+	item->theme			= (ItemThemes)f->read_varint();
+	item->appearance	= (ItemAppearance)f->read_varint();
+	item->passability	= (ItemPassability)f->read_varint();
+	item->triggerType	= (ItemTrigger)f->read_varint();
+	item->behavior		= (ItemBehavior)f->read_varint();
+	item->customJSP		= f->read_varint();
+
 	item->effect = f->read_varint();
 	item->effectAmt = f->read_varint();
 	item->sound = DescIndexToSound(f->read_varint());

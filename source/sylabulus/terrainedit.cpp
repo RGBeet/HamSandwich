@@ -313,7 +313,7 @@ void DeleteUnusedTiles(int id)
 	// find all tiles used by items
 	for(int i=0;i<NumItems();i++)
 	{
-		if(GetItem(i)->flags&IF_TILE)
+		if(GetItem(i)->appearance == ITA_TILEIMG)
 			tileUsed[GetItem(i)->sprNum]=1;
 	}
 	for (Map *map : world->Maps())

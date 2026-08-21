@@ -307,7 +307,6 @@ enum class EntityType {
 	Player,
 
 	// world 1
-	Dummy,
 	Bonehead,
 	Mumble,
 	Zombie,
@@ -371,7 +370,7 @@ enum class EntityType {
 	// vehciles/mechs
 	Minecart,
 	PowerArmor,			// used when player is in power armor
-	Submarine,			// used when player is in mini submarine
+	MiniSub,			// used when player is in mini submarine
 	YouGo,
 	PlayLunachick,		// play as: lunachick
 	PlayShroom,			// play as: shtupid shroom

@@ -2053,10 +2053,7 @@ void AI_Yugo(Guy* me, Map* map, world_t* world, Guy* goodguy)
 				for (x = me->mapx - 1;x <= me->mapx + 1;x++)
 					for (y = me->mapy - 1;y <= me->mapy + 1;y++)
 					{
-						if (mapTile_t* tile = map->TryGetTile(x, y); tile &&
-							(GetTerrain(world, tile->floor)->pathType & TRN_DRIVE) &&
-							tile->wall == 0 &&
-							!(GetItem(tile->item)->flags & (IF_SOLID | IF_BULLETPROOF)))
+						if (TerrainIsDrivable(me,world,map,x,y)) // TODO: CHECK TERRAIN IS DRIVABLE
 						{
 							// found a spot that IS minecart neighboring
 							me->x = (x * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
@@ -4535,25 +4532,25 @@ void AI_Traffic(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		// figure out which directions are valid minecart paths
 		if (me->mapx < map->width - 1 && (GetTerrain(world, map->map[me->mapx + 1 + me->mapy * map->width].floor)->pathType & TRN_DRIVE) &&
 			!(GetTerrain(world, map->map[me->mapx + 1 + me->mapy * map->width].floor)->pathType & TF_SOLID) &&
-			!(GetItem(map->map[me->mapx + 1 + me->mapy * map->width].item)->flags & IF_SOLID))
+			!TileHasObstacle(map,me->mapx,me->mapy))
 			ok[0] = 1;
 		else
 			ok[0] = 0;
 		if (me->mapy < map->height - 1 && (GetTerrain(world, map->map[me->mapx + (me->mapy + 1) * map->width].floor)->pathType & TRN_DRIVE) &&
 			!(GetTerrain(world, map->map[me->mapx + (me->mapy + 1) * map->width].floor)->pathType & TF_SOLID) &&
-			!(GetItem(map->map[me->mapx + (me->mapy + 1) * map->width].item)->flags & IF_SOLID))
+			!TileHasObstacle(map, me->mapx, me->mapy))
 			ok[1] = 1;
 		else
 			ok[1] = 0;
 		if (me->mapx > 0 && (GetTerrain(world, map->map[me->mapx - 1 + me->mapy * map->width].floor)->pathType & TRN_DRIVE) &&
 			!(GetTerrain(world, map->map[me->mapx - 1 + me->mapy * map->width].floor)->pathType & TF_SOLID) &&
-			!(GetItem(map->map[me->mapx - 1 + me->mapy * map->width].item)->flags & IF_SOLID))
+			!TileHasObstacle(map, me->mapx, me->mapy))
 			ok[2] = 1;
 		else
 			ok[2] = 0;
 		if (me->mapy > 0 && (GetTerrain(world, map->map[me->mapx + (me->mapy - 1) * map->width].floor)->pathType & TRN_DRIVE) &&
-			!(GetTerrain(world, map->map[me->mapx + (me->mapy - 1) * map->width].floor)->pathType & TF_SOLID) &&
-			!(GetItem(map->map[me->mapx + (me->mapy - 1) * map->width].item)->flags & IF_SOLID))
+			!(GetTerrain(world, map->map[me->mapx + (me->mapy - 1) * map->width].floor)->type & TF_SOLID) &&
+			!TileHasObstacle(map, me->mapx, me->mapy))
 			ok[3] = 1;
 		else
 			ok[3] = 0;
@@ -5140,7 +5137,7 @@ void AI_Werewolf(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 byte TargetInSight(Guy* me, Map* map, Guy* goodguy)
 {
-	if (!goodguy || goodguy->type == MONS_NOBODY)
+	if (!goodguy || goodguy->type == (short)EntityType::Nobody)
 		return 0;
 
 	switch (me->mind2)
@@ -5653,7 +5650,7 @@ void AI_PunkBunny(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	}
 	else	// hunting for fresh meat
 	{
-		if (goodguy == NULL || goodguy->type == MONS_NOBODY || RangeToTarget(me, bouapha) > 320 * FIXAMT)	// got too far from papa!!
+		if (goodguy == NULL || goodguy->type == (short)EntityType::Nobody || RangeToTarget(me, bouapha) > 320 * FIXAMT)	// got too far from papa!!
 		{
 			me->mind = 1;
 			return;
