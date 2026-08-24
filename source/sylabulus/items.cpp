@@ -907,32 +907,32 @@ void InstaRenderItem(int x,int y,int type,char bright,MGLDraw *mgl)
 	else
 	{
 		x-=3;
-
-		switch (items[type].appearance)
+	
+		// draw shadow
+		if (items[type].appearance == ITA_SHADOW)
 		{
-			case ITA_SHADOW:
-				sprite->DrawShadow(x + items[type].xofs, y + items[type].yofs, mgl);
-				break;
-			case ITA_LOONYKEY:
-				sprite->DrawShadow(x + items[type].xofs, y + items[type].yofs, mgl);
-				b = abs(16 - (glowism & 31));
-				sprite->DrawColored(x + items[type].xofs, y + items[type].yofs, mgl, glowism / 32, bright + b + items[type].bright);
-				break;
-			case ITA_GLOWING:
-				sprite->DrawGlow(x + items[type].xofs, y + items[type].yofs, mgl, bright + items[type].bright);
-				break;
-			default:
-				if (items[type].fromColor == items[type].toColor)
-				{
-					sprite->DrawBright(x + items[type].xofs, y + items[type].yofs, mgl, bright + items[type].bright);
-				}
-				else
-				{
-					sprite->DrawOffColor(x + items[type].xofs, y + items[type].yofs,
-						mgl, items[type].fromColor, items[type].toColor,
-						bright + items[type].bright);
-				}
-				break;
+			sprite->DrawShadow(x + items[type].xofs, y + items[type].yofs, mgl);
+		}
+		
+		if (items[type].appearance == ITA_GLOWING) // draw glowing
+		{
+			sprite->DrawGlow(x + items[type].xofs, y + items[type].yofs, mgl, bright + items[type].bright);
+		}
+		else if (items[type].appearance == ITA_LOONYKEY) // draw loonykey
+		{
+			sprite->DrawShadow(x + items[type].xofs, y + items[type].yofs, mgl);
+			b = abs(16 - (glowism & 31));
+			sprite->DrawColored(x + items[type].xofs, y + items[type].yofs, mgl, glowism / 32, bright + b + items[type].bright);
+		}
+		
+		// recolor
+		if (items[type].fromColor == items[type].toColor)
+		{
+			sprite->DrawBright(x + items[type].xofs, y + items[type].yofs, mgl, bright + items[type].bright);
+		}
+		else
+		{
+			sprite->DrawOffColor(x + items[type].xofs, y + items[type].yofs, mgl, items[type].fromColor, items[type].toColor, bright + items[type].bright);
 		}
 	}
 }

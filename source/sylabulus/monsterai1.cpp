@@ -5,6 +5,7 @@
 #include "bullet.h"
 #include "player.h"
 #include "world.h"
+#include "water.h"
 
 static int pickupX, pickupY;
 
@@ -816,6 +817,9 @@ void AI_Serpent(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		return;	// can't do nothin' right now
 	}
 
+	if (goodguy && RangeToTarget(me, goodguy) < 500 * FIXAMT)
+		WaterRipple((me->x + me->dx * 2) / FIXAMT, (me->y + me->dy * 2) / FIXAMT, 8 * Random(32));
+
 	if (goodguy)
 	{
 		if (RangeToTarget(me, goodguy) < (512 * FIXAMT) && Random(16) == 0 && me->reload == 0)
@@ -1381,6 +1385,7 @@ void AI_Ginger(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 void AI_Pumpkin(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
+	int x,y;
 	if (me->reload)
 		me->reload--;
 
@@ -1394,25 +1399,33 @@ void AI_Pumpkin(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	{
 		if (me->seq == ANIM_DIE && me->reload == 0)
 		{
-			if (me->aiType == MONS_BOOMKIN && me->frm == 0)
-				FireBullet(me->x, me->y, 0, BLT_BOOM, me->friendly);
 			ExplodeParticles(PART_HAMMER, me->x, me->y, me->z, 8);
 			me->reload = 2;
+		}
+		if (me->seq == ANIM_ATTACK && me->frm == 5 && me->reload == 0 && goodguy)
+		{
+			// crush skull
+			x = me->x + Cosine(me->facing * 32) * 12;
+			y = me->y + Sine(me->facing * 32) * 12;
+			if (me->AttackCheck(24, x >> FIXSHIFT, y >> FIXSHIFT, goodguy))
+			{
+				goodguy->GetShot(Cosine(me->facing * 32) * 10, Sine(me->facing * 32) * 10, 5, map, world);
+				me->frmAdvance /= 2;
+			}
+			me->reload = 5;
 		}
 		return;	// can't do nothin' right now
 	}
 
 	if (me->seq == ANIM_MOVE && me->frm == 2 && goodguy)	// hits on this frame
 	{
-		if (me->aiType == MONS_PUMPKIN)
-			FindVictim(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 24, Cosine(me->facing * 32) * 4, Sine(me->facing * 32) * 4, 2, map, world, me->friendly);
-		else
-			if (FindVictim(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 32, 0, 0, 0, map, world, me->friendly))
-			{
-				me->hp = 1;
-				me->GetShot(0, 0, 1, map, world);
-				return;
-			}
+		if (RangeToTarget(me, goodguy) < (60 * FIXAMT) && !Random(8) && !me->reload)
+		{
+			StartAnimation(me, ANIM_ATTACK, 128);
+			SetMoveFacing(me, 0);
+			me->reload = 0;
+			return;
+		}
 	}
 
 	if (me->mind == 0)	// not currently aware of goodguy
@@ -1461,16 +1474,9 @@ void AI_Pumpkin(Guy* me, Map* map, world_t* world, Guy* goodguy)
 				me->mind1 = 20;	// stay on trail a little longer
 			return;
 		}
-		if (me->aiType == MONS_BOOMKIN)
-		{
-			me->dx = Cosine(me->facing * 32) * 6;
-			me->dy = Sine(me->facing * 32) * 6;
-		}
-		else
-		{
-			me->dx = Cosine(me->facing * 32) * 2;
-			me->dy = Sine(me->facing * 32) * 2;
-		}
+
+		me->dx = Cosine(me->facing * 32) * 3;
+		me->dy = Sine(me->facing * 32) * 3;
 		if (me->seq != ANIM_MOVE)
 		{
 			me->seq = ANIM_MOVE;

@@ -84,7 +84,7 @@ byte InitEditor(void)
 	viewMenu=0;
 	editMenu=1;
 	editing=1;
-	SetupWater();
+	SetupWater(MAP_WTR_NONE); // fancy water gfx
 	editMode=EDITMODE_HELP;
 	InitEditHelp(HELP_BASIC);
 

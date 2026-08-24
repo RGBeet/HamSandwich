@@ -32,21 +32,80 @@ void LavaPalette(MGLDraw *mgl)
 	mgl->SetSecondaryPalette(pal2);
 }
 
-void DumbSidePalette(MGLDraw *mgl)
+void DumbSidePalette(MGLDraw* mgl)
 {
 	const RGB* pal = mgl->GetPalette();
 	PALETTE pal2;
 
-	for(int i=0; i<8; i++)
-		for(int j=0; j<32; j++)
+	for (int i = 0; i < 8; i++)
+		for (int j = 0; j < 32; j++)
 		{
-			pal2[i*32+j] = pal[i*32+j];
-			pal2[i*32+j].r = (byte) std::min((int) pal2[i*32+j].r + 4*30, 4*63);
-			pal2[i*32+j].b = (byte) std::min((int) pal2[i*32+j].b + 4*30, 4*63);
-			if(pal2[i*32+j].g > 10*4)
-				pal2[i*32+j].g -= 10*4;
+			const RGB& src = pal[i * 32 + j];
+			RGB& dst = pal2[i * 32 + j];
+
+			float r = src.r / 252.0f;
+			float g = src.g / 252.0f;
+			float b = src.b / 252.0f;
+
+			float mx = std::max(r, std::max(g, b));
+			float mn = std::min(r, std::min(g, b));
+			float d = mx - mn;
+
+			float h = 0.0f;
+			float s = 0.0f;
+			float v = mx;
+
+			if (d != 0.0f)
+			{
+				s = d / mx;
+
+				if (mx == r)
+					h = 60.0f * fmod((g - b) / d, 6.0f);
+				else if (mx == g)
+					h = 60.0f * ((b - r) / d + 2.0f);
+				else
+					h = 60.0f * ((r - g) / d + 4.0f);
+
+				if (h < 0)
+					h += 360.0f;
+			}
+
+			// Complementary hue.
+			h += 180.0f;
+			if (h >= 360.0f)
+				h -= 360.0f;
+
+			// Adjust value of the blue/yellow complements.
+			// Yellow -> blue: make blue brighter.
+			if (h >= 180.0f && h < 270.0f)
+				v = std::min(v * 1.20f, 1.0f);
+
+			// Blue -> yellow: make yellow darker.
+			else if (h >= 45.0f && h < 90.0f)
+				v *= 0.6f;
+
+			float c = v * s;
+			float x = c * (1.0f - fabs(fmod(h / 60.0f, 2.0f) - 1.0f));
+			float m = v - c;
+
+			float nr, ng, nb;
+
+			if (h < 60)
+				nr = c, ng = x, nb = 0;
+			else if (h < 120)
+				nr = x, ng = c, nb = 0;
+			else if (h < 180)
+				nr = 0, ng = c, nb = x;
+			else if (h < 240)
+				nr = 0, ng = x, nb = c;
+			else if (h < 300)
+				nr = x, ng = 0, nb = c;
 			else
-				pal2[i*32+j].g = 0;
+				nr = c, ng = 0, nb = x;
+
+			dst.r = (byte)((nr + m) * 252.0f);
+			dst.g = (byte)((ng + m) * 252.0f);
+			dst.b = (byte)((nb + m) * 252.0f);
 		}
 
 	mgl->SetSecondaryPalette(pal2);

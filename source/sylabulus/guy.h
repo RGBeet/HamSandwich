@@ -115,7 +115,7 @@ class Guy final
 		int GetPathDistance();
 
 		// new
-		void AvoidGuys();
+		void AvoidGuys(int buffer=0);
 };
 
 extern Guy *goodguy;

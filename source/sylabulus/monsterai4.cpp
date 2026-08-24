@@ -1343,82 +1343,144 @@ void AI_FollowBunny(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 	if (me->mind == 0)	// not activated yet
 	{
-		if (RangeToTarget(me, goodguy) < 72 * FIXAMT)
+		if (RangeToTarget(me, goodguy) < 80 * FIXAMT)
 		{
 			me->mind = 1;
 			MakeNormalSound(SND_FOLLOWHI);
+			me->seq = ANIM_ATTACK;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->action = ACTION_BUSY;
+			me->frmAdvance = 128;
+			return;
 		}
 	}
 	else if (me->mind == 1)	// following Bouapha
 	{
-		Dampen(&me->dx, FIXAMT / 8);
-		Dampen(&me->dy, FIXAMT / 8);
+		Dampen(&me->dx, FIXAMT / 4);
+		Dampen(&me->dy, FIXAMT / 4);
 
 		if (me->x < goodguy->x)
-			me->dx += FIXAMT;
-		else
-			me->dx -= FIXAMT;
-		if (me->y < goodguy->y)
-			me->dy += FIXAMT;
-		else
-			me->dy -= FIXAMT;
+			me->dx += FIXAMT / 2;
+		else if (me->x > goodguy->x)
+			me->dx -= FIXAMT / 2;
 
-		me->dx += -FIXAMT / 2 + Random(FIXAMT);
-		me->dy += -FIXAMT / 2 + Random(FIXAMT);
+		if (me->y < goodguy->y)
+			me->dy += FIXAMT / 2;
+		else if (me->y > goodguy->y)
+			me->dy -= FIXAMT / 2;
+
+		// Much less random wandering.
+		me->dx += -FIXAMT / 4 + Random(FIXAMT / 2);
+		me->dy += -FIXAMT / 4 + Random(FIXAMT / 2);
 
 		if (RangeToTarget(me, goodguy) < 48 * FIXAMT)
 		{
 			me->mind = 2;
 			me->facing = Random(8);
+
 			me->dx = Cosine(me->facing * 32) * 2;
 			me->dy = Sine(me->facing * 32) * 2;
+
 			me->mind1 = Random(20) + 10;
 		}
 	}
 	else // not following, got too close
 	{
 		me->mind1--;
+
+		Dampen(&me->dx, FIXAMT / 4);
+		Dampen(&me->dy, FIXAMT / 4);
+
 		if (!me->mind1)
 			me->mind = 1;
 	}
 
-	Clamp(&me->dx, FIXAMT * 4);
-	Clamp(&me->dy, FIXAMT * 4);
+	Clamp(&me->dx, FIXAMT * 3);
+	Clamp(&me->dy, FIXAMT * 3);
 
-	if (me->dx > FIXAMT)
+	if (me->dx > FIXAMT || me->dx < -FIXAMT ||
+		me->dy > FIXAMT || me->dy < -FIXAMT)
 	{
-		if (me->dy > FIXAMT)
-			me->facing = 1;
-		else if (me->dy < -FIXAMT)
-			me->facing = 7;
+		int newFacing = me->facing;
+
+		if (me->dx > FIXAMT)
+		{
+			if (me->dy > FIXAMT)
+				newFacing = 1;
+			else if (me->dy < -FIXAMT)
+				newFacing = 7;
+			else
+				newFacing = 0;
+		}
+		else if (me->dx < -FIXAMT)
+		{
+			if (me->dy > FIXAMT)
+				newFacing = 3;
+			else if (me->dy < -FIXAMT)
+				newFacing = 5;
+			else
+				newFacing = 4;
+		}
 		else
-			me->facing = 0;
-	}
-	else if (me->dx < -FIXAMT)
-	{
-		if (me->dy > FIXAMT)
-			me->facing = 3;
-		else if (me->dy < -FIXAMT)
-			me->facing = 5;
-		else
-			me->facing = 4;
-	}
-	else
-	{
-		if (me->dy > FIXAMT)
-			me->facing = 2;
-		else if (me->dy < -FIXAMT)
-			me->facing = 6;
+		{
+			if (me->dy > FIXAMT)
+				newFacing = 2;
+			else if (me->dy < -FIXAMT)
+				newFacing = 6;
+		}
+
+		if (newFacing != me->facing)
+		{
+			int facingDiff = newFacing - me->facing;
+
+			if (facingDiff < 0)
+				facingDiff = -facingDiff;
+
+			if (facingDiff > 4)
+				facingDiff = 8 - facingDiff;
+
+			if (facingDiff <= 2)
+			{
+				if (newFacing > me->facing)
+					me->facing++;
+				else
+					me->facing--;
+
+				if (me->facing < 0)
+					me->facing = 7;
+				else if (me->facing > 7)
+					me->facing = 0;
+			}
+			else
+			{
+				me->facing = newFacing;
+			}
+		}
 	}
 
 	if (me->mind != 0)
 	{
-		if (me->seq != ANIM_MOVE)
+		if (me->dx > FIXAMT / 2 || me->dx < -FIXAMT / 2 ||
+			me->dy > FIXAMT / 2 || me->dy < -FIXAMT / 2)
 		{
-			me->seq = ANIM_MOVE;
-			me->frm = 0;
-			me->frmTimer = 0;
-			me->frmAdvance = 128;
+			if (me->seq != ANIM_MOVE)
+			{
+				me->seq = ANIM_MOVE;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 128;
+			}
+		}
+		else
+		{
+			if (me->seq == ANIM_MOVE)
+			{
+				me->seq = ANIM_IDLE;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 128;
+			}
 		}
 	}
 }

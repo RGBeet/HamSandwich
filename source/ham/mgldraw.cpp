@@ -791,6 +791,58 @@ TASK(void) MGLDraw::RasterWaterFlip(int v)
 	AWAIT FinishFlip();
 }
 
+TASK(void) MGLDraw::VoidFlip(int v)
+{
+	int i, j;
+	float cx = xRes / 2.0f;
+	float cy = yRes / 2.0f;
+	float maxDist = sqrt(cx * cx + cy * cy);
+
+	v %= 256;
+
+	StartFlip();
+
+	for (i = 0; i < yRes; i++)
+	{
+		for (j = 0; j < xRes; j++)
+		{
+			float dx = j - cx;
+			float dy = i - cy;
+			float dist = sqrt(dx * dx + dy * dy);
+			float radial = dist / maxDist;
+
+			// Strongest toward the center.
+			float center = 1.0f - radial;
+			center *= center;
+
+			// Smoothly swirl back and forth.
+			float wave = sin((v / 256.0f) * 6.2831853f);
+			float angle = wave * center * 0.6f;
+
+			float cs = cos(angle);
+			float sn = sin(angle);
+
+			float sx = dx * cs - dy * sn + cx;
+			float sy = dx * sn + dy * cs + cy;
+
+			// Keep the source coordinates on-screen.
+			if (sx < 0)
+				sx = 0;
+			else if (sx >= xRes)
+				sx = xRes - 1;
+
+			if (sy < 0)
+				sy = 0;
+			else if (sy >= yRes)
+				sy = yRes - 1;
+
+			putpixel(j, i, FormatPixel((int)sx, (int)sy));
+		}
+	}
+
+	AWAIT FinishFlip();
+}
+
 void MGLDraw::SetPalette(PALETTE newpal)
 {
 	memcpy(pal, newpal, sizeof(PALETTE));

@@ -163,42 +163,42 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0 },
 		{"Buddy Bunny",2,0,3,AI_BuddyBunny,
-		 10,8,30,1000,"graphics/buddybunny.jsp",0,{},
+		 10,26,30,1000,"graphics/buddybunny.jsp",0,{},
 		 MT_GOOD | MT_ANIMAL,
 			{
 				{0,255},	// idle
-				{1,2,3,4,5,6,7,0,255},	// move
-				{0,255},	// attack
-				{0,0,0,0,255},	// die
-				NULL_ANIM,
+				{1,2,3,2,1,0,5,6,7,6,5,4,255},	// move
+				{8,9,10,11,12,13,12,11,12,13,12,11,12,13,14,15,255},	// attack
+				{15,16,17,18,19,20,21,22,23,24,25,255},	// die
+				{8,9,10,11,12,13,12,11,12,13,12,11,12,13,14,15,255},	// A1, for some reason?
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Buddy Bunny",2,0,3,AI_BuddyBunny,
-		 10,8,30,1000,"graphics/buddybunny.jsp",0,{},
+		{"Buddy Bunny",2,0,3,AI_BuddyBunny, // path
+		 10,26,30,1000,"graphics/buddybunny.jsp",0,{},
 		 MT_GOOD | MT_ANIMAL,
 			{
 				{0,255},	// idle
-				{1,2,3,4,5,6,7,0,255},	// move
-				{0,255},	// attack
-				{0,0,0,0,255},	// die
-				NULL_ANIM,
+				{1,2,3,2,1,0,5,6,7,6,5,4,255},	// move
+				{8,9,10,11,12,13,12,11,12,13,12,11,12,13,14,15,255},	// attack
+				{15,16,17,18,19,20,21,22,23,24,25,255},	// die
+				{8,9,10,11,12,13,12,11,12,13,12,11,12,13,14,15,255},	// A1, for some reason?
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Buddy Bunny",2,0,3,AI_BuddyBunny,
-		 10,8,30,1000,"graphics/buddybunny.jsp",0,{},
+		{"Buddy Bunny",2,0,3,AI_FollowBunny, // follow
+		 10,26,30,1000,"graphics/buddybunny.jsp",0,{},
 		 MT_GOOD | MT_ANIMAL,
 			{
 				{0,255},	// idle
-				{1,2,3,4,5,6,7,0,255},	// move
-				{0,255},	// attack
-				{0,0,0,0,255},	// die
-				NULL_ANIM,
+				{1,2,3,2,1,0,5,6,7,6,5,4,255},	// move
+				{8,9,10,11,12,13,12,11,12,13,12,11,12,13,14,15,255},	// attack
+				{15,16,17,18,19,20,21,22,23,24,25,255},	// die
+				{8,9,10,11,12,13,12,11,12,13,12,11,12,13,14,15,255},	// A1, for some reason?
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
@@ -233,27 +233,27 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Pumpkin",255,255,0,AI_Pumpkin,
-		 11,6,5,500,"graphics/pumpkin.jsp",0,{},
+		 10,16,5,500,"graphics/pumpkin.jsp",0,{},
 		 MT_EVIL | MT_PUMPKIN | MT_VEGGIE,
 			{
 				{0,255},	// idle
 				{1,2,3,4,5,0,255},	// move
-				{1,2,3,4,5,0,255},	// move
-				{0,0,255},	// die (just long enough to spew shrapnel)
+				{5,6,7,8,9,9,8,7,0,255},	// move
+				{10,11,12,13,14,15,255},	// die (just long enough to spew shrapnel)
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
-			},0},
+			},0 },
 		{"Kabocha",255,255,0,AI_Kabocha, // not yet implemented
 		 8,38,10,50,"graphics/kabocha.jsp",0,{},
 		 MT_EVIL | MT_PUMPKIN | MT_VEGGIE,
 			{
 				{0,255},	// idle
 				{1,2,3,4,5,0,255},	// move
-				{1,2,3,4,5,0,255},	// move
-				{0,0,255},	// die (just long enough to spew shrapnel)
+				{5,6,7,8,9,0,255},	// move
+				{10,11,12,13,14,15,255},	// die (just long enough to spew shrapnel)
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
@@ -274,7 +274,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Umbrello",255,255,0,AI_Umbrello, // not yet implemented
+		{"Mikasa",255,255,0,AI_Umbrello, // not yet implemented
 		 8,38,10,50,"graphics/umbrello.jsp",0,{},
 		 MT_EVIL | MT_SPOOKY | MT_WACKY,
 			{
@@ -344,7 +344,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Noh-Mann",255,255,0,AI_NohMannComedy, // not yet implemented
+		{"Noh-Mann",255,255,0,AI_NohMannTragedy, // not yet implemented
 		 8,38,10,50,"graphics/nohmann1.jsp",0,MF_NOMOVE | MF_ONEFACE | MF_FACECMD | MF_NOGRAV | MF_ENEMYWALK | MF_FREEWALK,
 		 MT_BITS,
 			{
@@ -555,7 +555,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{11,12,13,14,15,16,17,18,255},	// attack=head crush
 			},0},
 		{"Bombie",0,4,5,AI_Bombie, // the explosive zombie, leaps up
-		 11,32,80,150,"!5",0,{},
+		 11,32,80,150,"!4",0,{},
 		 MT_EVIL | MT_SPOOKY | MT_ZOMBIE | MT_TRAP,
 			{
 				{0,255},	// idle
@@ -638,7 +638,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,10,9,8,7,255},	// attack
 				{7,8,9,10,9,8,7,255},	// attack
 			},0},
-		{"Mutant Hard Hat",255,255,0,AI_Hardhat, // not yet implemented
+		{"Mutant Hardhat",255,255,0,AI_Hardhat, // not yet implemented
 		 8,38,10,50,"graphics/hardhat2.jsp",0,{},
 		 MT_EVIL | MT_HUMAN,
 			{
@@ -1227,4 +1227,18 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
+		{"Jacko",255,255,-2,AI_BigPumpkin,
+		 14,16,50,500,"graphics/jacko.jsp",0,{},
+		 MT_EVIL | MT_PUMPKIN | MT_VEGGIE,
+			{
+				{0,255},	// idle
+				{1,2,3,4,5,0,255},	// move
+				{5,6,7,8,9,0,255},	// move
+				{10,11,12,13,14,15,255},	// die (just long enough to spew shrapnel)
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+			},0 },
 	};

@@ -201,8 +201,9 @@ byte InitLevel(byte map)
 	
 	ResetInterface();
 
+	printf("Current Water Type: %d.", curMap->waterType);
 	CheckSpecialsAtInit(curMap);
-	SetupWater();
+	SetupWater(curMap->waterType);
 	curMap->InitPathNodes(&curWorld);
 	GetPathfinder()->SetMap(curMap,&curWorld);
 	RestoreGameplayGfx();
@@ -268,6 +269,8 @@ void RestoreGameplayGfx(void)
 			WaterPalette(gamemgl);
 		else if(curMap->environment == MAP_ENV_SUPERHOT)
 			LavaPalette(gamemgl);
+		else if(curMap->environment == MAP_ENV_DUMBSIDE)
+			DumbSidePalette(gamemgl);
 
 	}
 }
@@ -701,7 +704,7 @@ TASK(void) LunaticDraw(void)
 		tickerTime=d;
 	}
 
-	bool doTheWave = (curMap->environment == MAP_ENV_UNDERWATER || curMap->environment == MAP_ENV_SUPERHOT || curMap->miscFlags & MAP_FLG_WAVY);
+	bool doTheWave = (curMap->environment == MAP_ENV_UNDERWATER || curMap->environment == MAP_ENV_SUPERHOT);
 	if(CanDoTeeny())
 	{
 		if(doTheWave)
@@ -718,7 +721,9 @@ TASK(void) LunaticDraw(void)
 	}
 	else
 	{
-		if(doTheWave)
+		if (curMap->environment == MAP_ENV_DUMBSIDE)
+			AWAIT gamemgl->VoidFlip(updFrameCount/2);
+		else if(doTheWave)
 			AWAIT gamemgl->WaterFlip(updFrameCount/2);
 		else
 			AWAIT gamemgl->Flip();

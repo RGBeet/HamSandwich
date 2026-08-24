@@ -570,7 +570,10 @@ byte Syl_SaveWorld(const world_t* world, const char* fname)
 		mapsec.write_varint(map->weather);
 		mapsec.write_varint(map->lighting);
 		mapsec.write_varint(map->environment);
-		mapsec.write_varint(map->miscFlags);
+		mapsec.write_varint(map->skyType);
+		mapsec.write_varint(map->waterType);
+
+		mapsec.stream.write((const char*)map->expansion, 26); // empty expansion bytes?
 
 		mapsec.write_varint(map->numBrains);
 		mapsec.write_varint(map->numCandles);
@@ -795,16 +798,21 @@ byte Syl_LoadWorld(world_t* world, const char* fname)
 			section.read_string(map->name);
 			section.read_string(map->song);
 
-			map->type = (MapType)section.read_varint();
-			map->weather = (MapWeather)section.read_varint();
-			map->lighting = (MapLighting)section.read_varint();
-			map->environment = (MapEnvironment)section.read_varint();
-			map->miscFlags = (MapTypeFlags)section.read_varint();
+			map->type			= (MapType)section.read_varint();
+			map->weather		= (MapWeather)section.read_varint();
+			map->lighting		= (MapLighting)section.read_varint();
+			map->environment	= (MapEnvironment)section.read_varint();
+			map->skyType		= (MapSky)section.read_varint();
+			map->waterType		= (MapWater)section.read_varint();
 
-			map->numBrains = section.read_varint();
-			map->numCandles = section.read_varint();
+			// dummy buffer
+			byte expansion[26];
+			section.stream.read((char*)expansion, 26);
+
+			map->numBrains		= section.read_varint();
+			map->numCandles		= section.read_varint();
 			section.stream.read((char*)&map->itemDrops, 2);
-			map->timer = section.read_varint();
+			map->timer			= section.read_varint();
 
 			map->badguy.fill({});
 			size_t badguy_count = section.read_varint();

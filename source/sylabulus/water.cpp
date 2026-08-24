@@ -1,17 +1,34 @@
 #include "water.h"
 #include "display.h"
 #include "player.h"
-#include "config.h"
+#include "winpch.h"
 
-#define WATER_WIDTH	(256)
-#define WATER_HEIGHT (256)
+#define WATER_WIDTH	(512)
+#define WATER_HEIGHT (512)
 #define WATERFIX (32)
-#define WATERDAMPEN (27)
+#define WATERDAMPEN (31)
+
+#define WATERBMP_WIDTH (256)
+#define WATERBMP_HEIGHT (256)
 
 short* water1, * water2;
-static byte* waterbkgd, scrollX, scrollY;
-static byte waterColor;
-static char waterAdj, scrollAmtX, scrollAmtY;
+static byte* waterbkgd;
+int scroll;
+int blorpX, blorpY, blorpTime;
+
+enum WaterType {
+	WBG_NORMAL,
+	WBG_RUSHING,
+	WBG_LAVA
+};
+
+byte waterType		= 0;
+byte waterColor		= 3;
+bool fancyWaterActive = true;
+
+bool FancyWaterActive() {
+	return true;
+}
 
 void InitWater(void)
 {
@@ -19,9 +36,7 @@ void InitWater(void)
 	byte* src;
 	int width;
 
-	if (config.shading == 0)
-		return;
-
+	scroll = 0;
 	water1 = (short*)malloc(WATER_WIDTH * WATER_HEIGHT * sizeof(short));
 	if (!water1)
 		FatalError("out of memory!");
@@ -40,51 +55,56 @@ void InitWater(void)
 	{
 		water1[i] = 0;
 		water2[i] = 0;
-		waterbkgd[i] = src[(i % WATER_WIDTH) + (i / WATER_WIDTH) * width];
+		waterbkgd[i] = 32 * 3 + 5;// src[(i % WATER_WIDTH) + (i / WATER_WIDTH) * width];
 	}
 }
 
 void ExitWater(void)
 {
-	if (config.shading == 0)
-		return;
-
 	free(water1);
 	free(water2);
-	free(waterbkgd);
 }
 
-void SetupWater(void)
+void SetupWater(int waterType)
 {
 	byte* src;
-	int width, i;
+	int width, i, j;
 
-	if (config.shading == 0)
+	if (!curMap)
 		return;
 
-	// different pictures and colors for different levels
-	GetDisplayMGL()->LoadBMP("graphics/water.bmp");
-	waterColor = 32 * 3;	// blue
-	waterAdj = 5;	// 5 levels brightened
-	scrollAmtX = -1;
-	scrollAmtY = 0;
+	printf("Water type is Type %d.", waterType);
+	switch (waterType)
+	{
+		default:
+		case MAP_WTR_WATER:
+			GetDisplayMGL()->LoadBMP("graphics/water.bmp");
+			waterColor = 3;
+			break;
+		case MAP_WTR_RAPIDS:
+			GetDisplayMGL()->LoadBMP("graphics/rapid.bmp");
+			waterColor = 3;
+			break;
+		case MAP_WTR_LAVA:
+			GetDisplayMGL()->LoadBMP("graphics/lava.bmp");
+			waterColor = 4;
+			break;
+	}
 
 	width = GetDisplayMGL()->GetWidth();
 	src = GetDisplayMGL()->GetScreen();
-	for (i = 0;i < WATER_WIDTH * WATER_HEIGHT;i++)
-	{
-		water1[i] = 0;
-		water2[i] = 0;
-		waterbkgd[i] = src[(i % WATER_WIDTH) + (i / WATER_WIDTH) * width];
-	}
-	printf("WATER INIT");
+	for (j = 0;j < WATER_HEIGHT;j++)
+		for (i = 0;i < WATER_WIDTH;i++)
+		{
+			water1[i + j * WATER_WIDTH] = 0;
+			water2[i + j * WATER_WIDTH] = 0;
+			waterbkgd[i + j * WATER_WIDTH] = src[(i % WATERBMP_WIDTH) + (j % WATERBMP_HEIGHT) * width];
+		}
+	blorpTime = 0;
 }
 
 inline short GetWaterBit(int x, int y)
 {
-	if (config.shading == 0)
-		return 0;
-
 	while (x < 0)
 		x += WATER_WIDTH;
 	while (x >= WATER_WIDTH)
@@ -99,9 +119,6 @@ inline short GetWaterBit(int x, int y)
 
 inline byte GetWaterBkgdBit(int x, int y)
 {
-	if (config.shading == 0)
-		return 0;
-
 	while (x < 0)
 		x += WATER_WIDTH;
 	while (x >= WATER_WIDTH)
@@ -114,39 +131,82 @@ inline byte GetWaterBkgdBit(int x, int y)
 	return waterbkgd[x + y * WATER_WIDTH];
 }
 
+byte flip = 0;
+
 void UpdateWater(void)
 {
 	int i, j;
 	short* tmp;
 
-	if (config.shading == 0)
-		return;
+	if (waterType == WBG_RUSHING)
+	{
+		scroll--;
+		blorpY--;
+	}
 
-	scrollX += scrollAmtX;
-	scrollY += scrollAmtY;
+	if (scroll < 0)
+		scroll += WATER_HEIGHT;
 
-	for (i = 0;i < 40;i++)
-		WaterBlop((byte)Random(256), (byte)Random(256), (byte)Random(24));
-
-	for (i = 0;i < WATER_WIDTH;i++)
-		for (j = 0;j < WATER_HEIGHT;j++)
+	if (waterColor == 4) // lava
+	{
+		// Lava moves slowly and has occasional large bubbles.
+		if (Random(8) == 0)
 		{
-			water2[i + j * WATER_WIDTH] = (GetWaterBit(i - 1, j) + GetWaterBit(i + 1, j) + GetWaterBit(i, j - 1) + GetWaterBit(i, j + 1)) / 2 - water2[i + j * WATER_WIDTH];
-			water2[i + j * WATER_WIDTH] = water2[i + j * WATER_WIDTH] * WATERDAMPEN / WATERFIX;
+			WaterBlop(
+				Random(WATER_WIDTH),
+				Random(WATER_HEIGHT),
+				(byte)(WATER_WIDTH / 8 + Random(WATER_WIDTH / 8))
+			);
+		}
+	}
+	else if (waterType == WBG_RUSHING)
+	{
+		for (i = 0; i < 40; i++)
+			WaterBlop(
+				Random(WATER_WIDTH),
+				Random(WATER_HEIGHT),
+				(byte)Random(WATER_WIDTH / 8)
+			);
+	}
+	else
+	{
+		WaterBlop(
+			Random(WATER_WIDTH),
+			Random(WATER_HEIGHT),
+			(byte)Random(WATER_WIDTH / 2)
+		);
+	}
+
+	// DON'T change these values.
+	// The simulation depends on this exact math.
+	int neighborDiv = 2;
+	int dampen = WATERDAMPEN;
+
+	for (i = 0; i < WATER_WIDTH; i++)
+		for (j = 0; j < WATER_HEIGHT; j++)
+		{
+			water2[i + j * WATER_WIDTH] =
+				(
+					GetWaterBit(i - 1, j) +
+					GetWaterBit(i + 1, j) +
+					GetWaterBit(i, j - 1) +
+					GetWaterBit(i, j + 1)
+					) / neighborDiv
+				- water2[i + j * WATER_WIDTH];
+
+			water2[i + j * WATER_WIDTH] =
+				water2[i + j * WATER_WIDTH] * dampen / WATERFIX;
 		}
 
 	tmp = water1;
 	water1 = water2;
-	water2 = tmp;	// swap the pointers
+	water2 = tmp;
 }
 
 byte WaterPixel(int x, int y)
 {
 	int camx, camy;
 	short s, xofs, yofs;
-
-	if (config.shading == 0)
-		return waterColor;
 
 	GetCamera(&camx, &camy);
 	x += camx;
@@ -155,8 +215,9 @@ byte WaterPixel(int x, int y)
 	x /= 2;
 	y /= 2;
 
-	x += scrollX;
-	y += scrollY;
+	y += scroll;
+	if (y < 0)
+		y += WATER_HEIGHT;
 
 	x = x % WATER_WIDTH;
 	y = y % WATER_HEIGHT;
@@ -164,37 +225,78 @@ byte WaterPixel(int x, int y)
 	xofs = GetWaterBit(x - 1, y) - GetWaterBit(x + 1, y);
 	yofs = GetWaterBit(x, y - 1) - GetWaterBit(x, y + 1);
 
-	s = GetWaterBkgdBit(x + xofs / WATERFIX - scrollX, y + yofs / WATERFIX - scrollY) & 31;
-	s += xofs / WATERFIX + waterAdj;	// shade it
+	int bgx = x + xofs / WATERFIX;
+	int bgy = y + yofs / WATERFIX;
 
-	if (s < 0)
-		s = 0;
-	if (s > 31)
-		s = 31;
+	// lava waves
+	if (waterColor == 4)
+	{
+		int wave;
 
-	return (byte)(s + waterColor);
+		wave =
+			Sine(y * 2 + scroll) / 40 +
+			Sine(y * 3 + scroll / 2) / 80;
+
+		bgx += wave;
+
+		if (bgx < 0)
+			bgx += WATER_WIDTH;
+		else if (bgx >= WATER_WIDTH)
+			bgx -= WATER_WIDTH;
+	}
+
+	s = GetWaterBkgdBit(bgx, bgy) & 31;
+
+	if (waterColor != 4) // normal water
+	{
+		s += xofs / WATERFIX;
+
+		if (s < 0)
+			s = 0;
+		if (s > 31)
+			s = 31;
+	}
+	else // lava
+	{
+		s += xofs / (WATERFIX * 8);
+		s = 5 + (s * 16) / 31;
+
+		if (s < 0)
+			s = 0;
+		if (s > 30)
+			s = 30;
+	}
+
+	return (byte)s + 32 * waterColor;
 }
 
 void WaterRipple(int x, int y, short amt)
 {
 	int camx, camy;
 
-	if (config.shading == 0)
-		return;
-
 	GetCamera(&camx, &camy);
-	if ((x - camx + 320) < 0 || (x - camx + 320) > 640 ||
-		(y - camy + 240) < 0 || (y - camy + 240) > 480)
+	if ((x - camx + SCRWID/2) < 0 || (x - camx + SCRWID/2) > SCRWID ||
+		(y - camy + SCRHEI/2) < 0 || (y - camy + SCRHEI/2) > SCRHEI * 2)
 		return;
 
-	x += 320;
-	y += 240;
+	x += SCRWID/2;
+	y += SCRHEI/2;
 
 	x /= 2;
 	y /= 2;
 
-	y += scrollY;
-	x += scrollX;
+	y += scroll;
+	if (y < 0)
+		y += WATER_HEIGHT;
+
+	//	x=x-camx;
+	//	y=y-camy;
+
+	//	if(x<0 || y<0 || x>639 || y>479)
+	//		return;	// no rippling from offscreen
+
+		//x+=camx;
+		//y+=camy;
 
 	x = x % WATER_WIDTH;
 	y = y % WATER_HEIGHT;
@@ -221,13 +323,10 @@ void WaterRipple(int x, int y, short amt)
 	water2[x + y * WATER_WIDTH] += amt / 2;
 }
 
-void WaterBlop(byte x, byte y, byte width)
+void WaterBlop(int x, int y, int width)
 {
 	int i, x2;
 	short s;
-
-	if (config.shading == 0)
-		return;
 
 	s = 1;
 	for (i = x;i <= x + width;i++)
@@ -235,7 +334,7 @@ void WaterBlop(byte x, byte y, byte width)
 		x2 = i;
 		if (x2 > WATER_WIDTH)
 			x2 -= WATER_WIDTH;
-		water2[((byte)(x2)) + ((byte)(y)) * WATER_WIDTH] += s;
+		water2[(x2 % WATER_WIDTH) + (y % WATER_HEIGHT) * WATER_WIDTH] += s;
 		if ((i - x) < width / 2)
 			s += WATERFIX * 3 / 4;
 		else if (s > 1)

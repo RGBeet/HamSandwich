@@ -38,7 +38,8 @@ void RenderFloorTileShadow(int x,int y,int t,char light);
 void RenderFloorTileUnlit(int x,int y,int t);
 void RenderWallTile(int x,int y,word w,word f,char light);
 void RenderWallTileTrans(int x,int y,word w,word f,char light);
-void PlotStar(int x,int y,byte col,byte tx,byte ty,word tileNum);
+void PlotStar(int x,int y, byte col, byte tx, byte ty, word tileNum);
+void PlotSky(int x, int y, byte col, byte tx, byte ty, word tileNum);
 
 // super shading!
 void RenderFloorTileFancy(int x,int y,int t,byte shadow,const char *light);

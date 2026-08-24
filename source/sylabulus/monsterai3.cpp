@@ -456,7 +456,7 @@ void AI_BuddyBunny(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	if (me->mind1)
 	{
 		me->mind1 = 0;
-		if (me->aiType == MONS_FRIENDLY)
+		if ((EntityType)me->aiType == EntityType::Bunny)
 			me->mind3 = Random(4) * 64;
 		me->mind = 30;	// wait 1 seconds before trying again
 		me->dx = 0;
@@ -516,7 +516,7 @@ void AI_BuddyBunny(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 		if (y == 0)	// no directions to go!
 		{
-			if (me->aiType == MONS_FRIENDLY)
+			if ((EntityType)me->aiType == EntityType::Bunny)
 				me->mind3 = Random(4) * 64;
 			me->mind = 30;	// wait 1 second before trying again
 			me->dx = 0;
@@ -2167,12 +2167,18 @@ void AI_BigPumpkin(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			if (g && !g->CanWalk(g->x, g->y, map, world))
 				RemoveGuy(g);
 		}
+		if (me->seq == ANIM_ATTACK && me->frm == 5 && me->reload == 0 && goodguy)
+		{
+			// crush skull
+			x = me->x + Cosine(me->facing * 32) * 20;
+			y = me->y + Sine(me->facing * 32) * 20;
+			if (me->AttackCheck(24, x >> FIXSHIFT, y >> FIXSHIFT, goodguy))
+			{
+				goodguy->GetShot(Cosine(me->facing * 32) * 10, Sine(me->facing * 32) * 10, 10, map, world);
+			}
+			me->reload = 10;
+		}
 		return;	// can't do nothin' right now
-	}
-
-	if (me->seq == ANIM_MOVE && me->frm == 2 && goodguy)	// hits on this frame
-	{
-		FindVictim(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 36, Cosine(me->facing * 32) * 4, Sine(me->facing * 32) * 4, 4, map, world, me->friendly);
 	}
 
 	if (me->mind == 0)	// not currently aware of goodguy
@@ -2211,6 +2217,17 @@ void AI_BigPumpkin(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			return;
 		}
 
+		if (me->seq == ANIM_MOVE && me->frm == 2 && goodguy)	// hits on this frame
+		{
+			if (RangeToTarget(me, goodguy) < (60 * FIXAMT) && !Random(8) && !me->reload)
+			{
+				StartAnimation(me, ANIM_ATTACK, 64);
+				SetMoveFacing(me, 0);
+				me->reload = 0;
+				return;
+			}
+		}
+
 		if (me->mind1)
 			me->mind1--;
 		else
@@ -2221,14 +2238,14 @@ void AI_BigPumpkin(Guy* me, Map* map, world_t* world, Guy* goodguy)
 				me->mind1 = 20;	// stay on trail a little longer
 			return;
 		}
-		me->dx = Cosine(me->facing * 32);
-		me->dy = Sine(me->facing * 32);
+		me->dx = Cosine(me->facing * 32)*3/2;
+		me->dy = Sine(me->facing * 32)*3/2;
 		if (me->seq != ANIM_MOVE)
 		{
 			me->seq = ANIM_MOVE;
 			me->frm = 0;
 			me->frmTimer = 0;
-			me->frmAdvance = 128;
+			me->frmAdvance = 64;
 		}
 	}
 }

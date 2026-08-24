@@ -56,8 +56,9 @@ static const LevelFlags flagNum[]={
 static const MapWeather weatherType[] = { MAP_WEATHER_NONE, MAP_WEATHER_RAIN, MAP_WEATHER_SNOW, MAP_WEATHER_SAKURA, MAP_WEATHER_FOG };
 static const MapType levelType[] = { MAP_TYPE_NORMAL, MAP_TYPE_HUB, MAP_TYPE_SECRET, MAP_TYPE_BOSS, MAP_TYPE_KEYCHAIN };
 static const MapLighting lightingType[] = { MAP_LIGHT_NORMAL, MAP_LIGHT_TORCH, MAP_LIGHT_LANTERN, MAP_LIGHT_STEALTH };
-static const MapEnvironment environmentType[] = { MAP_ENV_NORMAL, MAP_ENV_UNDERWATER, MAP_ENV_OXYGEN, MAP_ENV_SUPERHOT, MAP_ENV_OUTERSPACE, MAP_ENV_TEST };
-static const MapTypeFlags flagTypes[] = { MAP_FLG_STARRY, MAP_FLG_WAVY };
+static const MapEnvironment environmentType[] = { MAP_ENV_NORMAL, MAP_ENV_UNDERWATER, MAP_ENV_OXYGEN, MAP_ENV_SUPERHOT, MAP_ENV_OUTERSPACE, MAP_ENV_DUMBSIDE };
+static const MapSky skyTypes[] = { MAP_SKY_NONE, MAP_SKY_STARRY, MAP_SKY_SUNSET };
+static const MapWater waterTypes[] = { MAP_WTR_NONE, MAP_WTR_WATER, MAP_WTR_RAPIDS, MAP_WTR_LAVA };
 
 static const char weatherTypeNames[][16] = {
 	"No Weather", "Rain", "Snow", "Sakura Leaves", "Foggy",
@@ -69,10 +70,13 @@ static const char lightingTypeNames[][16] = {
 	"Nrml. Light", "Torch Lit", "Lantern Lit", "Stealth Mode",
 };
 static const char environmentTypeNames[][16] = {
-	"Nrml. Env.", "Underwater", "Oxygen Tank", "Super Hot!", "Outer Space", "[TEST]",
+	"Nrml. Env.", "Underwater", "Oxygen Tank", "Super Hot!", "Outer Space", "Dumb Side",
 };
-static const char flagTypeNames[][16] = {
-	"Starry", "Wavy",
+static const char skyTypeNames[][16] = {
+	"No Sky FX", "Starry Night", "Sunset"
+};
+static const char waterTypeNames[][16] = {
+	"No Water FX", "Calm Water", "River Rapids", "Lava",
 };
 
 static byte mapZoom[MAX_MAPSIZE * MAX_MAPSIZE];
@@ -84,19 +88,38 @@ void RenderZoomMap(void);
 
 static void NameClick(int id)
 {
-	mode=LDMODE_NAME;
-	InitTextDialog("Enter a name for the level:",world->map[mapNum]->name,31);
+	if(rClick)
+	{
+		if (mapNum > 0)
+		{
+			world->map[mapNum]->name[0] = '\0';
+		}
+		else
+		{
+			sprintf(world->map[mapNum]->name, "New World");
+		}
+		MakeNormalSound(SND_COINGET);
+		LevelDialogButtons();
+	}
+	else
+	{
+		MakeNormalSound(SND_MENUCLICK);
+		mode = LDMODE_NAME;
+		InitTextDialog("Enter a name for the level:", world->map[mapNum]->name, 31);
+	}
 }
 
 static void SongClick(int id)
 {
 	if(rClick)
 	{
+		MakeNormalSound(SND_COINGET);
 		world->map[mapNum]->song[0]='\0';
 		LevelDialogButtons();
 	}
 	else
 	{
+		MakeNormalSound(SND_MENUCLICK);
 		mode=LDMODE_SONGPICK;
 		InitFileDialog("music",".ogg",FM_LOAD|FM_EXIT|FM_PLAYSONGS,world->map[mapNum]->song);
 	}
@@ -140,24 +163,26 @@ static void ArrowButtonClick(int id)
 	case 7:
 		world->map[mapNum]->environment = (MapEnvironment)((world->map[mapNum]->environment + 1) % MAP_ENV_MAX);
 		break;
+
+	case 8:
+		world->map[mapNum]->skyType = (MapSky)((world->map[mapNum]->skyType + MAP_SKY_MAX - 1) % MAP_SKY_MAX);
+		break;
+
+	case 9:
+		world->map[mapNum]->skyType = (MapSky)((world->map[mapNum]->skyType + 1) % MAP_SKY_MAX);
+		break;
+
+	case 10:
+		world->map[mapNum]->waterType = (MapWater)((world->map[mapNum]->waterType + MAP_WTR_MAX - 1) % MAP_WTR_MAX);
+		printf("New Water Type: %d", world->map[mapNum]->waterType);
+		break;
+
+	case 11:
+		world->map[mapNum]->waterType = (MapWater)((world->map[mapNum]->waterType + 1) % MAP_WTR_MAX);
+		printf("New Water Type: %d", world->map[mapNum]->waterType);
+		break;
 	}
 	MakeNormalSound(SND_MENUCLICK);
-}
-
-// TODO: Check this out?
-static void FlagClick(int id)
-{
-	int i;
-	switch (id-ID_FLAG)
-	{
-		case 8:
-			world->map[mapNum]->miscFlags ^= flagTypes[0];
-			break;
-		case 9:
-			world->map[mapNum]->miscFlags ^= flagTypes[1];
-			break;
-	}
-	SetButtonState(id, CHECK_OFF);
 }
 
 static void PrevClick(int id)
@@ -167,6 +192,7 @@ static void PrevClick(int id)
 		mapNum=world->numMaps-1;
 	EditorSelectMap(mapNum);
 	LevelDialogButtons();
+	MakeNormalSound(SND_MENUCLICK);
 	RenderZoomMap();
 }
 
@@ -177,43 +203,87 @@ static void NextClick(int id)
 		mapNum=0;
 	EditorSelectMap(mapNum);
 	LevelDialogButtons();
+	MakeNormalSound(SND_MENUCLICK);
 	RenderZoomMap();
 }
 
 static void WidthClick(int id)
 {
+	MakeNormalSound(SND_MENUCLICK);
 	mode=LDMODE_WIDTH;
 	InitTextDialog("Enter level width (20-200):","",3);
 }
 
 static void HeightClick(int id)
 {
+	MakeNormalSound(SND_MENUCLICK);
 	mode=LDMODE_HEIGHT;
 	InitTextDialog("Enter level height (20-200)","",3);
 }
 
 static void BrainsClick(int id)
 {
-	mode=LDMODE_BRAINS;
-	InitTextDialog("Enter # of Brains needed to win:","",5);
+	if(rClick)
+	{
+		world->map[mapNum]->numBrains = 0;
+		MakeNormalSound(SND_COINGET);
+		LevelDialogButtons();
+	}
+	else
+	{
+		mode = LDMODE_BRAINS;
+		MakeNormalSound(SND_MENUCLICK);
+		InitTextDialog("Enter # of Brains needed to win:", "", 5);
+	}
 }
 
 static void CandlesClick(int id)
 {
-	mode=LDMODE_CANDLES;
-	InitTextDialog("Enter # of Candles needed for bonus:","",5);
+	if (rClick)
+	{
+		world->map[mapNum]->numCandles = 0;
+		MakeNormalSound(SND_COINGET);
+		LevelDialogButtons();
+	}
+	else
+	{
+		mode = LDMODE_CANDLES;
+		MakeNormalSound(SND_MENUCLICK);
+		InitTextDialog("Enter # of Candles needed for bonus:", "", 5);
+
+	}
 }
 
 static void ItemDropClick(int id)
 {
-	mode=LDMODE_ITEMDROP;
-	InitTextDialog("Enter chance for enemies to drop items:","",5);
+	if (rClick)
+	{
+		world->map[mapNum]->itemDrops = 5*FIXAMT;
+		MakeNormalSound(SND_COINGET);
+		LevelDialogButtons();
+	}
+	else
+	{
+		mode = LDMODE_ITEMDROP;
+		MakeNormalSound(SND_MENUCLICK);
+		InitTextDialog("Enter chance for enemies to drop items:", "", 5);
+	}
 }
 
 static void TimerClick(int id)
 {
-	mode=LDMODE_TIMER;
-	InitTextDialog("Enter countdown length (0 = nothing, or 10-999):", "", 3);
+	if (rClick)
+	{
+		world->map[mapNum]->timer = 0;
+		MakeNormalSound(SND_COINGET);
+		LevelDialogButtons();
+	}
+	else
+	{
+		mode = LDMODE_TIMER;
+		MakeNormalSound(SND_MENUCLICK);
+		InitTextDialog("Enter countdown length (0 = nothing, or 10-999):", "", 3);
+	}
 }
 
 static bool CountsDouble(int type)
@@ -410,15 +480,7 @@ void LevelDialogButtons(void)
 	MakeButton(BTN_NORMAL,ID_SONG,0,DLG_X+2,DLG_Y+37,50,15,"Song",SongClick);
 	MakeButton(BTN_STATIC,ID_STATIC,0,DLG_X+54,DLG_Y+37,50,15,world->map[mapNum]->song,SongClick);
 
-	/*
-	for(i=0;i<NUM_LVL_FLAGS;i++)
-	{
-		MakeButton(BTN_CHECK,ID_FLAG+i,((world->map[mapNum]->flags&flagNum[i])!=0)*CHECK_ON,DLG_X+2,DLG_Y+66+16*i,
-			150,15,MapFlagName(i),FlagClick);
-	}
-	*/
-
-	MakeButton(BTN_NORMAL, ID_FLAG, 0, DLG_X+2, DLG_Y+66, 19, 17, "<", ArrowButtonClick);
+	MakeButton(BTN_NORMAL, ID_FLAG+0, 0, DLG_X+2, DLG_Y+66, 19, 17, "<", ArrowButtonClick);
 	MakeButton(BTN_NORMAL, ID_FLAG+1, 0, DLG_X+123, DLG_Y+66, 19, 17, ">", ArrowButtonClick);
 
 	MakeButton(BTN_NORMAL, ID_FLAG+2, 0, DLG_X+2, DLG_Y+85, 19, 17, "<", ArrowButtonClick);
@@ -430,8 +492,11 @@ void LevelDialogButtons(void)
 	MakeButton(BTN_NORMAL, ID_FLAG+6, 0, DLG_X+2, DLG_Y+123, 19, 17, "<", ArrowButtonClick);
 	MakeButton(BTN_NORMAL, ID_FLAG+7, 0, DLG_X+123, DLG_Y+123, 19, 17, ">", ArrowButtonClick);
 
-	MakeButton(BTN_CHECK, ID_FLAG+8, 0, DLG_X+2, DLG_Y+181, 128, 15, "Star BG", FlagClick);
-	MakeButton(BTN_CHECK, ID_FLAG+9, 0, DLG_X+2, DLG_Y+197, 128, 15, "Wavy", FlagClick);
+	MakeButton(BTN_NORMAL, ID_FLAG+8, 0, DLG_X+2, DLG_Y+142, 19, 17, "<", ArrowButtonClick);
+	MakeButton(BTN_NORMAL, ID_FLAG+9, 0, DLG_X+123, DLG_Y+142, 19, 17, ">", ArrowButtonClick);
+
+	MakeButton(BTN_NORMAL, ID_FLAG+10, 0, DLG_X+2, DLG_Y+161, 19, 17, "<", ArrowButtonClick);
+	MakeButton(BTN_NORMAL, ID_FLAG+11, 0, DLG_X+123, DLG_Y+161, 19, 17, ">", ArrowButtonClick);
 
 	MakeButton(BTN_NORMAL,ID_PREV,0,DLG_X2-104,DLG_Y+2,50,15,"Prev",PrevClick);
 	MakeButton(BTN_NORMAL,ID_NEXT,0,DLG_X2-52,DLG_Y+2,50,15,"Next",NextClick);
@@ -445,8 +510,8 @@ void LevelDialogButtons(void)
 	MakeButton(BTN_STATIC,ID_STATIC,0,DLG_X2-211+162,DLG_Y2-240,50,15,s,NULL);
 
 	sprintf(s, "%0.2f%%", (float)world->map[mapNum]->itemDrops / (float)FIXAMT);
-	MakeButton(BTN_NORMAL, ID_ITEMDROP, 0, DLG_X + 2, DLG_Y + 247, 50, 15, "Drop%", ItemDropClick);
-	MakeButton(BTN_STATIC, ID_STATIC, 0, DLG_X + 81, DLG_Y + 247, 40, 15, s, NULL);
+	MakeButton(BTN_NORMAL, ID_ITEMDROP, 0, DLG_X + 2, DLG_Y + 244, 50, 15, "Drop%", ItemDropClick);
+	MakeButton(BTN_STATIC, ID_STATIC, 0, DLG_X + 81, DLG_Y + 244, 40, 15, s, NULL);
 
 	sprintf(s, "%ds (%02d:%02d)", world->map[mapNum]->timer, world->map[mapNum]->timer/60, world->map[mapNum]->timer%60);
 	MakeButton(BTN_NORMAL, ID_TIMER, 0, DLG_X + 2, DLG_Y + 262, 50, 15, "Timer", TimerClick);
@@ -576,9 +641,11 @@ void RenderLevelDialog(int msx,int msy, world_t *wrld,MGLDraw *mgl)
 	mgl->Box(DLG_X,DLG_Y,DLG_X2,DLG_Y2,31);
 
 	CenterPrint(DLG_X+76, DLG_Y+69, levelTypeNames[wrld->map[mapNum]->type], 0, 1);
-	CenterPrint(DLG_X+76, DLG_Y+89, weatherTypeNames[wrld->map[mapNum]->weather], 0, 1);
-	CenterPrint(DLG_X+76, DLG_Y+109, lightingTypeNames[wrld->map[mapNum]->lighting], 0, 1);
-	CenterPrint(DLG_X+76, DLG_Y+129, environmentTypeNames[wrld->map[mapNum]->environment], 0, 1);
+	CenterPrint(DLG_X+76, DLG_Y+88, weatherTypeNames[wrld->map[mapNum]->weather], 0, 1);
+	CenterPrint(DLG_X+76, DLG_Y+107, lightingTypeNames[wrld->map[mapNum]->lighting], 0, 1);
+	CenterPrint(DLG_X+76, DLG_Y+126, environmentTypeNames[wrld->map[mapNum]->environment], 0, 1);
+	CenterPrint(DLG_X+76, DLG_Y+145, skyTypeNames[wrld->map[mapNum]->skyType], 0, 1);
+	CenterPrint(DLG_X+76, DLG_Y+164, waterTypeNames[wrld->map[mapNum]->waterType], 0, 1);
 
 	if(PointInRect(msx,msy,DLG_X2-211,DLG_Y2-220,DLG_X2-10,DLG_Y2-211))
 		levelSpr->GetSprite(4)->DrawBright(DLG_X2-219,DLG_Y2-220,mgl,8);
@@ -804,7 +871,12 @@ byte LevelDialogRClick(int msx,int msy)
 			else
 			{
 				rClick=1;
-				CheckButton(msx,msy,ID_SONG);
+				CheckButton(msx,msy,ID_SONG); // clears song if right-clicked
+				CheckButton(msx,msy,ID_NAME);
+				CheckButton(msx,msy,ID_ITEMDROP);
+				CheckButton(msx,msy,ID_BRAINS);
+				CheckButton(msx,msy,ID_CANDLES);
+				CheckButton(msx,msy,ID_TIMER);
 			}
 			break;
 	}

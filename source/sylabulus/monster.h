@@ -399,6 +399,7 @@ enum class EntityType {
 	EdisonBrain,
 	Punkin,
 	ChefAngelo,
+	Jacko,
 
 	MaxId // number of monster slots
 };

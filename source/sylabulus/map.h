@@ -92,16 +92,26 @@ enum MapEnvironment : byte
 	MAP_ENV_OXYGEN,			// like underwater, but NOT blue
 	MAP_ENV_SUPERHOT,		// underlava = hurts you periodically!
 	MAP_ENV_OUTERSPACE,		// low gravity
-	MAP_ENV_TEST,			// the testing one?!
-	MAP_ENV_MAX				// low gravity
+	MAP_ENV_DUMBSIDE,		// the dumb side...
+	MAP_ENV_MAX
 };
 
-enum MapTypeFlags : dword
+enum MapSky : byte
 {
-	MAP_FLG_STARRY	= 1 << 0,
-	MAP_FLG_WAVY	= 1 << 1,
+	MAP_SKY_NONE,
+	MAP_SKY_STARRY,
+	MAP_SKY_SUNSET,
+	MAP_SKY_MAX
 };
 
+enum MapWater : byte
+{
+	MAP_WTR_NONE,
+	MAP_WTR_WATER,			// simple fancy water
+	MAP_WTR_RAPIDS,			// goes down, great for rapid levels
+	MAP_WTR_LAVA,			// dark, brooding lava
+	MAP_WTR_MAX
+};
 
 
 // map updating modes
@@ -208,7 +218,10 @@ class Map
 		MapWeather weather;
 		MapLighting lighting;
 		MapEnvironment environment;
-		dword miscFlags;
+		MapSky skyType;
+		MapWater waterType;
+
+		byte expansion[26]; // just in case...
 
 		word numBrains;
 		word numCandles;
@@ -226,6 +239,7 @@ class Map
 	private:
 		void LOSPoints(int x,int y,int curx,int cury,int *p1x,int *p1y,int *p2x,int *p2y);
 		void RenderStars(int camX, int camY);
+		void RenderSky(int camX, int camY);
 };
 
 byte PlaceItemCallback(int x,int y,int cx,int cy,int value,Map *map);

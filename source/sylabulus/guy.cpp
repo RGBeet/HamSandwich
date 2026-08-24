@@ -9,6 +9,7 @@
 #include "goal.h"
 #include "pathfinding.h"
 #include "map.h"
+#include "water.h"
 
 static std::unique_ptr<Guy[]> guys;
 static std::unique_ptr<bool[]> changed;
@@ -876,6 +877,8 @@ void Guy::Update(Map *map,world_t *world)
 			{
 				if(burnFlip)
 				{
+					for (int i = 16; i <= 28; i += 12)
+						WaterRipple(x / FIXAMT - 8 + Random(16), y / FIXAMT + -8 + Random(16), Random(32 * 50));
 					GetShot(0,0,8,map,world);
 					dz = 8*FIXAMT;
 					dx = Cosine(facing) * -(dx/Cosine(facing));
@@ -1029,44 +1032,44 @@ void Guy::MonsterControl(Map *map,world_t *world)
 				FIXAMT*2+Random(FIXAMT*4));
 	}
 
-	if(aiType==MONS_BURNER || aiType==MONS_ROLLER || aiType==MONS_ROLLER2 || aiType==MONS_COFFIN || aiType==MONS_DARKCOFFIN ||
-		aiType==MONS_ALIENEGG || aiType==MONS_ALIENEGG2 || aiType==MONS_EGGSAC || aiType==MONS_BOILER ||
-		aiType==MONS_FRIENDLY || aiType==MONS_SNOWBALL || aiType==MONS_SNOWBALL2 || aiType==MONS_ROLLER3 ||
-		aiType==MONS_ROLLER4 || aiType==MONS_FRIENDLY2 || (aiType>=MONS_PATCH && aiType<=MONS_PATCH4) ||
-		(aiType>=MONS_SUCKER1 && aiType<=MONS_BLOWER4) || (aiType>=MONS_PARKEDCAR && aiType<=MONS_TRAFFIC2) || aiType==MONS_XENOEGG ||
-		aiType==MONS_YUGO || aiType==MONS_CHEST)
+	switch ((EntityType)aiType)
 	{
-		// these monsters don't ever stop functioning, and can't be tricked by
-		// invisibility
-		target=goodguy;
-	}
-	else
-	{
-		// lose sight of the invisible goodguy
-		if((player.invisibility || player.stealthy) && target==goodguy)
-		{
-			target=nobody;	// target the randomly moving, invisible, invincible, ghostly, nobody
-		}
-
-		// if you lost your target, or 2% chance of it even if you didn't,
-		// time to pick a new target
-		if(!target || target->friendly==friendly || target->type==MONS_NONE || target==nobody || Random(50)==0)
-		{
-			// lost your target one way or another
-			if(friendly)
-				i=LockOnEvil(x>>FIXSHIFT,y>>FIXSHIFT);
-			else
-				i=LockOnGood(x>>FIXSHIFT,y>>FIXSHIFT);
-
-			if(i!=65535)
-				target=&guys[i];
-			else
+		case EntityType::Bunny:
+		case EntityType::BunnyPath:
+		case EntityType::EggSac:
+		case EntityType::YouGo:
+		case EntityType::CarTraffic:
+			// these monsters don't ever stop functioning, and can't be tricked by
+			// invisibility
+			target = goodguy;
+		break;
+		default:
+			// lose sight of the invisible goodguy
+			if ((player.invisibility || player.stealthy) && target == goodguy)
 			{
-				target=nobody;
+				target = nobody;	// target the randomly moving, invisible, invincible, ghostly, nobody
 			}
-		}
-		if(target==nobody && !friendly && player.invisibility==0 && player.stealthy==0 && goodguy)
-			target=goodguy;
+
+			// if you lost your target, or 2% chance of it even if you didn't,
+			// time to pick a new target
+			if (!target || target->friendly == friendly || target->type == MONS_NONE || target == nobody || Random(50) == 0)
+			{
+				// lost your target one way or another
+				if (friendly)
+					i = LockOnEvil(x >> FIXSHIFT, y >> FIXSHIFT);
+				else
+					i = LockOnGood(x >> FIXSHIFT, y >> FIXSHIFT);
+
+				if (i != 65535)
+					target = &guys[i];
+				else
+				{
+					target = nobody;
+				}
+			}
+			if (target == nobody && !friendly && player.invisibility == 0 && player.stealthy == 0 && goodguy)
+				target = goodguy;
+		break;
 	}
 
 	if(type==MONS_NONE)
@@ -1653,7 +1656,7 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 					guys[i].target=&guys[j];
 				else
 					guys[i].target=NULL;
-				if(type==MONS_FRIENDLY2)
+				if((EntityType)type==EntityType::BunnyPath)
 				{
 					guys[i].mind1=1;
 					guys[i].mind3=64;
@@ -1831,16 +1834,25 @@ void AddMapGuys(Map *map)
 				if(g)
 				{
 					g->mind=genType[i];
-					if(genType[i]==MONS_BOUAPHA || genType[i]==MONS_FRIENDLY || genType[i]==MONS_GOODTURRET ||
-						genType[i]==MONS_WIZARD || genType[i]==MONS_GOODROBOT || genType[i]==MONS_GOODROBOT2 ||
-						genType[i]==MONS_FRIENDLY2 || genType[i]==MONS_PUNKBUNNY || genType[i]==MONS_FOLLOWBUNNY ||
-						genType[i]==MONS_MINECART || genType[i]==MONS_RAFT || genType[i]==MONS_YUGO)
+
+					switch((EntityType)genType[i])
 					{
-						player.totalEnemies--;
-						g->friendly=1;
+						case EntityType::Player:
+						case EntityType::Bunny:
+						case EntityType::BunnyPath:
+						case EntityType::BunnyFollow:
+						case EntityType::BunnyJimbo:
+						case EntityType::GoodTurret:
+						case EntityType::PunkBunny:
+						case EntityType::Minecart:
+						case EntityType::YouGo:
+							player.totalEnemies--;
+							g->friendly = 1;
+							break;
+						default:
+							g->friendly = 0;
+							break;
 					}
-					else
-						g->friendly=0;
 					g->facing=0;
 				}
 			}
@@ -3268,112 +3280,15 @@ byte Guy::IsAwake(void)
 {
 	if(frozen)
 		return 0;	// frozen monsters are always asleep!
-
 	if(target==nobody)
 		return 0;	// monsters with no target are asleep
-
-	switch(aiType)
+	switch((EntityType)aiType)
 	{
-		case MONS_EGGSAC:
-		case MONS_MOSSGRANDE:
-		case MONS_LAMP:
-		case MONS_COFFIN:
-		case MONS_ALIENEGG:
-		case MONS_ALIENEGG2:
-		case MONS_STAREYBAT:	// only awake if staring at you
-		case MONS_STARFISH:		// only awake if shooting at you
-		case MONS_DARKCOFFIN:
-		case MONS_XENOEGG:
-			return (seq==ANIM_ATTACK);	// only awake if actively making a monster
-			break;
-		case MONS_ROBOFACTORY:
-		case MONS_PATCH:
-		case MONS_PATCH2:
-		case MONS_PATCH3:
-		case MONS_PATCH4:
-			return (seq==ANIM_ATTACK || seq==ANIM_A1);	// only awake if actively making a monster
-			break;
-		case MONS_GENERATOR1:
-		case MONS_GENERATOR2:
-		case MONS_GENERATOR3:
-		case MONS_GENERATOR4:
-			return (mind2==1);	// only considered active during the last second before summoning
-			break;
-		case MONS_VAMPIRE:
-		case MONS_DARKVAMP:
-		case MONS_SPIKEY:
-			return (mind!=2);	// considered asleep if garlicked
-			break;
-		case MONS_PYGMY:
-		case MONS_PUMPKIN:
-		case MONS_BABYTHING:
-		case MONS_MUSH:
-		case MONS_SUPERZOMBIE:
-		case MONS_STICKMAN:
-		case MONS_ISOZOID:
-		case MONS_PENGUIN:
-		case MONS_ZOMBONI:
-		case MONS_SVEN:
-		case MONS_BJORN:
-		case MONS_MUMBLE:
-		case MONS_LICH:
-		case MONS_MECHABOUAPHA:
-		case MONS_DRL:
-		case MONS_MINECART:	// not being ridden=asleep
-		case MONS_RAFT:		// same
-		case MONS_GHOST:
-		case MONS_PYGMY2:
-		case MONS_PYGMY3:
-		case MONS_KNIGHT:
-		case MONS_COUNTESS:
-		case MONS_TURRET:
-		case MONS_KONGOR:
-		case MONS_SQUASH:
-		case MONS_MINIPYGMY:
-		case MONS_LOONYBOT:
-		case MONS_GOODTURRET:
-		case MONS_SHAMAN2:
-		case MONS_SHARK:
-		case MONS_GNOME:
-		case MONS_PUMPKIN2:
-		case MONS_BOOMKIN:
-		case MONS_PYGMYACCT:
-		case MONS_CRAZYPANTS:
-		case MONS_CONE:
-		case MONS_PYGMYDIVER:
-		case MONS_OLAF:
-		case MONS_FOLLOWBUNNY:
-		case MONS_AUTOZOID:
-		case MONS_JELLOFISH:
-		case MONS_PUNKIN:
-		case MONS_SNKYSHRK2:
-		case MONS_WHATSIT:
-		case MONS_SHOCKGHOST:
-		case MONS_MISLTURRET:
-		case MONS_DEATHTURRET:
-		case MONS_WEATHERMAN:
-		case MONS_PUNKBUNNY:
-		case MONS_JALAPENO:
-			return (mind!=0);
-			break;
-		case MONS_LOONYGUN:
-		case MONS_LOONYCORE:
-			return (parent && parent->mind!=0);
-			break;
-		case MONS_LAZYBONE:
-			return (seq!=ANIM_IDLE);
-			break;
-		case MONS_PUFFYFISH:
-		case MONS_PUFFYFISH2:
-			return (seq!=ANIM_MOVE);	// awake if puffed to any degree
-			break;
-		case MONS_YUGO:
-		case MONS_PATROLLR:
-		case MONS_PATROLUD:
-		case MONS_DPATROLLR:
-		case MONS_DPATROLUD:
-			return (mind==2);	// awake if being driven
-			break;
+		case EntityType::Mumble:
+		case EntityType::ManicMumble:
+			return (mind == 1);
+		case EntityType::BunnyFollow:
+			return (mind == 1);
 		default:
 			return 1;	// by default, monsters that don't do a wake-up are awake
 			break;
@@ -3705,27 +3620,23 @@ int Guy::GetPathDistance()
 	return distance;
 }
 
-void Guy::AvoidGuys()
+void Guy::AvoidGuys(int buffer)
 {
-	for (int i = 0;i < maxGuys;i++)
+	int i;
+
+	for (i = 0; i < maxGuys; i++)
 	{
 		if (&guys[i] == this)
 			continue;
 
-		if (!guys[i].type || guys[i].hp <= 0)
+		if (!guys[i].type || guys[i].hp <= 0 || !guys[i].IsAwake())
 			continue;
 
-		int dx = (x - guys[i].x) >> FIXSHIFT;
-		int dy = (y - guys[i].y) >> FIXSHIFT;
+		if (MonsterFlags(type, aiType) & MF_FREEWALK)
+			continue;
 
-		int dist = dx * dx + dy * dy;
-
-		if (dist < 32 * 32)
-		{
-			this->dx += dx;
-			this->dy += dy;
-		}
 	}
+	// fix this
 }
 
 byte TerrainCheck(Guy* g, byte target, mapTile_t* mapTile, world_t* world)

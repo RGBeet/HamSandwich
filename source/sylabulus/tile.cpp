@@ -266,10 +266,21 @@ void PlotStar(int x,int y,byte col,byte tx,byte ty,word tileNum)
 {
 	byte *dst;
 
-	if(current->GetTileData(tileNum)[tx+ty*TILE_WIDTH]==0)
+	if(current->GetTileData(tileNum)[tx+ty*TILE_WIDTH]<32)
 	{
 		dst=tileMGL->GetScreen()+x+y*tileMGL->GetWidth();
 		*dst=col;
+	}
+}
+
+void PlotSky(int x, int y, byte col, byte tx, byte ty, word tileNum)
+{
+	byte* dst;
+
+	if (current->GetTileData(tileNum)[tx + ty * TILE_WIDTH] == 0)
+	{
+		dst = tileMGL->GetScreen() + x + y * tileMGL->GetWidth();
+		*dst = col;
 	}
 }
 

@@ -68,13 +68,7 @@ void InitTally(MGLDraw *mgl)
 	else
 		perfectBonus=1.0f;
 
-	if (profile.difficulty == DIFFICULTY_NORMAL)
-		diffBonus = 0.75f;
-	else if (profile.difficulty == DIFFICULTY_HARD)
-		diffBonus = 1.0f;
-	else if (profile.difficulty == DIFFICULTY_LUNATIC)
-		diffBonus = 1.25f;
-	static_assert(MAX_DIFFICULTY == 3, "Must handle new difficulty here");
+	// modifiers?
 
 	mgl->LastKeyPressed();
 

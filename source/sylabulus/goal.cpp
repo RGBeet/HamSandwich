@@ -85,7 +85,7 @@ void CompleteGoal(byte goal)
 
 void GoalKilledSomebody(Guy *g,byte type,byte frozen)
 {
-	dword totalKills;
+	dword totalKills=0;
 	int i;
 
 	if(type==MONS_BOUAPHA)
@@ -93,85 +93,6 @@ void GoalKilledSomebody(Guy *g,byte type,byte frozen)
 		if(profile.progress.kills[MONS_BOUAPHA]>=100)
 			CompleteGoal(98);
 	}
-	else if(type==MONS_MATBRAIN)
-		CompleteGoal(30);
-	else if(type==MONS_MAT2BRAIN)
-		CompleteGoal(31);
-	else if(type==MONS_THING)
-		CompleteGoal(32);
-	else if(type==MONS_SVEN || type==MONS_BJORN)
-	{
-		if((type==MONS_BJORN && profile.progress.kills[MONS_SVEN]>0) ||
-		   (type==MONS_SVEN && profile.progress.kills[MONS_BJORN]>0))
-			CompleteGoal(33);
-	}
-	else if(type==MONS_SPHINX)
-		CompleteGoal(34);
-	else if(type==MONS_KONGOR)
-		CompleteGoal(35);
-	else if(type==MONS_COUNTESS)
-		CompleteGoal(36);
-	else if(type==MONS_DRL)
-		CompleteGoal(37);
-	else if(type==MONS_PATTY)
-		CompleteGoal(38);
-	else if(type==MONS_DOZER)
-		CompleteGoal(39);
-	else if(type==MONS_LOONYCORE)
-		CompleteGoal(40);
-	else if(type==MONS_KINGCONE)
-		CompleteGoal(41);
-	else if(type==MONS_STICKMAN)
-	{
-		if(profile.progress.kills[MONS_STICKMAN]>=10)
-			CompleteGoal(42);
-	}
-	else if(type==MONS_EVILCLONE)
-	{
-		if(profile.progress.kills[MONS_EVILCLONE]>=10)
-			CompleteGoal(43);
-	}
-	else if(type==MONS_DUSTDEVIL)
-		CompleteGoal(44);
-
-	if(profile.progress.runOver>=100)
-		CompleteGoal(45);
-
-	if(PlayerGetAccelerate())
-		CompleteGoal(52);
-
-	if(type==MONS_MAGMAZOID || type==MONS_BOILER || type==MONS_BOOMKIN || type==MONS_JALAPENO || type==MONS_UNDERMAGMA ||
-		type==MONS_SCARAB || type==MONS_HOTSHROOM)
-	{
-		if(GetBulletAttackType()==BLT_FLAME || GetBulletAttackType()==BLT_FLAME2)
-			CompleteGoal(53);	// burned a fire monster to death
-	}
-
-	if(type==MONS_ROLLER || type==MONS_ROLLER2)
-		CompleteGoal(95);
-	if(type==MONS_FROSTBITER || type==MONS_SNOWGUY || type==MONS_JACKFROST)
-	{
-		if(frozen)
-			CompleteGoal(54);
-	}
-
-	if(type==MONS_VAMPIRE || type==MONS_COUNTESS || type==MONS_DARKVAMP || type==MONS_SPIKEY)
-	{
-		if(player.garlic && GetBulletAttackType()==BLT_SPEAR)
-			CompleteGoal(56);
-		totalKills=profile.progress.kills[MONS_VAMPIRE]+profile.progress.kills[MONS_DARKVAMP]+
-				profile.progress.kills[MONS_COUNTESS]+profile.progress.kills[MONS_SPIKEY];
-		if(totalKills>=200)
-			CompleteGoal(55);
-	}
-
-	if(GetBulletAttackType()==BLT_BUBBLE && g->friendly==0)
-		CompleteGoal(90);	// killed an enemy with bubbles
-
-	totalKills=0;
-	for(i=2;i<NUM_PROFILE_MONSTERS;i++)	// skip Bouapha
-		totalKills+=profile.progress.kills[i];
-
 
 	if(totalKills>1000)
 		CompleteGoal(46);

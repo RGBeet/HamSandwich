@@ -94,7 +94,6 @@ void TerrainSetupButtons(void);
 static void ArrowButtonClick(int id)
 {
 	int i;
-	printf("ID: %d\n", id);
 
 	switch (id)
 	{
@@ -423,7 +422,7 @@ void TerrainSetupButtons(void)
 	MakeButton(BTN_NORMAL, 6, 0, 115, 340, 19, 17, ">>", ArrowButtonClick);
 
 	MakeButton(BTN_CHECK, 10, 0, 4, 360, 128, 15, "Trasparent", FlagClick);
-	MakeButton(BTN_CHECK, 11, 0, 4, 376, 128, 15, "Shadowless", FlagClick);
+	MakeButton(BTN_CHECK, 11, 0, 4, 376, 128, 15, "Shadowless/Fancy", FlagClick);
 	MakeButton(BTN_CHECK, 12, 0, 4, 392, 128, 15, "Minecart Path", FlagClick);
 	MakeButton(BTN_CHECK, 13, 0, 4, 408, 128, 15, "Friendly Path", FlagClick);
 

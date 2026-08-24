@@ -178,6 +178,19 @@ static byte canDrag=1;
 static void ItemSetFlags(void);
 static void MakeItemList(void);
 
+static void CheckTileImgFlag()
+{
+	if (!(GetItem(curItem)->appearance == ITA_TILEIMG))
+	{
+		if (GetItem(curItem)->sprNum >= NumItemSprites())
+			GetItem(curItem)->sprNum = 0;
+	}
+	else
+	{
+		GetItem(curItem)->customJSP = 0; // can't combine tile and JSP
+	}
+}
+
 static void FlagClick(int id)
 {
 	byte b;
@@ -186,46 +199,17 @@ static void FlagClick(int id)
 
 	b=GetButtonState(id);
 
-	if(b==CHECK_ON)	// if it's on
-	{
-		// shut it
-		if(id<ID_TRIGGERS)
-			GetItem(curItem)->theme&=(~themes[id-ID_THEMES]);
-
-		if(GetItem(curItem)->theme==0)	// can't be on zero themes, it'd be unpickable
-			GetItem(curItem)->theme=ITH_CUSTOM;	// so throw it into custom
-	}
-	else
-	{
-		if(id<ID_TRIGGERS)
-			GetItem(curItem)->theme|=themes[id-ID_THEMES];
-		SetButtonState(id,CHECK_ON);
-	}
-
-	if(id==ID_FLAGS+6)	// TILE flag
+	if(id==ID_FLAGS+10)	// USERJSP flag
 	{
 		// prevent it from using an illegal sprite
-		if(!(GetItem(curItem)->appearance == ITA_TILEIMG))
-		{
-			if(GetItem(curItem)->sprNum>=NumItemSprites())
-				GetItem(curItem)->sprNum=0;
-		}
-		else
-		{
-			GetItem(curItem)->customJSP = 0; // can't combine tile and JSP
-		}
-	}
-	else if(id==ID_FLAGS+7)	// USERJSP flag
-	{
-		// prevent it from using an illegal sprite
-		if(GetItem(curItem)->customJSP)
+		if (GetItem(curItem)->customJSP)
 		{
 			int numCust = NumCustomSprites();
 			if (numCust == 0)
 			{
 				MakeNormalSound(SND_TURRETBZZT);
 				GetItem(curItem)->customJSP = 0;
-				SetButtonState(id,CHECK_OFF);
+				SetButtonState(id, CHECK_OFF); // idk which one lol
 
 				helpRemember = mode;
 				InitEditHelp(HELP_ITEMJSP);
@@ -234,14 +218,14 @@ static void FlagClick(int id)
 			else
 			{
 				GetItem(curItem)->appearance = ITA_NONE; // can't combine tile and JSP
-				if(GetItem(curItem)->sprNum>=numCust)
-					GetItem(curItem)->sprNum=0;
+				if (GetItem(curItem)->sprNum >= numCust)
+					GetItem(curItem)->sprNum = 0;
 			}
 		}
 		else
 		{
-			if(GetItem(curItem)->sprNum>=NumItemSprites())
-				GetItem(curItem)->sprNum=0;
+			if (GetItem(curItem)->sprNum >= NumItemSprites())
+				GetItem(curItem)->sprNum = 0;
 		}
 	}
 	ItemSetFlags();
@@ -820,6 +804,21 @@ static void SetupEffect(void)
 	}
 }
 
+// custom jsp (flag)
+
+
+static void ArrowButtonClick(int id)
+{
+
+
+}
+
+static void MakeArrowButtonPair(int id, int x, int y)
+{
+	MakeButton(BTN_NORMAL, id, 0, x+0, y, 19, 17, "<<", ArrowButtonClick);
+	MakeButton(BTN_NORMAL, id+1, 0, x+111, y, 19, 17, ">>", ArrowButtonClick);
+}
+
 static void ItemSetFlags(void)
 {
 	int i;
@@ -830,6 +829,13 @@ static void ItemSetFlags(void)
 	MakeButton(BTN_NORMAL,ID_NAME,0,164,100,38,16,"Name",NameClick);
 	MakeButton(BTN_STATIC,ID_NAME2,0,204,100,100,16,GetItem(curItem)->name,NameClick);
 
+	for(i=0;i<4;i++)
+		MakeArrowButtonPair(ID_FLAGS+i*2, 164, 118+i*20);
+
+
+	MakeButton(BTN_CHECK,ID_FLAGS+10,CHECK_OFF,164,118+16*7,100,15,"Use Custom JSP",FlagClick);
+
+	/*
 	MakeButton(BTN_CHECK,ID_FLAGS+0,CHECK_OFF,164,118+16*0,100,15,"Shadow",FlagClick);
 	MakeButton(BTN_CHECK,ID_FLAGS+1,CHECK_OFF,164,118+16*1,100,15,"Glowing",FlagClick);
 	MakeButton(BTN_CHECK,ID_FLAGS+2,CHECK_OFF,164,118+16*2,100,15,"Impassable",FlagClick);
@@ -849,6 +855,7 @@ static void ItemSetFlags(void)
 	MakeButton(BTN_CHECK,ID_TRIGGERS+5,CHECK_OFF,174,130+16*13,100,15,"Machete Chop",FlagClick);
 	MakeButton(BTN_CHECK,ID_TRIGGERS+6,CHECK_OFF,174,130+16*14,100,15,"Minecart Hit",FlagClick);
 	MakeButton(BTN_CHECK,ID_TRIGGERS+7,CHECK_OFF,174,130+16*15,100,15,"Always",FlagClick);
+	*/
 
 	MakeButton(BTN_NORMAL,ID_ITEMEFF,0,164,130+16*16,50,15,"Effect",EffectClick);
 	SetupEffect();

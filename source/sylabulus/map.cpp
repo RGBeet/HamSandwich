@@ -44,7 +44,9 @@ Map::Map(byte width, byte height, const char *name)
 	weather		= MAP_WEATHER_NONE;
 	lighting	= MAP_LIGHT_NORMAL;
 	environment = MAP_ENV_NORMAL;
-	miscFlags	={};
+	skyType		= MAP_SKY_NONE;
+	waterType	= MAP_WTR_NONE;
+	
 	badguy.fill({});
 
 	special.fill({});
@@ -64,10 +66,12 @@ Map::Map(const Map *m)
 	, height(m->height)
 {
 	ham_strcpy(song,m->song);
-	type = m->type;
-	weather = m->weather;
-	lighting = m->lighting;
+	type 		= m->type;
+	weather 	= m->weather;
+	lighting 	= m->lighting;
 	environment = m->environment;
+	skyType 	= m->skyType;
+	waterType 	= m->waterType;
 	
 	numBrains=m->numBrains;
 	numCandles=m->numCandles;
@@ -168,7 +172,9 @@ void Map::SmoothLights(void)
 
 void Map::Update(byte mode,world_t *world)
 {
-	int i;
+	int i, x, y;
+	x = 0;
+	y = 0;
 	static byte timeToReset=0;
 	static byte timeToAnim=0;
 
@@ -229,6 +235,7 @@ void Map::Update(byte mode,world_t *world)
 
 		if(mode!=UPDATE_EDIT) // edit mode doesn't animate since it would screw it up
 		{
+
 			// check for animation
 			if(timeToAnim==2)
 			{
@@ -239,7 +246,47 @@ void Map::Update(byte mode,world_t *world)
 				if(map[i].item!=IT_NONE)
 					UpdateItem(&map[i],width,i);
 			}
+
+			if (curMap && curMap->waterType != MAP_WTR_NONE)
+			{
+				byte passability,terrain;
+				switch (curMap->waterType)
+				{
+					case MAP_WTR_RAPIDS: // rapids
+						passability	= GetItem(map[i].item)->passability;
+						terrain		= world->terrain[map[i].floor].type;
+
+						if (passability == ITP_BULLETPROOF && terrain == TRN_WATER)
+						{
+							WaterRipple(x / FIXAMT + TILE_WIDTH / 2 - 10 + Random(20), y / FIXAMT + TILE_HEIGHT / 2 - Random(20), MGL_random(32 * 40));
+						}
+						break;
+					case MAP_WTR_LAVA: // lava
+						terrain = world->terrain[map[i].floor].type;
+
+						if (terrain == TRN_LAVA)
+						{
+							map[i].light = (char)MGL_random(9) - 3;
+							if (Random(3000) == 0)
+							{
+								int xx, yy;
+								xx = x / FIXAMT + Random(TILE_WIDTH);
+								yy = y / FIXAMT + Random(TILE_HEIGHT);
+								WaterRipple(xx, yy, Random(800) + 1500);
+							}
+						}
+						break;
+				}
+			}
 		}
+		
+		if(((i+1)/width)!=(i/width))
+		{
+			x=0;
+			y+=TILE_HEIGHT*FIXAMT;
+		}
+		else
+			x+=TILE_WIDTH*FIXAMT;
 	}
 	for(i=0;i<width*height;i++)
 	{
@@ -867,6 +914,7 @@ int Map::ItemCountInRect(word itm,int x,int y,int x2,int y2)
 
 void Map::RenderStars(int camX, int camY)
 {
+
 	int w = GetDisplayMGL()->GetWidth(), h = GetDisplayMGL()->GetHeight();
 	for(int i=0; i<NUM_STARS; i++)
 	{
@@ -886,6 +934,65 @@ void Map::RenderStars(int camX, int camY)
 
 				PlotStar(x,y,starCol[i],dtx.rem,dty.rem,m->floor);
 			}
+		}
+	}
+}
+
+byte FindPaletteColor(const RGB* pal, int r, int g, int b)
+{
+	int best = 0;
+	int bestDist = 0x7FFFFFFF;
+
+	for (int i = 0; i < 256; i++)
+	{
+		int dr = pal[i].r - r;
+		int dg = pal[i].g - g;
+		int db = pal[i].b - b;
+
+		int dist = dr * dr + dg * dg + db * db;
+
+		if (dist < bestDist)
+		{
+			bestDist = dist;
+			best = i;
+		}
+	}
+
+	return (byte)best;
+}
+
+void Map::RenderSky(int camX, int camY)
+{
+	int w = GetDisplayMGL()->GetWidth();
+	int h = GetDisplayMGL()->GetHeight();
+
+	for (int x = 0; x < w; x++)
+	{
+		for (int y = 0; y < h; y++)
+		{
+			auto dtx = div(x + camX, TILE_WIDTH);
+			auto dty = div(y + camY, TILE_HEIGHT);
+
+			if ((x + camX) < 0 || (y + camY) < 0 ||
+				dtx.quot >= width || dty.quot >= height)
+				continue;
+
+			mapTile_t* m = &map[dtx.quot + dty.quot * width];
+
+			if (m->wall)
+				continue;
+
+			int sy = y;
+
+			if (sy > 240)
+				sy = 240;
+
+			// Blue palette is 96-127.
+			// Dark blue at the top, bright blue at the bottom.
+			byte col = 96 + sy * 27 / 240;
+
+			PlotSky(x,y,col,dtx.rem,dty.rem,m->floor
+			);
 		}
 	}
 }
@@ -1144,9 +1251,14 @@ void Map::Render(world_t *world,int camX,int camY,MapRenderFlags flags)
 		}
 	}
 
-	if(this->miscFlags & MAP_FLG_STARRY)
+	switch (this->skyType)
 	{
-		RenderStars(camX, camY);
+		case MAP_SKY_STARRY:
+			RenderStars(camX, camY);
+			break;
+		case MAP_SKY_SUNSET:
+			RenderSky(camX, camY);
+			break;
 	}
 }
 

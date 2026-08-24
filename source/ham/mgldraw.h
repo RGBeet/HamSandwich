@@ -58,6 +58,7 @@ public:
 	TASK(void) TeensyWaterFlip(int v);
 	TASK(void) RasterFlip();
 	TASK(void) RasterWaterFlip(int v);
+	TASK(void) VoidFlip(int v);
 
 	// Return a pointer to the primary palette.
 	const RGB *GetPalette();
