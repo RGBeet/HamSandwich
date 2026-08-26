@@ -217,9 +217,9 @@ void SetPlayerHP(int hp)
 
 void KeyChainAllCheck(void)
 {
-	if((player.worldProg->keychains&(KC_KEYCH1|KC_KEYCH2|KC_KEYCH3|KC_KEYCH4))==(KC_KEYCH1|KC_KEYCH2|KC_KEYCH3|KC_KEYCH4))
+	if((player.worldProg->keychains&(KC_KEYCH1|KC_KEYCH2|KC_KEYCH3|KC_KEYCH4|KC_KEYCH5))==(KC_KEYCH1|KC_KEYCH2|KC_KEYCH3|KC_KEYCH4|KC_KEYCH5))
 	{
-		NewBigMessage("I collected all four!",60);
+		NewBigMessage("I got all five!!",60);
 		CompleteGoal(75);
 		playerGlow=127;
 		HealRing(7,goodguy->x,goodguy->y,FIXAMT*20,255,5);

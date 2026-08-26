@@ -1417,15 +1417,25 @@ void AI_Pumpkin(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		return;	// can't do nothin' right now
 	}
 
-	if (me->seq == ANIM_MOVE && me->frm == 2 && goodguy)	// hits on this frame
+	// get ready to chase, wake up neighbors
+	if (me->action == ACTION_WAKING)
 	{
-		if (RangeToTarget(me, goodguy) < (60 * FIXAMT) && !Random(8) && !me->reload)
-		{
-			StartAnimation(me, ANIM_ATTACK, 128);
-			SetMoveFacing(me, 0);
-			me->reload = 0;
-			return;
-		}
+		WakeUpGuys(me, me->x, me->y, 32, map, world, me->friendly);
+		// if the goodguy is near, or he shot me
+		me->mind = 1;	// start hunting
+		if (me->ouch == 0)
+			me->mind1 = 60;	// for 2 seconds minimum
+		else
+			me->mind1 = 120;	// 4 seconds, because they HATE getting shot
+		FaceGoodguy(me, goodguy);
+	}
+
+	if (RangeToTarget(me, goodguy) < (60 * FIXAMT) && !Random(8) && !me->reload)
+	{
+		StartAnimation(me, ANIM_ATTACK, 128);
+		SetMoveFacing(me, 0);
+		me->reload = 0;
+		return;
 	}
 
 	if (me->mind == 0)	// not currently aware of goodguy
@@ -1440,22 +1450,18 @@ void AI_Pumpkin(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 		if (goodguy)
 		{
-			if (RangeToTarget(me, goodguy) < 256 * FIXAMT || me->ouch > 0)
+			if (((RangeToTarget(me, goodguy) < 256 * FIXAMT) || me->ouch > 0) && map->FindGuy(me->mapx,me->mapy,8,goodguy))
 			{
-				// if the goodguy is near, or he shot me
-				me->mind = 1;	// start hunting
-				if (me->ouch == 0)
-					me->mind1 = 60;	// for 2 seconds minimum
-				else
-					me->mind1 = 120;	// 4 seconds, because they HATE getting shot
-				FaceGoodguy(me, goodguy);
+				me->action = ACTION_WAKING;
+				return;
 			}
 		}
 		me->dx = 0;
 		me->dy = 0;
 	}
-	else
+	else if (me->mind == 1)
 	{
+
 		FaceGoodguy(me, goodguy);
 		if (!goodguy)
 		{
@@ -1463,6 +1469,19 @@ void AI_Pumpkin(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			me->mind1 = 0;
 			return;
 		}
+
+		// check if within range
+		if (!TargetWithinRange(me, goodguy, 128) && !map->CheckLOS(me->x, me->y, 8, goodguy->x, goodguy->y))
+		{
+			if (!Random(2) && me->mind2++ > 9)
+			{
+				me->mind2 = 0;
+				me->mind = 2; // pathfinding time!
+				return;
+			}
+		}
+		else if (me->mind2)
+			me->mind2=0;
 
 		if (me->mind1)
 			me->mind1--;
@@ -1475,14 +1494,37 @@ void AI_Pumpkin(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			return;
 		}
 
-		me->dx = Cosine(me->facing * 32) * 3;
-		me->dy = Sine(me->facing * 32) * 3;
-		if (me->seq != ANIM_MOVE)
+		SetMoveFacing(me, 3);
+		StartMoveAnimation(me, 128);
+	}
+	else if (me->mind == 2)
+	{
+		int px = (goodguy->x >> FIXSHIFT) / TILE_WIDTH;
+		int py = (goodguy->y >> FIXSHIFT) / TILE_HEIGHT;
+
+		bool result = me->UpdatePathfinding(map, world, 3, (goodguy->x >> FIXSHIFT) / TILE_WIDTH, (goodguy->y >> FIXSHIFT) / TILE_HEIGHT);
+
+		if (!Random(8) && map->FindGuy(me->mapx, me->mapy, 16, goodguy))
 		{
-			me->seq = ANIM_MOVE;
-			me->frm = 0;
-			me->frmTimer = 0;
-			me->frmAdvance = 128;
+			me->mind = 1; // in range, start killing
+		}
+		me->AvoidGuys();
+		if (result) // stand still!
+		{
+			StartMoveAnimation(me, 64);
+			if (me->mind2)
+				me->mind2 = 0;
+		}
+		else
+		{
+			printf("No result. ");
+			if (me->mind2++ > 19)
+			{
+				me->mind2 = 0;
+				me->mind = 0; // done for now
+			}
+			StartIdleAnimation(me, 128);
+			SetMoveFacing(me, 0); // still
 		}
 	}
 }

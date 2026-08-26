@@ -63,9 +63,22 @@ static const char * const themeNames[] = {
 	"Signage","Decoration","Entrances","Large Props",
 	"Custom"
 };
+static const char itemAppearanceNames[][16] = {
+	"Shadowless", "Shadow", "Glowing", "LoonyKey", "Tile Image",
+};
+static const char itemPassabilityNames[][16] = {
+	"Walkable", "Solid", "Bulletproof", "Barrier", "Pickup Item",
+};
+static const char itemTriggerNames[][16] = {
+	"No Trigger", "Pick Up", "Player Bump", "Friend Bump", "Enemy Bump",
+	"Entity Bump", "Minecart Bump", "Explosion Hit", "Fire Hit",
+	"Ice Hit", "Always"
+};
+static const char itemBehaviorNames[][16] = {
+	"No Behav.", "Bubble Emit", "Fire Emit",
+};
 static constexpr int NUM_THEMES = std::min(std::size(themes), std::size(themeNames));
 
-static const ItemFlags flags[]={IF_SHADOW,IF_GLOW,IF_SOLID,IF_BULLETPROOF,IF_PICKUP,IF_LOONYCOLOR,IF_TILE,IF_USERJSP,IF_BUBBLES};
 static const ItemTriggers trigs[]={ITR_GET,ITR_SHOOT,ITR_PLAYERBUMP,ITR_ENEMYBUMP,ITR_FRIENDBUMP,ITR_CHOP,
 				  ITR_MINECART,ITR_ALWAYS};
 
@@ -809,13 +822,49 @@ static void SetupEffect(void)
 
 static void ArrowButtonClick(int id)
 {
+	int i;
+	printf("ID: %d\n", id);
 
+	switch (id-ID_FLAGS)
+	{
+		case 0:
+			GetItem(curItem)->appearance = (ItemAppearance)((GetItem(curItem)->appearance + ITA_MAX - 1) % ITA_MAX);
+			break;
 
+		case 1:
+			GetItem(curItem)->appearance = (ItemAppearance)((GetItem(curItem)->appearance + 1) % ITA_MAX);
+			break;
+
+		case 2:
+			GetItem(curItem)->passability = (ItemPassability)((GetItem(curItem)->passability + ITP_MAX - 1) % ITP_MAX);
+			break;
+
+		case 3:
+			GetItem(curItem)->passability = (ItemPassability)((GetItem(curItem)->passability + 1) % ITP_MAX);
+			break;
+
+		case 4:
+			GetItem(curItem)->triggerType = (ItemTrigger)((GetItem(curItem)->triggerType + ITRG_MAX - 1) % ITRG_MAX);
+			break;
+
+		case 5:
+			GetItem(curItem)->triggerType = (ItemTrigger)((GetItem(curItem)->triggerType + 1) % ITRG_MAX);
+			break;
+
+		case 6:
+			GetItem(curItem)->behavior = (ItemBehavior)((GetItem(curItem)->behavior + ITB_MAX - 1) % ITB_MAX);
+			break;
+
+		case 7:
+			GetItem(curItem)->behavior = (ItemBehavior)((GetItem(curItem)->behavior - 1) % ITB_MAX);
+			break;
+	}
+	MakeNormalSound(SND_MENUCLICK);
 }
 
 static void MakeArrowButtonPair(int id, int x, int y)
 {
-	MakeButton(BTN_NORMAL, id, 0, x+0, y, 19, 17, "<<", ArrowButtonClick);
+	MakeButton(BTN_NORMAL, id+0, 0, x+0, y, 19, 17, "<<", ArrowButtonClick);
 	MakeButton(BTN_NORMAL, id+1, 0, x+111, y, 19, 17, ">>", ArrowButtonClick);
 }
 
@@ -1122,6 +1171,12 @@ void ItemEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 	mgl->FillBox(480,280,638,280,32*backColor+12);
 	mgl->FillBox(560,200,560,358,32*backColor+12);
 	mgl->Box(480,200,638,358,31);
+
+
+	CenterPrint(164 + 76, 118+0*20, itemAppearanceNames[GetItem(curItem)->appearance], 0, 1);
+	CenterPrint(164 + 76, 118+1*20, itemPassabilityNames[GetItem(curItem)->passability], 0, 1);
+	CenterPrint(164 + 76, 118+2*20, itemTriggerNames[GetItem(curItem)->triggerType], 0, 1);
+	CenterPrint(164 + 76, 118+3*20, itemBehaviorNames[GetItem(curItem)->behavior], 0, 1);
 
 	// the background color chooser
 	mgl->FillBox(470,200,479,358,32*backColor+16);

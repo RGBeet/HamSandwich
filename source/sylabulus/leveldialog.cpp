@@ -127,60 +127,55 @@ static void SongClick(int id)
 
 static void ArrowButtonClick(int id)
 {
-	int i;
-	printf("ID: %d\n", id);
-
 	switch (id-ID_FLAG)
 	{
-	case 0:
-		world->map[mapNum]->type = (MapType)((world->map[mapNum]->type + MAP_TYPE_MAX - 1) % MAP_TYPE_MAX);
-		break;
+		case 0:
+			world->map[mapNum]->type = (MapType)((world->map[mapNum]->type + MAP_TYPE_MAX - 1) % MAP_TYPE_MAX);
+			break;
 
-	case 1:
-		world->map[mapNum]->type = (MapType)((world->map[mapNum]->type + 1) % MAP_TYPE_MAX);
-		break;
+		case 1:
+			world->map[mapNum]->type = (MapType)((world->map[mapNum]->type + 1) % MAP_TYPE_MAX);
+			break;
 
-	case 2:
-		world->map[mapNum]->weather = (MapWeather)((world->map[mapNum]->weather + MAP_WEATHER_MAX - 1) % MAP_WEATHER_MAX);
-		break;
+		case 2:
+			world->map[mapNum]->weather = (MapWeather)((world->map[mapNum]->weather + MAP_WEATHER_MAX - 1) % MAP_WEATHER_MAX);
+			break;
 
-	case 3:
-		world->map[mapNum]->weather = (MapWeather)((world->map[mapNum]->weather + 1) % MAP_WEATHER_MAX);
-		break;
+		case 3:
+			world->map[mapNum]->weather = (MapWeather)((world->map[mapNum]->weather + 1) % MAP_WEATHER_MAX);
+			break;
 
-	case 4:
-		world->map[mapNum]->lighting = (MapLighting)((world->map[mapNum]->lighting + MAP_LIGHT_MAX - 1) % MAP_LIGHT_MAX);
-		break;
+		case 4:
+			world->map[mapNum]->lighting = (MapLighting)((world->map[mapNum]->lighting + MAP_LIGHT_MAX - 1) % MAP_LIGHT_MAX);
+			break;
 
-	case 5:
-		world->map[mapNum]->lighting = (MapLighting)((world->map[mapNum]->lighting + 1) % MAP_LIGHT_MAX);
-		break;
+		case 5:
+			world->map[mapNum]->lighting = (MapLighting)((world->map[mapNum]->lighting + 1) % MAP_LIGHT_MAX);
+			break;
 
-	case 6:
-		world->map[mapNum]->environment = (MapEnvironment)((world->map[mapNum]->environment + MAP_ENV_MAX - 1) % MAP_ENV_MAX);
-		break;
+		case 6:
+			world->map[mapNum]->environment = (MapEnvironment)((world->map[mapNum]->environment + MAP_ENV_MAX - 1) % MAP_ENV_MAX);
+			break;
 
-	case 7:
-		world->map[mapNum]->environment = (MapEnvironment)((world->map[mapNum]->environment + 1) % MAP_ENV_MAX);
-		break;
+		case 7:
+			world->map[mapNum]->environment = (MapEnvironment)((world->map[mapNum]->environment + 1) % MAP_ENV_MAX);
+			break;
 
-	case 8:
-		world->map[mapNum]->skyType = (MapSky)((world->map[mapNum]->skyType + MAP_SKY_MAX - 1) % MAP_SKY_MAX);
-		break;
+		case 8:
+			world->map[mapNum]->skyType = (MapSky)((world->map[mapNum]->skyType + MAP_SKY_MAX - 1) % MAP_SKY_MAX);
+			break;
 
-	case 9:
-		world->map[mapNum]->skyType = (MapSky)((world->map[mapNum]->skyType + 1) % MAP_SKY_MAX);
-		break;
+		case 9:
+			world->map[mapNum]->skyType = (MapSky)((world->map[mapNum]->skyType + 1) % MAP_SKY_MAX);
+			break;
 
-	case 10:
-		world->map[mapNum]->waterType = (MapWater)((world->map[mapNum]->waterType + MAP_WTR_MAX - 1) % MAP_WTR_MAX);
-		printf("New Water Type: %d", world->map[mapNum]->waterType);
-		break;
+		case 10:
+			world->map[mapNum]->waterType = (MapWater)((world->map[mapNum]->waterType + MAP_WTR_MAX - 1) % MAP_WTR_MAX);
+			break;
 
-	case 11:
-		world->map[mapNum]->waterType = (MapWater)((world->map[mapNum]->waterType + 1) % MAP_WTR_MAX);
-		printf("New Water Type: %d", world->map[mapNum]->waterType);
-		break;
+		case 11:
+			world->map[mapNum]->waterType = (MapWater)((world->map[mapNum]->waterType + 1) % MAP_WTR_MAX);
+			break;
 	}
 	MakeNormalSound(SND_MENUCLICK);
 }

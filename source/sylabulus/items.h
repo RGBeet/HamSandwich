@@ -208,7 +208,8 @@ enum ItemAppearance : byte
 	ITA_SHADOW,			// shadow
 	ITA_GLOWING,		// glow draw
 	ITA_LOONYKEY,		// loonycolor + shadow
-	ITA_TILEIMG			// tile image (conflicts with glowing/loonykey/shadow)
+	ITA_TILEIMG,		// tile image (conflicts with glowing/loonykey/shadow),
+	ITA_MAX
 };
 
 enum ItemPassability : byte
@@ -217,7 +218,8 @@ enum ItemPassability : byte
 	ITP_SOLID,			// cannot walk through
 	ITP_BULLETPROOF,	// solid + no bullets
 	ITP_BARRIER,		// free walk + no bullets
-	ITP_PICKUP			// can pick up (conflicts with solid)
+	ITP_PICKUP,			// can pick up (conflicts with solid)
+	ITP_MAX
 };
 
 enum ItemTrigger : byte
@@ -234,31 +236,17 @@ enum ItemTrigger : byte
 	ITRG_EXPLOSION,		// if hit by an explosion...
 	ITRG_FIRE,			// if hit by a fire bullet...
 	ITRG_FREEZE,		// if hit by an icy bullet...
-	ITRG_ALWAYS			// always happens whenever tiles animate
+	ITRG_ALWAYS,		// always happens whenever tiles animate
+	ITRG_MAX
 };
 
 enum ItemBehavior : word
 {
 	ITB_NONE,
 	ITB_BUBBLES,		// bubble particle, for bubble spots
-	ITB_FIRE			// fire particle, for sconces
+	ITB_FIRE,			// fire particle, for sconces
+	ITB_MAX
 };
-
-// item flags
-enum ItemFlags : word
-{
-	IF_SHADOW      = 1 << 0, // casts a shadow
-	IF_GLOW        = 1 << 1, // is glowy rather than solid
-	IF_SOLID       = 1 << 2, // can't walk through it
-	IF_BULLETPROOF = 1 << 3, // can't shoot through it
-	IF_PICKUP      = 1 << 4, // player can pick it up for some effect
-	IF_LOONYCOLOR  = 1 << 5, // using the loony color thing that loonykeys do
-	IF_TILE        = 1 << 6, // render a tile instead of a sprite
-	IF_USERJSP     = 1 << 7, // use custom item jsp
-	IF_BUBBLES     = 1 << 8, // spout bubbles
-	IF_BIGMSG      = 1 << 9, // display a big message
-};
-BITFLAGS(ItemFlags)
 
 // themes
 enum ItemThemes : dword

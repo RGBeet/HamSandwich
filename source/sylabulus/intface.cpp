@@ -42,7 +42,7 @@ constexpr int SPR_STEALTH		= 63;
 constexpr int SPR_WPNNAME		= 22;
 constexpr int SPR_LOONYKEY		= 50;
 constexpr int SPR_CANDLE		= 51;
-constexpr int SPR_KEYCH			= 52;
+constexpr int SPR_KEYCH			= 128; // fixed
 constexpr int SPR_BRAIN			= 56;
 constexpr int SPR_RAGE			= 57;
 constexpr int SPR_LOCK			= 110;
@@ -1436,32 +1436,32 @@ void RenderCollectedStuff(int x,int y,MGLDraw *mgl)
 	DrawFancyLine(x + xx, y + yy, 7, 100, mgl);
 	yy += 5;
 
-	// draw keychains
-
-	if((player.worldProg->keychains&KC_LOONY))
-	{
-		intfaceSpr->GetSprite(SPR_LOONYKEY)->Draw(x+183,y+57,mgl);
-	}
-
 	int keych = 0;
 
 	xx = 0;
-	for(int i=0;i<4;i++)
+	for(int i=0;i<6;i++)
 	{
-		if (player.worldProg->keychains & (1 << i)) // check each keychain
-		{
-			keych++;
-			intfaceSpr->GetSprite(SPR_KEYCH + i)->DrawOffColor(x + xx, y + yy, mgl, 1, 7, 0);
-		}
+		if (player.worldProg->keychains & (1 << i)) // check each keychain (+loony key)
+			intfaceSpr->GetSprite(SPR_KEYCH + i*2+1)->DrawBright(x + xx, y + yy, mgl, 0);
 		else
-			intfaceSpr->GetSprite(SPR_KEYCH + i)->DrawOffColor(x + xx, y + yy, mgl, 1, 0, -4);
-		xx += 16;
+			intfaceSpr->GetSprite(SPR_KEYCH + i*2+0)->DrawBright(x + xx, y + yy, mgl, 0);
+		xx += 33;
+		if (i == 5 || (player.worldProg->keychains & (1 << i)) == 0)
+			continue;
+		keych++;
 	}
-	yy += 12;
+	yy += 36;
 
 	xx=0;
-	snprintf(msg, sizeof(msg), "%d/4 Keychains", keych);
+	snprintf(msg, sizeof(msg), "%d/5 Keychains", keych);
 	PrintSimpleShadow(x+xx, y+yy, msg, 1);
+
+	if(player.worldProg->keychains & (1<<6))
+	{
+		yy += 15;
+		snprintf(msg, sizeof(msg), "LoonyKey Acquired!!");
+		PrintSimpleShadow(x + xx, y + yy, msg, 1);
+	}
 
 	p=(float)player.worldProg->percentage;
 	if(p>100)

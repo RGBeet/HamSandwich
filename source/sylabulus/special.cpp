@@ -41,6 +41,7 @@ void InitSpecials(std::span<special_t> list)
 // resets upon the start of each level.
 void FillGlobalSpecialUseData(std::span<special_t> list)
 {
+    numSpecialsGlobal = 0;
 	int i;
 	for (i=0;i<128;i++)
 	{
@@ -77,26 +78,15 @@ void GetSpecialsFromMap(std::span<special_t> list)
 	}
 }
 
-void GetSpecialsFromWorld(std::span<special_t> list)
-{
-
-}
-
 void GetSpecialsFromMapAndWorld(std::span<special_t> mapList, std::span<special_t> worldList)
 {
 	int i;
-	//printf("\n--- Get Specials Form Map and World ---\n");
 	GetSpecialsFromMap(mapList);
 	for (i = 0;i < numSpecialsGlobal;i++)
 	{
-		//printf("\nSPCL #%03d: %d -> %d uses.\n",i, spclGlobal[i].uses, globalspcluses[i]);
 		spclGlobal[i].uses	= globalspcluses[i];
 		spclGlobal[i].x = i;
 	}
-
-	//printf("--- DONE! ---\n");
-
-	//GetSpecialsFromWorld(worldList);
 }
 
 int NewSpecial(byte x,byte y)
@@ -130,12 +120,12 @@ int GetSpecial(byte x,byte y)
 
 special_t *GetSpecial(int i)
 {
-	return (i >= 0 && i < numSpecials) ? &spcl[i] : NULL;
+	return (i >= 0 && i < numSpecials) ? &spcl[i] : nullptr;
 }
 
 special_t* GetGlobalSpecial(int i)
 {
-	return (i >= 0 && i < 128) ? &EditorGetWorld()->special[i] : NULL;
+	return (i >= 0 && i < numSpecialsGlobal) ? &spclGlobal[i] : nullptr;
 }
 
 void DeleteSpecial(int i)

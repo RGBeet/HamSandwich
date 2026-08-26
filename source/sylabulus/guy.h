@@ -9,8 +9,9 @@
 #include "display.h"
 #include "pathfinding.h"
 
-#define ACTION_IDLE	0
-#define ACTION_BUSY 1
+#define ACTION_IDLE		0
+#define ACTION_BUSY		1
+#define ACTION_WAKING	2
 
 class Guy final
 {
@@ -119,6 +120,7 @@ class Guy final
 };
 
 extern Guy *goodguy;
+extern Guy *boss[32];	// all the enemies marked as a boss
 
 void InitGuys(int max);
 void ExitGuys(void);
@@ -200,5 +202,6 @@ void SetSpeedFrames(Guy* g, word frames);
 
 byte TerrainCheck(Guy* g,byte target,mapTile_t *mapTile,world_t *world);
 byte ConveyorCheck(Guy* g, mapTile_t* mapTile, world_t* world);
+void WakeUpGuys(Guy* g, int x, int y, byte size, Map* map, world_t* world, byte friendly);
 
 #endif

@@ -206,7 +206,6 @@ void InitSpecials(std::span<special_t> list);
 void InitGlobalSpecials(std::span<special_t> list);
 
 void GetSpecialsFromMap(std::span<special_t> list);
-void GetSpecialsFromWorld(std::span<special_t> list);
 void GetSpecialsFromMapAndWorld(std::span<special_t> mapList, std::span<special_t> worldList);
 
 int NewSpecial(byte x,byte y);

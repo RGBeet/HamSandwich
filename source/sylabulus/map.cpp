@@ -344,131 +344,73 @@ void Map::LOSPoints(int x,int y,int curx,int cury,int *p1x,int *p1y,int *p2x,int
 	}
 }
 
-byte Map::LOS(int x,int y,int radius,int value,byte (*DoIt)(int,int,int,int,int,Map *))
-{
-	int p1x,p1y,p2x,p2y;
-	int i,curx,cury;
-
-	if(x<0 || x>=width || y<0 || y>=height)
-		return 0;
-
-	// do whatever you are doing at x,y
-	if(!DoIt(x,y,x,y,value,this))
-		return 1; // DoIt returns zero if it wants you to quit
-
-	GetTile(x, y)->opaque=0;
-
-	for(i=1;i<radius;i++)	// i is the radius of the square you are working with
-	{
-		for(cury=y-i;cury<=y+i;cury+=i*2)
-			for(curx=x-i;curx<=x+i;curx++)
-			{
-				// check to be sure point is legal
-				if(curx<0 || curx>=width || cury<0 || cury>=height)
-					continue;
-				LOSPoints(x,y,curx,cury,&p1x,&p1y,&p2x,&p2y);
-				if(GetTile(p1x, p1y)->opaque +
-					GetTile(p2x, p2y)->opaque >= 2)
-				{
-					GetTile(curx, cury)->opaque=1;
-				}
-				else
-				{
-					if(map[curx+cury*width].wall)	// there's a wall here, so opaque
-						map[curx+cury*width].opaque=1;
-					else
-						map[curx+cury*width].opaque=0;
-					// do what you have to, it's in sight
-					if(!DoIt(curx,cury,x,y,value,this))
-						return 1;	// DoIt returns zero if it wants you to quit
-				}
-			}
-		for(curx=x-i;curx<=x+i;curx+=i*2)
-			for(cury=y-i+1;cury<=y+i-1;cury++)
-			{
-				// check to be sure point is legal
-				if(curx<0 || curx>=width || cury<0 || cury>=height)
-					continue;
-				LOSPoints(x,y,curx,cury,&p1x,&p1y,&p2x,&p2y);
-				if(map[p1x+p1y*width].opaque+
-					map[p2x+p2y*width].opaque>=2)
-				{
-					map[curx+cury*width].opaque=1;
-				}
-				else
-				{
-					if(map[curx+cury*width].wall)	// there's a wall here, so opaque
-						map[curx+cury*width].opaque=1;
-					else
-						map[curx+cury*width].opaque=0;
-					// do what you have to, it's in sight
-					if(!DoIt(curx,cury,x,y,value,this))
-						return 1;
-				}
-			}
-	}
-	return 0;
-}
-
 byte Map::GetOpaqueCheck(int x, int y)
 {
 	byte passability = GetItem(map[x + y * width].item)->passability;
-	return (map[x + y * width].wall || passability == ITP_SOLID || passability == ITP_BULLETPROOF || passability == ITP_BARRIER);
+	byte result = (map[x + y * width].wall || passability == ITP_SOLID || passability == ITP_BULLETPROOF || passability == ITP_BARRIER);
+	printf("Passbility is %d, Wall is %d, Result is %d.", passability, map[x + y * width].wall, result);
+	return result;
 }
 
-byte Map::TightLOS(int x,int y,int radius,int value,byte (*DoIt)(int,int,int,int,int,Map *))
+byte Map::LOS(int x, int y, int radius, int value, byte(*DoIt)(int, int, int, int, int, Map*))
 {
-	int p1x,p1y,p2x,p2y;
-	int i,curx,cury;
+	int p1x, p1y, p2x, p2y;
+	int i, curx, cury;
 
-	if(x<0 || x>=width || y<0 || y>=height)
+	if (x < 0 || x >= width || y < 0 || y >= height)
 		return 0;
 
 	// do whatever you are doing at x,y
-	if(!DoIt(x,y,x,y,value,this))
+	if (!DoIt(x, y, x, y, value, this))
 		return 1; // DoIt returns zero if it wants you to quit
 
-	map[x+y*width].opaque=0;
+	GetTile(x, y)->opaque = 0;
 
-	for(i=1;i<radius;i++)	// i is the radius of the square you are working with
+	for (i = 1;i < radius;i++)	// i is the radius of the square you are working with
 	{
-		for(cury=y-i;cury<=y+i;cury+=i*2)
-			for(curx=x-i;curx<=x+i;curx++)
+		for (cury = y - i;cury <= y + i;cury += i * 2)
+			for (curx = x - i;curx <= x + i;curx++)
 			{
 				// check to be sure point is legal
-				if(curx<0 || curx>=width || cury<0 || cury>=height)
+				if (curx < 0 || curx >= width || cury < 0 || cury >= height)
 					continue;
-				LOSPoints(x,y,curx,cury,&p1x,&p1y,&p2x,&p2y);
-				if(map[p1x+p1y*width].opaque+
-					map[p2x+p2y*width].opaque>=1)
+				LOSPoints(x, y, curx, cury, &p1x, &p1y, &p2x, &p2y);
+				if (GetTile(p1x, p1y)->opaque +
+					GetTile(p2x, p2y)->opaque >= 2)
 				{
-					map[curx+cury*width].opaque=1;
+					GetTile(curx, cury)->opaque = 1;
 				}
 				else
 				{
-					map[curx + cury * width].opaque = GetOpaqueCheck(x, y);
+					if (map[curx + cury * width].wall)	// there's a wall here, so opaque
+						map[curx + cury * width].opaque = 1;
+					else
+						map[curx + cury * width].opaque = 0;
 					// do what you have to, it's in sight
-					if(!DoIt(curx,cury,x,y,value,this))
+					if (!DoIt(curx, cury, x, y, value, this))
 						return 1;	// DoIt returns zero if it wants you to quit
 				}
 			}
-		for(curx=x-i;curx<=x+i;curx+=i*2)
-			for(cury=y-i+1;cury<=y+i-1;cury++)
+		for (curx = x - i;curx <= x + i;curx += i * 2)
+			for (cury = y - i + 1;cury <= y + i - 1;cury++)
 			{
 				// check to be sure point is legal
-				if(curx<0 || curx>=width || cury<0 || cury>=height)
+				if (curx < 0 || curx >= width || cury < 0 || cury >= height)
 					continue;
-				LOSPoints(x,y,curx,cury,&p1x,&p1y,&p2x,&p2y);
-				if(map[p1x+p1y*width].opaque+
-					map[p2x+p2y*width].opaque>=1)
+				LOSPoints(x, y, curx, cury, &p1x, &p1y, &p2x, &p2y);
+				if (map[p1x + p1y * width].opaque +
+					map[p2x + p2y * width].opaque >= 2)
 				{
-					map[curx+cury*width].opaque=1;
+					map[curx + cury * width].opaque = 1;
 				}
 				else
 				{
-					map[curx + cury * width].opaque = GetOpaqueCheck(x, y);
+					if (map[curx + cury * width].wall)	// there's a wall here, so opaque
+						map[curx + cury * width].opaque = 1;
+					else
+						map[curx + cury * width].opaque = 0;
 					// do what you have to, it's in sight
-					if(!DoIt(curx,cury,x,y,value,this))
+					if (!DoIt(curx, cury, x, y, value, this))
 						return 1;
 				}
 			}
@@ -476,59 +418,141 @@ byte Map::TightLOS(int x,int y,int radius,int value,byte (*DoIt)(int,int,int,int
 	return 0;
 }
 
-byte Map::TightestLOS(int x,int y,int radius,int value,byte (*DoIt)(int,int,int,int,int,Map *))
+byte Map::TightLOS(int x, int y, int radius, int value, byte(*DoIt)(int, int, int, int, int, Map*))
 {
-	int p1x,p1y,p2x,p2y;
-	int i,curx,cury;
+	int p1x, p1y, p2x, p2y;
+	int i, curx, cury;
 
-	if(x<0 || x>=width || y<0 || y>=height)
+	if (x < 0 || x >= width || y < 0 || y >= height)
 		return 0;
 
 	// do whatever you are doing at x,y
-	if(!DoIt(x,y,x,y,value,this))
+	if (!DoIt(x, y, x, y, value, this))
 		return 1; // DoIt returns zero if it wants you to quit
 
-	map[x+y*width].opaque=0;
+	map[x + y * width].opaque = 0;
 
-	for(i=1;i<radius;i++)	// i is the radius of the square you are working with
+	item_t* checkItem;
+	for (i = 1;i < radius;i++)	// i is the radius of the square you are working with
 	{
-		for(cury=y-i;cury<=y+i;cury+=i*2)
-			for(curx=x-i;curx<=x+i;curx++)
+		for (cury = y - i;cury <= y + i;cury += i * 2)
+			for (curx = x - i;curx <= x + i;curx++)
 			{
 				// check to be sure point is legal
-				if(curx<0 || curx>=width || cury<0 || cury>=height)
+				if (curx < 0 || curx >= width || cury < 0 || cury >= height)
 					continue;
-				LOSPoints(x,y,curx,cury,&p1x,&p1y,&p2x,&p2y);
-				if(map[p1x+p1y*width].opaque+
-					map[p2x+p2y*width].opaque>=1)
+				LOSPoints(x, y, curx, cury, &p1x, &p1y, &p2x, &p2y);
+				if (map[p1x + p1y * width].opaque +
+					map[p2x + p2y * width].opaque >= 1)
 				{
-					map[curx+cury*width].opaque=1;
+					map[curx + cury * width].opaque = 1;
 				}
 				else
 				{
-					map[curx + cury * width].opaque = GetOpaqueCheck(x, y);
+					checkItem = GetItem(map[curx + cury * width].item);
+					if (map[curx + cury * width].wall ||
+						(checkItem && (checkItem->passability == ITP_BULLETPROOF) || checkItem->passability == ITP_BARRIER))	// there's a wall here, so opaque
+						map[curx + cury * width].opaque = 1;
+					else
+						map[curx + cury * width].opaque = 0;
 					// do what you have to, it's in sight
-					if(!DoIt(curx,cury,x,y,value,this))
+					if (!DoIt(curx, cury, x, y, value, this))
 						return 1;	// DoIt returns zero if it wants you to quit
 				}
 			}
-		for(curx=x-i;curx<=x+i;curx+=i*2)
-			for(cury=y-i+1;cury<=y+i-1;cury++)
+		for (curx = x - i;curx <= x + i;curx += i * 2)
+			for (cury = y - i + 1;cury <= y + i - 1;cury++)
 			{
 				// check to be sure point is legal
-				if(curx<0 || curx>=width || cury<0 || cury>=height)
+				if (curx < 0 || curx >= width || cury < 0 || cury >= height)
 					continue;
-				LOSPoints(x,y,curx,cury,&p1x,&p1y,&p2x,&p2y);
-				if(map[p1x+p1y*width].opaque+
-					map[p2x+p2y*width].opaque>=1)
+				LOSPoints(x, y, curx, cury, &p1x, &p1y, &p2x, &p2y);
+				if (map[p1x + p1y * width].opaque +
+					map[p2x + p2y * width].opaque >= 1)
 				{
-					map[curx+cury*width].opaque=1;
+					map[curx + cury * width].opaque = 1;
 				}
 				else
 				{
-					map[curx + cury * width].opaque = GetOpaqueCheck(x, y);
+					checkItem = GetItem(map[curx + cury * width].item);
+					if (map[curx + cury * width].wall ||
+						(checkItem && (checkItem->passability == ITP_BULLETPROOF) || checkItem->passability == ITP_BARRIER))	// there's a wall here, so opaque
+						map[curx + cury * width].opaque = 1;
+					else
+						map[curx + cury * width].opaque = 0;
 					// do what you have to, it's in sight
-					if(!DoIt(curx,cury,x,y,value,this))
+					if (!DoIt(curx, cury, x, y, value, this))
+						return 1;
+				}
+			}
+	}
+	return 0;
+}
+
+byte Map::TightestLOS(int x, int y, int radius, int value, byte(*DoIt)(int, int, int, int, int, Map*))
+{
+	int p1x, p1y, p2x, p2y;
+	int i, curx, cury;
+
+	if (x < 0 || x >= width || y < 0 || y >= height)
+		return 0;
+
+	// do whatever you are doing at x,y
+	if (!DoIt(x, y, x, y, value, this))
+		return 1; // DoIt returns zero if it wants you to quit
+
+	map[x + y * width].opaque = 0;
+
+	item_t* checkItem;
+	for (i = 1;i < radius;i++)	// i is the radius of the square you are working with
+	{
+		for (cury = y - i;cury <= y + i;cury += i * 2)
+			for (curx = x - i;curx <= x + i;curx++)
+			{
+				// check to be sure point is legal
+				if (curx < 0 || curx >= width || cury < 0 || cury >= height)
+					continue;
+				LOSPoints(x, y, curx, cury, &p1x, &p1y, &p2x, &p2y);
+				if (map[p1x + p1y * width].opaque +
+					map[p2x + p2y * width].opaque >= 1)
+				{
+					map[curx + cury * width].opaque = 1;
+				}
+				else
+				{
+					checkItem = GetItem(map[curx + cury * width].item);
+					if (map[curx + cury * width].wall ||
+						(checkItem && (checkItem->passability == ITP_SOLID || checkItem->passability == ITP_BULLETPROOF) || checkItem->passability == ITP_BARRIER))	// there's a wall here, so opaque
+						map[curx + cury * width].opaque = 1;
+					else
+						map[curx + cury * width].opaque = 0;
+					// do what you have to, it's in sight
+					if (!DoIt(curx, cury, x, y, value, this))
+						return 1;	// DoIt returns zero if it wants you to quit
+				}
+			}
+		for (curx = x - i;curx <= x + i;curx += i * 2)
+			for (cury = y - i + 1;cury <= y + i - 1;cury++)
+			{
+				// check to be sure point is legal
+				if (curx < 0 || curx >= width || cury < 0 || cury >= height)
+					continue;
+				LOSPoints(x, y, curx, cury, &p1x, &p1y, &p2x, &p2y);
+				if (map[p1x + p1y * width].opaque +
+					map[p2x + p2y * width].opaque >= 1)
+				{
+					map[curx + cury * width].opaque = 1;
+				}
+				else
+				{
+					checkItem = GetItem(map[curx + cury * width].item);
+					if (map[curx + cury * width].wall ||
+						(checkItem && (checkItem->passability == ITP_SOLID || checkItem->passability == ITP_BULLETPROOF) || checkItem->passability == ITP_BARRIER))	// there's a wall here, so opaque
+						map[curx + cury * width].opaque = 1;
+					else
+						map[curx + cury * width].opaque = 0;
+					// do what you have to, it's in sight
+					if (!DoIt(curx, cury, x, y, value, this))
 						return 1;
 				}
 			}

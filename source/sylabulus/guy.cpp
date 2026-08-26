@@ -3659,3 +3659,26 @@ byte ConveyorCheck(Guy* g, mapTile_t* mapTile, world_t* world)
 	}
 	return 0;
 }
+
+void WakeUpGuys(Guy *g,int x, int y, byte size, Map* map, world_t* world, byte friendly)
+{
+	int i;
+	bool pass=false;
+	printf("Attempting to wake up a guy!\n");
+
+	for (i = 0;i < maxGuys;i++)
+	{
+		pass = (guys[i].type && guys[i].hp && (guys[i].friendly == friendly || friendly == 255) && guys[i].mind == 0 && guys[i].action != ACTION_WAKING);
+		switch ((EntityType)g->aiType)
+			{
+				case EntityType::Pumpkin:
+					pass = pass && (g->aiType == guys[i].aiType);
+					break;
+			}
+	}
+	if (pass && RangeToTarget(g, &guys[i]) <= size * FIXAMT)
+	{
+		guys[i].action = ACTION_WAKING; // they're waking up!!
+		printf("Woke up a guy!\n");
+	}
+}
