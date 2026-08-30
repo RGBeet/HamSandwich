@@ -2838,7 +2838,7 @@ void AI_StickMan(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			me->seq = ANIM_A2;	//sad
 			me->frm = 0;
 			me->frmTimer = 0;
-			me->frmAdvance = 32;
+			me->frmAdvance = 64;
 		}
 	}
 
@@ -2847,19 +2847,14 @@ void AI_StickMan(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		me->frm = 0;
 		me->seq = ANIM_IDLE;
 	}
+
 	if (me->action == ACTION_BUSY)
 	{
-		if (me->seq == ANIM_ATTACK && me->frm == 1 && me->reload == 0 && goodguy)
+		if (me->seq == ANIM_ATTACK && me->frm == 7 && me->reload == 0 && goodguy)
 		{
 			if (RangeToTarget(me, goodguy) < 60 * FIXAMT)
 				goodguy->GetShot(Cosine(me->facing * 32) * 16, Sine(me->facing * 32) * 16, 10, map, world);
 			me->reload = 4;
-		}
-		if (me->seq == ANIM_ATTACK && me->frm == 4)
-		{
-			me->seq = ANIM_IDLE;
-			me->frm = 0;
-			me->action = ACTION_IDLE;
 		}
 		return;	// can't do nothin' right now
 	}
@@ -2892,7 +2887,7 @@ void AI_StickMan(Guy* me, Map* map, world_t* world, Guy* goodguy)
 				me->seq = ANIM_ATTACK;
 				me->frm = 0;
 				me->frmTimer = 0;
-				me->frmAdvance = 128;
+				me->frmAdvance = 256;
 				me->action = ACTION_BUSY;
 				me->dx = Cosine(me->facing * 32) * 2;
 				me->dy = Sine(me->facing * 32) * 2;
@@ -3697,9 +3692,11 @@ void AI_Geozoid(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	}
 }
 
+
 void AI_Mumble(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
-	int x, y;
+	int x, y, spd;
+	bool manic = (EntityType)me->aiType == EntityType::ManicMumble;
 
 	if (me->reload)
 		me->reload--;
@@ -3737,14 +3734,14 @@ void AI_Mumble(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		{
 			me->mind = 1;	// begin chasing.  Slowly.
 		}
-		StartIdleAnimation(me, 128);
+		StartIdleAnimation(me, manic?256:128);
 	}
 	if (me->mind == 1)		// when mind=0, singlemindedly lumber towards Bouapha
 	{
 		if (goodguy)
 		{
 			// check if within range
-			if (!TargetWithinRange(me,goodguy,64) && !map->CheckLOS(me->x, me->y, 192, goodguy->x, goodguy->y))
+			if (!TargetWithinRange(me,goodguy,128) && !map->CheckLOS(me->x, me->y, 192, goodguy->x, goodguy->y))
 			{
 				if (me->mind2++ > 9)
 				{
@@ -3760,7 +3757,7 @@ void AI_Mumble(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			if (RangeToTarget(me, goodguy) < (60 * FIXAMT) && !Random(8) && !me->reload)
 			{
 				MakeSound(SND_MUMBLECRUSH, me->x, me->y, SND_CUTOFF, 1000);
-				StartAnimation(me,ANIM_ATTACK,128);
+				StartAnimation(me,ANIM_ATTACK,manic?256:128);
 				SetMoveFacing(me, 0);
 				me->reload = 0;
 				return;
@@ -3768,21 +3765,25 @@ void AI_Mumble(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 			// move slowly towards player
 			FaceGoodguy(me, goodguy);
-			StartMoveAnimation(me, 64);
+			StartMoveAnimation(me, manic?256:64);
+
 			if (!((me->frm >= 3 && me->frm <= 5) || (me->frm >= 9 && me->frm <= 11)))
-				SetMoveFacing(me, 1);
+				spd = manic ? 4 : 1;
 			else
-				SetMoveFacing(me, 0);
+				spd = 0;
+
+			SetMoveFacing(me, spd);
 		}
 	}
 	else if (me->mind == 2)
 	{
 		int px = (goodguy->x >> FIXSHIFT) / TILE_WIDTH;
 		int py = (goodguy->y >> FIXSHIFT) / TILE_HEIGHT;
-		int spd = 0;
 
 		if (!((me->frm >= 3 && me->frm <= 5) || (me->frm >= 9 && me->frm <= 11)))
-			spd = 1;
+			spd = manic ? 4 : 1;
+		else
+			spd = 0;
 
 		bool result = me->UpdatePathfinding(map, world, spd, (goodguy->x >> FIXSHIFT) / TILE_WIDTH, (goodguy->y >> FIXSHIFT) / TILE_HEIGHT);
 
@@ -3792,7 +3793,7 @@ void AI_Mumble(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		me->AvoidGuys();
 		if (result) // stand still!
 		{
-			StartMoveAnimation(me, 64);
+			StartMoveAnimation(me, manic?256:64);
 			if (me->mind2)
 				me->mind2 = 0;
 		}

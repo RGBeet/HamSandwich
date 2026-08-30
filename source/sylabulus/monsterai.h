@@ -20,10 +20,10 @@ void SetMoveFacing(Guy* me, int speed);							// set dx/dy based on facing and s
 void FaceTowardsGuy(Guy* me, Guy* target);						// faces the guy toward the target.
 void FaceTowardsPoint(Guy* me, int x, int y);					// faces the guy toward the point (x,y)
 
-void StartAnimation(Guy* me, byte seq, byte adv,				// starts a new animation sequence for the guy
+void StartAnimation(Guy* me, byte seq, word adv,				// starts a new animation sequence for the guy
 	bool force=true);	
-void StartMoveAnimation(Guy* me, byte speed = 128);				// starts the move animation if not currently moving
-void StartIdleAnimation(Guy* me, byte speed = 128);				// ditto, but for idle animation
+void StartMoveAnimation(Guy* me, word speed = 128);				// starts the move animation if not currently moving
+void StartIdleAnimation(Guy* me, word speed = 128);				// ditto, but for idle animation
 
 bool IsAnimationFrame(Guy* me, byte seq, byte frame);			// returns TRUE if the guy is on the specified frame of his current animation
 bool IsAnimationFrames(Guy* me, byte seq,						// ditto, but for a range of frames
@@ -244,5 +244,6 @@ void AI_SpikeBall(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_MiniZombie(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_MiniBonehead(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_Pathfinder(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_StopSign(Guy* me, Map* map, world_t* world, Guy* goodguy);
 
 #endif

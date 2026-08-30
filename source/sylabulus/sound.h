@@ -421,7 +421,6 @@
 
 #define SND_LANTERNSPIT			532
 #define SND_LANTERNDIE			533
-#define SND_LANTERNOUCH			586	// bro...
 
 #define SND_HARDHATTAUNT		534
 #define SND_HARDHATSHOOT		535
@@ -490,6 +489,10 @@
 #define SND_BIGCOIN				584
 
 #define SND_DEPLOY				585
+#define SND_LANTERNOUCH			586		// bro...
+#define SND_STOPSIGNHEY			587
+#define SND_STOPSIGNOUCH		588
+#define SND_STOPSIGNDIE			589
 
 #define MAX_SOUNDS				1024	// doesn't mean a thing lol
 

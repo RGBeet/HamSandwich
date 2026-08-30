@@ -95,6 +95,7 @@ struct progress_t
 	dword totalCoins,coinsSpent;
 	dword totalWorlds;
 	dword loonyKeys,loonyKeysUsed;
+
 	float totalPercent;	// percentage of ALL worlds/levels/etc you have completed
 
 	dword hammersThrown;
@@ -102,7 +103,9 @@ struct progress_t
 	dword shotsFired;
 	dword rages;
 	dword runOver;
+
 	word finishedWorlds;	// worlds you've 100%ed
+
 	dword footDistance,raftDistance,cartDistance,driveDistance;
 	dword underwaterTime;
 	dword grassChopped;
@@ -202,5 +205,6 @@ void CalcFinishedWorlds(void);
 
 void ApplyControlSettings();
 byte CheatBookPurchased(void); // does the player have cheat book?
+byte ModifierActive(byte index);
 
 #endif

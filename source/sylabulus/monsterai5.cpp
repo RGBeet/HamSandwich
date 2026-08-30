@@ -1140,7 +1140,9 @@ void AI_GlueTrap(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 void AI_Gingersnap(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
+	byte b;
 	int x, y;
+	x = me->maxHP - me->hp + 5;	// more damaged=faster
 
 	if (me->reload)
 		me->reload--;
@@ -1161,28 +1163,81 @@ void AI_Gingersnap(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			y = me->y >> FIXSHIFT;
 			BlowUpGuy(x + me->rectx, y + me->recty, x + me->rectx2, y + me->recty2, me->z, 1);
 		}
+
+
+		if (me->seq == ANIM_ATTACK && me->frmTimer < 128 && goodguy && (me->frm == 6 || me->frm == 10))
+		{
+			MakeSound(SND_MUSHMISSILE, me->x, me->y, SND_CUTOFF|SND_RANDOM, 1200);
+			x = me->x + Cosine(me->facing * 32)*16;
+			y = me->y + Sine(me->facing * 32);
+			b = ((me->facing * 32) + (Random(17) - 8)) & 255;
+			FireExactBullet(x, y, FIXAMT*10, Cosine(b)*4, Sine(b)*4, FIXAMT*16, 0, 60, b, BLT_GRENADE, me->friendly);
+			if (me->frm == 10)
+				me->reload = 30;
+		}
 		return;	// can't do nothin' right now
 	}
 
-	if (me->mind == 0)
+	if (me->seq != ANIM_MOVE)
 	{
-		me->mind	= 1;
-		me->mind2	= me->mapx-4;
-		me->mind3	= me->mapy;
+		me->seq = ANIM_MOVE;
+		me->frm = 0;
+		me->frmTimer = 0;
+		me->frmAdvance = 96;
 	}
-	else if (me->mind == 1)
-	{
-		x = (me->mind2 << FIXSHIFT) + Cosine(me->mind1) * 60;
-		y = (me->mind3 << FIXSHIFT) + Sine(me->mind1) * 60;
 
-		if (!me->reload && me->CanWalk(x,y,map,world))
+	if (me->seq == ANIM_MOVE)
+	{
+		me->frmAdvance = 96 + (x - 5) * 96 / me->maxHP;
+		x = 6 + (x - 5) * 6 / me->maxHP;
+
+
+		if (me->frm < 4 && (me->z + me->dz) < 1*FIXAMT)
 		{
-			me->x = x;
-			me->y = y;
-			me->mind1 = (me->mind1+4)&255;
-			me->reload = 1;
+			if (me->mind3)
+			{
+				MakeSound(SND_SPIKECLANK, me->x, me->y, SND_CUTOFF, 1200);
+				me->mind3 = 0;
+			}
+			Dampen(&me->dx, FIXAMT*2);
+			Dampen(&me->dy, FIXAMT*2);
+		}
+		else if (me->frm == 4 && me->frmTimer < me->frmAdvance)
+		{
+			FaceGoodguy2(me, goodguy);
+			MakeSound(SND_HAMMERTOSS, me->x, me->y, SND_CUTOFF, 2);
+			me->dz = x * FIXAMT;
+			me->mind3 = 1;
+
+			me->dx = Cosine(me->facing * 32) * x;
+			me->dy = Sine(me->facing * 32) * x;
+		}
+		else if (me->frm > 4)
+		{
+			Dampen(&me->dx, FIXAMT/4);
+			Dampen(&me->dy, FIXAMT/4);
+		}
+		if (goodguy && !me->reload && abs(me->dx + me->dy) > 1 * FIXAMT && RangeToTarget(me, goodguy) < 44 * FIXAMT)
+		{
+			goodguy->GetShot(me->dx, me->dy, 6, map, world);
+			me->reload = 2;
 		}
 	}
+
+	if (RangeToTarget(me, goodguy) < (128 * FIXAMT) && Random(32) == 0 && !me->reload)
+	{
+		// get him!
+		me->seq = ANIM_ATTACK;
+		me->frm = 0;
+		me->frmTimer = 0;
+		me->frmAdvance = 128 + (x - 5) * 128 / me->maxHP;
+		me->action = ACTION_BUSY;
+		me->dx = 0;
+		me->dy = 0;
+		me->reload = 0;
+		return;
+	}
+	FaceGoodguy(me, goodguy);
 }
 
 void AI_PurpleKappa(Guy* me, Map* map, world_t* world, Guy* goodguy)
@@ -1849,4 +1904,142 @@ void AI_Pathfinder(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		me->frmTimer = 0;
 		me->frmAdvance = 128;
 	}
+}
+
+void AI_StopSign(Guy* me, Map* map, world_t* world, Guy* goodguy)
+{
+	int x, y;
+
+	if (me->reload)
+		me->reload--;
+
+	if (me->ouch == 4)
+	{
+		if (me->hp > 0)
+			MakeSound(SND_STOPSIGNOUCH, me->x, me->y, SND_CUTOFF, 1200);
+		else
+			MakeSound(SND_STOPSIGNDIE, me->x, me->y, SND_CUTOFF, 1200);
+	}
+
+	if (me->action == ACTION_BUSY)
+	{
+		if (me->seq == ANIM_ATTACK && me->frm == 3 && me->reload == 0 && goodguy)
+		{
+			x = me->x + Cosine(me->facing * 32) * 16;
+			y = me->y + Sine(me->facing * 32) * 16;
+
+			byte clang = 0;
+			if (FindVictim(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 40, 0, 0, 16, map, world, me->friendly))
+				clang = 1;
+			// at least one enemy is hit
+			if (clang)
+			{
+				MakeSound(SND_CLANG, me->x, me->y, SND_CUTOFF, 4000);
+				me->reload = 50;
+			}
+		}
+		return;	// can't do nothin' right now
+	}
+
+	if (me->mind == 0) // asleep
+	{
+
+		if (me->mind1 <= 0) // mind1 = wandering timer
+		{
+			me->facing = (byte)Random(8);
+			me->mind1 = Random(40) + 20;
+		}
+		else
+		{
+			me->mind1--;
+		}
+
+		if (goodguy && abs(goodguy->dx + goodguy->dy) > FIXAMT && !me->reload)
+		{
+			me->mind2++;
+			if (me->mind2 >= 15 && !Random(100-me->mind2))
+			{
+				MakeSound(SND_STOPSIGNHEY, me->x, me->y, SND_CUTOFF, 1200);
+				me->mind = 1;
+				me->mind2 = 0;
+				me->seq = ANIM_A1;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 96;
+				me->action = ACTION_BUSY;
+				me->dx = 0;
+				me->dy = 0;
+				me->reload = 0;
+				FaceGoodguy(me, goodguy);
+				return;
+			}
+		}
+		else if (me->mind2 > 0)
+		{
+			me->mind2 = 0;
+		}
+
+		me->dx = Cosine(me->facing * 32) * 2;
+		me->dy = Sine(me->facing * 32) * 2;
+
+		if (me->seq != ANIM_MOVE)
+		{
+			me->seq = ANIM_MOVE;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 96;
+		}
+
+	}
+	if (me->mind == 1) // awake, mad at you
+	{
+		if (goodguy)
+		{
+			if (goodguy->hp <= 0)
+			{
+				me->mind = 0;
+				me->mind2 = 0;
+				return;
+			}
+			if (abs(goodguy->dx + goodguy->dy) < FIXAMT)
+			{
+				me->mind2++;
+				if (me->mind2 >= 60)
+				{
+					me->mind = 0;
+					me->mind2 = 0;
+					return;
+				}
+			}
+		}
+
+		me->dx = Cosine(me->facing * 32) * 6;
+		me->dy = Sine(me->facing * 32) * 6;
+		FaceGoodguy2(me, goodguy);
+
+		if (me->seq != ANIM_A2)
+		{
+			me->seq = ANIM_A2;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 128;
+		}
+
+		if (RangeToTarget(me, goodguy) < (48 * FIXAMT) && !Random(4))
+		{
+			// get him!
+			FaceGoodguy(me, goodguy);
+			me->seq = ANIM_ATTACK;
+			MakeSound(SND_SKELKICK, me->x, me->y, SND_CUTOFF, 1200);
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 128;
+			me->action = ACTION_BUSY;
+			me->dx = 0;
+			me->dy = 0;
+			me->reload = 0;
+			return;
+		}
+	}
+
 }

@@ -1079,70 +1079,35 @@ void Guy::MonsterControl(Map *map,world_t *world)
 		aiFunc(this,map,world,target);
 }
 
-void Guy::GetHealed(byte damage, Map* map, world_t* world, bool bypassInvincible)
+void Guy::GetHealed(word heal, Map* map, world_t* world)
 {
-	if (profile.difficulty == DIFFICULTY_NORMAL && damage > 0)
-	{
-		if (friendly)
-			damage = damage * 2;
-		else
-			damage = damage / 2;
-		if (damage == 0)
-			damage = 1;
-	}
-	if (profile.difficulty == DIFFICULTY_LUNATIC && damage > 0)
-	{
-		if (friendly)
-			damage = damage / 2;
-		else
-			damage = damage * 2;
-		if (damage == 0)
-			damage = 1;
-	}
+	if (!heal)
+		return;
 
-	ouch = 4;
-	hp += damage;
+	hp += heal;
 	if (hp > maxHP)
 		hp = maxHP;
 }
 
-void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world, bool bypassInvincible)
+void Guy::GetShot(int dx,int dy,word damage,Map *map,world_t *world, bool bypassInvincible)
 {
 	int formerHP,newHP;
 
-	if(hp==0)
-		return;	// can't shoot a dead guy
-
-	if(type==0)
-		return;	// shouldn't have a type 0 guy at all
-
-	if(aiType==MONS_BOUAPHA && PlayerShield())
-		return; // invincible when shielded
-
-	if(!bypassInvincible && (MonsterFlags(type,aiType)&MF_INVINCIBLE))
-		return;	// invincible
+	if(hp==0 || type==0 || (aiType == MONS_BOUAPHA && PlayerShield()) || (!bypassInvincible && (MonsterFlags(type, aiType) & MF_INVINCIBLE)))
+		return;
 
 	if(aiType==MONS_BOUAPHA && frozen)
 		frozen/=2;
 
-	if(profile.difficulty==DIFFICULTY_NORMAL && damage>0)
-	{
-		if(friendly)
-			damage=damage/2;
-		else
-			damage=damage*2;
-		if(damage==0)
-			damage=1;
-	}
-	if(profile.difficulty==DIFFICULTY_LUNATIC && damage>0)
-	{
-		if(friendly)
-			damage=damage*2;
-		else
-			damage=damage/2;
-		if(damage==0)
-			damage=1;
-	}
+	if (ModifierActive(MDFY_ENEMYDMG) && friendly != goodguy->friendly)
+		damage *= 1.5;
+
+	if (ModifierActive(MDFY_PLAYERDMG) && this == goodguy)
+		damage *= 0.6;
+
+	if (!damage)
+		damage = 1;
+
 	if(aiType==MONS_BOUAPHA && (player.weapon==WPN_PWRARMOR || player.weapon==WPN_MINISUB))
 	{
 		// damage is done to the armor instead
@@ -1224,6 +1189,8 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world, bool bypass
 			facing=2;	// these can only die facing forward, artistically speaking
 		// possible item drop
 
+		bool notFriendly = (goodguy->friendly != friendly); // cannot add rage if goodguy or friend
+
 		switch((EntityType)type)
 		{
 			case EntityType::Zombie:
@@ -1236,8 +1203,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world, bool bypass
 		}
 
 		ScoreEvent(SE_KILL,1);
-		if(player.rage<127*256-512 && player.rageClock==0 && (player.weapon!=WPN_PWRARMOR && player.weapon!=WPN_MINISUB))
-			player.rage+=512;	// and crank up the rage
+
 		if(!editing && !player.cheated && verified)
 		{
 			profile.progress.kills[type]++;
@@ -1245,8 +1211,13 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world, bool bypass
 
 		EventOccur(EVT_DIE,ID,mapx,mapy,this);
 
-		if(!friendly)
+		if(notFriendly)
 		{
+			if (player.rage < 127 * 256 - 512 && player.rageClock == 0 && (player.weapon != WPN_PWRARMOR && player.weapon != WPN_MINISUB))
+			{
+				player.rage += 512;	// and crank up the rage
+			}
+
 			if(player.combo==0 || player.comboClock==0)
 			{
 				player.combo=1;
@@ -1511,7 +1482,7 @@ void UpdateGuys(Map *map,world_t *world)
 				render = 1;
 			}
 
-			if (profile.difficulty==DIFFICULTY_LUNATIC) // everyone else goes double speed on lunatic
+			if (guys[i].friendly != goodguy->friendly && ModifierActive(MDFY_ENEMYSPD))
 				updates++;
 
 			switch(guys[i].aiType)
@@ -3374,8 +3345,8 @@ void SetPoisonFrames(Guy* g, word frames)
 	{
 		if (PlayerShield())
 			return; // don't poison if shielded
-		if (GetDifficulty() == DIFFICULTY_NORMAL)
-			frames = (frames>1) ? frames/2 : 1;
+		if (ModifierActive(MDFY_STATEFCT))
+			frames *= 1.5;
 	}
 	g->poison = (frames < MAX_STATUS_FRAMES) ? frames : MAX_STATUS_FRAMES;
 }
@@ -3386,8 +3357,8 @@ void SetIgniteFrames(Guy* g, word frames)
 	{
 		if (PlayerShield())
 			return; // don't ignite if shielded
-		if (GetDifficulty() == DIFFICULTY_NORMAL)
-			frames = (frames > 1) ? frames / 2 : 1;
+		if (ModifierActive(MDFY_STATEFCT))
+			frames *= 1.5;
 	}
 	g->ignite = (frames < MAX_STATUS_FRAMES) ? frames : MAX_STATUS_FRAMES;
 }
@@ -3398,8 +3369,6 @@ void SetFreezeFrames(Guy* g, word frames)
 	{
 		if (PlayerShield())
 			return; // don't freeze if shielded
-		if (GetDifficulty() == DIFFICULTY_NORMAL)
-			frames = (frames > 1) ? frames / 2 : 1;
 	}
 	g->frozen = (frames < MAX_STATUS_FRAMES) ? frames : MAX_STATUS_FRAMES;
 }
@@ -3410,8 +3379,6 @@ void SetWeakenFrames(Guy* g, word frames)
 	{
 		if (PlayerShield())
 			return; // don't weaken if shielded
-		if (GetDifficulty() == DIFFICULTY_NORMAL)
-			frames = (frames > 1) ? frames / 2 : 1;
 	}
 	g->weaken = (frames < MAX_STATUS_FRAMES) ? frames : MAX_STATUS_FRAMES;
 }
@@ -3422,8 +3389,6 @@ void SetSlownessFrames(Guy* g, word frames)
 	{
 		if (PlayerShield())
 			return; // don't poison if shielded
-		if (GetDifficulty() == DIFFICULTY_NORMAL)
-			frames = (frames > 1) ? frames / 2 : 1;
 	}
 	g->slow = (frames < MAX_STATUS_FRAMES) ? frames : MAX_STATUS_FRAMES;
 }
@@ -3435,11 +3400,21 @@ void SetMindControlFrames(Guy* g, word frames)
 
 void SetStrengthFrames(Guy* g, word frames)
 {
+	if (g == goodguy)
+	{
+		if (ModifierActive(MDFY_STATEFCT) && g->weaken)
+			frames *= 0.75;
+	}
 	g->strength = (frames < MAX_STATUS_FRAMES) ? frames : MAX_STATUS_FRAMES;
 }
 
 void SetSpeedFrames(Guy* g, word frames)
 {
+	if (g == goodguy)
+	{
+		if (ModifierActive(MDFY_STATEFCT) && g->weaken)
+			frames *= 0.75;
+	}
 	g->speed = (frames < MAX_STATUS_FRAMES) ? frames : MAX_STATUS_FRAMES;
 }
 

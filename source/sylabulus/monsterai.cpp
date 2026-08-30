@@ -82,7 +82,7 @@ void WanderAI(Guy* me, int speed, int wanderRate, int wanderTime, int unWanderRa
 	}
 }
 
-void StartAnimation(Guy* me, byte seq, byte adv, bool force)
+void StartAnimation(Guy* me, byte seq, word adv, bool force)
 {
 	if (!force && seq == me->seq) // don't restart the animation if it's already playing
 		return;
@@ -102,13 +102,13 @@ void SetMoveFacing(Guy* me, int speed)
 	me->dy = Sine(me->facing * 32) * speed;
 }
 
-void StartMoveAnimation(Guy* me, byte speed)
+void StartMoveAnimation(Guy* me, word speed)
 {
 	if (me->seq != ANIM_MOVE)
 		StartAnimation(me, ANIM_MOVE, speed);
 }
 
-void StartIdleAnimation(Guy* me, byte speed)
+void StartIdleAnimation(Guy* me, word speed)
 {
 	if (me->seq != ANIM_IDLE)
 		StartAnimation(me, ANIM_IDLE, speed);

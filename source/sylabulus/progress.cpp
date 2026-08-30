@@ -637,3 +637,8 @@ byte CheatBookPurchased()
 {
 	return (profile.progress.purchase[9] & SIF_BOUGHT); // cheat menu is available
 }
+
+byte ModifierActive(byte index)
+{
+	return false;
+}

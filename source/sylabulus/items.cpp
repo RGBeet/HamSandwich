@@ -138,13 +138,13 @@ static const item_t baseItems[] = {
 		IE_WEAPON,WPN_BFG,"B.F.G.!!!",SND_GONG},
 	{"Throwing Stars",0,0,0,33,0,0,0, // TODO: make sprite (PRIORITY!)
 		30,ITH_WEAPON,ITA_NONE,ITP_PICKUP,ITRG_PICKUP,ITB_NONE,0,
-		IE_WEAPON,WPN_BFG,"Throwing Stars!",SND_WEAPON},
+		IE_WEAPON,WPN_THROWSTARS,"Throwing Stars!",SND_WEAPON},
 	{"Molecular Destabilizer",0,0,0,34,0,0,0, // TODO: make sprite
 		30,ITH_WEAPON,ITA_NONE,ITP_PICKUP,ITRG_PICKUP,ITB_NONE,0,
 		IE_WEAPON,WPN_DESTABILIZER,"Molecular Destabilizer!",SND_WEAPON},
 	{"Decoy Kit",0,0,0,35,0,0,0, // TODO: make sprite  (PRIORITY!)
 		30,ITH_WEAPON,ITA_NONE,ITP_PICKUP,ITRG_PICKUP,ITB_NONE,0,
-		IE_WEAPON,WPN_DESTABILIZER,"Decoy Kit!",SND_ROBOBOUAPHAON},
+		IE_WEAPON,WPN_DECOYKIT,"Decoy Kit!",SND_ROBOBOUAPHAON},
 
 	// Mech weapons
 	{"Power Armor",0,0,0,36,0,0,0, // TODO: make sprite

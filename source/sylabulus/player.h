@@ -88,7 +88,7 @@ struct player_t
 	byte lastWeapon;
 	int  ammo;
 	byte reload;
-	byte wpnReload;
+	word wpnReload;
 
 
 	// wepaon stuff
@@ -141,7 +141,9 @@ struct player_t
 	byte cheated;
 	dword score;
 	int var[8];	// local vars, cleared each new level
+
 	byte ability[6];
+
 	int brainX,brainY,candleX,candleY;
 	word brainTime,candleTime;
 	byte playAs;
@@ -162,7 +164,7 @@ void SetPlayerHP(int hp);
 byte PlayerKeyChain(byte w);
 byte PlayerKeys(byte w);
 void PlayerLoseKey(byte w);
-void PlayerHeal(byte amt);
+void PlayerHeal(word amt);
 void PlayerLoadGame(byte which);
 void PlayerSaveGame(byte which);
 byte PlayerShield(void);

@@ -30,8 +30,8 @@ class Guy final
 		byte CoconutBonk(int xx,int yy,Guy *him);
 		byte AttackCheck(byte size,int xx,int yy,Guy *him);
 		void AttackThem(void);
-		void GetShot(int dx, int dy, byte damage, Map* map, world_t* world, bool bypassInvincible = false);
-		void GetHealed(byte damage, Map* map, world_t* world, bool bypassInvincible);
+		void GetShot(int dx, int dy, word damage, Map* map, world_t* world, bool bypassInvincible = false);
+		void GetHealed(word damage, Map* map, world_t* world);
 		void CalculateRect(void);
 		byte IsAwake(void);
 		void SmoothPath(Map* map, world_t* world);

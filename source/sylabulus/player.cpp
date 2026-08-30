@@ -21,7 +21,7 @@ byte tportclock;
 int pStartX=-1,pStartY=-1;
 static byte oldControls,newControls,checkTheControls;
 
-int maxAmmo[MAX_WEAPONS]={1000,20,99,5,50,1000,15,40,20,30,8,3,1,40,10,3,50,5,1000,5,1,25,5,10,15,4,3,10,16,3};
+int maxAmmo[MAX_WEAPONS]={1000,20,99,5,50,1000,15,40,20,30,8,3,1,40,10,3,50,5,1000,5,1,25,5,10,15,128,3,10,16,3};
 Guy* intfaceEnemy;
 
 void ShouldCheckControls(byte n)
@@ -707,16 +707,8 @@ void PlayerThrowHammer(Guy *me)
 	player.reload=player.hamSpeed+2;
 }
 
-void PlayerHeal(byte amt)
+void PlayerHeal(word amt)
 {
-	if(profile.difficulty==DIFFICULTY_NORMAL)
-	{
-		if(amt>127)
-			amt=255;
-		else
-			amt*=2;
-	}
-
 	HealRing(1,goodguy->x,goodguy->y,0,16,2);
 	HealGoodguy(amt);
 
@@ -781,6 +773,7 @@ void AddShotFiredToProfile()
 void PlayerFireWeapon(Guy *me)
 {
 	byte c;
+	int i;
 
 	if(player.life==0)
 		return;	// no shooting when you're dead
@@ -1111,12 +1104,23 @@ void PlayerFireWeapon(Guy *me)
 			DoPlayerFacing(c,me);
 			break;
 		case WPN_LUNCHBOX:
-			if (GetCurrentWeaponAmmo())
+			if (goodguy->hp >= goodguy->maxHP)
+			{ // you don't need a heal!
+				MakeSound(SND_TURRETBZZT, me->x, me->y, SND_CUTOFF, 1200);
+				player.wpnReload = 10;
+			}
+			else if (GetCurrentWeaponAmmo())
 			{
-				ScoreEvent(SE_SHOOT, 1);
-				// do the attack
-				ReduceCurrentWeaponAmmo(1);
+				i = goodguy->maxHP - goodguy->hp;
+				if (i > GetCurrentWeaponAmmo())
+					i = GetCurrentWeaponAmmo();
+				HealGoodguy(i);
+				HealRing(1, goodguy->x, goodguy->y, 0, 16, 2);
+				MakeSound(SND_FOOD, me->x, me->y, SND_CUTOFF, 1200);
+
+				ReduceCurrentWeaponAmmo(i);
 				AddShotFiredToProfile();
+				player.wpnReload = 15+i/2;
 			}
 			break;
 		case WPN_BLACKHOLE: // basically the planetsmasher?
@@ -1129,6 +1133,7 @@ void PlayerFireWeapon(Guy *me)
 
 				ReduceCurrentWeaponAmmo(1);
 				AddShotFiredToProfile();
+				player.wpnReload = 30;
 			}
 			break;
 		case WPN_GLUEGUN:
@@ -1146,7 +1151,8 @@ void PlayerFireWeapon(Guy *me)
 			if (GetCurrentWeaponAmmo())
 			{
 				ScoreEvent(SE_SHOOT, 1);
-				// do the attack
+				FireBullet(me->x, me->y, me->facing, BLT_SHRUIKEN, me->friendly);
+				MakeSound(SND_BOMBTHROW, me->x, me->y, SND_CUTOFF, 1200);
 				ReduceCurrentWeaponAmmo(1);
 				AddShotFiredToProfile();
 			}
@@ -1161,6 +1167,8 @@ void PlayerFireWeapon(Guy *me)
 			}
 			break;
 	}
+	if (ModifierActive(MDFY_RELOAD)) // slower reload modifier
+		player.reload *= 1.5;
 	if(!player.ammoCrate && !GetCurrentWeaponAmmo())
 	{
 		RemoveCurrentWeapon();
@@ -1677,6 +1685,8 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			if(player.hammers>0)
 				PlayerThrowHammer(me);
 			player.reload+=(10-(4-(player.hamSpeed>>2)));;
+			if(ModifierActive(MDFY_RELOAD)) // slower reload modifier
+				player.reload*=1.5;
 		}
 		else
 		{
@@ -2197,7 +2207,9 @@ static const char wpnName[][32] = {
 
 	"Glue Gun",
 	"Throwing Stars",
-	"Bouapha's Favorite Gun"
+	"Bouapha's Favorite Gun",
+	"Molecular Destabilizer",
+	"Decoy Kit",
 };
 
 static const int wpnIcons[] = {

@@ -37,16 +37,16 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Mumble",255,255,0,AI_Mumble,
-		 15,28,30,100,"graphics/mumble.jsp",0,MF_NOMOVE,
+		 15,32,30,100,"graphics/mumble.jsp",0,MF_NOMOVE,
 		 MT_EVIL | MT_DESERT | MT_SPOOKY,
 			{
 				{0,255},	// idle
-				{1,2,3,4,5,0,6,7,8,9,10,0,255},	// move
-				{11,12,13,14,15,16,17,18,255},	// attack=head crush
-				{19,20,21,22,23,24,25,26,27,255},	// die
-				{11,12,13,14,15,16,17,18,255},	// attack=head crush
-				{11,12,13,14,15,16,17,18,255},	// attack=head crush
-				{11,12,13,14,15,16,17,18,255},	// attack=head crush
+				{1,2,3,4,5,6,0,7,8,9,10,11,255},	// move
+				{12,13,14,15,16,17,18,19,20,21,22,255},	// attack=head crush
+				{23,24,25,26,27,28,254,29,254,30,254,31,255},	// die
+				{12,13,14,15,16,17,18,19,20,21,22,255},	// attack=head crush
+				{12,13,14,15,16,17,18,19,20,21,22,255},	// attack=head crush
+				{12,13,14,15,16,17,18,19,20,21,22,255},	// attack=head crush
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
@@ -302,30 +302,30 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Gingersnap",2,4,5,AI_Gingersnap,
-		 12,33,50,300,"graphics/ginger.jsp",0,{},
+		{"Easter Egg",255,255,0,AI_Gingersnap,
+		 18,26,128,1000,"graphics/easteregg.jsp",0,{},
 		 MT_EVIL | MT_WACKY,
 			{
-				{0,255},	// idle
-				{1,2,3,4,5,6,255},	// move
-				{7,8,9,10,11,12,13,14,15,16,17,18,19,20,19,20,19,20,21,22,23,255},	// triple punch
-				{27,28,29,30,31,32,32,32,32,255},	// die
-				{24,25,26,26,26,26,26,255},	// jumpkick (A1)
-				{25,24,255},	// unjumpkick (A2)
-				{7,8,9,10,11,12,13,14,15,16,17,18,19,20,19,20,19,20,21,22,23,255},	// triple punch
+				{0,1,2,3,2,1,255},	// idle
+				{1,2,3,4,5,6,7,8,9,255},	// move
+				{9,10,11,12,13,14,15,14,13,14,15,16,17,18,19}, // chomp
+				{19,20,21,22,23,24,25,255},	// die
+				{9,10,11,12,13,14,15,14,13,14,15,16,17,18,19}, // chomp
+				{9,10,11,12,13,14,15,14,13,14,15,16,17,18,19}, // chomp
+				{9,10,11,12,13,14,15,14,13,14,15,16,17,18,19}, // chomp
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Happy Stick Ninja",255,255,0,AI_StickNinja, // not yet implemented
-		 8,38,10,50,"graphics/stickninja.jsp",0,MF_ONEFACE,
+		{"Happy Stick Man",255,255,0,AI_StickMan, // not yet implemented
+		 20,40,200,50,"graphics/stickman.jsp",0,{},
 		 MT_EVIL | MT_WACKY | MT_MINIBOSS | MT_HUMAN,
 			{
 				{0,255},	// idle
-				{0,255},	// move
-				{0,255},	// attack 1
-				{0,255},	// defeated
-				NULL_ANIM,
-				NULL_ANIM,
+				{1,2,3,2,1,4,5,6,5,4,255},	// move
+				{29,30,31,32,33,34,35,36,37,38,39,255},	// attack 1
+				{8,9,10,11,12,13,14,15,16,17,255},	// defeated
+				{18,19,20,21,22,23,22,21,20,24,25,26,27,28,27,26,25,255},	// attack 1
+				{9,10,11,12,11,10,11,12,11,10,11,12,11,10,9,255},	// A2=sadness
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
@@ -540,20 +540,20 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Manic Mumble",0,7,4,AI_Mumble,
-		 15,28,20,100,"!3",0,MF_NOMOVE,
-		 MT_EVIL | MT_SPOOKY | MT_DESERT,
+		{"Manic Mumble",0,7,1,AI_Mumble,
+		 15,32,20,100,"!3",0,MF_NOMOVE,
+		 MT_EVIL | MT_DESERT | MT_SPOOKY,
 			{
 				{0,255},	// idle
-				{1,2,3,4,5,0,6,7,8,9,10,0,255},	// move
-				{11,12,13,14,15,16,17,18,255},	// attack=head crush
-				{19,20,21,22,23,24,25,26,27,255},	// die
-				{11,12,13,14,15,16,17,18,255},	// attack=head crush
-				{11,12,13,14,15,16,17,18,255},	// attack=head crush
-				{11,12,13,14,15,16,17,18,255},	// attack=head crush
-				{11,12,13,14,15,16,17,18,255},	// attack=head crush
-				{11,12,13,14,15,16,17,18,255},	// attack=head crush
-			},0},
+				{1,2,3,4,5,6,0,7,8,9,10,11,255},	// move
+				{12,13,14,15,16,17,18,19,20,21,22,255},	// attack=head crush
+				{23,24,25,26,27,28,254,29,254,30,254,31,255},	// die
+				{12,13,14,15,16,17,18,19,20,21,22,255},	// attack=head crush
+				{12,13,14,15,16,17,18,19,20,21,22,255},	// attack=head crush
+				{12,13,14,15,16,17,18,19,20,21,22,255},	// attack=head crush
+				NULL_ANIM,
+				NULL_ANIM,
+			},0 },
 		{"Bombie",0,4,5,AI_Bombie, // the explosive zombie, leaps up
 		 11,32,80,150,"!4",0,{},
 		 MT_EVIL | MT_SPOOKY | MT_ZOMBIE | MT_TRAP,
@@ -989,16 +989,16 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"STOP! Sign",255,255,0,NULL, // not yet implemented
-		 8,38,10,50,"graphics/stopsign.jsp",0,{},
+		{"STOP! Sign",255,255,0,AI_StopSign, // not yet implemented
+		 15,32,100,50,"graphics/stopsign.jsp",0,{},
 		 MT_EVIL | MT_URBAN,
 			{
 				{0,255},	// idle
-				{0,255},	// move
-				{0,255},	// attack 1
-				{0,255},	// defeated
-				NULL_ANIM,
-				NULL_ANIM,
+				{1,2,3,2,4,5,6,5,255},	// move
+				{22,23,24,24,25,26,26,25,24,23,255},	// attack 1
+				{27,28,29,30,31,31,254,31,254,31,254,31,254,31,254,31,255},	// die
+				{7,8,9,10,11,12,13,14,15,255},	// get mad
+				{16,17,18,17,19,20,21,20,255},	// move angry
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,

@@ -70,9 +70,9 @@ static const char itemPassabilityNames[][16] = {
 	"Walkable", "Solid", "Bulletproof", "Barrier", "Pickup Item",
 };
 static const char itemTriggerNames[][16] = {
-	"No Trigger", "Pick Up", "Player Bump", "Friend Bump", "Enemy Bump",
-	"Entity Bump", "Minecart Bump", "Explosion Hit", "Fire Hit",
-	"Ice Hit", "Always"
+	"No Trigger", "Pick Up", "Bullet Hit", "Player Bump", "Friend Bump",
+	"Enemy Bump", "Entity Bump", "Minecart Bump", "Explosion Hit",
+	"Fire Hit", "Ice Hit", "Always"
 };
 static const char itemBehaviorNames[][16] = {
 	"No Behav.", "Bubble Emit", "Fire Emit",

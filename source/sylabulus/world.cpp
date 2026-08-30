@@ -64,7 +64,6 @@ bool LoadWorld(world_t *world,const char *fname)
 		f.reset();
 		return Syl_LoadWorld(world, fname); // project sylabulus
 	}
-	printf("[EDITOR] HUH? Not a Sylabulus World");
 }
 
 bool SaveWorld(const world_t *world, const char *fname)

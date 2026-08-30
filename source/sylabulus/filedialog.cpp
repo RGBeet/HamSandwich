@@ -165,7 +165,7 @@ void RenderFileDialog(int msx,int msy,MGLDraw *mgl)
 
 		if (hamSandwich)
 		{
-			Print(366,286,"HamSwch",0,1);
+			Print(366,286,"updated",0,1);
 			Print(366,298,"format",0,1);
 		}
 	}

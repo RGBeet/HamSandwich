@@ -46,6 +46,7 @@ constexpr int SPR_ROCKET		= 412;
 constexpr int SPR_GLUESHOT		= 428;
 constexpr int SPR_RAINBOWSHOT	= 429;
 constexpr int SPR_CLAWHAMMER	= 441;
+constexpr int SPR_SHRUIKEN		= 569;
 
 static bullet_t *bullet;
 static sprite_set_t *bulletSpr;
@@ -150,6 +151,11 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_ROCKET:
 			BulletRanOut(me,map,world);
+			break;
+		case BLT_SHRUIKEN:
+		case BLT_SHRUIKENBAD:
+			me->type = BLT_NONE;
+			ExplodeParticles(PART_SHRAPNEL, me->x, me->y, me->z, 4);
 			break;
 		case BLT_HAMMER:
 		case BLT_LUNA:
@@ -323,6 +329,11 @@ void BulletHitWallY(bullet_t *me,Map *map,world_t *world)
 			me->type=BLT_NONE;
 			ExplodeParticles(PART_HAMMER,me->x,me->y,me->z,8);
 			MakeSound(SND_HAMMERBONK,me->x,me->y,SND_CUTOFF,1000);
+			break;
+		case BLT_SHRUIKEN:
+		case BLT_SHRUIKENBAD:
+			me->type = BLT_NONE;
+			ExplodeParticles(PART_SHRAPNEL, me->x, me->y, me->z, 4);
 			break;
 		case BLT_CLAWHAMMER:
 			BulletRanOut(me, map, world);
@@ -507,6 +518,11 @@ void BulletHitFloor(bullet_t *me,Map *map,world_t *world)
 			else if(GetTerrain(world,map->GetTile(x,y)->floor)->type == TF_LAVA)
 				ExplodeParticles(PART_HAMMER,me->x,me->y,0,8);
 			break;
+		case BLT_SHRUIKEN:
+		case BLT_SHRUIKENBAD:
+			me->type = BLT_NONE;
+			BlowSmoke(me->x, me->y, me->z, FIXAMT);
+			break;
 		case BLT_BOMB:
 		case BLT_MINDWIPE:
 			if(me->dz<-FIXAMT)	// don't make it on small bounces, because it'd be annoying
@@ -639,7 +655,10 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 			me->type = 0;
 			break;
 		case BLT_TORCH:
-			BlowSmoke(me->x - me->dx, me->y - me->dy, me->z, FIXAMT / 16);
+		case BLT_SHRUIKEN:
+		case BLT_SHRUIKENBAD:
+			me->type = BLT_NONE;
+			BlowSmoke(me->x, me->y, me->z, FIXAMT);
 			break;
 		case BLT_LILBOOM:
 		case BLT_LILBOOM2:
@@ -933,7 +952,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 							g->mind = 2;
 						}
 						MakeSound(SND_CLANG, me->x, me->y, SND_CUTOFF, 900);
-						g->GetHealed(3, map, world, false);
+						g->GetHealed(3, map, world);
 						if(me->facing%2==1)
 						{
 							if (!Random(2))
@@ -1206,6 +1225,19 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 				MakeSound(SND_PAINTSPLAT,me->x,me->y,SND_CUTOFF,950);
 				BulletRanOut(me,map,world);	// detonate
 			}
+			break;
+		case BLT_SHRUIKEN:
+		case BLT_SHRUIKENBAD:
+			if (Guy* victim = FindVictim(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 8, 0, 0, 0, map, world, me->friendly))
+			{
+				i = (byte)(me->timer / 2);
+				byte taken = (victim->hp < me->timer) ? victim->hp : me->timer;
+				victim->GetShot(me->dx, me->dy, taken, map, world, false);
+				me->timer -= taken;
+				if (!me->timer)
+					BulletRanOut(me, map, world);
+			}
+			break;
 	}
 	attackType=BLT_NONE;
 }
@@ -1435,6 +1467,13 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			HitBadguys(me,map,world);
 			Dampen(&me->dx,FIXAMT/8);
 			Dampen(&me->dy,FIXAMT/8);
+			break;
+		case BLT_SHRUIKEN:
+		case BLT_SHRUIKENBAD:
+			me->anim++;
+			if (me->anim == 16)
+				me->anim = 0;
+			HitBadguys(me, map, world);
 			break;
 		case BLT_SLASH:
 			me->anim++;
@@ -2437,6 +2476,26 @@ void RenderBullet(bullet_t *me)
 					DISPLAY_DRAWME);
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,0,255,me->bright,curSpr,
 					DISPLAY_DRAWME|DISPLAY_SHADOW);
+		case BLT_SHRUIKEN:
+			if (me->timer > 10 || me->timer % 2 == 0)
+			{
+				curSpr = bulletSpr->GetSprite(me->anim / 2 + SPR_SHRUIKEN);
+				SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 255, me->bright, curSpr,
+					DISPLAY_DRAWME);
+				SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 0, 255, me->bright, curSpr,
+					DISPLAY_DRAWME | DISPLAY_SHADOW);
+			}
+			break;
+		case BLT_SHRUIKENBAD:
+			if (me->timer > 10 || me->timer % 2 == 0)
+			{
+				curSpr = bulletSpr->GetSprite(me->anim / 2 + SPR_SHRUIKEN);
+				SprDrawOff(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 0, 4, me->bright + 2, curSpr,
+					DISPLAY_DRAWME);
+				SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 0, 255, me->bright, curSpr,
+					DISPLAY_DRAWME | DISPLAY_SHADOW);
+			}
+			break;
 	}
 }
 
@@ -2667,6 +2726,24 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type,byte friendly)
 			me->dz=-FIXAMT/2;
 			if(Random(5)==0)
 				MakeSound(SND_FLAMEGO,me->x,me->y,SND_CUTOFF,1100);
+			break;
+		case BLT_SHRUIKEN:
+			me->anim = 0;
+			me->timer = 32 - Random(4);
+			me->x += ((Random(3) - 1) << FIXSHIFT) + Cosine(me->facing * 32) * 5;
+			me->y += ((Random(3) - 1) << FIXSHIFT) + Sine(me->facing * 32) * 5;
+			me->dx = Cosine(me->facing * 32) * 12;
+			me->dy = Sine(me->facing * 32) * 12;
+			me->z = FIXAMT * 10;
+			break;
+		case BLT_SHRUIKENBAD:
+			me->anim = 0;
+			me->timer = 28 - Random(4);
+			me->x += ((Random(3) - 1) << FIXSHIFT) + Cosine(me->facing * 32) * 5;
+			me->y += ((Random(3) - 1) << FIXSHIFT) + Sine(me->facing * 32) * 5;
+			me->dx = Cosine(me->facing * 32) * 14;
+			me->dy = Sine(me->facing * 32) * 14;
+			me->z = FIXAMT * 10;
 			break;
 		case BLT_LASER:
 			me->anim=0;
@@ -3610,7 +3687,7 @@ static const char bulletName[][20] = {
 	"Black Hole",
 	"Shruiken",
 	"BFG Hammer",
-	"Torch",
+	"Torch FX",
 	"Lantern Shot",
 	"Evil Shruiken",
 	"Gift Bomb",
@@ -3618,7 +3695,8 @@ static const char bulletName[][20] = {
 	"Orbit Shocker",
 	"Tornado",
 	"Rocket Boom",
-	"Claw Hammer"
+	"Claw Hammer",
+	"Death Laser"
 };
 
 const char* BulletName(int type)
@@ -3626,4 +3704,125 @@ const char* BulletName(int type)
 	if (type >= 0 && type < NUM_BULLETS)
 		return bulletName[type];
 	return "???";
+}
+
+// Used by the death laster bullet type. 
+void LaserMirrorHit(bullet_t* me, Map* map, world_t* world)
+{
+	short mapx, mapy;
+	char n[2];
+
+	mapx = me->x / (TILE_WIDTH * FIXAMT);
+	mapy = me->y / (TILE_HEIGHT * FIXAMT);
+
+	if (mapx == (me->target % 256) && mapy == (me->target / 256))	// you've already hit/not hit this space
+		return;
+
+	if (mapx < 0 || mapy < 0 || mapx >= map->width || mapy >= map->height)
+	{
+		me->type = BLT_NONE;
+		return;
+	}
+
+	if (me->dx < 0)
+	{
+		me->dx = me->dx;
+	}
+	n[0] = GetItem(map->map[mapx + mapy * map->width].item)->name[0];
+	n[1] = GetItem(map->map[mapx + mapy * map->width].item)->name[1];
+	if (n[0] == '@')	// mirror items start with @
+	{
+		if (me->dx > 0)	// heading right
+		{
+			if (n[1] == '1' || n[1] == '3')
+			{
+				me->type = BLT_NONE;
+				ExplodeParticlesColor(7, me->x, me->y, me->z, 1, 2);
+				return;	// blocked
+			}
+			else if (n[1] == '0')
+			{
+				me->dx = 0;
+				me->dy = -FIXAMT * 24;
+				me->facing = 6 * 32;
+			}
+			else if (n[1] == '2')
+			{
+				me->dx = 0;
+				me->dy = FIXAMT * 24;
+				me->facing = 2 * 32;
+			}
+		}
+		else if (me->dx < 0)	// heading left
+		{
+			if (n[1] == '0' || n[1] == '2')
+			{
+				me->type = BLT_NONE;
+				ExplodeParticlesColor(7, me->x, me->y, me->z, 1, 2);
+				return;	// blocked
+			}
+			else if (n[1] == '1')
+			{
+				me->dx = 0;
+				me->dy = -FIXAMT * 24;
+				me->facing = 6 * 32;
+			}
+			else if (n[1] == '3')
+			{
+				me->dx = 0;
+				me->dy = FIXAMT * 24;
+				me->facing = 2 * 32;
+			}
+		}
+		else if (me->dy < 0)	// heading up
+		{
+			if (n[1] == '0' || n[1] == '1')
+			{
+				me->type = BLT_NONE;
+				ExplodeParticlesColor(7, me->x, me->y, me->z, 1, 2);
+				return;	// blocked
+			}
+			else if (n[1] == '2')
+			{
+				me->dx = -FIXAMT * 32;
+				me->dy = 0;
+				me->facing = 4 * 32;
+			}
+			else if (n[1] == '3')
+			{
+				me->dx = FIXAMT * 32;
+				me->dy = 0;
+				me->facing = 0 * 32;
+			}
+		}
+		else if (me->dy > 0)	// heading down
+		{
+			if (n[1] == '2' || n[1] == '3')
+			{
+				me->type = BLT_NONE;
+				ExplodeParticlesColor(7, me->x, me->y, me->z, 1, 2);
+				return;	// blocked
+			}
+			else if (n[1] == '0')
+			{
+				me->dx = -FIXAMT * 32;
+				me->dy = 0;
+				me->facing = 4 * 32;
+			}
+			else if (n[1] == '1')
+			{
+				me->dx = FIXAMT * 32;
+				me->dy = 0;
+				me->facing = 0 * 32;
+			}
+		}
+		me->target = (mapx + mapy * 256);
+		me->x = (mapx * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+		me->y = (mapy * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
+	}
+	else
+	{
+		ExplodeParticlesColor(7, me->x, me->y, me->z, 1, 2);
+		me->type = BLT_NONE;
+	}
 }
