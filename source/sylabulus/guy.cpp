@@ -613,6 +613,50 @@ void Guy::Update(Map *map,world_t *world)
 
 	CalculateRect();
 
+	// check the current tile?
+	mapTile_t* mapTile = (!EntityIsNoneOrNobody(aiType)) ? map->GetTile(mapx, mapy) : nullptr;
+
+	// conveyor check
+	if (mapTile && z == 0)
+	{
+		byte terrainType = GetTerrain(world, mapTile->floor)->type;
+		byte terrainValue = GetTerrain(world, mapTile->floor)->value;
+		switch (terrainType)
+		{
+		case TRN_CNVYUP:
+			dy -= (4 + terrainValue) * FIXAMT;
+			break;
+		case TRN_CNVYDN:
+			dy += (4 + terrainValue) * FIXAMT;
+			break;
+		case TRN_CNVYLF:
+			dx -= (4 + terrainValue) * FIXAMT;
+			break;
+		case TRN_CNVYRG:
+			dx += (4 + terrainValue) * FIXAMT;
+			break;
+		case TRN_SKY:
+		case TRN_CLIFF:
+			dx += (0 - dx) / 4;
+			dy += ((FIXAMT * 8) - dy) / 4;
+			if (terrainType == TRN_CLIFF && dy > FIXAMT * 3)
+				ExplodeParticles2(PART_DIRT, x, y, 0, 5, 4);
+			break;
+		case TRN_STRSLF:
+			if (dx < 0)
+				dy = dx;		// left -> up
+			else if (dx > 0)
+				dy = dx;		// right -> down
+			break;
+		case TRN_STRSRG:
+			if (dx > 0)
+				dy = -dx;		// right -> up
+			else if (dx < 0)
+				dy = -dx;		// left -> down
+			break;
+		}
+	}
+
 	// Frozen
 	if(frozen>0)
 	{
@@ -633,7 +677,7 @@ void Guy::Update(Map *map,world_t *world)
 	else // not frozen? MIND CONTROL
 	{
 		if(EntityIsPlayer(aiType))	// special case, player controls Bouapha
-			PlayerControlMe(this,map->GetTile(mapx,mapy),world);
+			PlayerControlMe(this,mapTile,world);
 		else
 			MonsterControl(map,world);
 	}

@@ -985,7 +985,7 @@ byte FindPaletteColor(const RGB* pal, int r, int g, int b)
 	return (byte)best;
 }
 
-void Map::RenderSky(int camX, int camY)
+void Map::RenderSky(int camX, int camY, byte skyType)
 {
 	int w = GetDisplayMGL()->GetWidth();
 	int h = GetDisplayMGL()->GetHeight();
@@ -1011,12 +1011,32 @@ void Map::RenderSky(int camX, int camY)
 			if (sy > 240)
 				sy = 240;
 
-			// Blue palette is 96-127.
-			// Dark blue at the top, bright blue at the bottom.
-			byte col = 96 + sy * 27 / 240;
+			byte col;
 
-			PlotSky(x,y,col,dtx.rem,dty.rem,m->floor
-			);
+			switch (skyType)
+			{
+				case MAP_SKY_SUNSET:
+					// Original blue sky.
+					// Blue palette is 96-127.
+					// Dark blue at the top, bright blue at the bottom.
+					col = 96 + sy * 27 / 240;
+					break;
+				case MAP_SKY_PINK:
+					// Fuchsia at the top, transitioning into yellow.
+					if (sy < 120)
+					{
+						// Red/fuchsia: 128-159
+						col = 128 + sy * 31 / 120;
+					}
+					else
+					{
+						// Yellow: 160-191
+						col = 160 + (sy - 120) * 31 / 120;
+					}
+					break;
+			}
+
+			PlotSky(x, y, col, dtx.rem, dty.rem, m->floor);
 		}
 	}
 }
@@ -1281,7 +1301,8 @@ void Map::Render(world_t *world,int camX,int camY,MapRenderFlags flags)
 			RenderStars(camX, camY);
 			break;
 		case MAP_SKY_SUNSET:
-			RenderSky(camX, camY);
+		case MAP_SKY_PINK:
+			RenderSky(camX, camY, this->skyType);
 			break;
 	}
 }

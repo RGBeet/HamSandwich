@@ -1431,38 +1431,8 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 
 	byte terrainType	= GetTerrain(world, mapTile->floor)->type;
 	byte terrainValue	= GetTerrain(world, mapTile->floor)->value;
-
-	if (terrainType == TRN_SKY || terrainType == TRN_CLIFF) // sky
-	{
-		me->dx += (0 - me->dx) / 4;
-		me->dy += ((FIXAMT * 8) - me->dy) / 4;
-		if (terrainType == TRN_CLIFF && me->dy > FIXAMT*3)
-			ExplodeParticles2(PART_DIRT, me->x, me->y, 0, 5, 4);
-	}
-	if (terrainType >= TRN_CNVYUP && terrainType <= TRN_CNVYRG && me->z == 0) // conveyor terrain
-	{
-		x = 0;
-		y = 0;
-		switch (GetTerrain(world, mapTile->floor)->type)
-		{
-			case TRN_CNVYUP:
-				y = -(4 + terrainValue) * FIXAMT;
-				break;
-			case TRN_CNVYDN:
-				y = (4 + terrainValue) * FIXAMT;
-				break;
-			case TRN_CNVYLF:
-				x = -(4 + terrainValue) * FIXAMT;
-				break;
-			case TRN_CNVYRG:
-				x = (4 + terrainValue) * FIXAMT;
-				break;
-		}
-		// ease towards the intended direction
-		me->dx += (x - me->dx) / 4;
-		me->dy += (y - me->dy) / 4;
-	}
-	else if (terrainType == TRN_ICE && me->z == 0 && !(player.hammerFlags&HMR_NOSKID)) // ice terrain
+	
+	if (terrainType == TRN_ICE && me->z == 0 && !(player.hammerFlags&HMR_NOSKID)) // ice terrain
 	{
 		if(!player.jetting && me->mind1)	// bumped a wall while on ice
 		{

@@ -528,18 +528,18 @@ static const item_t baseItems[] = {
 		0,ITH_POWERUP,ITA_NONE,ITP_PICKUP,ITRG_PICKUP,ITB_NONE,0,
 		IE_RAGE,128,"",0},
 	{"Present",0,0,0,158,0,0,0, // TODO: make item effect (random weapon)
-		50,ITH_POWERUP|ITH_WEAPON,ITA_NONE,ITP_PICKUP,ITRG_PICKUP,ITB_NONE,0,
-		IE_NONE,128,"",0},
+		50,ITH_POWERUP|ITH_WEAPON,ITA_NONE,ITP_BARRIER,ITRG_PROJECTILE,ITB_NONE,0,
+		IE_DROPITEM,0,"",0},
 	{"Small Gemstone",0,0,0,159,0,0,0, // TODO: make add score effect
 		0,ITH_COLLECTIBLE,ITA_NONE,ITP_PICKUP,ITRG_PICKUP,ITB_NONE,0,
-		IE_NONE,128,"",0},
+		IE_SCORE,100,"",0},
 	{"Large Gemstone",0,0,0,160,0,0,0, // TODO: make add score effect
 		0,ITH_COLLECTIBLE,ITA_NONE,ITP_PICKUP,ITRG_PICKUP,ITB_NONE,0,
-		IE_NONE,128,"",0},
+		IE_SCORE,500,"",0},
 
 	// Miscellaneous scenery
 	{"Mine Block",0,0,0,161,0,0,0,
-		0,ITH_OBSTACLE|ITH_BULLETPROOF,ITA_NONE,ITP_BULLETPROOF,ITRG_ENTITYBUMP,ITB_NONE,0,
+		0,ITH_OBSTACLE|ITH_BULLETPROOF,ITA_NONE,ITP_BULLETPROOF,ITRG_MINECART,ITB_NONE,0,
 		IE_DESTROY,2,"",0},
 	{"Tall Grass",0,0,0,162,0,0,0,
 		0,ITH_OBSTACLE|ITH_PLANTS,ITA_NONE,ITP_SOLID,ITRG_MACHETE,ITB_NONE,0,
@@ -572,7 +572,7 @@ static const item_t baseItems[] = {
 };
 static_assert(std::size(baseItems) == NUM_ORIGINAL_ITEMS);
 
-static const item_t emptyItem = { "Custom Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0 };
+static const item_t emptyItem = { "Custom Item",0,0,0,0,0,0,0,0,ITH_CUSTOM,ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0 };
 
 static sprite_set_t *itmSpr;
 static sprite_set_t *animItmSpr;

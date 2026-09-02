@@ -57,7 +57,7 @@ static const MapWeather weatherType[] = { MAP_WEATHER_NONE, MAP_WEATHER_RAIN, MA
 static const MapType levelType[] = { MAP_TYPE_NORMAL, MAP_TYPE_HUB, MAP_TYPE_SECRET, MAP_TYPE_BOSS, MAP_TYPE_KEYCHAIN };
 static const MapLighting lightingType[] = { MAP_LIGHT_NORMAL, MAP_LIGHT_TORCH, MAP_LIGHT_LANTERN, MAP_LIGHT_STEALTH };
 static const MapEnvironment environmentType[] = { MAP_ENV_NORMAL, MAP_ENV_UNDERWATER, MAP_ENV_OXYGEN, MAP_ENV_SUPERHOT, MAP_ENV_OUTERSPACE, MAP_ENV_DUMBSIDE };
-static const MapSky skyTypes[] = { MAP_SKY_NONE, MAP_SKY_STARRY, MAP_SKY_SUNSET };
+static const MapSky skyTypes[] = { MAP_SKY_NONE, MAP_SKY_STARRY, MAP_SKY_SUNSET, MAP_SKY_PINK };
 static const MapWater waterTypes[] = { MAP_WTR_NONE, MAP_WTR_WATER, MAP_WTR_RAPIDS, MAP_WTR_LAVA };
 
 static const char weatherTypeNames[][16] = {
@@ -73,7 +73,7 @@ static const char environmentTypeNames[][16] = {
 	"Nrml. Env.", "Underwater", "Oxygen Tank", "Super Hot!", "Outer Space", "Dumb Side",
 };
 static const char skyTypeNames[][16] = {
-	"No Sky FX", "Starry Night", "Sunset"
+	"No Sky FX", "Starry Night", "Sunset", "Blossom Pink",
 };
 static const char waterTypeNames[][16] = {
 	"No Water FX", "Calm Water", "River Rapids", "Lava",

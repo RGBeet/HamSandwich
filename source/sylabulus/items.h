@@ -317,8 +317,9 @@ BITFLAGS(ItemTriggers)
 #define IE_MOVE		28	// move up/down/left/right (only if it could move there as a pushable item)
 #define IE_POCKET	29 	// gives N slots (player can have max of 8, starts with 1) 
 
-#define IE_SCORE	30
-#define IE_EXPLODE	31
+#define IE_SCORE	30	// give N random points
+#define IE_EXPLODE	31	// explode!!
+#define IE_DROPITEM	32	// drop a random item
 
 #define IE_MAX		31	// max # of effects
 

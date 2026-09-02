@@ -57,20 +57,20 @@ static const TileFlags oldFlags[]={
 static const TerrainType terrainTypes[] = {
 	TRN_NORMAL,TRN_SOLID,TRN_ICE,TRN_MUD,TRN_WATER,TRN_LAVA,
 	TRN_RUBBER,TRN_QUICKSAND,TRN_CNVYUP,TRN_CNVYDN,TRN_CNVYLF,TRN_CNVYRG,
-	TRN_PUSHABLE,TRN_PUSHON,TRN_SKY,TRN_CLIFF
+	TRN_PUSHABLE,TRN_PUSHON,TRN_SKY,TRN_CLIFF,TRN_STRSLF,TRN_STRSRG
 };
 static const char terrainTypeNames[][16] = {
 	"Normal","Impassible","Ice","Mud","Water","Lava",
 	"Rubber","Quicksand","Conveyor (U)","Conveyor (D)","Conveyor (L)","Conveyor (R)",
-	"Pushable", "Can Push On", "Sky", "Cliff",
+	"Pushable", "Can Push On", "Sky", "Cliff", "Stairs (L)", "Stairs (R)",
 };
 
 // singular
 static const TerrainChange terrainChange[] = {
-	TRN_NOCHANGE,TRN_ANIM,TRN_STEP,TRN_DESTRUCT,
+	TRN_NOCHANGE,TRN_ANIM,TRN_STEP,TRN_DESTRUCT,TRN_DOUBLELAYER
 };
 static const char terrainChangeNames[][16] = {
-	"N/A", "Animated", "Step to Anim.", "Hit to Anim.",
+	"N/A", "Animated", "Step to Anim.", "Hit to Anim.", "Double Layer"
 };
 
 // singular (?)

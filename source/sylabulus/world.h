@@ -31,6 +31,16 @@ enum TerrainType : byte // up to 256 different terrain types?! WOW!!
 
 	TRN_SKY,			//
 	TRN_CLIFF,			// pushes you down!
+
+	TRN_STRSLF,			// stairs, left
+	TRN_STRSRG,			// stairs, righ
+
+	// launchpad (launches you)
+	TRN_LNCHUP,	
+	TRN_LNCHDN,
+	TRN_LNCHLF,
+	TRN_LNCHRG,
+
 	NUM_TERRAIN_TYPES,
 };
 
@@ -40,6 +50,7 @@ enum TerrainChange : byte
 	TRN_ANIM,
 	TRN_STEP,
 	TRN_DESTRUCT,
+	TRN_DOUBLELAYER,
 	NUM_TRNCHANGE_TYPES
 };
 
