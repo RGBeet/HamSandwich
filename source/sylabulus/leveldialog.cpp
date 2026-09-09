@@ -54,7 +54,7 @@ static const LevelFlags flagNum[]={
 };
 
 static const MapWeather weatherType[] = { MAP_WEATHER_NONE, MAP_WEATHER_RAIN, MAP_WEATHER_SNOW, MAP_WEATHER_SAKURA, MAP_WEATHER_FOG };
-static const MapType levelType[] = { MAP_TYPE_NORMAL, MAP_TYPE_HUB, MAP_TYPE_SECRET, MAP_TYPE_BOSS, MAP_TYPE_KEYCHAIN };
+static const MapType levelType[] = { MAP_TYPE_NORMAL, MAP_TYPE_HUB, MAP_TYPE_SECRET, MAP_TYPE_BOSS, MAP_TYPE_KEYCHAIN, MAP_TYPE_SUBLEVEL };
 static const MapLighting lightingType[] = { MAP_LIGHT_NORMAL, MAP_LIGHT_TORCH, MAP_LIGHT_LANTERN, MAP_LIGHT_STEALTH };
 static const MapEnvironment environmentType[] = { MAP_ENV_NORMAL, MAP_ENV_UNDERWATER, MAP_ENV_OXYGEN, MAP_ENV_SUPERHOT, MAP_ENV_OUTERSPACE, MAP_ENV_DUMBSIDE };
 static const MapSky skyTypes[] = { MAP_SKY_NONE, MAP_SKY_STARRY, MAP_SKY_SUNSET, MAP_SKY_PINK };
@@ -64,7 +64,7 @@ static const char weatherTypeNames[][16] = {
 	"No Weather", "Rain", "Snow", "Sakura Leaves", "Foggy",
 };
 static const char levelTypeNames[][16] = {
-	"Normal Lvl.", "Hub Lvl", "Secret Lvl", "Boss Lvl", "Keychain Lvl",
+	"Normal Lvl.", "Hub Lvl", "Secret Lvl", "Boss Lvl", "Keychain Lvl", "Sub-Level",
 };
 static const char lightingTypeNames[][16] = {
 	"Nrml. Light", "Torch Lit", "Lantern Lit", "Stealth Mode",

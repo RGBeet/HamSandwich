@@ -45,6 +45,7 @@ class Guy final
 		int oldx,oldy;
 		int dx,dy,dz;
 		byte mapx,mapy;
+		byte startx,starty;
 		byte lastBumpX,lastBumpY;
 
 		byte facing;

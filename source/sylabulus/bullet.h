@@ -166,4 +166,6 @@ byte BulletHitItem(bullet_t* me, mapTile_t* m, int x, int y);
 
 void GetBulletDeltas(int *bdx, int *bdy);
 
+void TriggerItemWithBullet(int x, int y, ItemTrigger type);
+
 #endif

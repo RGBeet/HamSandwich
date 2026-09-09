@@ -15,14 +15,160 @@
 #define RECORD_X	450
 #define POINTS_X	620
 
+enum {
+	TALLY_BASE,
+	TALLY_TIMEVAL,
+	TALLY_TIMEPTS,
+	TALLY_COMBOVAL,
+	TALLY_COMBOPTS,
+	TALLY_DSTRYPRC,
+	TALLY_DSTRYMULT,
+	TALLY_DSTRYPTS,
+	TALLY_CANDLEMULT,
+	TALLY_CANDLEPTS,
+	TALLY_MODMULT,
+	TALLY_MODPTS,
+	TALLY_DAMAGEVAL,
+	TALLY_PERFECTMULT,
+	TALLY_PERFECTPTS,
+	TALLY_TOTAL,
+	NUM_TALLY
+};
+
+enum {
+	TV_VALUE,
+	TV_PERCENT,		// displayed as 0.00%
+	TV_TIME,		// displayed as 00:00
+	TV_MULT,		// displayed as x0.00
+	TV_COMBO,		// displayed as x0
+	TV_POINTS,		// displayed as +0
+};
+
+struct tally_t
+{
+	word x, y, tx, ty;
+	char name[32];
+	byte sprite;
+	byte type;
+	word vOffX, vOffY;
+	float value, vDesired;
+};
+
+static tally_t tallies[NUM_TALLY];
+
+tally_t defaultSetup[NUM_TALLY] = {
+	{ // TALLY_BASE
+		-280, 40 * 1, -280, 40 * 1,
+		"Base Score",
+		0, TV_VALUE, 0, 0, 0, 0
+	},
+
+	{ // TALLY_TIMEVAL
+		-280, 40 * 2, -280, 40 * 2,
+		"Time",
+		0, TV_TIME, 0, 0, 0
+	},
+
+	{ // TALLY_TIMEPTS
+		-280, 40 * 1, -280, 40 * 1,
+		"\0",
+		0, TV_POINTS, 0, 0, 0, 0
+	},
+
+	{ // TALLY_COMBOVAL
+		-280, 40 * 3, -280, 40 * 3,
+		"Combo",
+		0, TV_COMBO, 0, 0, 0
+	},
+
+	{ // TALLY_COMBOPTS
+		-280, 40 * 1, -280, 40 * 1,
+		"\0",
+		0, TV_POINTS, 0, 0, 0, 0
+	},
+
+	{ // TALLY_DSTRYPRC
+		-280 + 120, 40 * 4, -280, 40 * 4,
+		"Destruct",
+		0, TV_PERCENT, 0, 0, 0
+	},
+
+	{ // TALLY_DSTRYMULT
+		-280, 40 * 4, -280, 40 * 4,
+		"\0",
+		0, TV_MULT, 0, 0, 0
+	},
+
+	{ // TALLY_DSTRYPTS
+		-280, 40 * 4, -280, 40 * 4,
+		"\0",
+		0, TV_POINTS, 0, 0, 0
+	},
+
+	{ // TALLY_CANDLEMULT
+		-280, 40 * 7, -280, 40 * 7,
+		"Candle",
+		0, TV_MULT, 0, 0, 0
+	},
+
+	{ // TALLY_CANDLEPTS
+		-280, 40 * 7, -280, 40 * 7,
+		"\0",
+		0, TV_POINTS, 0, 0, 0
+	},
+
+	{ // TALLY_MODMULT
+		-280, 40 * 5, -280, 40 * 5,
+		"Modifier",
+		0, TV_MULT, 0, 0, 0
+	},
+
+	{ // TALLY_MODPTS
+		-280, 40 * 5, -280, 40 * 5,
+		"\0",
+		0, TV_POINTS, 0, 0, 0
+	},
+
+	{ // TALLY_DAMAGEVAL
+		-280, 40 * 6, -280, 40 * 6,
+		"Dmg. Taken",
+		0, TV_VALUE, 0, 0, 0
+	},
+
+	{ // TALLY_PERFECTMULT
+		-280 + 120, 40 * 7, -280, 40 * 7,
+		"\0",
+		0, TV_MULT, 0, 0, 0
+	},
+
+	{ // TALLY_PERFECTPTS
+		-280, 40 * 7, -280, 40 * 7,
+		"\0",
+		0, TV_POINTS, 0, 0, 0
+	},
+
+	{ // TALLY_TOTAL
+		-280, 40 * 1, -280, 40 * 1,
+		"Final Score",
+		0, TV_VALUE, 0, 0, 0
+	}
+};
+
+void SetTallyValue(int tally, int x, int y, float value)
+{
+	tallies[tally].tx = x;
+	tallies[tally].ty = y;
+	tallies[tally].vDesired = value;
+}
+
 static byte *backgd;
 static byte curLine;
 static int comboBonus;
 static byte lineNum,skip;
-static int baseScore,showBaseScore,finalScore,showFinalScore,points,totalCoins,showTotalCoins,bonusCoins;
+static int baseScore,showBaseScore,finalScore,showFinalScore,points,totalCoins,showTotalCoins,bonusCoins,oldScore;
 static char levelName[32];
 static int tallyWait;
-static float destructBonus,destructPct,perfectBonus,diffBonus;
+static float destructBonus,destructPct,perfectBonus,diffBonus,modifierBonus,candleBonus;
 static score_t topTimes[3], topScores[3];
 
 void InitTally(MGLDraw *mgl)
@@ -37,45 +183,86 @@ void InitTally(MGLDraw *mgl)
 	for(i=0;i<480;i++)
 		memcpy(&backgd[i*640],&mgl->GetScreen()[i*mgl->GetWidth()],640);
 
+	memcpy(tallies, defaultSetup, sizeof(tally_t) * NUM_TALLY);
+
 	baseScore=player.score;
-	showBaseScore=0;
-	showFinalScore=0;
-	finalScore=0;
+
+	showBaseScore	= 0;
+	showFinalScore	= 0;
+	finalScore		= 0;
+
 	points=player.score;
 	lineNum=0;
 	tallyWait=0;
 	skip=0;
-	totalCoins=profile.progress.totalCoins-profile.progress.coinsSpent;
-	showTotalCoins=totalCoins;
 
-	if(player.totalEnemies==0)
+	// DESTRUCTION BONUS
+	if (player.totalEnemies == 0)
 	{
-		destructPct=1.0f;
+		destructPct = 1.0f;
 	}
 	else
 	{
-		if(player.enemiesSlain>player.totalEnemies)
-			player.enemiesSlain=player.totalEnemies;
-		destructPct=((float)player.enemiesSlain/(float)player.totalEnemies);
-		if(destructPct>1.0f)
-			destructPct=1.0f;
+		if (player.enemiesSlain > player.totalEnemies)
+			player.enemiesSlain = player.totalEnemies;
+		destructPct = ((float)player.enemiesSlain / (float)player.totalEnemies);
+		if (destructPct > 1.0f)
+			destructPct = 1.0f;
 	}
-	destructBonus=0.5f+destructPct;
-	destructPct*=100.0f;
+	destructBonus		=  0.5f + destructPct;
+	destructPct			*= 100.0f;
 
-	if(player.perfect)
-		perfectBonus=1.5f;
+	// COMBO BONUS
+	if (player.bestCombo >= 2)
+		comboBonus = 10 * player.bestCombo;
 	else
-		perfectBonus=1.0f;
+		comboBonus = 0;
 
-	// modifiers?
+	// MODIFIER BONUS (bad modifiers increase, good modifiers decrease)
+	modifierBonus		= 1.0f;
+	tallies[TALLY_MODMULT].vDesired = modifierBonus;
+
+	// CANDLE BONUS
+	if (curMap->numCandles == 0)
+	{
+		candleBonus = 1.0f;
+	}
+	else
+	{
+		float candlePct = (float)player.candles / (float)curMap->numCandles;
+		candleBonus = 1.0f + (candlePct * 0.5f);
+	}
+	tallies[TALLY_CANDLEMULT].vDesired = candleBonus;
+
+	// PERFECTION BONUS
+	if (player.perfect)
+		perfectBonus = (player.totalEnemies > 1) ? 1.5f : 1.2f;
+	else
+		perfectBonus = 1.0f;
+	tallies[TALLY_PERFECTPTS].vDesired = perfectBonus;
+
+	// COIN BONUS
+	totalCoins		= profile.progress.totalCoins - profile.progress.coinsSpent;
+	showTotalCoins	= totalCoins;
+
+	finalScore = player.score;
+	printf("\nBase Score: IS %d POINTS.\n", finalScore);
+	finalScore = (int)(finalScore - player.clock / 10);
+	printf("+Time Penalty IS %d POINTS.\n", finalScore);
+	finalScore = (int)((float)(finalScore * destructBonus));
+	printf("+Destruct Bonus IS %d POINTS.\n", finalScore);
+	finalScore = (int)((float)(finalScore * candleBonus));
+	printf("+Candle Bonus IS %d POINTS.\n", finalScore);
+	finalScore = (int)((float)(finalScore * modifierBonus));
+	printf("+Modifier Bonus IS %d POINTS.\n", finalScore);
+	finalScore = (int)((float)(finalScore * perfectBonus));
+	printf("Final Score IS %d POINTS.\n", finalScore);
+
+	showFinalScore = baseScore;
+	SetTallyValue(TALLY_BASE, 60, 40, baseScore);
+	SetTallyValue(TALLY_TOTAL, 60*1, 40 * (lineNum + 2), showFinalScore);
 
 	mgl->LastKeyPressed();
-
-	if(player.bestCombo>=2)
-		comboBonus=10*player.bestCombo;
-	else
-		comboBonus=0;
 
 	topTimes[0].score=9*60*60*30+99*30*60+59*30;
 	GetTopTimes(topTimes,curWorld.map[player.levelNum]);
@@ -121,6 +308,7 @@ void ExitTally(void)
 byte UpdateTally(int *lastTime,MGLDraw *mgl)
 {
 	char c;
+	int i,j;
 
 	if(*lastTime>TIME_PER_FRAME*5)
 		*lastTime=TIME_PER_FRAME*5;
@@ -131,154 +319,165 @@ byte UpdateTally(int *lastTime,MGLDraw *mgl)
 
 		if(!skip)
 		{
-			if(showTotalCoins<totalCoins)
-				showTotalCoins++;
-			if(showBaseScore<baseScore-1000)
-				showBaseScore+=300+Random(100);
-			if(showBaseScore<baseScore-100)
-				showBaseScore+=30+Random(10);
-			else if(showBaseScore<baseScore-10)
-				showBaseScore+=1+Random(9);
-			else if(showBaseScore<baseScore)
-				showBaseScore++;
-			else if(showBaseScore>baseScore+1000)
-				showBaseScore-=(300+Random(100));
-			else if(showBaseScore>baseScore+100)
-				showBaseScore-=(30+Random(10));
-			else if(showBaseScore>baseScore+10)
-				showBaseScore-=(1+Random(9));
-			else if(showBaseScore>baseScore)
-				showBaseScore--;
-
-			if(showFinalScore<finalScore-1000)
-				showFinalScore+=300+Random(100);
-			if(showFinalScore<finalScore-100)
-				showFinalScore+=30+Random(10);
-			else if(showFinalScore<finalScore-10)
-				showFinalScore+=1+Random(9);
-			else if(showFinalScore<finalScore)
-				showFinalScore++;
-			else if(showFinalScore>finalScore+100)
-				showFinalScore-=(30+Random(10));
-			else if(showFinalScore>finalScore+10)
-				showFinalScore-=(1+Random(9));
-			else if(showFinalScore>finalScore)
-				showFinalScore--;
 
 			tallyWait++;
 		}
 		else
 		{
-			tallyWait=30;
-			baseScore=points+player.bestCombo*10;
-			if(baseScore>(int)(player.clock/10))
-				baseScore-=(player.clock/10);
-			else
-				baseScore=0;
 
-			finalScore=(int)((float)baseScore*diffBonus);
-			finalScore=(int)((float)finalScore*destructBonus);
-			finalScore=(int)((float)finalScore*perfectBonus);
+		}
 
-			totalCoins=profile.progress.totalCoins-profile.progress.coinsSpent;
-			if(!player.cheated)
-				totalCoins+=player.coins;
-			if(!player.cheated)
+		for (i = 0; i < NUM_TALLY; i++)
+		{
+			float diff = tallies[i].vDesired - tallies[i].value;
+			float amount = fabsf(diff) / 4.0f;
+
+			if (amount < 1.0f && diff != 0.0f)
+				amount = 1.0f;
+
+			if (diff > 0.0f)
 			{
-				bonusCoins=finalScore/100;
-				if(bonusCoins>500)
-					bonusCoins=500;
-				totalCoins+=bonusCoins;
+				tallies[i].value += amount;
+
+				if (tallies[i].value > tallies[i].vDesired)
+					tallies[i].value = tallies[i].vDesired;
+			}
+			else if (diff < 0.0f)
+			{
+				tallies[i].value -= amount;
+
+				if (tallies[i].value < tallies[i].vDesired)
+					tallies[i].value = tallies[i].vDesired;
 			}
 
-			showBaseScore=baseScore;
-			showFinalScore=finalScore;
-			showTotalCoins=totalCoins;
+			int dx = tallies[i].tx - tallies[i].x;
+			int dy = tallies[i].ty - tallies[i].y;
+
+			int xmove = abs(dx) / 6;
+			int ymove = abs(dy) / 6;
+
+			if (xmove < 1 && dx != 0)
+				xmove = 1;
+
+			if (ymove < 1 && dy != 0)
+				ymove = 1;
+
+			if (dx > 0)
+				tallies[i].x += xmove;
+			else if (dx < 0)
+				tallies[i].x -= xmove;
+
+			if (dy > 0)
+				tallies[i].y += ymove;
+			else if (dy < 0)
+				tallies[i].y -= ymove;
 		}
 
-		if(lineNum<3)	// if in the base score section, keep final score equal to it
-		{
-			finalScore=baseScore;
-			showFinalScore=showBaseScore;
-		}
+		int pointdiff = 0;
+
 		switch(lineNum)
 		{
-			case 0:	// base points
-				if(tallyWait>=30)
+			case 0:	// base points + time
+				if (tallyWait >= 30)
 				{
-					tallyWait=0;
-					lineNum=1;
-					baseScore+=player.bestCombo*10;
+					lineNum++;
+					MakeNormalSound(SND_ITEMDROP);
+					tallyWait = 0;
+
+					oldScore = showFinalScore;
+					showFinalScore -= (int)(player.clock/10);
+					SetTallyValue(TALLY_TIMEVAL, 60*1, 40 * (lineNum + 1), player.clock);
+					SetTallyValue(TALLY_TIMEPTS, 60*4, 40 * (lineNum + 1), showFinalScore-oldScore);
+
+					SetTallyValue(TALLY_TOTAL, 60*1, 40 * (lineNum + 2), showFinalScore);
 				}
 				break;
 			case 1:	// combo
-				if(tallyWait>=30)
+				if (tallyWait >= 30)
 				{
-					tallyWait=0;
-					lineNum=2;
-					if(baseScore>(int)(player.clock/10))
-						baseScore-=(player.clock/10);
-					else
-						baseScore=0;
+					lineNum++;
+					MakeNormalSound(SND_ITEMDROP);
+					tallyWait = 0;
+
+					oldScore = showFinalScore;
+					showFinalScore += comboBonus;
+					SetTallyValue(TALLY_COMBOVAL, 60*1, 40 * (lineNum + 1), player.bestCombo);
+					SetTallyValue(TALLY_COMBOPTS, 60*4, 40 * (lineNum + 1), showFinalScore-oldScore);
+
+					SetTallyValue(TALLY_TOTAL, 60*1, 40 * (lineNum + 2), showFinalScore);
 				}
 				break;
-			case 2:	// time
+			case 2:	// destruct % and bonus
 				if(tallyWait>=30)
 				{
-					tallyWait=0;
-					lineNum=3;
-					finalScore=(int)((float)finalScore*diffBonus);
+					lineNum++;
+					MakeNormalSound(SND_ITEMDROP);
+					tallyWait = 0;
+					destructBonus = 0.5f + destructPct / 100.0f;
+
+					oldScore = showFinalScore;
+					showFinalScore = (int)((float)showFinalScore * destructBonus);
+					SetTallyValue(TALLY_DSTRYPRC, 60*1, 40 * (lineNum + 1), destructPct);
+					SetTallyValue(TALLY_DSTRYMULT, 60*4, 40 * (lineNum + 1), destructBonus);
+					SetTallyValue(TALLY_DSTRYPTS, 60*7, 40 * (lineNum + 1), showFinalScore-oldScore);
+
+					SetTallyValue(TALLY_TOTAL, 60*1, 40 * (lineNum + 2), showFinalScore);
 				}
 				break;
-			case 3:	// difficulty bonus
-				if(tallyWait>=30)
+			case 3:	// candle bonus
+				if (tallyWait >= 30)
 				{
-					tallyWait=0;
-					lineNum=4;
-					finalScore=(int)((float)finalScore*destructBonus);
+					lineNum++;
+					MakeNormalSound(SND_ITEMDROP);
+					tallyWait = 0;
+
+					oldScore = showFinalScore;
+					showFinalScore = (int)((float)showFinalScore * candleBonus);
+					SetTallyValue(TALLY_CANDLEMULT, 60 * 1, 40 * (lineNum + 1), candleBonus);
+					SetTallyValue(TALLY_CANDLEPTS, 60 * 4, 40 * (lineNum + 1), showFinalScore - oldScore);
+
+					SetTallyValue(TALLY_TOTAL, 60 * 1, 40 * (lineNum + 2), showFinalScore);
 				}
-				break;
-			case 4:	// destruction bonus
-				if(tallyWait>=30)
+			case 4:	// modifier bonus
+				if (tallyWait >= 30)
 				{
-					tallyWait=0;
-					lineNum=5;
-					finalScore=(int)((float)finalScore*perfectBonus);
+					lineNum++;
+					MakeNormalSound(SND_ITEMDROP);
+					tallyWait = 0;
+
+					oldScore = showFinalScore;
+					showFinalScore = (int)((float)showFinalScore * modifierBonus);
+					SetTallyValue(TALLY_MODMULT, 60*1, 40 * (lineNum + 1), modifierBonus);
+					SetTallyValue(TALLY_MODPTS, 60*4, 40 * (lineNum + 1), showFinalScore-oldScore);
+
+					SetTallyValue(TALLY_TOTAL, 60*1, 40 * (lineNum + 2), showFinalScore);
 				}
 				break;
 			case 5:	// perfect bonus
-				if(player.perfect==0)
-					tallyWait=30;
 				if(tallyWait>=30)
 				{
-					tallyWait=0;
-					lineNum=6;
-					if(!player.cheated)
-						totalCoins+=player.coins;
+					lineNum++;
+					MakeNormalSound(SND_ITEMDROP);
+					tallyWait = 0;
+
+					oldScore = showFinalScore;
+					showFinalScore = (int)((float)(showFinalScore * perfectBonus));
+					SetTallyValue(TALLY_DAMAGEVAL, 60*1, 40 * (lineNum + 1), player.damageTaken);
+					SetTallyValue(TALLY_PERFECTMULT, 60*4, 40 * (lineNum + 1), perfectBonus);
+					SetTallyValue(TALLY_PERFECTPTS, 60*7, 40 * (lineNum + 1), showFinalScore-oldScore);
+
+					SetTallyValue(TALLY_TOTAL, 60*1, 40 * (lineNum + 2), showFinalScore);
 				}
 				break;
-			case 6:	// coins found
+			case 6:	// end!
 				if(tallyWait>=30)
 				{
-					tallyWait=0;
-					lineNum=7;
-					if(!player.cheated)
-					{
-						bonusCoins=finalScore/100;
-						if(bonusCoins>500)
-							bonusCoins=500;
-						totalCoins+=bonusCoins;
-					}
+					lineNum++;
+					MakeNormalSound(SND_ITEMDROP);
+					tallyWait = 0;
 				}
 				break;
-			case 7:	// bonus coins
-				if(tallyWait>=30)
-				{
-					tallyWait=0;
-					lineNum=8;
-				}
-				break;
-			case 8:	// all done, waiting for exit
+			case 7:	// all done, waiting for exit
 				skip=1;
 				break;
 		}
@@ -286,10 +485,11 @@ byte UpdateTally(int *lastTime,MGLDraw *mgl)
 	}
 
 	c=mgl->LastKeyPressed();
+
 	if(c || GetTaps())
 	{
-		if(skip==0)
-			skip=1;
+		if(tallyWait<30)
+			tallyWait=30;
 		else
 		{
 			MakeNormalSound(SND_MENUSELECT);
@@ -312,13 +512,13 @@ static void TallyLine(byte n,int y,const char *category,const char *value,const 
 	else
 		bright=-32;
 
-	PrintGlow(CATEGORY_X,y,category,bright,2);
-	PrintGlow(VALUE_X-GetStrLength(value,2),y,value,bright,2);
+	Print(CATEGORY_X,y,category,bright,2);
+	Print(VALUE_X-GetStrLength(value,2),y,value,bright,1);
 	if(gotRec && bright==0)
-		PrintGlow(RECORD_X-GetStrLength(record,2),y-Random(2),record,bright-16+Random(32),2);
+		Print(RECORD_X-GetStrLength(record,2),y-Random(2),record,bright-16+Random(32),2);
 	else
-		PrintGlow(RECORD_X-GetStrLength(record,2),y,record,bright,2);
-	PrintGlow(POINTS_X-GetStrLength(points,2),y,points,bright,2);
+		Print(RECORD_X-GetStrLength(record,2),y,record,bright,1);
+	Print(POINTS_X-GetStrLength(points,2),y,points,bright,1);
 }
 
 static void Tally2Line(byte n,int y,const char *category,const char *value,const char *mult)
@@ -332,9 +532,9 @@ static void Tally2Line(byte n,int y,const char *category,const char *value,const
 	else
 		bright=-32;
 
-	PrintGlow(CATEGORY_X,y,category,bright,2);
-	PrintGlow(VALUE_X-GetStrLength(value,2),y,value,bright,2);
-	PrintGlow(POINTS_X-GetStrLength(mult,2),y,mult,bright,2);
+	Print(CATEGORY_X,y,category,bright,2);
+	Print(VALUE_X-GetStrLength(value,2),y,value,bright,2);
+	Print(POINTS_X-GetStrLength(mult,2),y,mult,bright,2);
 }
 
 void CoinLine(byte n,int y,const char *title,const char *num)
@@ -350,8 +550,8 @@ void CoinLine(byte n,int y,const char *title,const char *num)
 	else
 		bright=-32;
 
-	PrintGlow(CATEGORY_X,y,title,bright,2);
-	PrintGlow(VALUE_X-GetStrLength(num,2),y,num,bright,2);
+	Print(CATEGORY_X,y,title,bright,2);
+	Print(VALUE_X-GetStrLength(num,2),y,num,bright,2);
 }
 
 void MakeTime(char *s,dword clock)
@@ -362,83 +562,52 @@ void MakeTime(char *s,dword clock)
 void RenderTally(MGLDraw *mgl)
 {
 	int i;
-	char s[32],s2[32],s3[32];
+	char s[32],s2[32],s3[32],top[32];
 
 	for(i=0;i<480;i++)
 		memcpy(&mgl->GetScreen()[i*mgl->GetWidth()],&backgd[i*640],640);
 
-	if(player.cheated)
-		PrintGlow(320-GetStrLength("You CHEATED THROUGH",2)/2,20,"You CHEATED THROUGH",0,2);
-	else
-		PrintGlow(320-GetStrLength("You completed",2)/2,20,"You completed",0,2);
-	PrintGlow(320-GetStrLength(levelName,2)/2,40,levelName,0,2);
-	mgl->FillBox(160,58,639-160,58,32*1+16);
-
-	TallyLine(255,70,"Category","Value","Bonus","Record",0);
-	mgl->FillBox(20,88,620,88,32*1+16);
-
-	sprintf(s,"%d",points);
-	sprintf(s2,"%u",player.levelProg->recordBaseScore);
-	TallyLine(0,95,"Score",s,s,s2,(player.gotRecords&RECORD_BASE));
-
-	sprintf(s,"%d",player.bestCombo);
-	sprintf(s2,"%d",player.bestCombo*10);
-	sprintf(s3,"%d",player.levelProg->recordCombo);
-	TallyLine(1,120,"Combo",s,s2,s3,(player.gotRecords&RECORD_COMBO));
-
-	MakeTime(s,player.clock);
-	sprintf(s2,"%d",-(player.clock/10));
-	MakeTime(s3,topTimes[0].score);
-	TallyLine(2,145,"Time",s,s2,s3,((player.gotRecords&RECORD_TIME) && !(player.gotRecords&RECORD_TIME2)));
-
-	mgl->FillBox(410,168,620,168,32*1+16);
-	sprintf(s,"%d",showBaseScore);
-	PrintGlow(POINTS_X-GetStrLength(s,2),170,s,0,2);
-	PrintGlow(420,170,"Base Score:",0,2);
-
-	sprintf(s,"x%1.2f",diffBonus);
-	if(player.cheated)
-		Tally2Line(3,210,"Difficulty","CHEATER!",s);
-	else
-		Tally2Line(3,210,"Difficulty",GetDifficultyName(profile.difficulty),s);
-
-	sprintf(s,"%0.1f%%",destructPct);
-	sprintf(s2,"x%1.1f",destructBonus);
-	//Tally2Line(4,240,"Destruction",s,s2);
-	sprintf(s3,"%0.1f%%",player.levelProg->recordDestroy);
-	TallyLine(4,240,"Destruction",s,s2,s3,(player.gotRecords&RECORD_DESTROY));
-
-	if(player.perfect)
+	for (i = 0;i < NUM_TALLY;i++)
 	{
-		Tally2Line(5,270,"Perfect!","","x1.5");
+		switch (tallies[i].type)
+		{
+		case TV_VALUE:
+			sprintf(s, "%d", (int)tallies[i].value);
+			break;
+
+		case TV_PERCENT:
+			sprintf(s, "%0.1f%%", (float)tallies[i].value);
+			break;
+
+		case TV_TIME:
+			MakeTime(s, (dword)tallies[i].value);
+			break;
+
+		case TV_MULT:
+			sprintf(s, "(x %0.2f)", (float)tallies[i].value);
+			break;
+
+		case TV_COMBO:
+			sprintf(s, "x %d", (int)tallies[i].value);
+			break;
+
+		case TV_POINTS:
+			if((int)tallies[i].value > 0)
+				sprintf(s, "(+%d pts.)", (int)tallies[i].value);
+			else
+				sprintf(s, "(%d pts.)", (int)tallies[i].value);
+			break;
+
+		default:
+			sprintf(s, "%d", (int)tallies[i].value);
+			break;
+		}
+
+		Print(tallies[i].x, tallies[i].y, tallies[i].name, 0, 2);
+		Print(tallies[i].x+GetStrLength(tallies[i].name,2)+10, tallies[i].y+3, s, 0, 1);
 	}
 
-	mgl->FillBox(410,308,620,308,32*1+16);
-	if(player.cheated)
-		strcpy(s,"ZILCH!");
-	else
-		sprintf(s,"%d",showFinalScore);
-	if((player.gotRecords&RECORD_SCORE) && !(player.gotRecords&RECORD_SCORE2))
-		PrintGlow(POINTS_X-GetStrLength(s,2),310-Random(2),s,-16+Random(32),2);
-	else
-		PrintGlow(POINTS_X-GetStrLength(s,2),310,s,0,2);
-	PrintGlow(420,310,"Total Score:",0,2);
-
-	sprintf(s,"%d",topScores[0].score);
-	PrintGlow(420,330,"Record:",0,2);
-	PrintGlow(POINTS_X-GetStrLength(s,2),330,s,0,2);
-
-	sprintf(s,"%d",player.coins);
-	CoinLine(6,330,"Coins Found",s);
-	if(player.cheated)
-		strcpy(s,"ZIP!");
-	else
-		sprintf(s,"%d",bonusCoins);
-	CoinLine(7,350,"Bonus Coins",s);
-
-	mgl->FillBox(20,378,VALUE_X,378,32*1+16);
-	sprintf(s,"%d",showTotalCoins);
-	CoinLine(255,380,"Total Coins",s);
+	//sprintf(s, "Line #%d, %d/30 Frames", lineNum, tallyWait);
 }
 
 //----------------

@@ -644,7 +644,7 @@ inline void GouraudBoxWater(int x, int y,const byte* src, char light0, char ligh
 	byte* dst, b;
 	int curLight, dlx, dly1, dly2, firstLight, lastLight;
 
-	dst = tileMGL->GetScreen() + x + y * 640;
+	dst = tileMGL->GetScreen() + x + y * SCRWID;
 
 	curLight = light0 * FIXAMT;
 
@@ -657,13 +657,13 @@ inline void GouraudBoxWater(int x, int y,const byte* src, char light0, char ligh
 	{
 		dlx = (lastLight - firstLight) / GB_WID;
 		curLight = firstLight;
-		if (y + j > 479)
+		if (y + j > (SCRHEI - 1))
 			return;	// all done!
 		if (y + j >= 0)
 		{
 			for (i = 0;i < GB_WID;i++)
 			{
-				if (x + i >= 0 && x + i < 640)
+				if (x + i >= 0 && x + i < SCRWID)
 				{
 					b = *src;
 
@@ -688,7 +688,7 @@ inline void GouraudBoxWater(int x, int y,const byte* src, char light0, char ligh
 			dst += GB_WID;
 			src += GB_WID;
 		}
-		dst += (640 - GB_WID);
+		dst += (SCRWID - GB_WID);
 		src += GB_WID;
 
 		firstLight += dly1;
@@ -1114,7 +1114,7 @@ void RenderFloorTileFancyWater(int x, int y, int t, byte water, byte shadow, cha
 		return;
 	}
 
-	if (x <= -TILE_WIDTH || y <= -TILE_HEIGHT || x > 639 || y > 479)
+	if (x <= -TILE_WIDTH || y <= -TILE_HEIGHT || x > SCRWID-1 || y > SCRHEI-1)
 		return;	// no need to render
 
 	memcpy(light, theLight, 9 * sizeof(char));

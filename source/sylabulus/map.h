@@ -63,6 +63,7 @@ enum MapType : byte
 	MAP_TYPE_SECRET,		// doesn't count in level counts
 	MAP_TYPE_BOSS,			// houses a boss
 	MAP_TYPE_KEYCHAIN,		// is a certified keychain level!! WOOHOO!!
+	MAP_TYPE_SUBLEVEL,		// does not count as a level - uses the last level index prior to its index
 	MAP_TYPE_MAX,
 };
 

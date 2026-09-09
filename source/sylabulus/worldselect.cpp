@@ -331,7 +331,7 @@ void FetchScores(byte backwards)
 				noScoresAtAll=1;
 				break;
 			}
-			if(tmpWorld.map[level]->type == MAP_TYPE_HUB)
+			if(tmpWorld.map[level]->type == MAP_TYPE_HUB || tmpWorld.map[level]->type == MAP_TYPE_SUBLEVEL)
 			{
 				level++;
 				if(level>=tmpWorld.numMaps)

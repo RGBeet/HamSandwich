@@ -205,20 +205,25 @@ byte TryToPushItem(int x,int y,int destx,int desty,Map *map,world_t *world)
 byte Walkable(Guy *me,int x,int y,Map *map,world_t *world)
 {
 	byte result;
+	byte result2;
 	mapTile_t *m=map->GetTile(x,y);
 
 	result=1;
 
 	result=InteractWithItem(me,m,x,y);
+	result2=result;
 
-	if(m->wall && !(MonsterFlags(me->type,me->aiType)&MF_WALLWALK))
+	if(m->wall && !(MonsterFlags(me->type,me->aiType)&MF_WALLWALK)) // solid tiles
 		result=0;
-
-	if((MonsterFlags(me->type,me->aiType)&MF_WALLWALK) && (GetTerrain(world,m->floor)->restrict&TRN_NOGHOST))
+	else if((MonsterFlags(me->type,me->aiType)&MF_WALLWALK) && (GetTerrain(world,m->floor)->restrict == TRN_NOGHOST)) // ghost-proof tiles
 		result=0;
-
-	if(!me->friendly && (GetTerrain(world,m->floor)->restrict&TRN_NOENEMY))
+	else if(me->friendly != goodguy->friendly && (GetTerrain(world,m->floor)->restrict == TRN_NOENEMY)) // enemy-proof tiles
 		result=0;
+	else if(me->friendly == goodguy->friendly && (GetTerrain(world,m->floor)->restrict == TRN_NOGOODGUY)) // goodguy-proof tiles
+		result=0;
+	else if(GetTerrain(world,m->floor)->restrict == TRN_PLAYERONLY)
+		result=(me->aiType==MONS_BOUAPHA);
+	result = (result && result2);
 
 	byte terrain = GetTerrain(world, m->floor)->type;
 	byte aqueous = (terrain == TRN_WATER || terrain == TRN_LAVA);
@@ -405,10 +410,30 @@ byte Guy::CanWalkPath(int xx, int yy, Map* map, world_t* world)
 	return 1;
 }
 
+void ResetGuy(Guy *g, Map *map)
+{
+	printf("Reset: startx=%d starty=%d -> x=%d y=%d\n",
+		g->startx,
+		g->starty,
+		g->startx * TILE_WIDTH * FIXAMT,
+		g->starty * TILE_HEIGHT * FIXAMT);
+	g->x = (g->startx * TILE_WIDTH) << FIXSHIFT;
+	g->y = (g->starty * TILE_HEIGHT) << FIXSHIFT;
+	g->seq = ANIM_IDLE;
+	g->frm = 0;
+	g->frmAdvance = 128;
+	g->action = ACTION_IDLE;
+	g->hp = g->maxHP;
+
+	PutCamera(g->x, g->y);
+	SetTportClock(15);
+}
+
 void Guy::SeqFinished(void)
 {
 	if((seq==ANIM_DIE) || (seq==ANIM_A3 && aiType==MONS_BOUAPHA && player.weapon!=WPN_PWRARMOR && player.weapon!=WPN_MINISUB))
 	{
+		byte dead = true;
 		if(aiType==MONS_BOUAPHA)
 		{
 			if(player.weapon==WPN_PWRARMOR)
@@ -429,17 +454,28 @@ void Guy::SeqFinished(void)
 				action=ACTION_IDLE;
 				if(!CanWalk(x,y,curMap,&curWorld))
 				{
-					SendMessageToGame(MSG_RESET,0);
-					NewMessage("Bad place to hop out!",30,1);
+					if (curMap->type != MAP_TYPE_HUB)
+						SendMessageToGame(MSG_RESET, 0);
+					else
+						dead = false;
 				}
 				return;
 			}
 			else
-				// restart current level
+			// restart current level
+			if (curMap->type != MAP_TYPE_HUB)
 				SendMessageToGame(MSG_RESET,0);
-		}
+			else
+				dead = false;
 
-		type=MONS_NONE;
+			if (!dead)
+			{
+				MakeNormalSound(SND_WORLDTURN);
+				ResetGuy(this, curMap);
+				return;
+			}
+		}
+		type = MONS_NONE;
 	}
 	seq=ANIM_IDLE;
 	frm=0;
@@ -1703,6 +1739,9 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 			guys[i].x=x;
 			guys[i].y=y;
 			guys[i].z=z;
+
+			guys[i].startx = (guys[i].x >> FIXSHIFT) / TILE_WIDTH;
+			guys[i].starty = (guys[i].y >> FIXSHIFT) / TILE_HEIGHT;
 
 			guys[i].oldx=-1;
 			guys[i].oldy=-1;

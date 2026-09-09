@@ -287,11 +287,24 @@ void AI_Pelican(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			if (me->frm == 8)
 				me->reload = 10;
 		}
-
+		if (me->seq == ANIM_A1 && me->frm > 1 && goodguy && me->hp > 0)
+		{
+			// diving attack hit check
+			x = me->x;
+			y = me->y;
+			if (me->AttackCheck(16, x >> FIXSHIFT, y >> FIXSHIFT, goodguy))
+			{
+				goodguy->GetShot(Cosine(me->facing * 32) * 8, Sine(me->facing * 32) * 8, 6, map, world);
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 128;
+				me->dx = -me->dx / 4;
+				me->dy = -me->dy / 4;
+			}
+		}
 		if (me->seq == ANIM_DIE)
 		{
-			me->frmAdvance = 192;
-			me->facing = (me->facing + 1) & 7;
+			me->frmAdvance = 64;
 		}
 		return;	// can't do nothin' right now
 	}
@@ -300,7 +313,22 @@ void AI_Pelican(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	{
 		if (goodguy)
 		{
-			if (RangeToTarget(me, goodguy) < (128 * FIXAMT))
+			i = RangeToTarget(me, goodguy);
+
+			if (i > (128 * FIXAMT) && i < (512 * FIXAMT) && !Random(32))
+			{
+				MakeSound(SND_BATDIVE, me->x, me->y, SND_CUTOFF, 1200);
+				me->seq = ANIM_A1;	// diving attack move, to get closer to the player!
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 128;
+				me->action = ACTION_BUSY;
+				me->dx = Cosine(me->facing * 32) * 8;
+				me->dy = Sine(me->facing * 32) * 8;
+				return;
+			}
+
+			if (i < (128 * FIXAMT) && !Random(8))
 			{
 				me->mind = 1;	// start circling
 			}
@@ -344,13 +372,12 @@ void AI_Pelican(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			me->seq = ANIM_MOVE;
 			me->frm = 0;
 			me->frmTimer = 0;
-			me->frmAdvance = 192;
+			me->frmAdvance = 128;
 		}
 	}
 	else if (me->mind == 1)	// circling
 	{
 		FaceGoodguy2(me, goodguy);
-
 		// move sideways
 		me->dx = Cosine((me->facing * 32 + 64) & 255) * 3;
 		me->dy = Sine((me->facing * 32 + 64) & 255) * 3;

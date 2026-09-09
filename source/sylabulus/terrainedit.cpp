@@ -67,18 +67,18 @@ static const char terrainTypeNames[][16] = {
 
 // singular
 static const TerrainChange terrainChange[] = {
-	TRN_NOCHANGE,TRN_ANIM,TRN_STEP,TRN_DESTRUCT,TRN_DOUBLELAYER
+	TRN_NOCHANGE,TRN_ANIM,TRN_STEP,TRN_DESTRUCT
 };
 static const char terrainChangeNames[][16] = {
-	"N/A", "Animated", "Step to Anim.", "Hit to Anim.", "Double Layer"
+	"N/A", "Animated", "Step to Anim.", "Hit to Anim."
 };
 
 // singular (?)
 static const TerrainRestriction terrainRestrict[] = {
-	TRN_NORESTRICT,TRN_NOENEMY,TRN_NOGHOST,TRN_NOGOODGUY,
+	TRN_NORESTRICT,TRN_NOENEMY,TRN_NOGHOST,TRN_NOGOODGUY,TRN_PLAYERONLY
 };
 static const char terrainRestrictNames[][16] = {
-	"N/A", "No Enemies", "No Ghosts", "No Goodguys"
+	"N/A", "No Enemies", "No Ghosts", "No Goodguys", "Player Only"
 };
 
 // flag

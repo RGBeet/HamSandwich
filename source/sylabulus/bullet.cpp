@@ -1026,6 +1026,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_FLAME:
 		case BLT_FLAME2:
+			TriggerItemWithBullet(me->x + Cosine(me->facing * 32) * 16, me->y + Sine(me->facing * 32) * 16, ITRG_FIRE);
 			if(Guy *victim = FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,12,me->dx,me->dy,1,map,world,me->friendly))
 			{
 				Burn(victim->x, victim->y, victim->z);
@@ -1072,6 +1073,9 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			}
 			break;
 		case BLT_BOOM:
+			if (me->timer == 3)
+				for (i = 0;i < 8;i++)
+					TriggerItemWithBullet(me->x + Cosine(i * 32) * 32, me->y + Sine(i * 32) * 24, ITRG_FIRE);
 			if(Guy *victim = FindVictims(me->x>>FIXSHIFT,me->y>>FIXSHIFT,64,(8-Random(17))<<FIXSHIFT,
 				(8-Random(16))<<FIXSHIFT,4,map,world,me->friendly))
 			{
@@ -1080,6 +1084,9 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			}
 			break;
 		case BLT_ROCKETBOOM:
+			if (me->timer == 3)
+				for (i = 0;i < 8;i++)
+					TriggerItemWithBullet(me->x + Cosine(i * 32) * 32, me->y + Sine(i * 32) * 24, ITRG_FIRE);
 			if (FindVictims(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 48, (12 - Random(23)) << FIXSHIFT,
 				(12 - Random(24)) << FIXSHIFT, 4, map, world, me->friendly))
 			{
@@ -3825,4 +3832,15 @@ void LaserMirrorHit(bullet_t* me, Map* map, world_t* world)
 		ExplodeParticlesColor(7, me->x, me->y, me->z, 1, 2);
 		me->type = BLT_NONE;
 	}
+}
+
+void TriggerItemWithBullet(int x, int y, ItemTrigger type)
+{
+	mapTile_t* tile = curMap->GetTile((x >> FIXSHIFT) / TILE_WIDTH, ((y >> FIXSHIFT) / TILE_HEIGHT));
+	item_t* item = GetItem(tile->item);
+
+	if (item->triggerType != type)
+		return;
+
+	TriggerItem(NULL, tile, (x >> FIXSHIFT) / TILE_WIDTH, (y >> FIXSHIFT) / TILE_HEIGHT);
 }

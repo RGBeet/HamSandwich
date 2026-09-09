@@ -509,8 +509,18 @@ byte LevelsPassed(worldData_t *world)
 	byte total=0;
 
 	for (const levelData_t &level : world->Levels())
-		if((level.flags&LF_PASSED) && !(curWorld.map[level.levelNum]->type == MAP_TYPE_SECRET || curWorld.map[level.levelNum]->type == MAP_TYPE_HUB))
-			total++;
+		if(level.flags&LF_PASSED)
+			switch(curWorld.map[level.levelNum]->type)
+			{
+				default:
+					total++;
+					break;
+				case MAP_TYPE_HUB:		// not a level
+				case MAP_TYPE_SUBLEVEL: // not a level
+				case MAP_TYPE_SECRET:	// shh!
+					// do nothing.
+					break;
+			}
 
 	return total;
 }

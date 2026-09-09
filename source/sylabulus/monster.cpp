@@ -260,11 +260,11 @@ const sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing)
 
 	if(type==MONS_BOUAPHA)
 	{
-		if(PlayerHasHammer())
-			v+=8*monsType[type].framesPerDir;
+		//if(PlayerHasHammer())
+		//	v+=8*monsType[type].framesPerDir;
 	}
-	if(type==MONS_EVILCLONE)
-		v+=8*monsType[type].framesPerDir;
+	//if(type==MONS_EVILCLONE)
+		//v+=8*monsType[type].framesPerDir;
 
 	if(monsType[type].flags&MF_FACECMD)
 		v+=facing;
@@ -325,8 +325,8 @@ void DrawMe(Guy* g, const sprite_set_t* set) {
 		v += g->facing * monsType[type].framesPerDir;
 
 
-	if ((type == MONS_BOUAPHA && PlayerHasHammer()) || type == MONS_EVILCLONE) // hammer man uses hammer sprites
-		v += 8 * monsType[type].framesPerDir;
+	//if ((type == MONS_BOUAPHA && PlayerHasHammer()) || type == MONS_EVILCLONE) // hammer man uses hammer sprites
+	//	v += 8 * monsType[type].framesPerDir;
 
 
 
@@ -482,16 +482,16 @@ void MonsterDraw(
 
 	if(isBouapha)
 	{
-		if(type==MONS_BOUAPHA && PlayerHasHammer())
-			v+=8*monsType[type].framesPerDir;
+		//if(type==MONS_BOUAPHA && PlayerHasHammer())
+		//	v+=8*monsType[type].framesPerDir;
 		shld=PlayerShield();
 		if((shld<16) && (shld&2))	// it blinks when there is 1/2 second left
 			shld=0;
-		curSpr=monsType[MONS_BOUAPHA].spr->GetSprite(464+(shld&7));
+		//curSpr=monsType[MONS_BOUAPHA].spr->GetSprite(464+(shld&7));
 		if(curSpr==NULL)
 			return;
-		if(shld)
-			SprDraw(x>>FIXSHIFT,(y>>FIXSHIFT)+1,1+(z>>FIXSHIFT),255,bright,curSpr,DISPLAY_DRAWME|DISPLAY_GLOW);
+		//if(shld)
+		//	SprDraw(x>>FIXSHIFT,(y>>FIXSHIFT)+1,1+(z>>FIXSHIFT),255,bright,curSpr,DISPLAY_DRAWME|DISPLAY_GLOW);
 		if(player.invisibility)
 		{
 			curSpr=set->GetSprite(v);

@@ -987,8 +987,8 @@ byte FindPaletteColor(const RGB* pal, int r, int g, int b)
 
 void Map::RenderSky(int camX, int camY, byte skyType)
 {
-	int w = GetDisplayMGL()->GetWidth();
-	int h = GetDisplayMGL()->GetHeight();
+	int w = SCRWID;
+	int h = SCRHEI;
 
 	for (int x = 0; x < w; x++)
 	{

@@ -50,7 +50,6 @@ enum TerrainChange : byte
 	TRN_ANIM,
 	TRN_STEP,
 	TRN_DESTRUCT,
-	TRN_DOUBLELAYER,
 	NUM_TRNCHANGE_TYPES
 };
 
@@ -60,6 +59,7 @@ enum TerrainRestriction : byte
 	TRN_NOENEMY,
 	TRN_NOGHOST,
 	TRN_NOGOODGUY,
+	TRN_PLAYERONLY,
 	NUM_TRNRESTRICT_TYPES
 };
 
