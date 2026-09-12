@@ -283,6 +283,7 @@ void DrawMe(Guy* g, const sprite_set_t* set) {
 	int intfoffset = 0;
 	word type = (word)g->type;
 	byte shld;
+	byte shake;
 
 	if (g->aiType == MONS_BOUAPHA)
 	{
@@ -328,8 +329,9 @@ void DrawMe(Guy* g, const sprite_set_t* set) {
 	//if ((type == MONS_BOUAPHA && PlayerHasHammer()) || type == MONS_EVILCLONE) // hammer man uses hammer sprites
 	//	v += 8 * monsType[type].framesPerDir;
 
-
-
+	int x = g->x >> FIXSHIFT;
+	int y = g->y >> FIXSHIFT;
+	int z = g->z >> FIXSHIFT;
 
 	if (g->type == MONS_BOUAPHA) // do player stuff
 	{
@@ -355,6 +357,13 @@ void DrawMe(Guy* g, const sprite_set_t* set) {
 
 		// invisibility
 		shld = player.invisibility;
+
+		if (GetGameMode() == GAMEMODE_RAGE)
+		{
+			x += ((rand() % 6) - 2);
+			y += ((rand() % 6) - 2);
+		}
+
 		if (shld > 0 && (shld > 16 || shld%2!=0))
 		{
 			SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 255, g->bright, curSpr, DISPLAY_DRAWME | DISPLAY_GLOW);
@@ -378,41 +387,41 @@ void DrawMe(Guy* g, const sprite_set_t* set) {
 	if (!g->ouch)
 	{
 		if (g->frozen)
-			SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 7, g->bright+bright+4, curSpr, DISPLAY_DRAWME);
+			SprDraw(x, y, z, 7, g->bright+bright+4, curSpr, DISPLAY_DRAWME);
 		else if (g->slow)
-			SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 0, g->bright+bright+4, curSpr, DISPLAY_DRAWME);
+			SprDraw(x, y, z, 0, g->bright+bright+4, curSpr, DISPLAY_DRAWME);
 		else if (g->ignite)
-			SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 5, g->bright+bright+4, curSpr, DISPLAY_DRAWME);
+			SprDraw(x, y, z, 5, g->bright+bright+4, curSpr, DISPLAY_DRAWME);
 		else if (g->poison)
-			SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 1, g->bright+bright+4, curSpr, DISPLAY_DRAWME);
+			SprDraw(x, y, z, 1, g->bright+bright+4, curSpr, DISPLAY_DRAWME);
 		else if (!(monsType[type].flags & (MF_GHOST | MF_GLOW)))
 		{
 			if (g->fromColor != 255)
 			{
-				SprDrawOff(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, g->fromColor, g->toColor, g->bright + bright, curSpr, DISPLAY_DRAWME);
+				SprDrawOff(x, y, z, g->fromColor, g->toColor, g->bright + bright, curSpr, DISPLAY_DRAWME);
 			}
 			else if (monsType[type].fromCol != 255)
 			{
-				SprDrawOff(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, monsType[type].fromCol, monsType[type].toCol, g->bright + bright, curSpr, DISPLAY_DRAWME);
+				SprDrawOff(x, y, z, monsType[type].fromCol, monsType[type].toCol, g->bright + bright, curSpr, DISPLAY_DRAWME);
 			}
 			else
 			{
-				SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 255, g->bright, curSpr, DISPLAY_DRAWME);
+				SprDraw(x, y, z, 255, g->bright, curSpr, DISPLAY_DRAWME);
 			}
 		}
 		else if (monsType[type].flags & MF_GHOST)
-			SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 255, g->bright + bright, curSpr, DISPLAY_DRAWME | DISPLAY_GHOST);
+			SprDraw(x, y, z, 255, g->bright + bright, curSpr, DISPLAY_DRAWME | DISPLAY_GHOST);
 		else if (monsType[type].flags & MF_GLOW)
-			SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 255, g->bright + bright, curSpr, DISPLAY_DRAWME | DISPLAY_GLOW);
+			SprDraw(x, y, z, 255, g->bright + bright, curSpr, DISPLAY_DRAWME | DISPLAY_GLOW);
 	}
 	else
 	{
 		if (!(monsType[type].flags & (MF_GHOST | MF_GLOW)))
-			SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 4, g->bright, curSpr, DISPLAY_DRAWME);
+			SprDraw(x, y, z, 4, g->bright, curSpr, DISPLAY_DRAWME);
 		else if (monsType[type].flags & MF_GHOST)
-			SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 4, g->bright + bright, curSpr, DISPLAY_DRAWME | DISPLAY_GHOST);
+			SprDraw(x, y, z, 4, g->bright + bright, curSpr, DISPLAY_DRAWME | DISPLAY_GHOST);
 		else if (monsType[type].flags & MF_GLOW)
-			SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, g->z >> FIXSHIFT, 4, g->bright + bright, curSpr, DISPLAY_DRAWME | DISPLAY_GLOW);
+			SprDraw(x, y, z, 4, g->bright + bright, curSpr, DISPLAY_DRAWME | DISPLAY_GLOW);
 	}
 
 	int iconSpacing = 10; // pixels between icons

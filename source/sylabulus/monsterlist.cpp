@@ -9,7 +9,7 @@ MonsterType monsType[NUM_MONSTERS]=
 		{"Null",255,255,0,NULL,
 		 0,0,0,0,"",0,{},MT_NONE,{},0},
 		{"Bouapha",255,255,0,NULL,
-		 11,29,128,0,"graphics/bouapha.jsp",0,MF_WATERWALK,
+		 11,42,128,0,"graphics/bouapha.jsp",0,MF_WATERWALK,
 		 MT_GOOD | MT_HUMAN,
 			{
 				{0,255},											// idle
@@ -19,8 +19,8 @@ MonsterType monsType[NUM_MONSTERS]=
 				{23,24,25,24,23,255},								// (A1) SHIFT - use item
 				{17,18,19,20,21,22,21,20,21,22,21,20,19,18,17,255},	// (A2) bored
 				{1,3,1,0,4,6,4,0,1,3,1,0,0,0,26,27,28,255},			// (A3) die a watery death
-				{7,8,9,10,11,12,13,14,15,16,255},					// (A4) RAGE! attack
-				NULL_ANIM,											// (A5) victory pose
+				{29,30,31,32,32,32,33,34,35,255},				// (A4) RAGE! attack
+				{36,37,38,39,40,41,41,41,255},						// (A5) victory pose
 			},0},
 		{"Bonehead",255,255,0,AI_Bonehead,
 		 8,38,10,50,"graphics/skeleton.jsp",0,{},

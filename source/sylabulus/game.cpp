@@ -385,6 +385,21 @@ TASK(byte) LunaticRun(int *lastTime)
 					PrintToLog("Wound Down",0);
 					CO_RETURN windDownReason;
 				}
+				else
+				{
+					if (windDownReason == LEVEL_WIN && goodguy)
+					{
+						if (goodguy->frm < 4)
+						{
+							goodguy->frmTimer += goodguy->frmAdvance;
+							while (goodguy->frmTimer > 255)
+							{
+								goodguy->frmTimer -= 255;
+								goodguy->NextFrame();
+							}
+						}
+					}
+				}
 			}
 		}
 		else if(gameMode==GAMEMODE_MENU)
@@ -498,14 +513,24 @@ TASK(byte) LunaticRun(int *lastTime)
 				RestoreGameplayGfx();
 			}
 		}
-		else // gamemode_rage
+		else if(gameMode==GAMEMODE_RAGE)// gamemode_rage
 		{
 			UpdateRage(gamemgl);
 			if(player.rageClock)
 			{
 				player.rageClock--;
-				if(goodguy)
-					goodguy->facing=(goodguy->facing+1)&7;
+				if (goodguy)
+				{
+					if (goodguy->frm < 4)
+					{
+						goodguy->frmTimer += goodguy->frmAdvance;
+						while (goodguy->frmTimer > 255)
+						{
+							goodguy->frmTimer -= 255;
+							goodguy->NextFrame();
+						}
+					}
+				}
 			}
 			else
 			{
@@ -524,6 +549,10 @@ TASK(byte) LunaticRun(int *lastTime)
 		}
 		else if(msgFromOtherModules==MSG_WINLEVEL)
 		{
+			if (goodguy)
+			{ // player faces south and does the victory pose
+				goodguy->seq = ANIM_A5;
+			}
 			PrintToLog("Level Win!",0);
 			GoalTimeDist();
 			PrintToLog("GoalTimeDist Done",0);

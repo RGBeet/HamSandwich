@@ -24,11 +24,15 @@ void ShowRage(MGLDraw *mgl)
 
 void SetRageFace(void)
 {
-	rageFace=goodguy->facing;
+	goodguy->seq	= ANIM_A4; // raging!!!
+	goodguy->action = ACTION_BUSY;
+	goodguy->facing = 2;
+	rageFace		= goodguy->facing;
 }
 
 byte UpdateRage(MGLDraw *mgl)
 {
+	goodguy->seq	= ANIM_A4; // raging!!!
 	return 1;
 }
 
