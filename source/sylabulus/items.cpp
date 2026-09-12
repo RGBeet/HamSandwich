@@ -521,21 +521,21 @@ static const item_t baseItems[] = {
 		IE_NONE,0,"",0},
 
 	// Potions / collectibles
-	{"Mana Potion",0,0,0,156,0,0,0, // TODO: make item effect
+	{"Totem",0,0,0,156,0,0,0, // TODO: make item effect
 		0,ITH_POWERUP,ITA_NONE,ITP_PICKUP,ITRG_PICKUP,ITB_NONE,0,
-		IE_NONE,1,"",0},
+		IE_XTRALIFE,1,"Totem!",SND_GONG},
 	{"Rage Potion",0,0,0,156,0,0,0, // TODO: animate
 		0,ITH_POWERUP,ITA_NONE,ITP_PICKUP,ITRG_PICKUP,ITB_NONE,0,
-		IE_RAGE,128,"",0},
+		IE_RAGE,128,"",SND_TURNEVIL},
 	{"Present",0,0,0,158,0,0,0, // TODO: make item effect (random weapon)
 		50,ITH_POWERUP|ITH_WEAPON,ITA_NONE,ITP_BARRIER,ITRG_PROJECTILE,ITB_NONE,0,
 		IE_DROPITEM,0,"",0},
 	{"Small Gemstone",0,0,0,159,0,0,0, // TODO: make add score effect
 		0,ITH_COLLECTIBLE,ITA_NONE,ITP_PICKUP,ITRG_PICKUP,ITB_NONE,0,
-		IE_SCORE,100,"",0},
+		IE_SCORE,100,"",SND_COINGET},
 	{"Large Gemstone",0,0,0,160,0,0,0, // TODO: make add score effect
 		0,ITH_COLLECTIBLE,ITA_NONE,ITP_PICKUP,ITRG_PICKUP,ITB_NONE,0,
-		IE_SCORE,500,"",0},
+		IE_SCORE,500,"",SND_BIGCOIN},
 
 	// Miscellaneous scenery
 	{"Mine Block",0,0,0,161,0,0,0,
@@ -1342,6 +1342,11 @@ byte TriggerItem(Guy *me,mapTile_t *m,int x,int y)
 		case IE_DROPITEM: // drop a random item at the area
 			ExplodeParticles(PART_COLOR, (x * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (y * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 0, 8);
 			m->item = GetRandomItem();
+			return 1;
+		case IE_XTRALIFE:
+			if (player.lives + items[m->item].effectAmt >= 99)
+				return 0; // can't have more than 99 lives
+			player.lives += items[m->item].effectAmt;
 			return 1;
 		case IE_SCORE:
 			if (player.score + items[m->item].effectAmt < 0 || player.score + items[m->item].effectAmt > 9999999)

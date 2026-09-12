@@ -429,11 +429,25 @@ void ResetGuy(Guy *g, Map *map)
 	SetTportClock(15);
 }
 
+byte CheckLives(Guy *g)
+{
+	if (player.lives < 1)
+	{
+		SendMessageToGame(MSG_RESET, 0);
+		return 0;
+	}
+	if (curMap->type != MAP_TYPE_HUB)
+		player.lives--;
+	MakeNormalSound(SND_WORLDTURN);
+	ResetGuy(g, curMap);
+	return 1;
+}
+
 void Guy::SeqFinished(void)
 {
 	if((seq==ANIM_DIE) || (seq==ANIM_A3 && aiType==MONS_BOUAPHA && player.weapon!=WPN_PWRARMOR && player.weapon!=WPN_MINISUB))
 	{
-		byte dead = true;
+		byte canRespawn=false;
 		if(aiType==MONS_BOUAPHA)
 		{
 			if(player.weapon==WPN_PWRARMOR)
@@ -453,29 +467,15 @@ void Guy::SeqFinished(void)
 				frmAdvance=128;
 				action=ACTION_IDLE;
 				if(!CanWalk(x,y,curMap,&curWorld))
-				{
-					if (curMap->type != MAP_TYPE_HUB)
-						SendMessageToGame(MSG_RESET, 0);
-					else
-						dead = false;
-				}
+					canRespawn = CheckLives(this);
 				return;
 			}
 			else
 			// restart current level
-			if (curMap->type != MAP_TYPE_HUB)
-				SendMessageToGame(MSG_RESET,0);
-			else
-				dead = false;
-
-			if (!dead)
-			{
-				MakeNormalSound(SND_WORLDTURN);
-				ResetGuy(this, curMap);
-				return;
-			}
+			canRespawn = CheckLives(this);
 		}
-		type = MONS_NONE;
+		if (!canRespawn)
+			type = MONS_NONE;
 	}
 	seq=ANIM_IDLE;
 	frm=0;

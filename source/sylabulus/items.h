@@ -320,8 +320,9 @@ BITFLAGS(ItemTriggers)
 #define IE_SCORE	30	// give N random points
 #define IE_EXPLODE	31	// explode!!
 #define IE_DROPITEM	32	// drop a random item
+#define IE_XTRALIFE 33	// give an extra life (for the level)
 
-#define IE_MAX		31	// max # of effects
+#define IE_MAX		34	// max # of effects
 
 // Power ups. SERIALIZED in custom item definitions.
 enum : int

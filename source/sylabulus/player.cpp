@@ -126,17 +126,19 @@ void InitPlayer(byte level,const char *fname)
 
 	player.speed[0]		= 0;		// particle acceleration
 	player.speed[1]		= 1;
+
+	player.lives		= 0;
 	
 	for(i=1;i<6;i++)
 	{
 		player.ability[i] = 1;
 	}
 
-	player.brainTime=30*30;
-	player.brainX=255;
-	player.candleX=255;
-	player.candleTime=30*30;
-	player.spotted=0;
+	player.brainTime	= 30 * 30;
+	player.brainX		= 255;
+	player.candleTime	= 30 * 30;
+	player.candleX		= 255;
+	player.spotted		= 0;
 	player.playAs=profile.playAs;
 
 	intfaceEnemy=NULL;
@@ -144,10 +146,10 @@ void InitPlayer(byte level,const char *fname)
 
 void ExitPlayer(void)
 {
-	player.playAs=profile.playAs;
-	player.shield=0;
-	player.speed[0] = 0;
-	player.invisibility=0;
+	player.playAs		= profile.playAs;
+	player.shield		= 0;
+	player.speed[0]		= 0;
+	player.invisibility	= 0;
 	SaveProfile();
 }
 

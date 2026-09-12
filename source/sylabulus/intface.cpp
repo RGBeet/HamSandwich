@@ -47,7 +47,7 @@ constexpr int SPR_BRAIN			= 56;
 constexpr int SPR_RAGE			= 57;
 constexpr int SPR_LOCK			= 110;
 constexpr int SPR_PORTRAIT		= 66;
-constexpr int SPR_HEAD			= 67;
+constexpr int SPR_HEAD			= 140;
 constexpr int SPR_POCKET		= 184;
 
 constexpr int SPR_TIME = 999;
@@ -96,6 +96,7 @@ enum {
 	INTF_STEALTH,
 	INTF_COMBO,
 	INTF_COUNTDOWN,
+	INTF_LIVES,
 	NUM_INTF,
 };
 
@@ -247,6 +248,12 @@ intface_t defaultSetup[NUM_INTF]={
 	 12,3,
 	 0,0,
 	 20},
+	{-32,100,-32,100,	// lives (usually not present lol
+	 999, // render sprite specially
+	 IV_NUMBER,2,
+	 76,-20,
+	 0,0,
+	 0 },
 };
 
 static byte intfFlip;
@@ -886,6 +893,16 @@ void DrawLock(int x,int y,MGLDraw *mgl, int value)
 		intfaceSpr->GetSprite(SPR_LOCK)->Draw(x,y,mgl);
 }
 
+void DrawLives(int x, int y, MGLDraw* mgl)
+{
+	DrawSmallNumber(x, y, player.lives, 2, mgl, 2);
+}
+
+void DrawGuyHead(int x, int y, MGLDraw* mgl)	
+{
+	intfaceSpr->GetSprite(SPR_HEAD)->Draw(x, y, mgl);
+}
+
 void UpdateInterface(Map *map)
 {
 	int i,j;
@@ -926,6 +943,17 @@ void UpdateInterface(Map *map)
 	{
 		intf[INTF_BRAINS].tx = SCRWID - 1;
 		intf[INTF_BRAINS].ty = -102;
+	}
+
+	if(!player.lives)
+	{
+		intf[INTF_LIVES].tx = 1;
+		intf[INTF_LIVES].ty = 100;
+	}
+	else
+	{
+		intf[INTF_LIVES].tx = -96;
+		intf[INTF_LIVES].ty = 100;
 	}
 
 	yy = 20;
@@ -1144,6 +1172,9 @@ void UpdateInterface(Map *map)
 					intf[i].ty=GetDisplayMGL()->GetHeight()-1+30;
 				}
 				break;
+			case INTF_LIVES:
+				intf[i].vDesired = player.lives;
+				break;
 		}
 		if(intf[i].value<intf[i].vDesired)
 			intf[i].value++;
@@ -1308,6 +1339,9 @@ void RenderInterface(MGLDraw *mgl)
 				PrintWavy(intf[i].x + intf[i].vOffX, intf[i].y + intf[i].vOffY, combo, 0, 2, player.clock, 1, 1);
 				DrawSmallNumber(intf[i].x + intf[i].vOffX, intf[i].y + intf[i].vOffY, intf[i].value, intf[i].valueLength, mgl);
 				intfaceSpr->GetSprite(frame)->Draw(intf[i].x + intf[i].vOffX + ((comboClock > 0) ? comboClock : 0), intf[i].y + intf[i].vOffY, mgl);
+				break;
+			case IV_LIVES:
+				DrawLives(intf[i].x + intf[i].vOffX, intf[i].y + intf[i].vOffY, mgl, intf[i].value);
 				break;
 		}
 	}
