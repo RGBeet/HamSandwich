@@ -494,6 +494,10 @@
 #define SND_STOPSIGNOUCH		588
 #define SND_STOPSIGNDIE			589
 
+#define SND_GEMSMALL			590
+#define SND_GEMLARGE			591
+#define SND_XTRALIFE			592
+
 #define MAX_SOUNDS				1024	// doesn't mean a thing lol
 
 //--------------------------------

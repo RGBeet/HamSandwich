@@ -108,6 +108,7 @@ void InitPlayer(byte level,const char *fname)
 	player.oxygen		= 127*256;
 	player.ammoCrate	= 0;
 	player.waterWalk	= 0;
+	player.collectFrms	= 0;
 
 
 	player.clock		= 0;		// # of frames spent in level
@@ -2360,6 +2361,7 @@ byte TakeWeapon(byte wpn, int ammo)
 {
 	byte slot	= 0;
 	byte refill = 0;
+	player.collectFrms = 16;
 	for(int i=0; i<player.wpnSlots; i++)
 	{
 		if (player.weapons[i] == wpn || player.weapons[i] == 0)
@@ -2467,6 +2469,8 @@ byte PlayerAddPockets(int amt)
 	}
 	else // positive
 	{
+		player.collectFrms = 16;
+
 		if (player.wpnSlots > 8)
 			return 0;
 		else
@@ -2562,6 +2566,8 @@ byte PlayerGetHammer(int amt)
 	if ((amt > 0 && player.hammers >= 5) || (amt < 0 && player.hammers == 0))
 		return 0;
 
+	player.collectFrms = 16;
+
 	if (player.hammers + amt > 5)
 		player.hammers = 5;
 	else if (player.hammers + amt < 0)
@@ -2579,6 +2585,8 @@ byte PlayerGetPants(int amt)
 	// would do absolutely nothing
 	if ((amt > 0 && player.hamSpeed == 0) || (amt < 0 && player.hamSpeed == 16))
 		return 0;
+
+	player.collectFrms = 16;
 
 	if (!player.hamSpeed) // max fire rate
 		return 0;

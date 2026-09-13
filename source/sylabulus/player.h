@@ -124,7 +124,10 @@ struct player_t
 	byte cheesePower;
 	byte waterWalk;
 	byte gotRecords;
+
 	byte lives;
+	byte collectFrms;
+	byte ouchFrms;
 
 	bool pendingLeaderboardUpload;
 	byte spotted;

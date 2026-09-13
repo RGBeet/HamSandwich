@@ -523,7 +523,7 @@ static const item_t baseItems[] = {
 	// Potions / collectibles
 	{"Totem",0,0,0,156,0,0,0, // TODO: make item effect
 		0,ITH_POWERUP,ITA_NONE,ITP_PICKUP,ITRG_PICKUP,ITB_NONE,0,
-		IE_XTRALIFE,1,"Totem!",SND_GONG},
+		IE_XTRALIFE,1,"Totem!",SND_XTRALIFE},
 	{"Rage Potion",0,0,0,156,0,0,0, // TODO: animate
 		0,ITH_POWERUP,ITA_NONE,ITP_PICKUP,ITRG_PICKUP,ITB_NONE,0,
 		IE_RAGE,128,"",SND_TURNEVIL},
@@ -532,10 +532,10 @@ static const item_t baseItems[] = {
 		IE_DROPITEM,0,"",0},
 	{"Small Gemstone",0,0,0,159,0,0,0, // TODO: make add score effect
 		0,ITH_COLLECTIBLE,ITA_NONE,ITP_PICKUP,ITRG_PICKUP,ITB_NONE,0,
-		IE_SCORE,100,"",SND_COINGET},
+		IE_SCORE,100,"",SND_GEMSMALL},
 	{"Large Gemstone",0,0,0,160,0,0,0, // TODO: make add score effect
 		0,ITH_COLLECTIBLE,ITA_NONE,ITP_PICKUP,ITRG_PICKUP,ITB_NONE,0,
-		IE_SCORE,500,"",SND_BIGCOIN},
+		IE_SCORE,500,"",SND_GEMLARGE},
 
 	// Miscellaneous scenery
 	{"Mine Block",0,0,0,161,0,0,0,

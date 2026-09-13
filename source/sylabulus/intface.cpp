@@ -77,6 +77,8 @@ static int comboY,curCombo;
 static char monsName[32];
 static int monsHP;
 static word monsTimer;
+static byte portraitFrame=0;
+static byte portraitTime=0;
 
 enum {
 	INTF_POWERUP,
@@ -131,7 +133,8 @@ enum {
 	IV_EVILMETER,
 	IV_TIME,
 	IV_LOCK,
-	IV_COMBO
+	IV_COMBO,
+	IV_LIVES
 };
 
 struct intface_t
@@ -251,7 +254,7 @@ intface_t defaultSetup[NUM_INTF]={
 	{-32,100,-32,100,	// lives (usually not present lol
 	 999, // render sprite specially
 	 IV_NUMBER,2,
-	 76,-20,
+	 0,0,
 	 0,0,
 	 0 },
 };
@@ -798,10 +801,95 @@ void DrawPowerupBar(int x,int y,MGLDraw *mgl)
 	}
 }
 
+int PortraitBob(int time, int amount = 3)
+{
+	return (Cosine(time * 8) * amount) / FIXAMT;
+}
+
 void DrawPortrait(int x, int y, MGLDraw* mgl)
 {
+	int base;
+	int headX = 19;
+	int headY = 24;
+
+	switch (player.playAs)
+	{
+	case 0:
+	default:
+		base = SPR_HEAD;
+		break;
+	}
+
+	if (!goodguy)
+		return;
+
+	if ((player.hammerFlags & HMR_LIGHT))
+	{
+		portraitFrame = 9; // INVISIBLE!
+		portraitTime = 0;
+	}
+	else if ((player.life > 0 && player.life <= player.rage / 256) || player.rageClock)
+	{
+		portraitFrame = 8; // RAGE!
+		portraitTime++;
+
+		headX = 19 + (Random(6) - 3);
+		headY = 24 + (Random(6) - 3);
+	}
+	else if (player.collectFrms) // collect weapon
+	{
+		portraitFrame = 6;
+		portraitTime++;
+	}
+	else if (player.ouchFrms || !player.life) // OUCH!
+	{
+		portraitFrame = 5;
+		portraitTime++;
+
+		headX = 19 + (Random(4) - 2);
+		headY = 24 + (Random(4) - 2);
+	}
+	else if (goodguy->dx < -2 * FIXAMT) // go left
+	{
+		portraitFrame = 1;
+		portraitTime++;
+
+		headX = 19 - (Cosine(portraitTime * 8) * 3) / FIXAMT;
+	}
+	else if (goodguy->dx > 2 * FIXAMT) // go right
+	{
+		portraitFrame = 2;
+		portraitTime++;
+
+		headX = 19 + (Cosine(portraitTime * 8) * 3) / FIXAMT;
+	}
+	else if (goodguy->dy < -2 * FIXAMT) // go up
+	{
+		portraitFrame = 3;
+		portraitTime++;
+
+		headY = 24 - (Sine(portraitTime * 8) * 3) / FIXAMT * 0.75;
+	}
+	else if (goodguy->dy > 2 * FIXAMT) // go down
+	{
+		portraitFrame = 4;
+		portraitTime++;
+
+		headY = 24 + (Sine(portraitTime * 8) * 3) / FIXAMT * 0.75;
+	}
+	else if (goodguy->hp < goodguy->maxHP / 4) // badly hurt
+	{
+		portraitFrame = 7;
+		portraitTime = 0;
+	}
+	else // neutral. meh
+	{
+		portraitFrame = 0;
+		portraitTime = 0;
+	}
+
 	intfaceSpr->GetSprite(SPR_PORTRAIT)->Draw(x, y, mgl);
-	intfaceSpr->GetSprite(SPR_HEAD)->Draw(x + 19, y + 19, mgl); // todo: add more players
+	intfaceSpr->GetSprite(base + portraitFrame)->Draw(x + headX, y + headY, mgl);
 }
 
 void DrawKeys(int x,int y,MGLDraw *mgl)
@@ -898,11 +986,6 @@ void DrawLives(int x, int y, MGLDraw* mgl)
 	DrawSmallNumber(x, y, player.lives, 2, mgl, 2);
 }
 
-void DrawGuyHead(int x, int y, MGLDraw* mgl)	
-{
-	intfaceSpr->GetSprite(SPR_HEAD)->Draw(x, y, mgl);
-}
-
 void UpdateInterface(Map *map)
 {
 	int i,j;
@@ -945,14 +1028,14 @@ void UpdateInterface(Map *map)
 		intf[INTF_BRAINS].ty = -102;
 	}
 
-	if(!player.lives)
+	if (!player.lives || curMap->type == MAP_TYPE_HUB) // don't show lives on hub level (can't do squat with it anyways!)
 	{
-		intf[INTF_LIVES].tx = 1;
+		intf[INTF_LIVES].tx = -96;
 		intf[INTF_LIVES].ty = 100;
 	}
 	else
 	{
-		intf[INTF_LIVES].tx = -96;
+		intf[INTF_LIVES].tx = 1;
 		intf[INTF_LIVES].ty = 100;
 	}
 
@@ -1331,17 +1414,16 @@ void RenderInterface(MGLDraw *mgl)
 				DrawLock(intf[i].x+intf[i].vOffX,intf[i].y+intf[i].vOffY,mgl,intf[i].value);
 				break;
 			case IV_COMBO: // new thing
-				int comboClock = player.comboClock;
-				int frame = (comboClock > 0)
-					? SPR_STICKMAN + ((comboClock / 4) % 2)
+				j = (player.comboClock > 0)
+					? SPR_STICKMAN + ((player.comboClock / 4) % 2)
 					: 117;
 				sprintf(combo, "x%d", curCombo);
 				PrintWavy(intf[i].x + intf[i].vOffX, intf[i].y + intf[i].vOffY, combo, 0, 2, player.clock, 1, 1);
 				DrawSmallNumber(intf[i].x + intf[i].vOffX, intf[i].y + intf[i].vOffY, intf[i].value, intf[i].valueLength, mgl);
-				intfaceSpr->GetSprite(frame)->Draw(intf[i].x + intf[i].vOffX + ((comboClock > 0) ? comboClock : 0), intf[i].y + intf[i].vOffY, mgl);
+				intfaceSpr->GetSprite(j)->Draw(intf[i].x + intf[i].vOffX + ((player.comboClock > 0) ? player.comboClock : 0), intf[i].y + intf[i].vOffY, mgl);
 				break;
 			case IV_LIVES:
-				DrawLives(intf[i].x + intf[i].vOffX, intf[i].y + intf[i].vOffY, mgl, intf[i].value);
+				DrawLives(intf[i].x + intf[i].vOffX, intf[i].y + intf[i].vOffY, mgl);
 				break;
 		}
 	}

@@ -431,13 +431,15 @@ void ResetGuy(Guy *g, Map *map)
 
 byte CheckLives(Guy *g)
 {
-	if (player.lives < 1)
-	{
-		SendMessageToGame(MSG_RESET, 0);
-		return 0;
-	}
 	if (curMap->type != MAP_TYPE_HUB)
+	{
+		if (player.lives < 1)
+		{
+			SendMessageToGame(MSG_RESET, 0);
+			return 0;
+		}
 		player.lives--;
+	}
 	MakeNormalSound(SND_WORLDTURN);
 	ResetGuy(g, curMap);
 	return 1;
@@ -890,6 +892,10 @@ void Guy::Update(Map *map,world_t *world)
 			}
 		}
 		UpdateCamera(x>>FIXSHIFT,y>>FIXSHIFT,tdx,tdy,map);
+		if (player.collectFrms)
+			player.collectFrms--;
+		if (player.ouchFrms)
+			player.ouchFrms--;
 		if((map->lighting == MAP_LIGHT_TORCH) || player.spotted)
 		{
 			if(player.spotted)
@@ -1188,16 +1194,20 @@ void Guy::GetShot(int dx,int dy,word damage,Map *map,world_t *world, bool bypass
 	if (!damage)
 		damage = 1;
 
-	if(aiType==MONS_BOUAPHA && (player.weapon==WPN_PWRARMOR || player.weapon==WPN_MINISUB))
+	if (aiType == MONS_BOUAPHA)
 	{
-		// damage is done to the armor instead
-		if(player.ammo>damage)
-			player.ammo-=damage;
-		else
-			player.ammo=0;
+		player.ouchFrms = 12;
+		if (player.weapon == WPN_PWRARMOR || player.weapon == WPN_MINISUB)
+		{
+			// damage is done to the armor instead
+			if (player.ammo > damage)
+				player.ammo -= damage;
+			else
+				player.ammo = 0;
 
-		ouch=4;	// still do the ouch so you can see it
-		return;
+			ouch = 4;	// still do the ouch so you can see it
+			return;
+		}
 	}
 
 	formerHP=hp;
