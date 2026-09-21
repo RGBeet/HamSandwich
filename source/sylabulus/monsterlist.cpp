@@ -23,7 +23,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{36,37,38,39,40,41,41,41,255},						// (A5) victory pose
 			},0},
 		{"Bonehead",255,255,0,AI_Bonehead,
-		 8,38,10,50,"graphics/skeleton.jsp",0,{},
+		 8,35,15,50,"graphics/skeleton.jsp",0,{},
 		 MT_SPOOKY | MT_EVIL,
 			{
 				{0,255},	// idle
@@ -31,7 +31,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{20,21,22,23,24,255},	// attack
 				{7,8,9,10,11,12,13,14,15,16,255},		// die
 				{25,26,27,28,29,30,255},	// chomp/spit projectile
-				{31,32,32,32,31,255},	// point at bouapha
+				{31,32,33,34,33,32,31,255},	// point at bouapha
 				{16,15,14,13,12,11,10,9,8,7,255},	// resurrect=A3
 				NULL_ANIM,
 				NULL_ANIM,
@@ -527,7 +527,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Crazybone",0,3,0,AI_CrazyBone,
-		 8,38,10,100,"!2",0,{},
+		 8,35,10,100,"!2",0,{},
 		 MT_EVIL | MT_SPOOKY,
 			{
 				{0,255},	// idle
@@ -535,7 +535,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{20,21,22,23,24,255},	// attack
 				{7,8,9,10,11,12,13,14,15,16,255},		// die
 				{25,26,27,28,29,30,255},	// chomp/spit projectile
-				{31,32,32,32,31,255},	// point at bouapha
+				{31,32,33,34,33,32,31,255},	// point at bouapha
 				{16,15,14,13,12,11,10,9,8,7,255},	// resurrect=A3
 				NULL_ANIM,
 				NULL_ANIM,
