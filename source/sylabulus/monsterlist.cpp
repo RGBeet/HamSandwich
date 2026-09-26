@@ -121,14 +121,14 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Kaptana",255,255,0,AI_Kappa, // not yet implemented
-		 8,38,30,50,"graphics/kappa.jsp",0,{},
+		 10,56,30,50,"graphics/kappa.jsp",0,{},
 		 MT_EVIL | MT_ANIMAL,
 			{
-				{0,255},	// idle
-				{0,255},	// move
-				{0,255},	// attack 1
-				{0,255},	// defeated
-				NULL_ANIM,
+				{0,255},									// idle
+				{0,1,2,3,2,1,0,4,5,6,5,4,255},				// move
+				{7,8,9,10,11,12,13,14,15,16,17,255},		// attack
+				{25,48,49,50,51,52,53,254,54,254,55,255},	// defeated
+				{18,19,20,21,21,21,22,23,255},				// water pour
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,

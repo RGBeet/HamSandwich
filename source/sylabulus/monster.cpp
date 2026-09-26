@@ -222,9 +222,42 @@ byte LoadMySpriteMaybe(byte type)
 	return 1;
 }
 
-const sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing)
+const sprite_t* GetMonsterSprite2(dword type, byte seq, byte frm, byte facing)
+{
+	int v = frm;
+
+	if (type == MONS_BOUAPHA)
+	{
+		if (GetCurrentWeaponType() == WPN_PWRARMOR)
+			type = MONS_PWRBOUAPHA;
+		else if (GetCurrentWeaponType() == WPN_MINISUB)
+			type = MONS_MINISUB; // is this ok???
+		else if (type == MONS_BOUAPHA)
+		{
+			if (player.playAs == PLAY_LUNATIC)
+				type = MONS_DRL;
+			else if (player.playAs == PLAY_HAPPY)
+				type = MONS_STICKMAN;
+			else if (player.playAs == PLAY_MECHA)
+				type = MONS_PLAYMECHA;
+			else if (player.playAs == PLAY_SHROOM)
+				type = MONS_PLAYSHROOM;
+			else if (player.playAs == PLAY_LUNACHIK)
+				type = MONS_LUNACHICK;
+		}
+	}
+
+	// load if not loaded
+	LoadMySprite(type);
+
+	return monsType[type].spr->GetSprite(v);
+}
+
+const sprite_t *GetMonsterSprite(Guy *me)
 {
 	int v;
+
+	int type = (int)me->type;
 
 	if(type==MONS_BOUAPHA)
 	{
@@ -250,13 +283,13 @@ const sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing)
 	// load if not loaded
 	LoadMySprite(type);
 
-	v=monsType[type].anim[seq][frm];
+	v=monsType[type].anim[me->seq][me->frm];
 
 	if(v==FRAME_INVIS)
 		return NULL;	// 254 means no sprite for this frame
 
 	if(!(monsType[type].flags&MF_ONEFACE))
-		v+=facing*monsType[type].framesPerDir;
+		v+= me->facing*monsType[type].framesPerDir;
 
 	if(type==MONS_BOUAPHA)
 	{
@@ -266,8 +299,11 @@ const sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing)
 	//if(type==MONS_EVILCLONE)
 		//v+=8*monsType[type].framesPerDir;
 
+	if ((EntityType)type == EntityType::Kaptana && me->mind2)
+		v += 23;
+
 	if(monsType[type].flags&MF_FACECMD)
-		v+=facing;
+		v+=me->facing;
 
 	return monsType[type].spr->GetSprite(v);
 }
@@ -373,6 +409,9 @@ void DrawMe(Guy* g, const sprite_set_t* set) {
 
 	if (monsType[type].flags&MF_FACECMD) // used for one-directional monsters
 		v += g->facing;
+
+	if ((EntityType)g->type == EntityType::Kaptana && g->mind2 && g->seq != ANIM_DIE)
+		v += 24; // special case for Kaptana when mind == 3
 
 	curSpr = set->GetSprite(v);
 
@@ -688,6 +727,11 @@ void FacePoint(Guy* me, int x, int y)
 int RangeToTarget(Guy *me,Guy *goodguy)
 {
 	return abs(me->x-goodguy->x)+abs(me->y-goodguy->y);
+}
+
+int RangeToPoint(Guy* me, int x, int y)
+{
+	return abs(me->x - x) + abs(me->y - y);
 }
 
 // this version doesn't insta-face, it rotates toward the right facing, and it has much

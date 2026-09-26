@@ -578,12 +578,15 @@ void MonsterDraw(
 );
 void InstaRenderMonster(int x,int y,dword type,char bright,MGLDraw *mgl);
 int InstaRenderScannedMonster(int x,int y,dword type,char bright,MGLDraw *mgl);
-const sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing);
+
+const sprite_t* GetMonsterSprite2(dword type, byte seq, byte frm, byte facing);
+const sprite_t* GetMonsterSprite(Guy* me);
 
 void FaceGoodguy(Guy *me,Guy *goodguy);
 void FaceGoodguy2(Guy *me,Guy *goodguy);
 void FaceGoodguy3(Guy *me,Guy *goodguy);
 int RangeToTarget(Guy *me,Guy *goodguy);
+int RangeToPoint(Guy* me, int x, int y);
 void FlailLock(Guy *me);
 void FacePoint(Guy* me, int x, int y);
 

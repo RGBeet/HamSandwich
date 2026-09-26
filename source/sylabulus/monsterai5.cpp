@@ -429,17 +429,48 @@ void AI_Ninja(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	}
 }
 
+
+bool FindClosestWaterTile(Map* map, int startX, int startY, byte* waterX, byte* waterY)
+{
+	int maxRadius = 20;
+
+	for (int radius = 0; radius <= maxRadius; radius++)
+	{
+		// Search the square ring around the starting tile.
+		for (int y = startY - radius; y <= startY + radius; y++)
+		{
+			for (int x = startX - radius; x <= startX + radius; x++)
+			{
+				// Only check the outer edge of this radius.
+				if (radius > 0 &&
+					x > startX - radius && x < startX + radius &&
+					y > startY - radius && y < startY + radius)
+					continue;
+
+				if (x < 0 || y < 0 ||
+					x >= map->width ||
+					y >= map->height)
+					continue;
+
+				if (map->GetTile(x, y))
+				{
+					*waterX = x;
+					*waterY = y;
+					return true;
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
 void AI_Kappa(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
-	int x, y;
+	int x, y, i;
 
 	if (me->reload)
 		me->reload--;
-
-	if (me->action == ACTION_BUSY)
-	{
-		return;	// can't do nothin' right now
-	}
 
 	if (me->ouch == 4)
 	{
@@ -447,6 +478,171 @@ void AI_Kappa(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			MakeSound(SND_UMBRELLOOUCH, me->x, me->y, SND_CUTOFF, 1200);
 		else
 			MakeSound(SND_UMBRELLODIE, me->x, me->y, SND_CUTOFF, 1200);
+	}
+
+	if (me->action == ACTION_BUSY)
+	{
+		if (me->seq == ANIM_ATTACK)
+		{
+			if (me->frm == 4 && me->frmTimer < 64)
+			{
+				me->dx = Cosine(me->facing * 32) * 8;
+				me->dy = Sine(me->facing * 32) * 8;
+				MakeSound(SND_CLANG, me->x, me->y, SND_CUTOFF, 1200);
+			}
+			if (me->frm > 4 && me->frm < 10 && me->reload == 0 && goodguy)
+			{
+				printf("Kappa attack check\n");
+				x = me->x + Cosine(me->facing * 32) * 16;
+				y = me->y + Sine(me->facing * 32) * 16;
+				if (me->AttackCheck(24, x >> FIXSHIFT, y >> FIXSHIFT, goodguy))
+					goodguy->GetShot(Cosine(me->facing * 32) * 8, Sine(me->facing * 32) * 8, 4, map, world);
+				me->reload = 5;
+			}
+			if (me->frm > 4)
+			{
+				Dampen(&me->dx, FIXAMT / 2);
+				Dampen(&me->dy, FIXAMT / 2);
+			}
+		}
+
+		if (me->seq == ANIM_A1)
+		{
+			if (me->frm == 8 && me->frmTimer < 64)
+			{
+				me->mind2 = me->mind2 ? 0 : 1; // toggle
+				me->mind1= Random(40) + 1;
+				me->reload = 100;
+				return;
+			}
+
+			if (!me->mind2 &&
+				me->frm > 3 &&
+				me->frm < 9 &&
+				me->frmTimer < 64 &&
+				goodguy)
+			{
+				MakeSound(SND_CRAZYSTAB, me->x, me->y,
+					SND_CUTOFF, 1200);
+
+				x = me->x + Cosine(me->facing * 32) * 16;
+				y = me->y + Sine(me->facing * 32) * 16;
+
+				for (i = 0; i < 2; i++)
+				{
+					FireBulletZ(
+						x,
+						y,
+						FIXAMT * 12,
+						me->facing * 32 - 16 + (byte)Random(33),
+						BLT_SHARK,
+						me->friendly);
+				}
+			}
+		}
+
+		return;
+	}
+
+	if (me->mind2 && !me->reload)
+	{
+		MakeSound(SND_FOOD, me->x, me->y, SND_CUTOFF, 1200);
+		me->seq = ANIM_A1;
+		me->frm = 0;
+		me->frmTimer = 0;
+		me->frmAdvance = 128;
+		me->action = ACTION_BUSY;
+		me->dx = 0;
+		me->dy = 0;
+		return;
+	}
+
+	if (me->mind == 1)
+	{
+		if (!(me->mind1--))
+		{
+			if (goodguy && Random(3) == 0)
+			{
+				me->mind = 0;
+			}
+			else
+			{
+				me->facing = (byte)Random(8);
+				me->mind1 = Random(40) + 1;
+			}
+		}
+
+		me->dx = Cosine(me->facing * 32) * 2;
+		me->dy = Sine(me->facing * 32) * 2;
+
+		if (me->seq != ANIM_MOVE)
+		{
+			me->seq = ANIM_MOVE;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 64;
+		}
+
+		return;
+	}
+
+	if (me->mind == 0)
+	{
+		if (goodguy)
+		{
+			if (!(me->mind3--) && RangeToTarget(me, goodguy) < (128 * FIXAMT) && !Random(32))
+			{
+				MakeSound(SND_UMBRELLOSPEW,me->x, me->y, SND_CUTOFF, 1200);
+				me->seq = ANIM_A1;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 64;
+				me->action = ACTION_BUSY;
+				me->dx = 0;
+				me->dy = 0;
+				me->reload = 100;
+				return;
+			}
+
+			if (RangeToTarget(me, goodguy) < (192 * FIXAMT) && !Random(32) && !me->reload)
+			{
+				MakeSound(SND_UMBRELLOTAUNT,me->x, me->y, SND_CUTOFF, 1200);
+				me->seq = ANIM_ATTACK;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 96;
+				me->action = ACTION_BUSY;
+				me->dx = 0;
+				me->dy = 0;
+				me->reload = 100;
+
+				return;
+			}
+
+			FaceGoodguy(me, goodguy);
+
+			me->dx = Cosine(me->facing * 32) * 3;
+			me->dy = Sine(me->facing * 32) * 3;
+
+			if (me->seq != ANIM_MOVE)
+			{
+				me->seq = ANIM_MOVE;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 64;
+			}
+
+			if (Random(64) == 0)
+			{
+				me->mind = 1;
+				me->mind1 = 1;
+			}
+		}
+		else
+		{
+			me->mind = 1;
+			me->mind1 = 1;
+		}
 	}
 }
 

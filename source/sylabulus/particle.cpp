@@ -880,7 +880,7 @@ void RenderParticles(void)
 				SprDraw(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
 						particleList[i].z>>FIXSHIFT,
 						255,particleList[i].life*4-8,
-						GetMonsterSprite(MONS_COUNTESS,ANIM_IDLE,0,0),DISPLAY_DRAWME|DISPLAY_GLOW);
+						GetMonsterSprite2(MONS_COUNTESS,ANIM_IDLE,0,0),DISPLAY_DRAWME|DISPLAY_GLOW);
 			else if(particleList[i].type==PART_FIRE)
 			{
 				ParticleDraw(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,

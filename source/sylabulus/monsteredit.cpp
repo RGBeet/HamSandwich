@@ -304,7 +304,7 @@ void MonsterEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 
 	InstaRenderMonster(520,380,curMons,0,mgl);
 	
-	if (GetMonsterSprite(curMons,0,0,0)==NULL)
+	if (GetMonsterSprite2(curMons,0,0,0)==NULL)
 		CenterPrint(520,380,"NO SPRITE!\nDO NOT USE!", 0, 1);
 
 	SetSpriteConstraints(0,0,639,479);

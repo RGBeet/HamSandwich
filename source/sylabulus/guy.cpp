@@ -523,7 +523,7 @@ void Guy::CalculateRect(void)
 
 	if(MonsterFlags(type,aiType)&MF_SPRITEBOX)
 	{
-		spr=GetMonsterSprite(type,seq,frm,facing);
+		spr=GetMonsterSprite(this);
 		if(spr)
 		{
 			rectx=-spr->ofsx;
@@ -1967,6 +1967,13 @@ Guy *FindVictim(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t
 			{
 				switch((EntityType)guys[i].aiType)
 				{
+					case EntityType::Kaptana:
+					case EntityType::Madkap:
+						if (guys[i].mind2)
+							guys[i].GetShot(dx, dy, damage, map, world);
+						else if (guys[i].mind3 + 10 < 100)
+							guys[i].mind3 += 10;
+						break;
 					case EntityType::Tsuchizoid:
 						PrimaryWeaponCheck();
 						if (damage > 0)
