@@ -205,15 +205,15 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Jimbo",255,255,0,AI_Jimbo, // not yet implemented
-		 8,38,150,50,"graphics/jimbo.jsp",0,{},
+		 8,50,150,50,"graphics/jimbo.jsp",0,{},
 		 MT_GOOD | MT_ANIMAL,
 			{
-				{0,255},	// idle
-				{0,255},	// move
-				{0,255},	// attack 1
-				{0,255},	// defeated
-				NULL_ANIM,
-				NULL_ANIM,
+				{0,255},									// idle
+				{1,2,3,2,1,0,5,6,7,6,5,4,255},				// move
+				{23,24,25,26,27,28,28,29,30},				// attack vertical
+				{40,41,42,43,44,45,46,47,48,49,255},		// die
+				{8,9,10,11,12,13,14,255},					// unsheathe sword
+				{28,29,30,31,32,33,34,35,36,37,38,39,255},	// attack vertical
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
@@ -275,30 +275,30 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Mikasa",255,255,0,AI_Umbrello, // not yet implemented
-		 8,38,50,50,"graphics/umbrello.jsp",0,{},
+		 14,32,50,50,"graphics/umbrella.jsp",0,MF_WATERWALK | MF_ENEMYWALK,
 		 MT_EVIL | MT_SPOOKY | MT_WACKY,
 			{
-				{0,255},	// idle
-				{0,255},	// move
-				{0,255},	// attack 1
-				{0,255},	// defeated
-				NULL_ANIM,
-				NULL_ANIM,
+				{0,255},									// idle
+				{8,9,10,8,7,6,7,255},						// move
+				{0,18,19,20,21,22,23,24,25,26,27,255},		// attack
+				{28,29,30,31,255},							// defeated
+				{1,2,3,4,5,6,255},							// a1 (into air)
+				{11,12,13,12,14,15,16,17},					// a2 (fall down)
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
 		{"Eyeball Tree",255,255,0,AI_EyeballTree, // not yet implemented
-		 8,38,100,50,"graphics/eyeballtree.jsp",0,MF_ONEFACE | MF_NOMOVE | MF_SPRITEBOX,
+		 36,27,150,200,"graphics/eyeballtree.jsp",0,MF_ONEFACE | MF_NOMOVE,
 		 MT_EVIL | MT_VEGGIE | MT_WACKY,
 			{
-				{0,255},	// idle
-				{0,255},	// move
-				{0,255},	// attack 1
-				{0,255},	// defeated
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
+				{1,255},					// idle
+				{0,0,0,255},					// move
+				{5,6,7,8,8,8,7,6,5,0,255},	// attack forward
+				{16,17,18,19,20,21,22,24,254,25,24,25,255},	// defeated
+				{9,10,11,12,12,12,11,10,9,0,255},		// attack left
+				{13,14,15,16,16,16,15,14,13,0,255},	// attack right
+				{1,2,3,4,0,255},				// wake up
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},

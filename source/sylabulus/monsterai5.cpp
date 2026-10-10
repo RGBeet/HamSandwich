@@ -811,7 +811,6 @@ void AI_Tsuchizoid(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			}
 		}
 	}
-
 	// random wandering
 	else if (me->mind == 1)
 	{
@@ -961,6 +960,125 @@ void AI_Umbrello(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			MakeSound(SND_UMBRELLODIE, me->x, me->y, SND_CUTOFF, 1200);
 	}
 
+	if (me->action == ACTION_BUSY)
+	{
+		if (me->seq == ANIM_ATTACK)
+		{
+		}
+
+		if (me->seq == ANIM_A1)
+		{
+			if (me->frm == 0)
+				me->mind = 1;
+
+			int targetZ = 20 * FIXAMT;
+			int diff = targetZ - me->z;
+
+			if (diff > 0)
+			{
+				int speed = diff / 8;
+
+				if (speed < FIXAMT / 4)
+					speed = FIXAMT / 4;
+
+				me->z += speed;
+
+				if (me->z > targetZ)
+					me->z = targetZ;
+			}
+
+			if (me->z >= targetZ)
+			{
+				me->z = targetZ;
+			}
+
+			return;
+		}
+
+		if (me->seq == ANIM_A2)
+		{
+			if (me->frm == 1)
+				me->mind = 0;
+
+			int targetZ = 0;
+			int diff = me->z - targetZ;
+
+			if (diff > 0)
+			{
+				int speed = diff / 8;
+
+				if (speed < FIXAMT / 4)
+					speed = FIXAMT / 4;
+
+				me->z -= speed;
+
+				if (me->z < targetZ)
+					me->z = targetZ;
+			}
+
+			if (me->z <= targetZ)
+			{
+				me->z = targetZ;
+			}
+
+			return;
+		}
+
+		return;
+	}
+
+	if (me->mind == 0) // still
+	{
+		if (goodguy)
+		{
+			if (RangeToTarget(me, goodguy) < 192 * FIXAMT &&
+				!me->reload)
+			{
+				me->seq = ANIM_A1;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 128;
+				me->action = ACTION_BUSY;
+				me->dx = 0;
+				me->dy = 0;
+				me->reload = 12;
+
+				return;
+			}
+		}
+	}
+	else if (me->mind == 1) // spotted, give chase!
+	{
+		if (me->seq != ANIM_MOVE)
+		{
+			me->seq = ANIM_MOVE;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 128;
+		}
+
+		FaceGoodguy3(me, goodguy);
+		me->dx	= Cosine(me->facing * 32) * 3;
+		me->dy	= Sine(me->facing * 32) * 3;
+		me->dz	= 0;
+		me->z	= 20 * FIXAMT;
+		if (goodguy)
+		{
+			if (RangeToTarget(me, goodguy) < 140 * FIXAMT && !me->reload && !Random(20))
+			{
+				me->seq = ANIM_A2;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 128;
+				me->action = ACTION_BUSY;
+				me->dx = 0;
+				me->dy = 0;
+				me->reload = 12;
+
+				return;
+			}
+		}
+	}
 }
 
 void AI_Kabocha(Guy* me, Map* map, world_t* world, Guy* goodguy)
@@ -1009,7 +1127,8 @@ void AI_NohMannArm(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 void AI_EyeballTree(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
-	int x, y;
+	int x, y, i;
+	byte b;
 
 	if (me->reload)
 		me->reload--;
@@ -1017,11 +1136,107 @@ void AI_EyeballTree(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	if (me->ouch == 4)
 	{
 		if (me->hp > 0)
-			MakeSound(SND_RICHIEOUCH, me->x, me->y, SND_CUTOFF, 1200);
+			MakeSound(SND_EYEBALLTREEOUCH, me->x, me->y, SND_CUTOFF, 1200);
 		else
-			MakeSound(SND_RICHIEDIE, me->x, me->y, SND_CUTOFF, 1200);
+			MakeSound(SND_EYEBALLTREEDIE, me->x, me->y, SND_CUTOFF, 1200);
 	}
 
+	if (me->action == ACTION_BUSY)
+	{
+		if (me->seq == ANIM_ATTACK || me->seq == ANIM_A1 || me->seq == ANIM_A2)
+		{
+			if (me->frm == 4 && me->reload == 0 && goodguy)
+			{
+				MakeSound(SND_BOMBTHROW, me->x, me->y, SND_CUTOFF, 1200);
+				for (i = 0;i < 3;i++)
+				{
+					b = (me->facing * 32 + Random(17) - 8) & 255;
+					x = me->x + Cosine(b) * 16;
+					y = me->y + Sine(b) * 16;
+					FireBullet(x, y, b, BLT_BIGSHELL, me->friendly);
+				}
+				me->reload = 3;
+			}
+		}
+		if (me->seq == ANIM_DIE)
+		{
+			if (me->frm >= 8)
+			{
+				x = me->x >> FIXSHIFT;
+				y = me->y >> FIXSHIFT;
+				BlowUpGuy(x + me->rectx, y + me->recty, x + me->rectx2, y + me->recty2, me->z, 1);
+				BlowSmoke((x + me->rectx + Random(me->rectx2 - me->rectx)) << FIXSHIFT,
+					(y + me->recty + Random(me->recty2 - me->recty)) << FIXSHIFT,
+					me->z, FIXAMT);
+			}
+		}
+		else if (me->frm > 8)
+		{
+			me->action = ACTION_IDLE;
+			me->seq = ANIM_MOVE;
+			me->frm = 1;
+			me->frmTimer = 0;
+			me->frmAdvance = 0;
+		}
+
+		return;
+	}
+
+	if (me->mind == 0 && me->hp > 0)
+	{
+		if ((goodguy && RangeToTarget(me, goodguy) < 300 * FIXAMT) || me->ouch > 0)
+		{
+			MakeSound(SND_GHOSTTPORT, me->x, me->y, SND_CUTOFF, 1200);
+			me->mind = 1;
+			me->action = ACTION_BUSY;
+			me->seq = ANIM_A3;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 64;
+			return;
+		}
+	}
+	else if (me->mind == 1 && goodguy)
+	{
+		if (goodguy->x < me->x - 45 * FIXAMT)
+			me->facing = 3;
+		else if (goodguy->x > me->x + 45 * FIXAMT)
+			me->facing = 1;
+		else
+			me->facing = 2;
+
+		if (goodguy->y > me->y &&
+			RangeToTarget(me, goodguy) < 300 * FIXAMT &&
+			!Random(32))
+		{
+			switch (me->facing)
+			{
+			case 1:
+				me->seq = ANIM_A2;
+				break;
+			case 3:
+				me->seq = ANIM_A1;
+				break;
+			default:
+				me->seq = ANIM_ATTACK;
+				break;
+			}
+
+			me->action = ACTION_BUSY;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 128;
+			return;
+		}
+
+		if (me->seq != ANIM_MOVE)
+		{
+			me->seq = ANIM_MOVE;
+			me->frm = 1;
+			me->frmTimer = 0;
+			me->frmAdvance = 0;
+		}
+	}
 }
 
 void AI_StickNinja(Guy* me, Map* map, world_t* world, Guy* goodguy)
