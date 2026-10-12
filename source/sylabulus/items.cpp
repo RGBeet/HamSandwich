@@ -760,6 +760,8 @@ void RenderAnimatedItem(int x, int y, word start, byte frames, byte type, char b
 #define ASPR_SPRING		48
 #define ASPR_CHEATZY	56	// todo: make 8 frames!
 #define ASPR_BIGBRAIN	64
+#define ASPR_POCKET		72
+#define ASPR_TOTEM		80
 
 void RenderItem(int x,int y,int type,char bright,MapRenderFlags flags)
 {
@@ -847,6 +849,12 @@ void RenderItem(int x,int y,int type,char bright,MapRenderFlags flags)
 				return;
 			case IT_BIGBRAIN:
 				RenderAnimatedItem((x + items[type].xofs) * FIXAMT, (y + items[type].yofs) * FIXAMT, ASPR_BIGBRAIN, 8, type, bright, flags);
+				return;
+			case IT_POCKET:
+				RenderAnimatedItem((x + items[type].xofs) * FIXAMT, (y + items[type].yofs) * FIXAMT, ASPR_POCKET, 8, type, bright, flags);
+				return;
+			case IT_TOTEM:
+				RenderAnimatedItem((x + items[type].xofs) * FIXAMT, (y + items[type].yofs) * FIXAMT, ASPR_TOTEM, 8, type, bright, flags);
 				return;
 		}
 		if(items[type].appearance == ITA_SHADOW || items[type].appearance == ITA_LOONYKEY)

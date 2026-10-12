@@ -1291,6 +1291,21 @@ void Guy::GetShot(int dx,int dy,word damage,Map *map,world_t *world, bool bypass
 				}
 				break;
 		}
+		// random chance dropping
+		bool canDrop = true;
+		if(canDrop)
+		{
+			if(item==IT_RANDOM)
+			{
+				if(Random(100*FIXAMT)<map->itemDrops)
+					map->DropItem(mapx,mapy,GetRandomItem());
+			}
+			else if(item!=IT_NONE)
+			{
+				if(!map->DropItem(mapx,mapy,item))
+					map->GetTile(mapx,mapy)->item=item;	// force the drop if it failed
+			}
+		}
 
 		ScoreEvent(SE_KILL,1);
 

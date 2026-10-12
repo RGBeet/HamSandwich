@@ -178,7 +178,7 @@ static byte justPicking;
 static byte mode;
 static ItemThemes curTheme = ITH_COLLECTIBLE;
 static world_t *world;
-static byte curItem;
+static word curItem;
 static byte backColor;
 static byte realClick;
 
@@ -875,8 +875,11 @@ static void ItemSetFlags(void)
 
 	ItemEditSetupButtons();
 
+
 	MakeButton(BTN_NORMAL,ID_NAME,0,164,100,38,16,"Name",NameClick);
 	MakeButton(BTN_STATIC,ID_NAME2,0,204,100,100,16,GetItem(curItem)->name,NameClick);
+	sprintf(t, "ID #: %d", curItem);
+	MakeButton(BTN_STATIC,1000,0,404,100,100,16,t, NameClick);
 
 	for(i=0;i<4;i++)
 		MakeArrowButtonPair(ID_FLAGS+i*2, 164, 118+i*20);

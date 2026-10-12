@@ -159,7 +159,7 @@ enum ItemType : word
 	IT_ROCKS3,
 	IT_BRNROCKTAL,
 	IT_BRNROCKSML,
-	IT_FLATROCK,
+	//IT_FLATROCK,
 	IT_PEBBLE,
 	IT_BUBBLES,
 	// Doors / blocks
@@ -181,7 +181,7 @@ enum ItemType : word
 	IT_TRASHCAN2,
 	IT_TARGET,
 	// Potions / collectibles
-	IT_MANAPOTION,
+	IT_TOTEM,
 	IT_RAGEPOTION,
 	IT_PRESENT,
 	IT_GEMSTONESML,
