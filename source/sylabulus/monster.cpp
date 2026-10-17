@@ -311,7 +311,6 @@ const sprite_t *GetMonsterSprite(Guy *me)
 
 std::unique_ptr<sprite_set_t>* intFace = GetIntfaceSpriteSet();
 
-
 void DrawMe(Guy* g, const sprite_set_t* set) {
 	const sprite_t* curSpr;
 	int v;
@@ -351,8 +350,8 @@ void DrawMe(Guy* g, const sprite_set_t* set) {
 
 	if (editing)
 	{
-		if (g->type >= MONS_SUCKER1 && g->type <= MONS_BLOWER4 && g->seq == ANIM_IDLE && g->frm == 0) // suckers and blowers are visible in editor
-			v = 0;
+		//if (g->type >= MONS_SUCKER1 && g->type <= MONS_BLOWER4 && g->seq == ANIM_IDLE && g->frm == 0) // suckers and blowers are visible in editor
+		//	v = 0;
 	}
 
 	if (v == FRAME_INVIS || v == FRAME_END) // 255 = end of frame
@@ -410,8 +409,20 @@ void DrawMe(Guy* g, const sprite_set_t* set) {
 	if (monsType[type].flags&MF_FACECMD) // used for one-directional monsters
 		v += g->facing;
 
-	if ((EntityType)g->type == EntityType::Kaptana && g->mind2 && g->seq != ANIM_DIE)
-		v += 24; // special case for Kaptana when mind == 3
+
+	switch (EntityType(type))
+	{
+		case EntityType::Kaptana:
+			if (g->mind2 && g->seq != ANIM_DIE)
+				v += 24; // special case for Kaptana when mind == 3
+			break;
+		case EntityType::Umbrello:
+			if (v == 0 && g->mind > 0)
+				v = 8;
+			break;
+	}
+
+
 
 	curSpr = set->GetSprite(v);
 
@@ -916,4 +927,9 @@ void FlailLock(Guy *me)
 	{
 		me->facing=(parentangle+dir*2)&15;
 	}
+}
+
+byte IsEntity(Guy *g, EntityType targetType)
+{
+	return (g->aiType == (short)targetType);
 }

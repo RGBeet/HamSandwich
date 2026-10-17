@@ -1603,7 +1603,7 @@ void Burn(int x, int y, int z)
 		{
 			particleList[i].x = x - FIXAMT * 2 + Random(FIXAMT * 4);
 			particleList[i].y = y;
-			particleList[i].z = z - FIXAMT * 2 + Random(FIXAMT * 4);
+			particleList[i].z = z + FIXAMT * 12 + Random(FIXAMT * 4);
 			particleList[i].dx = -FIXAMT * 2 + Random(FIXAMT * 4);
 			particleList[i].dy = 0;
 			particleList[i].dz = Random(FIXAMT * 2);

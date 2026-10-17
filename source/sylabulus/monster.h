@@ -401,6 +401,11 @@ enum class EntityType {
 	ChefAngelo,
 	Jacko,
 
+	Redbone,
+	TutUncommon,
+	Kerosene,
+
+
 	MaxId // number of monster slots
 };
 
@@ -591,4 +596,5 @@ void FlailLock(Guy *me);
 void FacePoint(Guy* me, int x, int y);
 
 void DrawMe(Guy* g, const sprite_set_t* set);
+byte IsEntity(Guy* g, EntityType targetType);
 #endif

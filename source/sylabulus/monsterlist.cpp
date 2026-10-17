@@ -37,7 +37,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Mumble",255,255,0,AI_Mumble,
-		 15,32,30,100,"graphics/mumble.jsp",0,MF_NOMOVE,
+		 15,40,30,100,"graphics/mumble.jsp",0,MF_NOMOVE,
 		 MT_EVIL | MT_DESERT | MT_SPOOKY,
 			{
 				{0,255},	// idle
@@ -51,7 +51,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Zombie",255,255,0,AI_Zombie,
-		 11,32,20,150,"graphics/zombie.jsp",0,{},
+		 11,33,20,150,"graphics/zombie.jsp",0,{},
 		 MT_SPOOKY | MT_ZOMBIE | MT_EVIL,
 			{
 				{0,255},	// idle
@@ -135,16 +135,16 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Aquazoid",255,255,0,AI_Serpent,
-		 15,20,15,75,"graphics/serpent.jsp",0,MF_AQUATIC | MF_WATERWALK,
+		 15,24,15,75,"graphics/serpent.jsp",0,MF_AQUATIC | MF_WATERWALK,
 		 MT_AQUATIC | MT_EVIL | MT_ZOID,
 			{
 				{0,255},	// idle
-				{1,2,3,2,1,0,255},	// move
-				{4,5,6,7,8,9,10,11,12,255},	// spit
-				{13,14,15,16,17,18,19,255},	// die
-				{4,5,6,7,8,9,10,11,12,255},	// spit
-				{4,5,6,7,8,9,10,11,12,255},	// spit
-				{4,5,6,7,8,9,10,11,12,255},	// spit
+				{0,1,2,3,4,5,255},	// move
+				{6,7,8,9,10,10,10,9,8,7,6,255},	// attack 1
+				{16,17,18,19,20,21,22,23,255},	// defeated
+				{6,7,8,9,10,11,12,13,14,15,255},	// attack 1
+				NULL_ANIM,
+				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
@@ -233,7 +233,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Pumpkin",255,255,0,AI_Pumpkin,
-		 10,16,5,500,"graphics/pumpkin.jsp",0,{},
+		 10,16,10,500,"graphics/pumpkin.jsp",0,{},
 		 MT_EVIL | MT_PUMPKIN | MT_VEGGIE,
 			{
 				{0,255},	// idle
@@ -247,7 +247,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0 },
 		{"Kabocha",255,255,0,AI_Kabocha, // not yet implemented
-		 8,38,10,50,"graphics/kabocha.jsp",0,{},
+		 10,16,30,500,"graphics/kabocha.jsp",0,{},
 		 MT_EVIL | MT_PUMPKIN | MT_VEGGIE,
 			{
 				{0,255},	// idle
@@ -279,11 +279,11 @@ MonsterType monsType[NUM_MONSTERS]=
 		 MT_EVIL | MT_SPOOKY | MT_WACKY,
 			{
 				{0,255},									// idle
-				{8,9,10,8,7,6,7,255},						// move
-				{0,18,19,20,21,22,23,24,25,26,27,255},		// attack
+				{8,9,10,9,8,7,6,7,7,255},					// move
+				{18,19,20,21,22,23,24,25,26,27,255},		// attack
 				{28,29,30,31,255},							// defeated
 				{1,2,3,4,5,6,255},							// a1 (into air)
-				{11,12,13,12,14,15,16,17},					// a2 (fall down)
+				{11,12,13,12,14,15,16,17,255},				// a2 (fall down)
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
@@ -541,7 +541,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Manic Mumble",0,7,1,AI_Mumble,
-		 15,32,20,100,"!3",0,MF_NOMOVE,
+		 15,40,20,100,"!3",0,MF_NOMOVE,
 		 MT_EVIL | MT_DESERT | MT_SPOOKY,
 			{
 				{0,255},	// idle
@@ -555,7 +555,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0 },
 		{"Bombie",0,4,5,AI_Bombie, // the explosive zombie, leaps up
-		 11,32,80,150,"!4",0,{},
+		 11,33,80,150,"!4",0,{},
 		 MT_EVIL | MT_SPOOKY | MT_ZOMBIE | MT_TRAP,
 			{
 				{0,255},	// idle
@@ -568,8 +568,8 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},
 				{0,255},
 			},0},
-		{"Bob The Biscuit",255,255,-7,AI_Bob,
-		 12,33,70,300,"!17",0,{},
+		{"Bob The Biscuit",4,6,-4,AI_Bob,
+		 12,33,70,300,"!16",0,{},
 		 MT_EVIL | MT_WACKY,
 			{
 				{0,255},	// idle
@@ -582,8 +582,8 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,10,11,12,13,14,15,16,17,18,19,20,19,20,19,20,21,22,23,255},	// triple punch
 				{7,8,9,10,11,12,13,14,15,16,17,18,19,20,19,20,19,20,21,22,23,255},	// triple punch
 			},0},
-		{"Pumpkin Patch",255,255,2,AI_Patch,
-		 16,17,150,1000,"graphics/patch.jsp",0,MF_NOMOVE | MF_ENEMYWALK | MF_ONEFACE | MF_NOSHADOW,
+		{"Pumpkin Patch",255,255,2,AI_PumpkinPatch,
+		 16,17,128,1000,"graphics/patch.jsp",0,MF_NOMOVE | MF_ENEMYWALK | MF_ONEFACE | MF_NOSHADOW,
 		 MT_EVIL | MT_VEGGIE | MT_PUMPKIN | MT_GENERATE,
 			{
 				{0,255},	// idle
@@ -597,7 +597,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{3,4,5,6,7,8,9,10,255},	// A1=summon
 			},0},
 		{"Boomkin",2,4,5,AI_Pumpkin,
-		 11,6,1,500,"!19",0,{},
+		 11,6,1,500,"!17",0,{},
 		 MT_EVIL | MT_VEGGIE | MT_PUMPKIN,
 			{
 				{0,255},	// idle
@@ -625,7 +625,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,10,9,8,7,255},	// attack
 			},0},
 		{"Jalapeno",1,4,4,AI_Jalapeno,
-		 8,14,5,100,"!85",0,{},
+		 8,14,5,100,"!44",0,{},
 		 MT_EVIL | MT_VEGGIE | MT_PUMPKIN,
 			{
 				{0,255},	// idle
@@ -653,7 +653,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Madkap",1,4,0,AI_Kappa, // not yet implemented
-		 8,38,10,50,"!10",0,{},
+		 8,38,10,50,"!9",0,{},
 		 MT_EVIL | MT_ANIMAL,
 			{
 				{0,255},	// idle
@@ -667,7 +667,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Purple Kaptana",1,7,0,AI_Kappa, // not yet implemented
-		 8,38,10,50,"!10",0,{},
+		 8,38,10,50,"!9",0,{},
 		 MT_EVIL | MT_ANIMAL,
 			{
 				{0,255},	// idle
@@ -695,7 +695,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},	// unused
 			},0},
 		{"Hot N' Sour",1,4,0,AI_HotShroom,
-		 15,23,10,50,"!36",0,{},
+		 15,23,10,50,"!35",0,{},
 		 MT_EVIL | MT_VEGGIE,
 			{
 				{0,255},	// idle
@@ -709,7 +709,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,10,11,12,13,14,255},	// attack
 			},0},
 		{"Deathcap",1,7,-8,AI_Deathcap,
-		 15,23,30,50,"!36",0,{},
+		 15,23,30,50,"!35",0,{},
 		 MT_EVIL | MT_VEGGIE | MT_TRAP,
 			{
 				{0,255},	// idle
@@ -806,8 +806,8 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Evil Clone",1,3,0,AI_EvilClone,
-		 11,29,128,0,"!1",0,{},
+		{"Evil Clone",4,3,-2,AI_EvilClone,
+		 11,42,128,0,"!1",0,{},
 		 MT_EVIL | MT_HUMAN,
 			{
 				{0,255},	// idle
@@ -1241,4 +1241,46 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0 },
+		{"Redbone",0,4,-2,AI_Bonehead,
+		 8,35,25,50,"graphics/skeleton.jsp",0,{},
+		 MT_SPOOKY | MT_EVIL,
+			{
+				{0,255},	// idle
+				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
+				{20,21,22,23,24,255},	// attack
+				{7,8,9,10,11,12,13,14,15,16,255},		// die
+				{25,26,27,28,29,30,255},	// chomp/spit projectile
+				{31,32,33,34,33,32,31,255},	// point at bouapha
+				{16,15,14,13,12,11,10,9,8,7,255},	// resurrect=A3
+				NULL_ANIM,
+				NULL_ANIM,
+			},0},
+		{"Tut Uncommon",0,2,-2,AI_Mumble,
+		 15,40,50,100,"graphics/mumble.jsp",0,MF_NOMOVE,
+		 MT_EVIL | MT_DESERT | MT_SPOOKY,
+			{
+				{0,255},	// idle
+				{1,2,3,4,5,6,0,7,8,9,10,11,255},				// move
+				{12,13,14,15,16,17,18,19,20,21,22,255},			// attack=head crush
+				{23,24,25,26,27,28,254,29,254,30,254,31,255},	// die
+				{32,33,34,35,36,36,36,36,37,38,39,255},			// a1 = shoot from gem
+				{12,13,14,15,16,17,18,19,20,21,22,255},			// attack=head crush
+				{12,13,14,15,16,17,18,19,20,21,22,255},			// attack=head crush
+				NULL_ANIM,
+				NULL_ANIM,
+			},0 },
+		{"Kerosene",4,6,0,AI_Lantern, // not yet implemented
+		 8,24,20,50,"graphics/lantern.jsp",0,MF_FLYING | MF_NOMOVE,
+		 MT_EVIL | MT_FLYING | MT_SPOOKY,
+			{
+				{0,255},	// idle
+				{0,255},	// move??
+				{1,2,3,4,5,6,7,8,7,6,5,4,3,2,9,10,11,12,11,10,9,255},	// attack 1
+				{13,14,15,16,17,18,19,20,21,22,23,255},	// defeated
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+			},0},
 	};

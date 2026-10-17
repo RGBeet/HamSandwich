@@ -1030,13 +1030,13 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			if(Guy *victim = FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,12,me->dx,me->dy,1,map,world,me->friendly))
 			{
 				Burn(victim->x, victim->y, victim->z);
-				SetIgniteFrames(victim, victim->ignite+30);
+				SetIgniteFrames(victim, victim->ignite+5);
 			}
 			break;
 		case BLT_SPORE:
 			if(Guy *victim = FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,4,me->dx/2,me->dy/2,1,map,world,me->friendly))
 			{
-				SetPoisonFrames(victim, victim->poison+30);
+				SetPoisonFrames(victim, victim->poison+5);
 				me->type=BLT_NONE;	// go away
 			}
 			break;

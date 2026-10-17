@@ -246,4 +246,6 @@ void AI_MiniBonehead(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_Pathfinder(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_StopSign(Guy* me, Map* map, world_t* world, Guy* goodguy);
 
+void AI_PumpkinPatch(Guy* me, Map* map, world_t* world, Guy* goodguy);
+
 #endif

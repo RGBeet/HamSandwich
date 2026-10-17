@@ -1294,7 +1294,7 @@ void AI_Bob(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 	if (me->action == ACTION_BUSY)
 	{
-		if (me->seq == ANIM_ATTACK && (me->frm == 2 || me->frm == 4 || me->frm == 11) && me->reload == 0 && goodguy)
+		if (me->seq == ANIM_ATTACK && me->frm == 4 && !me->reload && goodguy)
 		{
 			x = me->x + Cosine(me->facing * 32) * 32;
 			y = me->y + Sine(me->facing * 32) * 32;

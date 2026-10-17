@@ -9,138 +9,6 @@
 
 static int pickupX, pickupY;
 
-void AI_Bonehead(Guy* me, Map* map, world_t* world, Guy* goodguy)
-{
-	int x, y;
-
-	if (me->reload)
-		me->reload--;
-
-	if (me->ouch == 4)
-	{
-		if (me->hp > 0)
-			MakeSound(SND_SKELOUCH, me->x, me->y, SND_CUTOFF, 1200);
-		else
-			MakeSound(SND_SKELDIE, me->x, me->y, SND_CUTOFF, 1200);
-	}
-
-	if (me->action == ACTION_BUSY)
-	{
-		if (me->seq == ANIM_ATTACK && me->frm == 3 && me->reload == 0 && goodguy)
-		{
-			x = me->x + Cosine(me->facing * 32) * 16;
-			y = me->y + Sine(me->facing * 32) * 16;
-			if (me->AttackCheck(16, x >> FIXSHIFT, y >> FIXSHIFT, goodguy))
-				goodguy->GetShot(Cosine(me->facing * 32) * 4, Sine(me->facing * 32) * 4, 4, map, world);
-			me->reload = 5;
-		}
-		if (me->seq == ANIM_A1 && me->frm == 3 && me->reload == 0 && goodguy)
-		{
-			x = me->x + Cosine(me->facing * 32) * 16;
-			y = me->y + Sine(me->facing * 32) * 16;
-			FireBullet(x, y, me->facing * 32, BLT_ENERGY, me->friendly);
-			me->reload = 5;
-			me->mind1 = 1;
-		}
-		return;	// can't do nothin' right now
-	}
-
-	// randomly decide to point at Bouapha to unnerve him
-	// (but only if in pursuit mode, because otherwise you'd point the wrong way)
-	if ((!Random(100)) && me->mind == 0)
-	{
-		me->seq = ANIM_A2;
-		me->frm = 0;
-		me->frmTimer = 0;
-		me->frmAdvance = 64;
-		me->action = ACTION_BUSY;
-		me->dx = 0;
-		me->dy = 0;
-		return;
-	}
-
-	if (me->mind == 0)		// when mind=0, singlemindedly lumber towards Bouapha
-	{
-		if (goodguy)
-		{
-			if (RangeToTarget(me, goodguy) < (48 * FIXAMT) && Random(8) == 0)
-			{
-				// get him!
-				MakeSound(SND_SKELKICK, me->x, me->y, SND_CUTOFF, 1200);
-				me->seq = ANIM_ATTACK;
-				me->frm = 0;
-				me->frmTimer = 0;
-				me->frmAdvance = 64;
-				me->action = ACTION_BUSY;
-				me->dx = 0;
-				me->dy = 0;
-				me->reload = 0;
-				return;
-			}
-			FaceGoodguy(me, goodguy);
-
-			me->dx = Cosine(me->facing * 32) * 4;
-			me->dy = Sine(me->facing * 32) * 4;
-			if (me->seq != ANIM_MOVE)
-			{
-				me->seq = ANIM_MOVE;
-				me->frm = 0;
-				me->frmTimer = 0;
-				me->frmAdvance = 128;
-			}
-			if (Random(64) == 0)
-			{
-				me->mind = 1;		// occasionally wander
-				me->mind1 = 1;
-			}
-		}
-		else
-		{
-			me->mind = 1;	// if there's no goodguy, get random
-			me->mind1 = 1;
-		}
-	}
-	else if (me->mind == 1)	// random wandering
-	{
-		if (goodguy)
-		{
-			if (RangeToTarget(me, goodguy) < (512 * FIXAMT) && Random(32) == 0)
-			{
-				// spit at him
-				MakeSound(SND_SKELSHOOT, me->x, me->y, SND_CUTOFF, 1200);
-				me->seq = ANIM_A1;
-				me->frm = 0;
-				me->frmTimer = 0;
-				me->frmAdvance = 64;
-				me->action = ACTION_BUSY;
-				me->dx = 0;
-				me->dy = 0;
-				me->reload = 0;
-				FaceGoodguy(me, goodguy);
-				return;
-			}
-		}
-		if (!(me->mind1--))	// time to get a new direction
-		{
-			if ((goodguy) && Random(3) == 0)
-				me->mind = 0;	// get back on track
-			else
-				me->facing = (byte)Random(8);
-			me->mind1 = Random(40) + 1;
-		}
-
-		me->dx = Cosine(me->facing * 32) * 4;
-		me->dy = Sine(me->facing * 32) * 4;
-		if (me->seq != ANIM_MOVE)
-		{
-			me->seq = ANIM_MOVE;
-			me->frm = 0;
-			me->frmTimer = 0;
-			me->frmAdvance = 128;
-		}
-	}
-}
-
 void AI_Bat(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
 	int x, y;
@@ -1385,6 +1253,96 @@ void AI_Ginger(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 void AI_Pumpkin(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
+	if (me->reload)
+		me->reload--;
+
+	if (me->ouch == 4)
+	{
+		if (me->hp > 0)
+			MakeSound(SND_BUSHOUCH, me->x, me->y, SND_CUTOFF, 1200);
+		else
+			MakeSound(SND_PUMPKINDIE, me->x, me->y, SND_CUTOFF, 1200);
+	}
+
+	if (me->action == ACTION_BUSY)
+	{
+		if (me->seq == ANIM_DIE && me->reload == 0)
+		{
+			if (me->aiType == MONS_BOOMKIN && me->frm == 0)
+				FireBullet(me->x, me->y, 0, BLT_BOOM, me->friendly);
+			ExplodeParticles(PART_HAMMER, me->x, me->y, me->z, 8);
+			me->reload = 2;
+		}
+		return;	// can't do nothin' right now
+	}
+
+	if (me->seq == ANIM_MOVE && me->frm == 2 && goodguy)	// hits on this frame
+	{
+		FindVictim(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 24, Cosine(me->facing * 32) * 4, Sine(me->facing * 32) * 4, 2, map, world, me->friendly);
+	}
+
+	if (me->mind == 0)	// not currently aware of goodguy
+	{
+		if (me->seq == ANIM_MOVE)
+		{
+			me->seq = ANIM_IDLE;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 32;
+		}
+
+		if (goodguy)
+		{
+			if (RangeToTarget(me, goodguy) < 256 * FIXAMT || me->ouch > 0)
+			{
+				// if the goodguy is near, or he shot me
+				me->mind = 1;	// start hunting
+				if (me->ouch == 0)
+					me->mind1 = 60;	// for 2 seconds minimum
+				else
+					me->mind1 = 120;	// 4 seconds, because they HATE getting shot
+				FaceGoodguy(me, goodguy);
+			}
+		}
+		me->dx = 0;
+		me->dy = 0;
+	}
+	else
+	{
+		FaceGoodguy(me, goodguy);
+		if (!goodguy)
+		{
+			me->mind = 0;	// go back to being bored, nothing to see here
+			me->mind1 = 0;
+			return;
+		}
+
+		if (me->mind1)
+			me->mind1--;
+		else
+		{
+			if (RangeToTarget(me, goodguy) > 256 * FIXAMT)
+				me->mind = 0;	// get bored again
+			else
+				me->mind1 = 20;	// stay on trail a little longer
+			return;
+		}
+
+		me->dx = Cosine(me->facing * 32) * 2;
+		me->dy = Sine(me->facing * 32) * 2;
+		if (me->seq != ANIM_MOVE)
+		{
+			me->seq = ANIM_MOVE;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 128;
+		}
+	}
+}
+
+/*
+void AI_Pumpkin(Guy* me, Map* map, world_t* world, Guy* goodguy)
+{
 	int x,y;
 	if (me->reload)
 		me->reload--;
@@ -1517,7 +1475,7 @@ void AI_Pumpkin(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		}
 		else
 		{
-			printf("No result. ");
+			//printf("No result. ");
 			if (me->mind2++ > 19)
 			{
 				me->mind2 = 0;
@@ -1528,6 +1486,7 @@ void AI_Pumpkin(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		}
 	}
 }
+*/
 
 void AI_BabyThing(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
@@ -3688,124 +3647,6 @@ void AI_Geozoid(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			me->dx = 0;
 			me->dy = 0;
 			me->mind1 = 10 + Random(50);
-		}
-	}
-}
-
-
-void AI_Mumble(Guy* me, Map* map, world_t* world, Guy* goodguy)
-{
-	int x, y, spd;
-	bool manic = (EntityType)me->aiType == EntityType::ManicMumble;
-
-	if (me->reload)
-		me->reload--;
-
-	if (me->mind1)
-		me->mind1--;
-
-	if (me->ouch == 4)
-	{
-		if (me->hp > 0)
-			MakeSound(SND_ZOMBIEOUCH, me->x, me->y, SND_CUTOFF, 1200);
-		else
-			MakeSound(SND_ZOMBIEDIE, me->x, me->y, SND_CUTOFF, 1200);
-	}
-
-	if (me->action == ACTION_BUSY)
-	{
-		if (me->seq == ANIM_ATTACK && me->frm == 5 && me->reload == 0 && goodguy)
-		{
-			// crush skull
-			x = me->x + Cosine(me->facing * 32) * 20;
-			y = me->y + Sine(me->facing * 32) * 20;
-			if (me->AttackCheck(24, x >> FIXSHIFT, y >> FIXSHIFT, goodguy))
-			{
-				goodguy->GetShot(Cosine(me->facing * 32) * 10, Sine(me->facing * 32) * 10, 12, map, world);
-			}
-			me->reload = 5;
-		}
-		return;	// can't do nothin' right now
-	}
-
-	if (me->mind == 0)	// not yet aware
-	{
-		if (goodguy && RangeToTarget(me, goodguy) < 200 * FIXAMT)
-		{
-			me->mind = 1;	// begin chasing.  Slowly.
-		}
-		StartIdleAnimation(me, manic?256:128);
-	}
-	if (me->mind == 1)		// when mind=0, singlemindedly lumber towards Bouapha
-	{
-		if (goodguy)
-		{
-			// check if within range
-			if (!TargetWithinRange(me,goodguy,128) && !map->CheckLOS(me->x, me->y, 192, goodguy->x, goodguy->y))
-			{
-				if (me->mind2++ > 9)
-				{
-					me->mind2 = 0;
-					me->mind = 2; // pathfinding time!
-					return;
-				}
-			}
-			else if (me->mind2)
-				me->mind2--;
-
-			// crush his skull when within range
-			if (RangeToTarget(me, goodguy) < (60 * FIXAMT) && !Random(8) && !me->reload)
-			{
-				MakeSound(SND_MUMBLECRUSH, me->x, me->y, SND_CUTOFF, 1000);
-				StartAnimation(me,ANIM_ATTACK,manic?256:128);
-				SetMoveFacing(me, 0);
-				me->reload = 0;
-				return;
-			}
-
-			// move slowly towards player
-			FaceGoodguy(me, goodguy);
-			StartMoveAnimation(me, manic?256:64);
-
-			if (!((me->frm >= 3 && me->frm <= 5) || (me->frm >= 9 && me->frm <= 11)))
-				spd = manic ? 4 : 1;
-			else
-				spd = 0;
-
-			SetMoveFacing(me, spd);
-		}
-	}
-	else if (me->mind == 2)
-	{
-		int px = (goodguy->x >> FIXSHIFT) / TILE_WIDTH;
-		int py = (goodguy->y >> FIXSHIFT) / TILE_HEIGHT;
-
-		if (!((me->frm >= 3 && me->frm <= 5) || (me->frm >= 9 && me->frm <= 11)))
-			spd = manic ? 4 : 1;
-		else
-			spd = 0;
-
-		bool result = me->UpdatePathfinding(map, world, spd, (goodguy->x >> FIXSHIFT) / TILE_WIDTH, (goodguy->y >> FIXSHIFT) / TILE_HEIGHT);
-
-		if (me->GetPathDistance() < 128 * FIXAMT && !Random(8) && map->FindGuy(me->mapx, me->mapy, 8, goodguy))
-			me->mind = 1; // in range, start killing
-
-		me->AvoidGuys();
-		if (result) // stand still!
-		{
-			StartMoveAnimation(me, manic?256:64);
-			if (me->mind2)
-				me->mind2 = 0;
-		}
-		else
-		{
-			if (me->mind2++ > 19)
-			{
-				me->mind2 = 0;
-				me->mind = 0; // done for now
-			}
-			StartIdleAnimation(me, 64);
-			SetMoveFacing(me, 0); // still
 		}
 	}
 }

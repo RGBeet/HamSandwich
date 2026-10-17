@@ -202,6 +202,17 @@ byte TryToPushItem(int x,int y,int destx,int desty,Map *map,world_t *world)
 		return 0;
 }
 
+byte IsFlying(Guy* me)
+{
+	switch ((EntityType)me->aiType)
+	{
+		case EntityType::Umbrello:
+			return me->mind != 0;
+		default:
+			return (MonsterFlags(me->type, me->aiType) & MF_FLYING);
+	}
+}
+
 byte Walkable(Guy *me,int x,int y,Map *map,world_t *world)
 {
 	byte result;
@@ -228,13 +239,13 @@ byte Walkable(Guy *me,int x,int y,Map *map,world_t *world)
 	byte terrain = GetTerrain(world, m->floor)->type;
 	byte aqueous = (terrain == TRN_WATER || terrain == TRN_LAVA);
 
-	if(aqueous && (!(MonsterFlags(me->type,me->aiType)&(MF_WATERWALK|MF_FLYING))))
+	if(aqueous && (!(MonsterFlags(me->type, me->aiType) & (MF_WATERWALK | MF_FLYING)) || IsFlying(me)))
 	{
 		if(me->aiType!=MONS_BOUAPHA)
 			result=0;
 	}
 
-	if((terrain == TRN_SOLID) && (!(MonsterFlags(me->type,me->aiType)&(MF_FLYING|MF_WALLWALK))))
+	if((terrain == TRN_SOLID) && (!(MonsterFlags(me->type,me->aiType)&(MF_WALLWALK) || IsFlying(me))))
 		result=0; // impassable
 
 	if((terrain == TRN_PUSHABLE) && me->aiType==MONS_BOUAPHA)
@@ -242,7 +253,7 @@ byte Walkable(Guy *me,int x,int y,Map *map,world_t *world)
 		TryToPush(me,x,y,map,world);
 	}
 
-	if(MonsterFlags(me->type,me->aiType)&MF_FLYING)
+	if(IsFlying(me))
 	{
 		byte passability = GetItem(m->item)->passability;
 		if((m->wall || passability == ITP_BULLETPROOF || passability == ITP_BARRIER) && (!(MonsterFlags(me->type,me->aiType)&MF_WALLWALK)))
@@ -590,7 +601,7 @@ byte EntityCanInteractWithGround(Guy *g, Map *map, world_t *world, byte type)
 {
 	byte pass = (g->hp>0) && (g->z<1)
 		&& (GetTerrain(world, map->GetTile(g->mapx, g->mapy)->floor)->type == type)
-		&& !(MonsterFlags(g->type, g->aiType) & (MF_AQUATIC|MF_FLYING));
+		&& !(MonsterFlags(g->type, g->aiType) & (MF_AQUATIC) || IsFlying(g));
 
 	if (EntityIsPlayer(g->aiType))
 	{
@@ -807,7 +818,7 @@ void Guy::Update(Map *map,world_t *world)
 		lastBumpY=255;
 	}
 
-	if(MonsterFlags(type,aiType)&MF_FLYING)
+	if(IsFlying(this))
 	{
 		if(map->environment == MAP_ENV_UNDERWATER || map->environment == MAP_ENV_OUTERSPACE)
 		{
