@@ -1719,6 +1719,137 @@ void AI_NohMannComedy(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	if (me->reload)
 		me->reload--;
 
+	if (me->ouch == 4)
+	{
+		if (me->hp > 0)
+			MakeSound(SND_MATTIEOUCH, me->x, me->y, SND_CUTOFF, 1200);
+		else
+			MakeSound(SND_MATTIEDIE, me->x, me->y, SND_CUTOFF, 1200);
+
+	}
+
+	if (me->action == ACTION_BUSY)
+	{
+		if (me->seq == ANIM_A2 && me->frm == 7 && me->frmTimer < 32)
+		{
+			if((EntityType)me->type == EntityType::NohMannComedy)
+				me->type = (short)EntityType::NohMannTragedy;
+			else if((EntityType)me->type == EntityType::NohMannTragedy)
+				me->type = (short)EntityType::NohMannComedy;
+		}
+		if (me->seq == ANIM_DIE)
+		{
+			ExplodeParticles2(PART_SLIME, me->x, me->y, FIXAMT * 20, 4, 10);
+		}
+		return;	// can't do nothin' right now
+	}
+
+	if (me->mind == 0)	// waiting for Bouapha
+	{
+		if (RangeToTarget(me, goodguy) < 300 * FIXAMT || me->ouch > 0)
+		{
+			MakeSound(SND_COUNTHELLO, me->x, me->y, SND_CUTOFF, 1200);
+			me->mind = 1;
+		}
+		me->mind1 = 60;
+	}
+	else if (me->mind == 1)	// chasing
+	{
+		// calculate desired location (want to be above Bouapha)
+		switch (me->mind2)
+		{
+			case 0:
+				x = goodguy->x - 96 * FIXAMT;
+				y = goodguy->y;
+				break;
+			case 1:
+				x = goodguy->x + 96 * FIXAMT;
+				y = goodguy->y;
+				break;
+		}
+
+		if (!Random(256))
+		{
+			me->mind2 = (me->mind2 + 1) & 1;
+		}
+
+		FaceGoodguy3(me, goodguy);
+		if (me->x < x)
+			me->dx += FIXAMT / 4;
+		if (me->y < y)
+			me->dy += FIXAMT / 4;
+		if (me->x > x)
+			me->dx -= FIXAMT / 4;
+		if (me->y > y)
+			me->dy -= FIXAMT / 4;
+
+		Clamp(&me->dx, FIXAMT * 8);
+		Clamp(&me->dy, FIXAMT * 6);
+
+		if (RangeToTarget(me, goodguy) > 160 * FIXAMT && !Random(256))
+		{
+			MakeSound(SND_COUNTSUMMON, me->x, me->y, SND_CUTOFF, 1200);
+			me->action = ACTION_BUSY;
+			me->seq = ANIM_ATTACK;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 128;
+			me->mind1 = 60;
+			me->dx = 0;
+			me->dy = 0;
+			return;
+		}
+
+		if (RangeToTarget(me, goodguy) > 160 * FIXAMT && !Random(256))
+		{
+			MakeSound(SND_ALIENSPIT, me->x, me->y, SND_CUTOFF, 1200);
+			me->action = ACTION_BUSY;
+			me->seq = ANIM_A1;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 128;
+			me->mind1 = 60;
+			me->dx = 0;
+			me->dy = 0;
+			return;
+		}
+
+		if (RangeToTarget(me, goodguy) > 160 * FIXAMT && !Random(256))
+		{
+			MakeSound(SND_ALIENSPIT, me->x, me->y, SND_CUTOFF, 1200);
+			me->action = ACTION_BUSY;
+			me->seq = ANIM_A1;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 128;
+			me->mind1 = 60;
+			me->dx = 0;
+			me->dy = 0;
+			return;
+		}
+
+		if (!Random(512) && !me->mind1)
+		{
+			MakeSound(SND_COUNTDIE, me->x, me->y, SND_CUTOFF, 1200);
+			me->action = ACTION_BUSY;
+			me->seq = ANIM_A2;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 64;
+			me->mind1 = 60;
+			me->dx = 0;
+			me->dy = 0;
+			return;
+		}
+
+		if (me->seq != ANIM_MOVE)
+		{
+			me->seq = ANIM_MOVE;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 128;
+		}
+	}
 }
 
 void AI_NohMannTragedy(Guy* me, Map* map, world_t* world, Guy* goodguy)
@@ -3246,5 +3377,73 @@ void AI_PumpkinPatch(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		me->frmTimer = 0;
 		me->frmAdvance = 128;
 		me->action = ACTION_BUSY;
+	}
+}
+
+void AI_Oven(Guy* me, Map* map, world_t* world, Guy* goodguy)
+{
+	int x, y;
+	Guy* g;
+
+	if (me->reload)
+		me->reload--;
+
+	if (me->ouch == 4)
+	{
+		if (me->hp > 0)
+			MakeSound(SND_ROBOOUCH, me->x, me->y, SND_CUTOFF, 1200);
+		else
+			MakeSound(SND_ROBODIE, me->x, me->y, SND_CUTOFF, 1200);
+	}
+
+	if (me->action == ACTION_BUSY)
+	{
+		if (me->seq == ANIM_ATTACK && me->frm == 8 && me->reload == 0)
+		{
+			g = AddBaby(me->x, me->y + FIXAMT * 64, 0, (int)EntityType::Ninjabread, me);
+
+			if (g)
+			{
+				if (!g->CanWalk(g->x, g->y, map, world))
+				{
+					RemoveGuy(g);
+					me->reload = 5;
+				}
+				else
+				{
+					MakeSound(SND_GENERATE, me->x, me->y, SND_CUTOFF | SND_ONE, 1200);
+					for (x = 0;x < 15;x++)
+						BlowSmoke(me->x - 40 * FIXAMT + Random(80 * FIXAMT), me->y + 60 * FIXAMT + Random(15 * FIXAMT),
+							0, Random(8) * FIXAMT + FIXAMT);
+					g->facing = 2;
+					me->reload = 30;
+				}
+			}
+		}
+		return;
+	}
+
+	if (RangeToTarget(me, goodguy) < 512 * FIXAMT && !me->reload && !Random(50))
+	{
+		MakeSound(SND_MISSILELAUNCH, me->x, me->y, SND_CUTOFF, 1200);
+		me->seq = ANIM_ATTACK;
+		me->frm = 0;
+		me->frmTimer = 0;
+		me->frmAdvance = 64;
+		me->action = ACTION_BUSY;
+		return;
+	}
+
+	if (me->seq != ANIM_MOVE)
+	{
+		me->seq = ANIM_MOVE;
+		me->frm = 0;
+		me->frmTimer = 0;
+		me->frmAdvance = 64;
+	}
+	else if (me->frm % 4 == 0 && !Random(8))
+	{
+		BlowSmoke(me->x - 40 * FIXAMT + Random(80 * FIXAMT), me->y + + Random(15 * FIXAMT),
+			20 * FIXAMT, Random(8) * FIXAMT + FIXAMT);
 	}
 }

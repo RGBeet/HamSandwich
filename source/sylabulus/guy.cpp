@@ -673,16 +673,24 @@ void Guy::Update(Map *map,world_t *world)
 		switch (terrainType)
 		{
 		case TRN_CNVYUP:
-			dy -= (4 + terrainValue) * FIXAMT;
+			dy = (dy > -(4 + terrainValue) * FIXAMT)
+				? dy - (4 + terrainValue) * FIXAMT
+				: dy;
 			break;
 		case TRN_CNVYDN:
-			dy += (4 + terrainValue) * FIXAMT;
+			dy = (dy < (4 + terrainValue) * FIXAMT)
+				? dy + (4 + terrainValue) * FIXAMT
+				: dy;
 			break;
 		case TRN_CNVYLF:
-			dx -= (4 + terrainValue) * FIXAMT;
+			dx = (dx > -(4 + terrainValue) * FIXAMT)
+				? dx - (4 + terrainValue) * FIXAMT
+				: dx;
 			break;
 		case TRN_CNVYRG:
-			dx += (4 + terrainValue) * FIXAMT;
+			dx = (dx < (4 + terrainValue) * FIXAMT)
+				? dx + (4 + terrainValue) * FIXAMT
+				: dx;
 			break;
 		case TRN_SKY:
 		case TRN_CLIFF:

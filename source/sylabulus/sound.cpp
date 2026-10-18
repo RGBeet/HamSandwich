@@ -419,6 +419,14 @@ static SoundDesc soundInfo2[512] = { // starts from index 512, doing this for no
 	{/*SND_,*/ "BIG Candle Get",ST_EFFECT},
 	{/*SND_,*/ "BIG Coin Get",ST_EFFECT},
 	{/*SND_,*/ "Turret Deploy",ST_EFFECT},
+	{/*SND_,*/ "Lantern Ouch",ST_MONSTER},
+	{/*SND_,*/ "Stop Sign HEY!",ST_MONSTER|ST_VOCAL},
+	{/*SND_,*/ "Stop Sign Ouch",ST_MONSTER},
+	{/*SND_,*/ "Stop Sign Die",ST_MONSTER},
+	{/*SND_,*/ "Small Gem Get",ST_EFFECT},
+	{/*SND_,*/ "Large Gem Get",ST_EFFECT},
+	{/*SND_,*/ "Extra Life",ST_PLAYER|ST_VOCAL|ST_EFFECT},
+	{/*SND_,*/ "Lever Pull",ST_EFFECT},
 };
 
 static int numCustom;

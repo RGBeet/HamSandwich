@@ -404,7 +404,7 @@ enum class EntityType {
 	Redbone,
 	TutUncommon,
 	Kerosene,
-
+	OvenGen,
 
 	MaxId // number of monster slots
 };

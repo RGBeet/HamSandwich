@@ -331,35 +331,35 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Noh-Mann",255,255,0,AI_NohMannComedy, // not yet implemented
-		 8,38,600,50,"graphics/nohmann1.jsp",0,MF_NOMOVE | MF_ONEFACE | MF_FACECMD | MF_NOGRAV | MF_ENEMYWALK | MF_FREEWALK,
+		 8,48,600,5000,"graphics/nohmann1.jsp",0,MF_NOMOVE | MF_ONEFACE | MF_FACECMD | MF_NOGRAV | MF_ENEMYWALK | MF_FLYING,
 		 MT_EVIL | MT_BOSS | MT_SPOOKY,
 			{
-				{0,255},	// idle
-				{0,255},	// move
-				{0,255},	// attack 1
-				{0,255},	// defeated
-				NULL_ANIM,
-				NULL_ANIM,
+				{0,255},										// idle
+				{0,1,2,3,4,5,6,7,255},							// move
+				{8,9,10,11,11,11,12,13,14,15,255},				// attack 1
+				{36,37,38,39,40,41,42,43,44,45,46,47,255},		// defeated
+				{16,17,18,19,20,20,21,22,23,255},				// attack 2
+				{25,26,27,28,29,30,31,32,32,32,33,34,35,255},	// transition form
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Noh-Mann",255,255,0,AI_NohMannTragedy, // not yet implemented
-		 8,38,600,50,"graphics/nohmann1.jsp",0,MF_NOMOVE | MF_ONEFACE | MF_FACECMD | MF_NOGRAV | MF_ENEMYWALK | MF_FREEWALK,
+		{"Noh-Mann",255,255,0,AI_NohMannComedy, // not yet implemented
+		 8,48,600,5000,"graphics/nohmann2.jsp",0,MF_NOMOVE | MF_ONEFACE | MF_FACECMD | MF_NOGRAV | MF_ENEMYWALK | MF_FLYING,
 		 MT_BITS,
 			{
-				{0,255},	// idle
-				{0,255},	// move
-				{0,255},	// attack 1
-				{0,255},	// defeated
-				NULL_ANIM,
-				NULL_ANIM,
+				{0,255},										// idle
+				{0,1,2,3,4,5,6,7,255},							// move
+				{8,9,10,11,11,11,12,13,14,15,255},				// attack 1
+				{36,37,38,39,40,41,42,43,44,45,46,47,255},		// defeated
+				{16,17,18,19,20,20,21,22,23,255},				// attack 2
+				{25,26,27,28,29,30,31,32,33,34,35,255},	// transition form
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Noh-Mann's Arm",255,255,0,AI_NohMannArm, // not yet implemented
-		 8,38,900,50,"graphics/noharm1.jsp",0,MF_NOMOVE | MF_ONEFACE | MF_SPRITEBOX | MF_NOGRAV | MF_ENEMYWALK | MF_FREEWALK,
+		{"Noh-Mann",255,255,0,AI_NohMannArm, // not yet implemented
+		 8,38,900,50,"graphics/nomask1.jsp",0,MF_NOMOVE | MF_ONEFACE | MF_SPRITEBOX | MF_NOGRAV | MF_ENEMYWALK | MF_FREEWALK,
 		 MT_BITS,
 			{
 				{0,255},	// idle
@@ -372,8 +372,8 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0 },
-		{"Noh-Mann's Arm",255,255,0,AI_NohMannArm, // not yet implemented
-		 8,38,900,50,"graphics/noharm2.jsp",0,MF_NOMOVE | MF_ONEFACE | MF_SPRITEBOX | MF_NOGRAV | MF_ENEMYWALK | MF_FREEWALK,
+		{"Noh-Mann",255,255,0,AI_NohMannArm, // not yet implemented
+		 8,38,900,50,"graphics/nomask2.jsp",0,MF_NOMOVE | MF_ONEFACE | MF_SPRITEBOX | MF_NOGRAV | MF_ENEMYWALK | MF_FREEWALK,
 		 MT_BITS,
 			{
 				{0,255},	// idle
@@ -1269,7 +1269,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0 },
-		{"Kerosene",4,6,0,AI_Lantern, // not yet implemented
+		{"Kerosene Lamp",4,6,0,AI_Lantern, // not yet implemented
 		 8,24,20,50,"graphics/lantern.jsp",0,MF_FLYING | MF_NOMOVE,
 		 MT_EVIL | MT_FLYING | MT_SPOOKY,
 			{
@@ -1283,4 +1283,18 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
+		{ "Oven",255,255,0,AI_Oven,
+		 40,16,150,500,"graphics/oven.jsp",0,MF_ONEFACE | MF_NOMOVE,
+		 MT_EVIL | MT_GENERATE,
+			{
+				{0,255},				// still
+				{0,1,2,3,2,1,255},		// active
+				{4,5,6,5,4,5,6,7,7,7,8,9,10,255},	// open up
+				{11,11,12,12,13,13,14,14,254,15,254,15,255}, // die
+				{4,5,6,7,6,5,255},		// attack
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+			},0 },
 	};

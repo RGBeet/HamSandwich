@@ -497,6 +497,7 @@
 #define SND_GEMSMALL			590
 #define SND_GEMLARGE			591
 #define SND_XTRALIFE			592
+#define SND_LEVER				593
 
 #define MAX_SOUNDS				1024	// doesn't mean a thing lol
 
