@@ -140,6 +140,7 @@ void InitPlayer(byte level,const char *fname)
 	player.candleTime	= 30 * 30;
 	player.candleX		= 255;
 	player.spotted		= 0;
+	player.stunned		= 0;
 	player.playAs=profile.playAs;
 
 	intfaceEnemy=NULL;
@@ -1144,7 +1145,7 @@ void PlayerFireWeapon(Guy *me)
 			{
 				ScoreEvent(SE_SHOOT, 1);
 				MakeSound(SND_DEATHRAY, me->x, me->y, SND_CUTOFF, 1200);
-				FireBullet(me->x, me->y, me->facing, BLT_GLUESHOT, me->friendly);
+				FireBullet(me->x, me->y, me->facing*32, BLT_GLUESHOT, me->friendly);
 				// do the attack
 				ReduceCurrentWeaponAmmo(1);
 				AddShotFiredToProfile();
@@ -1431,40 +1432,69 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	if(tportclock)
 		tportclock--;
 
-
 	byte terrainType	= GetTerrain(world, mapTile->floor)->type;
 	byte terrainValue	= GetTerrain(world, mapTile->floor)->value;
-	
-	if (terrainType == TRN_ICE && me->z == 0 && !(player.hammerFlags&HMR_NOSKID)) // ice terrain
+
+	switch(terrainType)
 	{
-		if(!player.jetting && me->mind1)	// bumped a wall while on ice
-		{
-			if(me->mind1&1)
-				me->dx=-me->dx/8;
-			if(me->mind1&2)
-				me->dy=-me->dy/8;
-		}
-		if((player.jetting || (me->z>0 && player.vehicle==0)) && me->mind1)
-			DoJetpackLogic(me);
-	}
-	else if (terrainType == TRN_RUBBER && me->z == 0) // rubber terrain
-	{
-		me->dz = 16 * FIXAMT;
-		me->dx += Cosine(me->facing * 32);
-		me->dy += Sine(me->facing * 32);
-		Clamp(&me->dx, PLYR_MAXSPD);
-		Clamp(&me->dy, PLYR_MAXSPD);
-		MakeSound(SND_BOING + Random(3), me->x, me->y, SND_CUTOFF, 2);
-	}
-	else // default terrain
-	{
-		if ((player.jetting || (me->z > 0 && player.vehicle == 0)) && me->mind1)
-			DoJetpackLogic(me);
-		if (me->z == 0 || player.jetting)
-		{
-			Dampen(&me->dx, PLYR_DECEL);
-			Dampen(&me->dy, PLYR_DECEL);
-		}
+		case TRN_ICE:
+			if (me->z == 0 && !(player.hammerFlags & HMR_NOSKID))
+			{
+				if (!player.jetting && me->mind1)	// bumped a wall while on ice
+				{
+					if (me->mind1 & 1)
+						me->dx = -me->dx / 8;
+					if (me->mind1 & 2)
+						me->dy = -me->dy / 8;
+				}
+				if ((player.jetting || (me->z > 0 && player.vehicle == 0)) && me->mind1)
+					DoJetpackLogic(me);
+			}
+			break;
+		case TRN_RUBBER:
+			if (me->z == 0)
+			{
+				me->dz = 16 * FIXAMT;
+				me->dx += Cosine(me->facing * 32);
+				me->dy += Sine(me->facing * 32);
+				Clamp(&me->dx, PLYR_MAXSPD);
+				Clamp(&me->dy, PLYR_MAXSPD);
+				MakeSound(SND_BOING + Random(3), me->x, me->y, SND_CUTOFF | SND_RANDOM, 2);
+			}
+			break;
+		case TRN_LNCHUP:
+		case TRN_LNCHDN:
+		case TRN_LNCHLF:
+		case TRN_LNCHRG:
+			if (me->z == 0)
+			{
+				me->dz = 16 * FIXAMT;
+				if (terrainType == TRN_LNCHLF || terrainType == TRN_LNCHRG)
+				{
+					me->facing = (terrainType == TRN_LNCHLF ? 4 : 0);
+					me->dx = FIXAMT * (terrainType == TRN_LNCHLF ? -1 : 1) * 8;
+				}
+				if (terrainType == TRN_LNCHUP || terrainType == TRN_LNCHDN)
+				{
+					me->facing = (terrainType == TRN_LNCHUP ? 6 : 2);
+					me->dy = FIXAMT * (terrainType == TRN_LNCHUP ? -1 : 1) * 8;
+				}
+
+				BlowSmoke(me->x, me->y, 0, FIXAMT);
+				MakeSound(SND_BOMBBOOM, me->x, me->y, SND_CUTOFF | SND_RANDOM, 2); // get better sound
+				player.stunned = 15;
+			}
+			break;
+		default:
+			if ((player.jetting || (me->z > 0 && player.vehicle == 0)) && me->mind1)
+				DoJetpackLogic(me);
+
+			if (me->z == 0 || player.jetting)
+			{
+				Dampen(&me->dx, PLYR_DECEL);
+				Dampen(&me->dy, PLYR_DECEL);
+			}
+			break;
 	}
 
 	me->mind1=0;
@@ -1625,6 +1655,12 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		return;
 	}
 
+	if (player.stunned)
+	{
+		player.stunned--;
+		return;
+	}
+
 	// not busy, let's see if you want to do something
 	c=newControls;
 	if(!player.jetting)
@@ -1682,28 +1718,33 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 
 	if((c&CONTROL_B2) && player.wpnReload==0 && GetCurrentWeaponType())	// pushed wpn use button
 	{
-		if(GetCurrentWeaponType() ==WPN_TORCH)
+		switch (GetCurrentWeaponType())
 		{
-			if(GetCurrentWeaponAmmo())
-			{
-				ScoreEvent(SE_SHOOT,1);
-				MakeSound(SND_FLAMEGO,me->x,me->y,SND_CUTOFF,1200);
-				ReduceCurrentWeaponAmmo(1);
-				player.wpnReload=17;
-				player.torch=30;
-				if(!GetCurrentWeaponType() && !player.ammoCrate)
-					RemoveCurrentWeapon(); // todo
-			}
-		}
-		else
-		{
-			me->action=ACTION_BUSY;
-			me->seq=ANIM_A1;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=200;
-			player.boredom=0;
-			return;
+			default:
+				me->action = ACTION_BUSY;
+				me->seq = ANIM_A1;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 200;
+				player.boredom = 0;
+				return;
+			case WPN_TORCH:
+				if ((int)(player.torch + 60) > 255)
+				{
+					MakeSound(SND_TURRETBZZT, me->x, me->y, SND_CUTOFF, 1200);
+				}
+				else if (GetCurrentWeaponAmmo())
+				{
+					ScoreEvent(SE_SHOOT, 1);
+					MakeSound(SND_FLAMEGO, me->x, me->y, SND_CUTOFF, 1200);
+					ReduceCurrentWeaponAmmo(1);
+					player.wpnReload = 15;
+					player.torch += 60;
+					if (!GetCurrentWeaponType() && !player.ammoCrate)
+						RemoveCurrentWeapon(); // todo
+				}
+				player.boredom = 0;
+				break;
 		}
 	}
 	if(c&CONTROL_B2)

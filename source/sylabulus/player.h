@@ -131,6 +131,7 @@ struct player_t
 
 	bool pendingLeaderboardUpload;
 	byte spotted;
+	byte stunned;
 
 	int oxygen;
 	int comboClock;

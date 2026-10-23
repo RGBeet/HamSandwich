@@ -63,6 +63,7 @@ static const char terrainTypeNames[][16] = {
 	"Normal","Impassible","Ice","Mud","Water","Lava",
 	"Rubber","Quicksand","Conveyor (U)","Conveyor (D)","Conveyor (L)","Conveyor (R)",
 	"Pushable", "Can Push On", "Sky", "Cliff", "Stairs (L)", "Stairs (R)",
+	"Launchpad (U)","Launchpad (D)","Launchpad (L)","Launchpad (R)",
 };
 
 // singular
@@ -99,26 +100,32 @@ static void ArrowButtonClick(int id)
 	{
 		case 1:
 			world->terrain[selMin].type = (TerrainType)((world->terrain[selMin].type + NUM_TERRAIN_TYPES - 1) % NUM_TERRAIN_TYPES);
+			printf("Terrain type changed to %d\n", world->terrain[selMin].type);
 			break;
 
 		case 2:
 			world->terrain[selMin].type = (TerrainType)((world->terrain[selMin].type + 1) % NUM_TERRAIN_TYPES);
+			printf("Terrain type changed to %d\n", world->terrain[selMin].type);
 			break;
 
 		case 3:
 			world->terrain[selMin].change = (TerrainChange)((world->terrain[selMin].change + NUM_TRNCHANGE_TYPES - 1) % NUM_TRNCHANGE_TYPES);
+			printf("Terrain change changed to %d\n", world->terrain[selMin].change);
 			break;
 
 		case 4:
 			world->terrain[selMin].change = (TerrainChange)((world->terrain[selMin].change + 1) % NUM_TRNCHANGE_TYPES);
+			printf("Terrain change changed to %d\n", world->terrain[selMin].change);
 			break;
 
 		case 5:
 			world->terrain[selMin].restrict = (TerrainRestriction)((world->terrain[selMin].restrict + NUM_TRNRESTRICT_TYPES - 1) % NUM_TRNRESTRICT_TYPES);
+			printf("Terrain restriction changed to %d\n", world->terrain[selMin].restrict);
 			break;
 
 		case 6:
 			world->terrain[selMin].restrict = (TerrainRestriction)((world->terrain[selMin].restrict + 1) % NUM_TRNRESTRICT_TYPES);
+			printf("Terrain restriction changed to %d\n", world->terrain[selMin].restrict);
 			break;
 	}
 

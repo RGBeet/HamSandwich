@@ -41,7 +41,7 @@ void AI_Bonehead(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		{
 			x = me->x + Cosine(me->facing * 32) * 16;
 			y = me->y + Sine(me->facing * 32) * 16;
-			if(IsEntity(me,EntityType::Crazybone))
+			if(!IsEntity(me,EntityType::Crazybone))
 				FireBullet(x, y, me->facing * 32, BLT_ENERGY, me->friendly);
 			else
 				FireBullet(x, y, me->facing * 32, BLT_BIGSHELL, me->friendly);
@@ -49,7 +49,7 @@ void AI_Bonehead(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			me->mind1 = 1;
 		}
 		// crazybone: 1 in 6 revival chance
-		if (me->seq == ANIM_DIE && IsEntity(me, EntityType::Crazybone) && me->frm == 7 && Random(6) == 0)
+		if (me->seq == ANIM_DIE && IsEntity(me, EntityType::Crazybone) && me->frm == 7 && !Random(6))
 		{
 			// come back!
 			if (me->friendly != goodguy->friendly)
@@ -1611,11 +1611,12 @@ void AI_Umbrello(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			{
 				MakeSound(SND_UMBRELLOTAUNT, me->x, me->y, SND_CUTOFF, 1200);
 				me->action = ACTION_BUSY;
-				me->seq = ANIM_A1;	// muscles
+				me->seq = ANIM_A1;
 				me->frm = 0;
 				me->frmTimer = 0;
 				me->frmAdvance = 64;
 				me->mind = 1;
+				AddSpottedTimer(30*8);
 			}
 		}
 	}
@@ -1714,7 +1715,7 @@ void AI_Umbrello(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 void AI_NohMannComedy(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
-	int x, y;
+	int x, y, i;
 
 	if (me->reload)
 		me->reload--;
@@ -1730,12 +1731,39 @@ void AI_NohMannComedy(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 	if (me->action == ACTION_BUSY)
 	{
+		if (me->seq == ANIM_ATTACK && me->frm == 6 && me->frmTimer < 32)
+		{
+			if ((EntityType)me->aiType == EntityType::NohMannComedy)
+			{
+
+			}
+			else if ((EntityType)me->aiType == EntityType::NohMannTragedy)
+			{
+
+			}
+		}
+		if (me->seq == ANIM_A1 && me->frm == 6 && me->frmTimer < 32)
+		{
+			if ((EntityType)me->aiType == EntityType::NohMannComedy)
+			{
+
+			}
+			else if ((EntityType)me->aiType == EntityType::NohMannTragedy)
+			{
+
+			}
+		}
 		if (me->seq == ANIM_A2 && me->frm == 7 && me->frmTimer < 32)
 		{
-			if((EntityType)me->type == EntityType::NohMannComedy)
+			if ((EntityType)me->type == EntityType::NohMannComedy)
 				me->type = (short)EntityType::NohMannTragedy;
 			else if((EntityType)me->type == EntityType::NohMannTragedy)
 				me->type = (short)EntityType::NohMannComedy;
+
+			if ((EntityType)me->aiType == EntityType::NohMannComedy)
+				me->aiType = (short)EntityType::NohMannTragedy;
+			else if ((EntityType)me->aiType == EntityType::NohMannTragedy)
+				me->aiType = (short)EntityType::NohMannComedy;
 		}
 		if (me->seq == ANIM_DIE)
 		{
@@ -1786,68 +1814,49 @@ void AI_NohMannComedy(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		Clamp(&me->dx, FIXAMT * 8);
 		Clamp(&me->dy, FIXAMT * 6);
 
-		if (RangeToTarget(me, goodguy) > 160 * FIXAMT && !Random(256))
+		if (me->reload == 0 && RangeToTarget(me, goodguy) < 256 * FIXAMT)
 		{
-			MakeSound(SND_COUNTSUMMON, me->x, me->y, SND_CUTOFF, 1200);
-			me->action = ACTION_BUSY;
-			me->seq = ANIM_ATTACK;
-			me->frm = 0;
-			me->frmTimer = 0;
-			me->frmAdvance = 128;
-			me->mind1 = 60;
-			me->dx = 0;
-			me->dy = 0;
-			return;
-		}
+			i = Random(1024);
 
-		if (RangeToTarget(me, goodguy) > 160 * FIXAMT && !Random(256))
-		{
-			MakeSound(SND_ALIENSPIT, me->x, me->y, SND_CUTOFF, 1200);
-			me->action = ACTION_BUSY;
-			me->seq = ANIM_A1;
-			me->frm = 0;
-			me->frmTimer = 0;
-			me->frmAdvance = 128;
-			me->mind1 = 60;
-			me->dx = 0;
-			me->dy = 0;
-			return;
-		}
 
-		if (RangeToTarget(me, goodguy) > 160 * FIXAMT && !Random(256))
-		{
-			MakeSound(SND_ALIENSPIT, me->x, me->y, SND_CUTOFF, 1200);
-			me->action = ACTION_BUSY;
-			me->seq = ANIM_A1;
-			me->frm = 0;
-			me->frmTimer = 0;
-			me->frmAdvance = 128;
-			me->mind1 = 60;
-			me->dx = 0;
-			me->dy = 0;
-			return;
-		}
+			if (i < 20)
+			{
+				MakeSound(SND_COUNTDIE, me->x, me->y, SND_CUTOFF, 1200);
+				me->action = ACTION_BUSY;
+				me->seq = ANIM_A2;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 64;
+				return;
+			}
+			else if (i < 80)
+			{
+				MakeSound(SND_ALIENSPIT, me->x, me->y, SND_CUTOFF, 1200);
+				me->action = ACTION_BUSY;
+				me->seq = ANIM_ATTACK;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 64;
+				return;
+			}
+			else if (i < 140)
+			{
+				MakeSound(SND_ALIENSPIT, me->x, me->y, SND_CUTOFF, 1200);
+				me->action = ACTION_BUSY;
+				me->seq = ANIM_A1;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 64;
+				return;
+			}
 
-		if (!Random(512) && !me->mind1)
-		{
-			MakeSound(SND_COUNTDIE, me->x, me->y, SND_CUTOFF, 1200);
-			me->action = ACTION_BUSY;
-			me->seq = ANIM_A2;
-			me->frm = 0;
-			me->frmTimer = 0;
-			me->frmAdvance = 64;
-			me->mind1 = 60;
-			me->dx = 0;
-			me->dy = 0;
-			return;
-		}
-
-		if (me->seq != ANIM_MOVE)
-		{
-			me->seq = ANIM_MOVE;
-			me->frm = 0;
-			me->frmTimer = 0;
-			me->frmAdvance = 128;
+			if (me->seq != ANIM_MOVE)
+			{
+				me->seq = ANIM_MOVE;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 128;
+			}
 		}
 	}
 }
@@ -3307,6 +3316,117 @@ void AI_Kabocha(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 		me->dx = Cosine(me->facing * 32) * 2;
 		me->dy = Sine(me->facing * 32) * 2;
+		if (me->seq != ANIM_MOVE)
+		{
+			me->seq = ANIM_MOVE;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 128;
+		}
+	}
+}
+
+void AI_Pumpkin(Guy* me, Map* map, world_t* world, Guy* goodguy)
+{
+	if (me->reload)
+		me->reload--;
+
+	if (me->ouch == 4)
+	{
+		if (me->hp > 0)
+			MakeSound(SND_BUSHOUCH, me->x, me->y, SND_CUTOFF, 1200);
+		else
+			MakeSound(SND_PUMPKINDIE, me->x, me->y, SND_CUTOFF, 1200);
+	}
+
+	if (me->action == ACTION_BUSY)
+	{
+		if (me->seq == ANIM_DIE && !me->reload)
+		{
+			me->frmAdvance = 64;
+			if (IsEntity(me,EntityType::Boomkin) && me->frm == 3)
+				FireBullet(me->x, me->y, 0, BLT_BOOM, me->friendly);
+			ExplodeParticles(PART_HAMMER, me->x, me->y, me->z, 8);
+			me->reload = 2;
+		}
+		return;	// can't do nothin' right now
+	}
+
+	if (me->seq == ANIM_MOVE && me->frm == 2 && goodguy)	// hits on this frame
+	{
+		if (IsEntity(me, EntityType::Boomkin))
+		{
+			if (FindVictim(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 32, 0, 0, 0, map, world, me->friendly))
+			{
+				me->hp = 1;
+				me->GetShot(0, 0, 1, map, world);
+				return;
+			}
+		}
+		else
+		{
+			FindVictim(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 24, Cosine(me->facing * 32) * 4, Sine(me->facing * 32) * 4, 2, map, world, me->friendly);
+		}
+	}
+
+	if (me->mind == 0)	// not currently aware of goodguy
+	{
+		if (me->seq == ANIM_MOVE)
+		{
+			me->seq = ANIM_IDLE;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 32;
+		}
+
+		if (goodguy)
+		{
+			if (RangeToTarget(me, goodguy) < 256 * FIXAMT || me->ouch > 0)
+			{
+				// if the goodguy is near, or he shot me
+				me->mind = 1;	// start hunting
+				if (me->ouch == 0)
+					me->mind1 = 60;	// for 2 seconds minimum
+				else
+					me->mind1 = 120;	// 4 seconds, because they HATE getting shot
+				FaceGoodguy(me, goodguy);
+			}
+		}
+		me->dx = 0;
+		me->dy = 0;
+	}
+	else
+	{
+		FaceGoodguy(me, goodguy);
+		if (!goodguy)
+		{
+			me->mind = 0;	// go back to being bored, nothing to see here
+			me->mind1 = 0;
+			return;
+		}
+
+		if (me->mind1)
+			me->mind1--;
+		else
+		{
+			if (RangeToTarget(me, goodguy) > 256 * FIXAMT)
+				me->mind = 0;	// get bored again
+			else
+				me->mind1 = 20;	// stay on trail a little longer
+			return;
+		}
+
+		if (IsEntity(me, EntityType::Boomkin))
+		{
+			me->dx = Cosine(me->facing * 32) * 6;
+			me->dy = Sine(me->facing * 32) * 6;
+		}
+		else
+		{
+			me->dx = Cosine(me->facing * 32) * 2;
+			me->dy = Sine(me->facing * 32) * 2;
+		}
+
 		if (me->seq != ANIM_MOVE)
 		{
 			me->seq = ANIM_MOVE;

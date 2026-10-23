@@ -522,11 +522,6 @@ byte PlaySongLayer(int layer, const char* filename)
 
 	MusicLayer& music = musicLayers[layer];
 
-	if (music.audio)
-		printf("Loaded music layer %d: %s\n", layer, filename);
-	else
-		printf("FAILED loading music layer %d: %s\n", layer, filename);
-
 	// Stop old layer and detach old audio
 	if (music.track)
 	{
@@ -658,8 +653,8 @@ byte PlayLayeredSong(const char* files[MAX_MUSIC_LAYERS])
 		if (!files[i])
 			continue;
 		PlaySongLayer(i, files[i]);
-		musicLayers[i].volumeCurrent = musVolume;
-		musicLayers[i].volumeTarget	= musVolume;
+		musicLayers[i].volumeCurrent = (i>0) ? 0 : musVolume;
+		musicLayers[i].volumeTarget	= (i>0) ? 0 : musVolume;
 	}
 	return 1;
 }

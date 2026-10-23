@@ -8,7 +8,7 @@ MonsterType monsType[NUM_MONSTERS]=
 	{
 		{"Null",255,255,0,NULL,
 		 0,0,0,0,"",0,{},MT_NONE,{},0},
-		{"Bouapha",255,255,0,NULL,
+		{"Bouapha",1,4,0,NULL,
 		 11,42,128,0,"graphics/bouapha.jsp",0,MF_WATERWALK,
 		 MT_GOOD | MT_HUMAN,
 			{
@@ -233,7 +233,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Pumpkin",255,255,0,AI_Pumpkin,
-		 10,16,10,500,"graphics/pumpkin.jsp",0,{},
+		 10,20,5,500,"graphics/pumpkin.jsp",0,{},
 		 MT_EVIL | MT_PUMPKIN | MT_VEGGIE,
 			{
 				{0,255},	// idle
@@ -336,7 +336,7 @@ MonsterType monsType[NUM_MONSTERS]=
 			{
 				{0,255},										// idle
 				{0,1,2,3,4,5,6,7,255},							// move
-				{8,9,10,11,11,11,12,13,14,15,255},				// attack 1
+				{8,9,10,11,11,12,12,13,14,15,255},				// attack 1
 				{36,37,38,39,40,41,42,43,44,45,46,47,255},		// defeated
 				{16,17,18,19,20,20,21,22,23,255},				// attack 2
 				{25,26,27,28,29,30,31,32,32,32,33,34,35,255},	// transition form
@@ -597,13 +597,13 @@ MonsterType monsType[NUM_MONSTERS]=
 				{3,4,5,6,7,8,9,10,255},	// A1=summon
 			},0},
 		{"Boomkin",2,4,5,AI_Pumpkin,
-		 11,6,1,500,"!17",0,{},
+		 10,20,5,500,"!17",0,{},
 		 MT_EVIL | MT_VEGGIE | MT_PUMPKIN,
 			{
 				{0,255},	// idle
 				{1,2,3,4,5,0,255},	// move
-				{0,255},	// attack unused
-				{0,0,255},	// die (just long enough to spew shrapnel)
+				{5,6,7,8,9,9,8,7,0,255},	// move
+				{16,17,18,19,255},	// die (just long enough to spew shrapnel)
 				{1,2,3,4,5,0,255},	// move
 				{1,2,3,4,5,0,255},	// move
 				{1,2,3,4,5,0,255},	// move
@@ -653,7 +653,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Madkap",1,4,0,AI_Kappa, // not yet implemented
-		 8,38,10,50,"!9",0,{},
+		 10,56,30,50,"!9",0,{},
 		 MT_EVIL | MT_ANIMAL,
 			{
 				{0,255},	// idle
@@ -667,7 +667,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Purple Kaptana",1,7,0,AI_Kappa, // not yet implemented
-		 8,38,10,50,"!9",0,{},
+		 10,56,30,50,"!9",0,{},
 		 MT_EVIL | MT_ANIMAL,
 			{
 				{0,255},	// idle
@@ -962,15 +962,15 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Mailboxer",255,255,0,AI_Mailboxer,
-		 12,32,40,1000,"graphics/mboxer.jsp",0,{},
+		 12,40,40,1000,"graphics/mboxer.jsp",0,{},
 		 MT_EVIL | MT_URBAN,
 			{
-				{0,1,2,3,2,1,0,4,5,6,5,4,255},	// idle
-				{21,22,21,0,23,24,23,0,255},	// move
-				{7,8,9,10,11,12,13,255},	// attack
-				{25,26,27,28,29,30,31,254,31,254,31,254,31,254,31,254,31,255},	// die
-				{14,14,15,15,16,16,17,17,18,19,20,255},	// A1=punch2
-				NULL_ANIM,
+				{0,255},									// idle
+				{0,1,2,3,2,1,0,4,5,6,7,6,5,4,255},			// move
+				{8,9,10,11,12,13,14,15,255},				// attack
+				{32,33,34,35,36,37,38,39,254,39,254,39,254,39,254,39,254,39,255},	// die
+				{8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,255},			// 2 punch
+				{24,25,26,27,28,29,30,31,255},		// uppercut
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,

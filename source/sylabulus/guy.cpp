@@ -915,6 +915,8 @@ void Guy::Update(Map *map,world_t *world)
 			player.collectFrms--;
 		if (player.ouchFrms)
 			player.ouchFrms--;
+		if (player.spotted)
+			player.spotted--;
 		if((map->lighting == MAP_LIGHT_TORCH) || player.spotted)
 		{
 			if(player.spotted)
@@ -1345,7 +1347,7 @@ void Guy::GetShot(int dx,int dy,word damage,Map *map,world_t *world, bool bypass
 			if(player.combo==0 || player.comboClock==0)
 			{
 				player.combo=1;
-				player.comboClock=60;
+				player.comboClock=120;
 				SetMusicLayerTarget(1,0);
 			}
 			else
@@ -1361,7 +1363,17 @@ void Guy::GetShot(int dx,int dy,word damage,Map *map,world_t *world, bool bypass
 					SetMusicLayerTarget(1, 255);
 				}
 
-				player.comboClock=60;
+				int bonus = round(this->maxHP / 2);
+
+				if (player.comboClock < 90)
+					player.comboClock = 90;
+				if (bonus < 15)
+					bonus += 15;
+				else if (bonus > 300)
+					player.comboClock += 300;
+				else
+					player.comboClock += bonus;
+
 				if(player.combo>player.bestCombo)
 					player.bestCombo=player.combo;
 			}
@@ -2881,6 +2893,14 @@ byte StealthyCheck(Guy* goodguy)
 		return 0;
 }
 
+void AddSpottedTimer(int b)
+{
+	if ((int)player.spotted + b > 255)
+		player.spotted = 255;
+	else
+		player.spotted += (byte)b;
+}
+
 // is the good guy in sight?!
 byte GoodguyInSight(Guy* me, Guy* goodguy, byte facing)
 {
@@ -3389,9 +3409,23 @@ byte Guy::IsAwake(void)
 		return 0;	// monsters with no target are asleep
 	switch((EntityType)aiType)
 	{
+		// these guys wake up when you get close to them
 		case EntityType::Mumble:
 		case EntityType::ManicMumble:
-			return (mind == 1);
+		case EntityType::Umbrello:
+		case EntityType::Pumpkin:
+		case EntityType::Kabocha:
+		case EntityType::EyeballTree:
+		case EntityType::HappyStickNinja:
+		case EntityType::Squash:
+		case EntityType::SharkChest:
+		case EntityType::MushKing:
+		case EntityType::NohMannComedy:
+		case EntityType::NohMannTragedy:
+			return (mind > 0);
+		case EntityType::Bombie:
+			return (seq == ANIM_A1); // bombie is doing the funny
+		// this but for bunny
 		case EntityType::BunnyFollow:
 			return (mind == 1);
 		default:

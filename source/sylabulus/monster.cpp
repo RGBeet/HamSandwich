@@ -250,6 +250,18 @@ const sprite_t* GetMonsterSprite2(dword type, byte seq, byte frm, byte facing)
 	// load if not loaded
 	LoadMySprite(type);
 
+	v = monsType[type].anim[seq][frm];
+
+
+
+	switch (type)
+	{
+	case 1:
+	case 58:
+		v += 8 * monsType[type].framesPerDir;
+		break;
+	}
+
 	return monsType[type].spr->GetSprite(v);
 }
 
@@ -291,16 +303,17 @@ const sprite_t *GetMonsterSprite(Guy *me)
 	if(!(monsType[type].flags&MF_ONEFACE))
 		v+= me->facing*monsType[type].framesPerDir;
 
-	if(type==MONS_BOUAPHA)
+	if ((EntityType)type == EntityType::Player && PlayerHasHammer())
 	{
-		//if(PlayerHasHammer())
-		//	v+=8*monsType[type].framesPerDir;
+		v+=8*monsType[type].framesPerDir;
 	}
-	//if(type==MONS_EVILCLONE)
-		//v+=8*monsType[type].framesPerDir;
 
-	if ((EntityType)type == EntityType::Kaptana && me->mind2)
-		v += 23;
+	switch (EntityType(type))
+	{
+		case EntityType::EvilBouapha:
+			v += 8 * monsType[type].framesPerDir;
+			break;
+	}
 
 	if(monsType[type].flags&MF_FACECMD)
 		v+=me->facing;
@@ -357,19 +370,38 @@ void DrawMe(Guy* g, const sprite_set_t* set) {
 	if (v == FRAME_INVIS || v == FRAME_END) // 255 = end of frame
 		return;	// don't draw this frame
 
+	switch (EntityType(type))
+	{
+	case EntityType::Kaptana:
+		if (g->mind2 && g->seq != ANIM_DIE)
+			v += 24; // special case for Kaptana when mind == 3
+		break;
+	case EntityType::Umbrello:
+		if (v < 8 && g->mind > 0)
+		{
+			v = 8;
+		}
+		break;
+	case EntityType::EvilBouapha:
+		v += 8 * monsType[type].framesPerDir;
+		break;
+	}
+
+	// eight directions
 	if (!(monsType[g->type].flags & MF_ONEFACE))
 		v += g->facing * monsType[type].framesPerDir;
-
-
-	//if ((type == MONS_BOUAPHA && PlayerHasHammer()) || type == MONS_EVILCLONE) // hammer man uses hammer sprites
-	//	v += 8 * monsType[type].framesPerDir;
 
 	int x = g->x >> FIXSHIFT;
 	int y = g->y >> FIXSHIFT;
 	int z = g->z >> FIXSHIFT;
 
-	if (g->type == MONS_BOUAPHA) // do player stuff
+	if ((EntityType)g->type == EntityType::Player) // do player stuff
 	{
+		if (PlayerHasHammer())
+		{
+			v += 8 * monsType[type].framesPerDir;
+		}
+
 		// energy shield
 		shld = PlayerShield();
 		if (shld > 0 && (shld > 16 || shld % 2 != 0))
@@ -408,21 +440,6 @@ void DrawMe(Guy* g, const sprite_set_t* set) {
 
 	if (monsType[type].flags&MF_FACECMD) // used for one-directional monsters
 		v += g->facing;
-
-
-	switch (EntityType(type))
-	{
-		case EntityType::Kaptana:
-			if (g->mind2 && g->seq != ANIM_DIE)
-				v += 24; // special case for Kaptana when mind == 3
-			break;
-		case EntityType::Umbrello:
-			if (v == 0 && g->mind > 0)
-				v = 8;
-			break;
-	}
-
-
 
 	curSpr = set->GetSprite(v);
 
@@ -541,8 +558,9 @@ void MonsterDraw(
 
 	if(isBouapha)
 	{
-		//if(type==MONS_BOUAPHA && PlayerHasHammer())
-		//	v+=8*monsType[type].framesPerDir;
+		if(type == 1 && PlayerHasHammer())
+			v+=8*monsType[type].framesPerDir;
+
 		shld=PlayerShield();
 		if((shld<16) && (shld&2))	// it blinks when there is 1/2 second left
 			shld=0;
@@ -561,8 +579,13 @@ void MonsterDraw(
 		}
 	}
 
-	if(type==MONS_EVILCLONE)
-		v+=8*monsType[type].framesPerDir;
+	switch (type)
+	{
+		case 1:
+		case 58:
+			v += 8*monsType[type].framesPerDir;
+			break;
+	}
 
 	if(monsType[type].flags&MF_FACECMD)
 		v+=facing;
