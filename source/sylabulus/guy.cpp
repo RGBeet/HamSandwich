@@ -654,7 +654,7 @@ void Guy::Update(Map *map,world_t *world)
 	{
 		if((EntityType)aiType!=EntityType::Player)
 			player.vehicle=0;
-		parent=NULL;	// disparentize!
+		SetParent(this,NULL);
 	}
 
 	oldmapx=mapx;
@@ -2013,6 +2013,10 @@ Guy *FindVictim(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t
 			{
 				switch((EntityType)guys[i].aiType)
 				{
+					case EntityType::OilDrum:
+						if(guys[i].mind!=1 && damage > 0)
+							guys[i].GetShot(dx, dy, damage, map, world);
+						break;
 					case EntityType::Kaptana:
 					case EntityType::Madkap:
 						if (guys[i].mind2)
@@ -2299,7 +2303,7 @@ byte RaftNearby(void)
 			{
 				guys[i].mind=1;
 				player.vehicle=VE_RAFT;
-				goodguy->parent=&guys[i];
+				SetParent(goodguy, &guys[i]);
 				goodguy->z=FIXAMT*8;
 				guys[i].mind1=0;	// acceleration
 
@@ -2622,7 +2626,7 @@ void KillMonster(int x,int y,int type,byte nofx)
 			|| (guys[i].aiType == MONS_YUGO && guys[i].mind == 2))
 		{
 			player.vehicle = VE_NONE;	// player was riding it
-			goodguy->parent = NULL;
+			SetParent(goodguy, NULL);
 		}
 
 		guys[i].type=MONS_NONE;
@@ -3824,4 +3828,15 @@ void WakeUpGuys(Guy *g,int x, int y, byte size, Map* map, world_t* world, byte f
 		guys[i].action = ACTION_WAKING; // they're waking up!!
 		printf("Woke up a guy!\n");
 	}
+}
+
+void SetParent(Guy* g, Guy* parent)
+{
+	if (!g)
+	{
+		printf("SetParent: g is NULL!!\n");
+		return;
+	}
+	g->parent = parent;
+	printf("Set parent of guy %d to %d\n", g->ID, parent ? parent->ID : -1);
 }

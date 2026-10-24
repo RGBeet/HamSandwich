@@ -377,10 +377,12 @@ void DrawMe(Guy* g, const sprite_set_t* set) {
 			v += 24; // special case for Kaptana when mind == 3
 		break;
 	case EntityType::Umbrello:
-		if (v < 8 && g->mind > 0)
-		{
+		if (v == 0 && g->mind > 0)
 			v = 8;
-		}
+		break;
+	case EntityType::OilDrum:
+		if (v == 0 && g->mind > 1)
+			v = 6;
 		break;
 	case EntityType::EvilBouapha:
 		v += 8 * monsType[type].framesPerDir;

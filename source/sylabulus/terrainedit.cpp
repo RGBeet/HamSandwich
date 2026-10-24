@@ -127,6 +127,16 @@ static void ArrowButtonClick(int id)
 			world->terrain[selMin].restrict = (TerrainRestriction)((world->terrain[selMin].restrict + 1) % NUM_TRNRESTRICT_TYPES);
 			printf("Terrain restriction changed to %d\n", world->terrain[selMin].restrict);
 			break;
+
+		case 7:
+			world->terrain[selMin].pathType = (TerrainPathType)((world->terrain[selMin].pathType + NUM_TRNPATH_TYPES - 1) % NUM_TRNPATH_TYPES);
+			printf("Terrain path type changed to %d\n", world->terrain[selMin].pathType);
+			break;
+
+		case 8:
+			world->terrain[selMin].pathType = (TerrainPathType)((world->terrain[selMin].pathType + 1) % NUM_TRNPATH_TYPES);
+			printf("Terrain path type changed to %d\n", world->terrain[selMin].pathType);
+			break;
 	}
 
 	for (i = selMin+1;i <= selMax;i++)
@@ -143,6 +153,10 @@ static void ArrowButtonClick(int id)
 			case 5:
 			case 6:
 				world->terrain[i].restrict = (TerrainRestriction)(world->terrain[selMin].restrict);
+				break;
+			case 7:
+			case 8:
+				world->terrain[i].pathType = (TerrainPathType)(world->terrain[selMin].pathType);
 				break;
 		}
 	MakeNormalSound(SND_MENUCLICK);
@@ -428,10 +442,13 @@ void TerrainSetupButtons(void)
 	MakeButton(BTN_NORMAL, 5, 0, 4, 340, 19, 17, "<<", ArrowButtonClick);
 	MakeButton(BTN_NORMAL, 6, 0, 115, 340, 19, 17, ">>", ArrowButtonClick);
 
-	MakeButton(BTN_CHECK, 10, 0, 4, 360, 128, 15, "Trasparent", FlagClick);
-	MakeButton(BTN_CHECK, 11, 0, 4, 376, 128, 15, "Shadowless/Fancy", FlagClick);
-	MakeButton(BTN_CHECK, 12, 0, 4, 392, 128, 15, "Minecart Path", FlagClick);
-	MakeButton(BTN_CHECK, 13, 0, 4, 408, 128, 15, "Friendly Path", FlagClick);
+	MakeButton(BTN_NORMAL, 7, 0, 4, 360, 19, 17, "<<", ArrowButtonClick);
+	MakeButton(BTN_NORMAL, 8, 0, 115, 360, 19, 17, ">>", ArrowButtonClick);
+
+	MakeButton(BTN_CHECK, 10, 0, 4, 380, 128, 15, "Trasparent", FlagClick);
+	MakeButton(BTN_CHECK, 11, 0, 4, 396, 128, 15, "Shadowless/Fancy", FlagClick);
+	//MakeButton(BTN_CHECK, 12, 0, 4, 412, 128, 15, "Minecart Path", FlagClick);
+	//MakeButton(BTN_CHECK, 13, 0, 4, 408, 128, 15, "Friendly Path", FlagClick);
 
 	// next tile button
 	MakeButton(BTN_NORMAL,20,0,200,245,TILE_WIDTH+3,TILE_HEIGHT+3,"",NextTileClick);
@@ -1063,6 +1080,7 @@ void TerrainEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 	CenterPrint(70,304,terrainTypeNames[world->terrain[selection].type],0,1);
 	CenterPrint(70,324,terrainChangeNames[world->terrain[selection].change],0,1);
 	CenterPrint(70,344,terrainRestrictNames[world->terrain[selection].restrict],0,1);
+	CenterPrint(70,364,terrainPathNames[world->terrain[selection].pathType],0,1);
 
 	sprintf(txt,"Tile #%03d",tileNum);
 	Print(570,262,txt,0,1);

@@ -1426,7 +1426,7 @@ void AI_BabyThing(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			me->y += 15 * FIXAMT;
 			break;
 		case 8:
-			me->parent = NULL;	// I am free!
+			SetParent(me, NULL);
 			if (me->hp > 0)
 			{
 				me->seq = ANIM_MOVE;
@@ -2240,7 +2240,7 @@ void AI_TheThing(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			g = AddBaby(me->x, me->y, 0, MONS_BABYTHING, me);
 			if (g)
 			{
-				g->parent = me;
+				SetParent(g, me);
 				g->seq = ANIM_A1;	// take a nap
 				g->frm = 0;
 				g->frmTimer = 0;
@@ -2485,7 +2485,7 @@ void AI_SuperZombie(Guy* me, Map* map, world_t* world, Guy* goodguy)
 				me->frmAdvance = 64;
 				me->action = ACTION_BUSY;
 				me->reload = 100;	// to prevent multigrabs
-				goodguy->parent = me;
+				SetParent(goodguy, me);
 				goodguy->facing = (me->facing + 4) & 7;
 				pickupX = goodguy->x;
 				pickupY = goodguy->y;
@@ -3671,7 +3671,7 @@ void AI_MagicLamp(Guy* me, Map* map, world_t* world, Guy* goodguy)
 				g->frmTimer = 0;
 				g->frmAdvance = 64;
 				g->action = ACTION_BUSY;
-				g->parent = me;
+				SetParent(g, me);
 			}
 			me->reload = 200;
 		}

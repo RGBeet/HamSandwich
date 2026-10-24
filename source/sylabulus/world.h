@@ -63,11 +63,13 @@ enum TerrainRestriction : byte
 	NUM_TRNRESTRICT_TYPES
 };
 
-enum TerrainPathType : word
+enum TerrainPathType : byte
 {
-	TRN_MINECART	= 1 << 0,
-	TRN_BUNNY		= 1 << 1,
-	TRN_DRIVE		= 1 << 2,
+	TRN_MINECART,	// minecart
+	TRN_BUNNY,		// bunny
+	TRN_DRIVE,		// bunny + minecart
+	TRN_IDK,		// ???
+	NUM_TRNPATH_TYPES
 };
 
 

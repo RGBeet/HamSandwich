@@ -2302,12 +2302,23 @@ void AI_Yugo(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		goodguy->dz = me->dz;
 		goodguy->z = me->z;
 
-		if (me->seq != ANIM_MOVE)
+		if (me->mind3 == 120 || goodguy->seq == ANIM_ATTACK)
 		{
-			me->seq = ANIM_MOVE;
-			me->frm = 0;
-			me->frmTimer = 0;
+			if (me->seq != ANIM_ATTACK)
+			{
+				me->seq			= ANIM_ATTACK;
+				me->frm			= 0;
+				me->frmTimer	= 0;
+				me->frmAdvance	= 128;
+			}
 		}
+		else if (me->seq != ANIM_MOVE && me->action != ACTION_BUSY)
+		{
+			me->seq			= ANIM_MOVE;
+			me->frm			= 0;
+			me->frmTimer	= 0;
+		}
+
 		if (me->seq == ANIM_MOVE)
 			me->frmAdvance = (abs(me->dx) + abs(me->dy)) * 512 / (FIXAMT * 18);
 	}

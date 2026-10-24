@@ -98,7 +98,7 @@ void AI_MineCart(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			noiseLoop = 0;
 			me->mind = 1;
 			player.vehicle = VE_MINECART;
-			goodguy->parent = me;
+			SetParent(goodguy, me);
 			goodguy->x = me->x;
 			goodguy->y = me->y + 1;
 			goodguy->z = FIXAMT * 8;
@@ -158,7 +158,7 @@ void AI_MineCart(Guy* me, Map* map, world_t* world, Guy* goodguy)
 				goodguy->dx = 0;
 				goodguy->dy = 0;
 				player.vehicle = 0;
-				goodguy->parent = NULL;
+				SetParent(goodguy,NULL);
 				goodguy->x = me->x;
 				goodguy->y = me->y;
 				me->frm = 0;

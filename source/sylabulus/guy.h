@@ -205,5 +205,6 @@ byte TerrainCheck(Guy* g,byte target,mapTile_t *mapTile,world_t *world);
 byte ConveyorCheck(Guy* g, mapTile_t* mapTile, world_t* world);
 void WakeUpGuys(Guy* g, int x, int y, byte size, Map* map, world_t* world, byte friendly);
 void AddSpottedTimer(int frames);
+void SetParent(Guy* g, Guy* parent);
 
 #endif

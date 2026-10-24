@@ -3567,3 +3567,280 @@ void AI_Oven(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			20 * FIXAMT, Random(8) * FIXAMT + FIXAMT);
 	}
 }
+
+void AI_DullDrum(Guy* me, Map* map, world_t* world, Guy* goodguy)
+{
+	int x, y, ang;
+
+	// mind1=exact facing for shooting
+	// mind=timer to wake up
+	if (me->reload)
+		me->reload--;
+
+	if (me->ouch == 4)
+	{
+		if (me->hp > 0)
+			MakeSound(SND_SKELOUCH, me->x, me->y, SND_CUTOFF, 1200);
+		else
+			MakeSound(SND_SKELDIE, me->x, me->y, SND_CUTOFF, 1200);
+	}
+
+	if (me->action == ACTION_BUSY)
+	{
+		if (me->seq == ANIM_ATTACK && me->frm >= 2 && me->frm <= 5 && me->reload == 0)
+		{
+			ang = (me->facing * 32 - 40 + (20 * (me->frm - 2))) & 255;
+			x = me->x + Cosine(ang) * 16;
+			y = me->y + Sine(ang) * 16;
+			FireBullet(x, y, ang, BLT_ACID, me->friendly);
+			me->reload = 2;
+		}
+		return;	// can't do nothin' right now
+	}
+
+	if (me->mind == 0) // asleep
+	{
+		if ((me->ouch || RangeToTarget(me, goodguy) < 256 * FIXAMT) && !me->reload)
+		{
+			MakeSound(SND_SKELALIVE, me->x, me->y, SND_CUTOFF, 1200);
+			me->seq = ANIM_A1;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 96;
+			me->action = ACTION_BUSY;
+			me->dx = 0;
+			me->dy = 0;
+			me->reload = 0;
+			me->mind = 2;
+			return;
+		}
+	}
+	else if (me->mind == 1)
+	{
+		if (RangeToTarget(me, goodguy) < 256 * FIXAMT && !Random(128) && !me->reload)
+		{
+			MakeSound(SND_SKELALIVE, me->x, me->y, SND_CUTOFF, 1200);
+			me->seq = ANIM_A1;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 96;
+			me->action = ACTION_BUSY;
+			me->dx = 0;
+			me->dy = 0;
+			me->reload = 0;
+			me->mind = 2;
+			return;
+		}
+	}
+	else if (me->mind == 2) // awake, mad at you
+	{
+		if (goodguy)
+		{
+			if (RangeToTarget(me, goodguy) < (256 * FIXAMT) && !Random(16))
+			{
+				// get him!
+				FaceGoodguy(me, goodguy);
+				me->seq = ANIM_ATTACK;
+				MakeSound(SND_SKELSHOOT, me->x, me->y, SND_CUTOFF, 1200);
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 128;
+				me->action = ACTION_BUSY;
+				me->dx = 0;
+				me->dy = 0;
+				me->reload = 0;
+				return;
+			}
+			else
+			{
+				FaceGoodguy(me, goodguy);
+			}
+
+			if (RangeToTarget(me, goodguy) > (256 * FIXAMT) && !Random(256))
+			{
+				me->seq = ANIM_A2;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 128;
+				me->action = ACTION_BUSY;
+				me->dx = 0;
+				me->dy = 0;
+				me->reload = 0;
+				me->mind = 1;
+				return;	// go back into your shell, you can't reach him
+			}
+		}
+		else
+		{
+			me->seq = ANIM_A2;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 128;
+			me->action = ACTION_BUSY;
+			me->dx = 0;
+			me->dy = 0;
+			me->reload = 0;
+			me->mind = 1;
+			return;	// go back into your shell, you can't reach him
+		}
+		if (me->seq != ANIM_MOVE)
+		{
+			me->seq = ANIM_MOVE;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 128;
+		}
+	}
+}
+
+void AI_Bodzha(Guy* me, Map* map, world_t* world, Guy* goodguy)
+{
+	int x, y, ang;
+
+	if (me->action == ACTION_BUSY)
+	{
+		if (me->seq == ANIM_DIE && me->frm == 3)
+			me->frmAdvance = 256;
+
+		if (me->seq == ANIM_ATTACK && me->frm == 2 && me->reload == 0)
+		{
+			x = me->x + Cosine(me->facing * 32) * 16;
+			y = me->y + Sine(me->facing * 32) * 16;
+
+			// ???
+
+			me->reload = 30;
+		}
+
+		if (me->seq == ANIM_A1)	// burrowing
+		{
+			if (me->frm == 7)
+			{
+				DoMove(me, ANIM_A3, 16, 0, 0, 0); //invis
+				me->mind2 = 1;
+				return;
+			}
+			else if (me->frm >= 2)
+				me->facing = (me->facing + 1) & 7;
+		}
+
+		if (me->seq == ANIM_A2)	// popping up
+		{
+			if (me->frm == 7)
+			{
+				DoMove(me, ANIM_MOVE, 128, 0, 0, 0);
+				me->mind2 = 0;
+				return;
+			}
+			else if (me->frm < 8)
+				me->facing = (me->facing + 1) & 7;
+
+			if (me->frm == 2 && !me->reload)
+			{
+				me->reload = 30;
+			}
+		}
+		return;
+	}
+
+	if (me->mind2 == 1)
+	{
+		ExplodeParticles2(PART_DIRT, me->x, me->y, 0, 5, 6);
+		DoMove(me, ANIM_A3, 16, 0, me->dx, me->dy);
+		if (map->CheckLOS(me->mapx, me->mapy, 3, goodguy->mapx, goodguy->mapy) || !Random(200) || me->ouch)
+		{
+			DoMove(me, ANIM_A2, 128, 1, 0, 0);	// come up if close or bored
+			MakeSound(SND_CRAZYSPIN, me->x, me->y, SND_CUTOFF | SND_RANDOM, 1200);
+		}
+	}
+	else
+	{
+		if (me->mind == 0)		// when mind=0, singlemindedly lumber towards Bouapha
+		{
+			if (RangeToTarget(me, goodguy) < (512 * FIXAMT) && Random(32) == 0)
+			{
+				// spit at him
+				MakeSound(SND_HAMMERTOSS, me->x, me->y, SND_CUTOFF, 1200);
+				me->seq = ANIM_ATTACK;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 128;
+				me->action = ACTION_BUSY;
+				me->dx = 0;
+				me->dy = 0;
+				me->reload = 0;
+				FaceGoodguy(me, goodguy);
+				return;
+			}
+			FaceGoodguy(me, goodguy);
+
+			me->dx = Cosine(me->facing * 32) * 5;
+			me->dy = Sine(me->facing * 32) * 5;
+			if (me->seq != ANIM_MOVE)
+			{
+				me->seq = ANIM_MOVE;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 128;
+			}
+			if (Random(64) == 0)
+			{
+				me->mind = 1;		// occasionally wander
+				me->mind1 = 1;
+			}
+		}
+		else if (me->mind == 1)	// random wandering
+		{
+			if (RangeToTarget(me, goodguy) < (64 * FIXAMT) && !Random(8))
+			{
+				// spit at him
+				MakeSound(SND_HAMMERTOSS, me->x, me->y, SND_CUTOFF, 1200);
+				me->seq = ANIM_ATTACK;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 128;
+				me->action = ACTION_BUSY;
+				me->dx = 0;
+				me->dy = 0;
+				me->reload = 0;
+				FaceGoodguy(me, goodguy);
+				return;
+			}
+
+			if (RangeToTarget(me, goodguy) > (128 * FIXAMT) && !Random(20))
+			{
+				// spit at him
+				MakeSound(SND_HAMMERTOSS, me->x, me->y, SND_CUTOFF, 1200);
+				me->seq = ANIM_A1;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 128;
+				me->action = ACTION_BUSY;
+				me->dx = 0;
+				me->dy = 0;
+				me->reload = 0;
+				FaceGoodguy(me, goodguy);
+				return;
+			}
+
+			if (!(me->mind1--))	// time to get a new direction
+			{
+				if ((goodguy) && Random(3) == 0)
+					me->mind = 0;	// get back on track
+				else
+					me->facing = (byte)Random(8);
+				me->mind1 = Random(40) + 1;
+			}
+
+			me->dx = Cosine(me->facing * 32) * 5;
+			me->dy = Sine(me->facing * 32) * 5;
+			if (me->seq != ANIM_MOVE)
+			{
+				me->seq = ANIM_MOVE;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 128;
+			}
+		}
+	}
+}

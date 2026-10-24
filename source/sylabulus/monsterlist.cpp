@@ -864,13 +864,13 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,0,0,255}, // die
 			},0},
 		{"You-Go",255,255,0,AI_Yugo,
-		 14,16,5,1000,"graphics/yugo.jsp",0,MF_NOMOVE | MF_NOHIT | MF_INVINCIBLE | MF_FREEWALK | MF_WATERWALK,
+		 14,24,5,1000,"graphics/yugo.jsp",0,MF_NOMOVE | MF_NOHIT | MF_INVINCIBLE | MF_FREEWALK | MF_WATERWALK,
 		 MT_VEHICLE | MT_GOOD,
 			{
-				{0,255},	// idle
+				{0,255},						// idle
 				{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,255},	// move
-				{0,255},	// attack
-				{0,0,0,255},	// die
+				{16,17,18,19,20,21,22,23,255},	// attack
+				{16,17,18,17,16,255},			// die
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
@@ -920,13 +920,13 @@ MonsterType monsType[NUM_MONSTERS]=
 				{8,9,10,9,8,255},	// attack=poke
 			},0},
 		{"Autozoid",255,255,0,AI_Autozoid,
-		 15,16,150,1000,"graphics/autozoid.jsp",0,{},
+		 15,24,150,1000,"graphics/autozoid.jsp",0,{},
 		 MT_EVIL | MT_ZOID | MT_URBAN | MT_VEHICLE,
 			{
-				{0,255},	// idle
+				{0,255},						// idle
 				{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,255},	// move
-				{0,255},	// attack
-				{0,0,0,255},	// die
+				{16,17,18,19,20,21,22,23,255},	// attack
+				{16,17,18,17,16,255},			// die
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
@@ -934,13 +934,13 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Parked Car",4,3,0,AI_ParkedCar,
-		 15,16,15,1000,"!63",0,MF_NOMOVE,
+		 15,24,15,1000,"!62",0,MF_NOMOVE,
 		 MT_VEHICLE | MT_TRAP | MT_URBAN,
 			{
-				{0,255},	// idle
+				{0,255},						// idle
 				{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,255},	// move
-				{0,255},	// attack
-				{0,0,0,255},	// die
+				{16,17,18,19,20,21,22,23,255},	// attack
+				{16,17,18,17,16,255},			// die
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
@@ -948,13 +948,13 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Traffic",4,6,0,AI_Traffic,
-		 11,16,200,1000,"!63",0,MF_NOMOVE | MF_WALLWALK,
+		 11,24,200,1000,"!62",0,MF_NOMOVE | MF_WALLWALK,
 		 MT_VEHICLE | MT_TRAP | MT_EVIL | MT_URBAN,
 			{
-				{0,255},	// idle
+				{0,255},						// idle
 				{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,255},	// move
-				{0,255},	// attack
-				{0,0,0,255},	// die
+				{16,17,18,19,20,21,22,23,255},	// attack
+				{16,17,18,17,16,255},			// die
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
@@ -1003,31 +1003,31 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Dull Drum",255,255,0,NULL, // not yet implemented
-		 8,38,10,50,"graphics/oildrum.jsp",0,{},
+		{"Dull Drum",255,255,0,AI_DullDrum, // not yet implemented
+		 18,28,80,50,"graphics/dulldrum.jsp",0,MF_NOMOVE,
 		 MT_EVIL | MT_URBAN,
 			{
-				{0,255},	// idle
-				{0,255},	// move
-				{0,255},	// attack 1
-				{0,255},	// defeated
-				NULL_ANIM,
-				NULL_ANIM,
+				{0,255},								// idle (asleep)
+				{6,7,8,9,8,7,255},						// animated
+				{10,11,12,13,14,15,16,17,18,19,255},					// attack
+				{20,21,22,23,24,25,26,27,0,254,0,254,0,255},			// defeated
+				{1,2,3,4,5,255},										// wake up
+				{5,4,3,2,1,255},										// wake up
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Bodzha",255,255,0,NULL, // not yet implemented
-		 8,38,10,50,"graphics/bodzha.jsp",0,{},
+		{"Bodzha",255,255,0,AI_Bodzha, // not yet implemented
+		 14,36,40,50,"graphics/badger.jsp",0,{},
 		 MT_EVIL | MT_ANIMAL,
 			{
-				{0,255},	// idle
-				{0,255},	// move
-				{0,255},	// attack 1
-				{0,255},	// defeated
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
+				{0,255},						// idle
+				{1,2,3,2,1,0,4,5,6,5,4,255},	// move
+				{7,8,9,10,11,12,13,14,255},		// swipe
+				{15,16,17,18,19,255},			// defeated
+				{20,21,22,23,24,25,26,27,255},	// dig down
+				{28,29,30,31,32,33,34,35,255},	// dig up
+				{254,255},						// invisible
 				NULL_ANIM,
 				NULL_ANIM,
 			},0 },

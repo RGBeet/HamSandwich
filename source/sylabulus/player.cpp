@@ -1549,7 +1549,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 
 	if(me->parent)	// being grabbed by a Super Zombie or something
 	{
-		if(me->parent->aiType==MONS_SUPERZOMBIE)
+		if(me->parent->aiType==999) // super zombie
 		{
 			me->x=me->parent->x+Cosine(me->parent->facing*32)*60;
 			me->y=me->parent->y+Sine(me->parent->facing*32)*60;
@@ -1589,7 +1589,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			}
 			return;
 		}
-		else if(me->parent->aiType==MONS_MINECART)
+		else if ((EntityType)me->parent->aiType == EntityType::Minecart)
 		{
 			me->dx=0;
 			me->dy=0;
@@ -1605,7 +1605,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			}
 			me->z=FIXAMT*8;
 		}
-		else if(me->parent->aiType==MONS_YUGO)
+		else if((EntityType)me->parent->aiType == EntityType::YouGo)
 		{
 			me->x=me->parent->x;
 			me->y=me->parent->y;
@@ -1613,7 +1613,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		}
 		else
 		{
-			me->parent=NULL;
+			SetParent(me,NULL);
 		}
 	}
 
@@ -1749,8 +1749,8 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	}
 	if(c&CONTROL_B2)
 	{
-		if(player.vehicle==VE_YUGO && me->parent && me->parent->mind3==0)
-			me->parent->mind3=120;
+		if (player.vehicle == VE_YUGO && goodguy->parent && goodguy->parent->mind3 == 0)
+			goodguy->parent->mind3 = 120;
 	}
 	// if you are moving indeed
 	if((c&(CONTROL_UP|CONTROL_DN|CONTROL_LF|CONTROL_RT)) && (!player.jetting || me->z==0) && (player.vehicle!=VE_RAFT && player.vehicle!=VE_MINECART))
@@ -1914,7 +1914,7 @@ void PlayerControlPowerArmor(Guy *me,mapTile_t *mapTile,world_t *world)
 		}
 		else	// note Super Zombie can't grab you
 		{
-			me->parent=NULL;
+			SetParent(me,NULL);
 		}
 	}
 
@@ -2062,7 +2062,7 @@ void PlayerControlMiniSub(Guy *me,mapTile_t *mapTile,world_t *world)
 		}
 		else	// note Super Zombie can't grab you
 		{
-			me->parent=NULL;
+			SetParent(me,NULL);
 		}
 	}
 
