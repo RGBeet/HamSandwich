@@ -906,18 +906,18 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,7,8,8,9,10,11,12,12,13,255},	// attack
 			},0},
 		{"Creeping Cone",255,255,0,AI_Cone,
-		 8,21,30,25,"graphics/cone.jsp",0,{},
+		 10,24,30,25,"graphics/cone.jsp",0,{},
 		 MT_EVIL | MT_URBAN | MT_WACKY | MT_TRAP,
 			{
 				{0,255},	// idle
 				{1,2,3,4,5,6,7,0,255},	// move
-				{8,9,10,9,8,255},	// attack=poke
-				{17,18,19,20,255},	// die
-				{11,12,13,14,14,15,16,15,14,13,12,11,255}, // A1=shoot
-				{8,9,10,9,8,255},	// attack=poke
-				{8,9,10,9,8,255},	// attack=poke
-				{8,9,10,9,8,255},	// attack=poke
-				{8,9,10,9,8,255},	// attack=poke
+				{8,9,10,11,10,9,8,255},	// attack=poke
+				{18,19,20,21,22,23,255},	// die
+				{12,13,14,15,16,16,15,14,13,12,255}, // A1=shoot
+				{8,9,10,11,10,9,8,255},	// attack=poke
+				{8,9,10,11,10,9,8,255},	// attack=poke
+				{8,9,10,11,10,9,8,255},	// attack=poke
+				{8,9,10,11,10,9,8,255},	// attack=poke
 			},0},
 		{"Autozoid",255,255,0,AI_Autozoid,
 		 15,24,150,1000,"graphics/autozoid.jsp",0,{},
@@ -1130,18 +1130,18 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"King Cone",255,255,0,AI_KingCone,
-		 64,27,500,1000,"graphics/kingcone.jsp",0,MF_NOMOVE | MF_ONEFACE | MF_FACECMD | MF_ENEMYWALK,
+		 64,32,500,1000,"graphics/kingcone.jsp",0,MF_NOMOVE | MF_ONEFACE | MF_FACECMD | MF_ENEMYWALK,
 		 MT_EVIL | MT_WACKY | MT_URBAN | MT_MINIBOSS,
 			{
 				{0,255},	// idle
-				{5,6,7,7,8,8,9,0,255},	// move (hop to summon cones)
-				{10,11,12,13,14,15,16,17,18,255},	// attack (crown spin)
-				{19,19,20,20,21,21,22,22,23,23,24,24,25,25,26,255},	// die
-				{10,11,12,13,14,15,16,17,18,255},	// attack (crown spin)
-				{10,11,12,13,14,15,16,17,18,255},	// attack (crown spin)
-				{10,11,12,13,14,15,16,17,18,255},	// attack (crown spin)
-				{10,11,12,13,14,15,16,17,18,255},	// attack (crown spin)
-				{10,11,12,13,14,15,16,17,18,255},	// attack (crown spin)
+				{5,6,7,7,8,9,10,11,0,255},	// move (hop to summon cones)
+				{12,13,14,15,16,17,18,19,20,255},	// attack (crown spin)
+				{22,23,24,25,26,27,254,28,254,29,254,30,254,31,255}, // die
+				{12,13,14,15,16,17,18,19,20,255},	// attack (crown spin)
+				{12,13,14,15,16,17,18,19,20,255},	// attack (crown spin)
+				{12,13,14,15,16,17,18,19,20,255},	// attack (crown spin)
+				{12,13,14,15,16,17,18,19,20,255},	// attack (crown spin)
+				{12,13,14,15,16,17,18,19,20,255},	// attack (crown spin)
 			},0},
 		{"Teckhead",255,255,0,NULL, // not yet implemented
 		 8,38,10,50,"graphics/mechatruck.jsp",0,{},

@@ -1714,7 +1714,7 @@ void AI_KingCone(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			MakeSound(SND_MUSHMISSILE, me->x, me->y, SND_CUTOFF, 1500);
 			spd = Random(8) + 1;
 			for (i = 0;i < 8;i++)
-				FireExactBullet(me->x, me->y, FIXAMT * 128, Cosine(i * 32) * spd, Sine(i * 32) * spd, FIXAMT * 4, 0, 120, 0, BLT_GRENADE, me->friendly);
+				FireExactBullet(me->x, me->y, FIXAMT * 128, Cosine(i * 32) * spd, Sine(i * 32) * spd, FIXAMT * 6, 0, 120, 0, BLT_GRENADE, me->friendly);
 		}
 		if (me->seq == ANIM_MOVE && me->frm == 6 && me->reload == 0)
 		{
@@ -1724,11 +1724,11 @@ void AI_KingCone(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			spd = Random(24) + 2;
 			for (i = 0;i < spd;i++)
 			{
-				x = me->x + (-128 + Random(257)) * FIXAMT;
-				y = me->y + (-128 + Random(257)) * FIXAMT;
+				x = me->x + (-256 + Random(513)) * FIXAMT;
+				y = me->y + (-256 + Random(513)) * FIXAMT;
 				if (x<me->x - FIXAMT * 64 || x>me->x + FIXAMT * 64 || y<me->y - FIXAMT * 64 || y>me->y + FIXAMT * 64)
 				{
-					g = AddBaby(x, y, FIXAMT * 10, MONS_CONE, me);
+					g = AddBaby(x, y, FIXAMT * 10, (short)EntityType::CreepingCone, me);
 					if (g && !g->CanWalk(g->x, g->y, map, world))
 						g->type = MONS_NONE;
 				}
