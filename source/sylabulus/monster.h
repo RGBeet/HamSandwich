@@ -405,6 +405,8 @@ enum class EntityType {
 	TutUncommon,
 	Kerosene,
 	OvenGen,
+	PatrollerH,
+	PatrollerV,
 
 	MaxId // number of monster slots
 };

@@ -152,6 +152,10 @@ const char *MonsterName(short type)
 				return "Noh-Mann:Tragedy";
 			case EntityType::YerfdogBoss:
 				return "Yerfdog:Boss";
+			case EntityType::PatrollerH:
+				return "Patroller:Horizontal";
+			case EntityType::PatrollerV:
+				return "Patroller:Vertical";
 		}
 	}
 	// Otherwise the monster name is in its type definition.

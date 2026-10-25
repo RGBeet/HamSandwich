@@ -5,225 +5,266 @@
 #include "player.h"
 #include "editor.h"
 
+
 void AI_MineCart(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
 	int x, y;
 	byte ok[4];
 	int diff, dir;
+	int direction;
 	static byte noiseLoop = 0;
 
 	goodguy = GetGuyOfAIType(MONS_BOUAPHA);
 	if (!goodguy)
 		return;
 
-	me->facing = me->mind2 / 32;	// mind2 holds the 'true' visual facing 0-255
+	// mind2 = visual angle (0-255)
+	// mind3 = actual movement direction (0, 64, 128, 192)
+	// mind1 = acceleration
+	// mind  = 0 waiting, 1 being ridden
 
-	// mind2 is the visual facing, mind3 is the actual facing,
-	// so rotate mind2 towards mind3
-	if (me->mind3 > me->mind2)
+	me->facing = (me->mind2 / 32) & 7;
+
+	// Smoothly rotate the visual facing toward the target angle.
+	diff = (me->mind3 - me->mind2) & 255;
+
+	if (diff > 128)
 	{
-		diff = me->mind3 - me->mind2;
-		if (diff > 128)
-		{
-			dir = -1;
-			diff = 256 - diff;
-		}
-		else
-			dir = 1;
+		dir = -1;
+		diff = 256 - diff;
 	}
-	else if (me->mind3 < me->mind2)
+	else if (diff > 0)
 	{
-		diff = me->mind2 - me->mind3;
-		if (diff > 128)
-		{
-			dir = 1;
-			diff = 256 - diff;
-		}
-		else
-			dir = -1;
+		dir = 1;
 	}
 	else
 	{
-		diff = 0;
 		dir = 0;
 	}
 
 	if (me->mind == 0)
 	{
-		// turn quickly if sitting still
 		if (diff > 32)
 			diff = 32;
 	}
 	else
 	{
-		if (diff > me->mind1 / 4)
-			diff = me->mind1 / 4;
+		int turnSpeed = me->mind1 / 4;
+		if (turnSpeed < 1)
+			turnSpeed = 1;
+
+		if (diff > turnSpeed)
+			diff = turnSpeed;
 	}
 
 	me->mind2 = (me->mind2 + diff * dir) & 255;
 
-	if (me->mind == 0)	// waiting to be ridden
+	// 0 = right, 1 = down, 2 = left, 3 = up.
+	auto GetTrackDirections = [&]()
 	{
-		// figure out which directions are valid minecart paths
-		if (me->mapx < map->width - 1 && GetTerrain(world, map->map[me->mapx + 1 + me->mapy * map->width].floor)->pathType & TRN_MINECART)
-			ok[0] = 1;
-		else
-			ok[0] = 0;
-		if (me->mapy < map->height - 1 && GetTerrain(world, map->map[me->mapx + (me->mapy + 1) * map->width].floor)->pathType & TRN_MINECART)
-			ok[1] = 1;
-		else
-			ok[1] = 0;
-		if (me->mapx > 0 && GetTerrain(world, map->map[me->mapx - 1 + me->mapy * map->width].floor)->pathType & TRN_MINECART)
-			ok[2] = 1;
-		else
-			ok[2] = 0;
-		if (me->mapy > 0 && GetTerrain(world, map->map[me->mapx + (me->mapy - 1) * map->width].floor)->pathType & TRN_MINECART)
-			ok[3] = 1;
-		else
-			ok[3] = 0;
+		ok[0] = (me->mapx < map->width - 1 && !GetTerrain(world, map->GetTile(me->mapx+1, me->mapy)->floor)->pathType == TRN_MINECART);
 
-		// pick one to face
-		for (x = 0;x < 4;x++)
+		ok[1] = (me->mapy < map->height - 1 && !GetTerrain(world, map->GetTile(me->mapx, me->mapy+1)->floor)->pathType == TRN_MINECART);
+
+		ok[2] = (me->mapx > 0 && !GetTerrain(world, map->GetTile(me->mapx - 1, me->mapy)->floor)->pathType == TRN_MINECART);
+
+		ok[3] = (me->mapy > 0 && !GetTerrain(world, map->GetTile(me->mapx, me->mapy - 1)->floor)->pathType == TRN_MINECART);
+	};
+
+	if (me->mind == 0)
+	{
+		GetTrackDirections();
+
+		for (x = 0; x < 4; x++)
+		{
 			if (ok[x])
 				me->mind3 = x * 64;
+		}
 
-		if (me->mind1 == 1)	// wait for goodguy to go away before re-allowing him to board
+		if (me->mind1 == 1)
 		{
 			if (RangeToTarget(me, goodguy) > 32 * FIXAMT)
 				me->mind1 = 0;
 		}
-		else if (RangeToTarget(me, goodguy) < 32 * FIXAMT && player.vehicle == 0)
+		else if (RangeToTarget(me, goodguy) < 32 * FIXAMT &&
+			player.vehicle == 0)
 		{
-			MakeSound(SND_MINECART, goodguy->x, goodguy->y, SND_CUTOFF, 1200);
+			MakeSound(SND_MINECART, goodguy->x, goodguy->y,
+				SND_CUTOFF, 1200);
+
 			noiseLoop = 0;
 			me->mind = 1;
+			me->mind1 = 0;
+
 			player.vehicle = VE_MINECART;
 			SetParent(goodguy, me);
+
 			goodguy->x = me->x;
 			goodguy->y = me->y + 1;
 			goodguy->z = FIXAMT * 8;
-			me->mind1 = 0;	// acceleration
 		}
+
+		return;
 	}
-	else	// being ridden
+
+	if (!editing && !player.cheated && verified)
 	{
-		if (!editing && !player.cheated && verified)
-			profile.progress.cartDistance += abs(me->dx / FIXAMT) + abs(me->dy / FIXAMT);
-		noiseLoop++;
-		if (noiseLoop >= 28)
+		profile.progress.cartDistance += abs(me->dx / FIXAMT) + abs(me->dy / FIXAMT);
+	}
+
+	noiseLoop++;
+	if (noiseLoop >= 28)
+	{
+		noiseLoop = 0;
+		MakeSound(SND_MINECART, goodguy->x, goodguy->y,
+			SND_CUTOFF, 1200);
+	}
+
+	x = (me->mapx * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+	y = (me->mapy * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
+
+	// only do this if crossing the center of the tile
+	if ((me->oldx < x && me->x >= x) ||
+		(me->oldx > x && me->x <= x) ||
+		(me->oldy < y && me->y >= y) ||
+		(me->oldy > y && me->y <= y))
+	{
+		me->x = x;
+		me->y = y;
+
+		GetTrackDirections();
+
+		// prevents reversing direction, 90 degree turns only!
+		direction = (me->mind3 / 64) & 3;
+		ok[(direction + 2) & 3] = 0;
+
+		// count available tiles (minecart paths)
+		int count = 0;
+		for (x = 0; x < 4; x++)
 		{
-			noiseLoop = 0;
-			MakeSound(SND_MINECART, goodguy->x, goodguy->y, SND_CUTOFF, 1200);
+			if (ok[x])
+				count++;
 		}
-		// if you've reached the center of a tile, time to decide where to go
-		x = (me->mapx * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
-		y = (me->mapy * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
-		if ((me->x <= x && me->oldx > x) || (me->x >= x && me->oldx < x) ||
-			(me->y <= y && me->oldy > y) || (me->y >= y && me->oldy < y))
+
+		// no available tiles
+		if (count == 0)
 		{
-			me->x = x;
-			me->y = y;
-			// figure out which directions are valid minecart paths
-			if (me->mapx < map->width - 1 && GetTerrain(world, map->map[me->mapx + 1 + me->mapy * map->width].floor)->pathType & TRN_MINECART)
-				ok[0] = 1;
-			else
-				ok[0] = 0;
-			if (me->mapy < map->height - 1 && GetTerrain(world, map->map[me->mapx + (me->mapy + 1) * map->width].floor)->pathType & TRN_MINECART)
-				ok[1] = 1;
-			else
-				ok[1] = 0;
-			if (me->mapx > 0 && GetTerrain(world, map->map[me->mapx - 1 + me->mapy * map->width].floor)->pathType & TRN_MINECART)
-				ok[2] = 1;
-			else
-				ok[2] = 0;
-			if (me->mapy > 0 && GetTerrain(world, map->map[me->mapx + (me->mapy - 1) * map->width].floor)->pathType & TRN_MINECART)
-				ok[3] = 1;
-			else
-				ok[3] = 0;
+			int exitX = me->mapx;
+			int exitY = me->mapy;
 
-			ok[(((me->mind3 / 32) + 4) & 7) / 2] = 0;
+			direction = (me->mind3 / 64) & 3;
 
-			// count how many directions are available
-			y = 0;
-			for (x = 0;x < 4;x++)
-				if (ok[x])
-					y++;
-
-			if (y == 0)	// no directions to go!
+			switch (direction)
 			{
-				me->mind1 = 1;
-				me->mind = 0;
-				me->dx = 0;
-				me->dy = 0;
-				goodguy->dx = 0;
-				goodguy->dy = 0;
-				player.vehicle = 0;
-				SetParent(goodguy,NULL);
-				goodguy->x = me->x;
-				goodguy->y = me->y;
-				me->frm = 0;
-				me->seq = ANIM_IDLE;
-				me->frmTimer = 0;
-				me->frmAdvance = 128;
-				return;
+				case 0: // right
+					exitX++;
+					break;
+
+				case 1: // down
+					exitY++;
+					break;
+
+				case 2: // left
+					exitX--;
+					break;
+
+				case 3: // up
+					exitY--;
+					break;
 			}
-			else
+
+			if (exitX < 0) exitX = 0;
+			if (exitX >= map->width) exitX = map->width - 1;
+			if (exitY < 0) exitY = 0;
+			if (exitY >= map->height) exitY = map->height - 1;
+
+			me->mind = 0;
+			me->mind1 = 1;
+			me->dx = 0;
+			me->dy = 0;
+			goodguy->dx = 0;
+			goodguy->dy = 0;
+			goodguy->dz = 0;
+			player.vehicle = 0;
+			SetParent(goodguy, NULL);
+
+			// place bouapha on center of exit tile.
+			goodguy->x = (exitX * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+			goodguy->y = (exitY * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
+			goodguy->z = 0;
+
+			me->frm = 0;
+			me->seq = ANIM_IDLE;
+			me->frmTimer = 0;
+			me->frmAdvance = 128;
+
+			return;
+		}
+
+		if (count == 1)
+		{
+			for (x = 0; x < 4; x++)
 			{
-				if (y == 1)
+				if (ok[x])
 				{
-					// face the only valid direction
-					for (x = 0;x < 4;x++)
-						if (ok[x])
-							me->mind3 = x * 64;
+					me->mind3 = x * 64;
+					break;
 				}
+			}
+		}
+		else
+		{
+			direction = (me->mind3 / 64) & 3;
+
+			if (!ok[direction])
+			{
+				x = (goodguy->facing / 2) & 3;
+
+				if (ok[x])
+					direction = x;
+				else if (ok[(x + 1) & 3])
+					direction = (x + 1) & 3;
+				else if (ok[(x + 3) & 3])
+					direction = (x + 3) & 3;
 				else
 				{
-					// if you can go straight, then that's what you do
-					if (ok[me->facing / 2])
+					for (x = 0; x < 4; x++)
 					{
-						me->mind3 = (me->facing / 2) * 64;
-					}
-					else
-					{
-						// in the case of multiple directions, we must decide on one
-						// based on the player's facing
-						x = goodguy->facing / 2;
-						if (ok[x])	// the direction you're facing is ok
-							me->mind3 = x * 64;
-						else if (ok[(x + 1) & 3])	// direction to your left
-							me->mind3 = ((x + 1) & 3) * 64;
-						else if (ok[(x + 3) & 3])	// direction to your right (same as x-1)
-							me->mind3 = ((x + 3) & 3) * 64;
-						else
-							me->mind3 = ((x + 2) & 3) * 64;	// behind you as a last resort
+						if (ok[x])
+						{
+							direction = x;
+							break;
+						}
 					}
 				}
+
+				me->mind3 = direction * 64;
 			}
 		}
-
-		// move forward at that pace
-		me->dx = Cosine(me->mind3) * (me->mind1 / 8);
-		me->dy = Sine(me->mind3) * (me->mind1 / 8);
-
-		// confine the player to the cart
-		goodguy->x = me->x;
-		goodguy->y = me->y + 1;
-		goodguy->z = FIXAMT * 8;
-		goodguy->dx = 0;
-		goodguy->dy = 0;
-		goodguy->dz = 0;
-
-		if (me->mind1 < 96)
-			me->mind1++;
-
-		if (me->seq != ANIM_MOVE)
-		{
-			me->seq = ANIM_MOVE;
-			me->frm = 0;
-			me->frmTimer = 0;
-		}
-		me->frmAdvance = me->mind1;
 	}
+
+	me->dx = Cosine(me->mind3) * (me->mind1 / 8);
+	me->dy = Sine(me->mind3) * (me->mind1 / 8);
+
+	goodguy->x = me->x;
+	goodguy->y = me->y + 1;
+	goodguy->z = FIXAMT * 8;
+
+	goodguy->dx = 0;
+	goodguy->dy = 0;
+	goodguy->dz = 0;
+
+	if (me->mind1 < 96)
+		me->mind1++;
+
+	if (me->seq != ANIM_MOVE)
+	{
+		me->seq = ANIM_MOVE;
+		me->frm = 0;
+		me->frmTimer = 0;
+	}
+
+	me->frmAdvance = me->mind1;
 }
 
 byte RaftCheckTile(mapTile_t *tile)

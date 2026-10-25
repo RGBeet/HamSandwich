@@ -247,7 +247,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0 },
 		{"Kabocha",255,255,0,AI_Kabocha, // not yet implemented
-		 10,16,30,500,"graphics/kabocha.jsp",0,{},
+		 10,16,30,500,"graphics/kabocha.jsp",0,MF_GHOST,
 		 MT_EVIL | MT_PUMPKIN | MT_VEGGIE,
 			{
 				{0,255},	// idle
@@ -806,7 +806,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Evil Clone",4,3,-2,AI_EvilClone,
+		{"Evil Clone",1,3,-2,AI_EvilClone,
 		 11,42,128,0,"!1",0,{},
 		 MT_EVIL | MT_HUMAN,
 			{
@@ -822,7 +822,7 @@ MonsterType monsType[NUM_MONSTERS]=
 			},0},
 		/////////
 		{"Mine Cart",255,255,0,AI_MineCart,
-		 11,8,100,500,"graphics/minecar.jsp",0,MF_NOMOVE | MF_INVINCIBLE | MF_FREEWALK | MF_NOHIT,
+		 11,8,100,500,"graphics/minecar.jsp",0,MF_NOMOVE | MF_INVINCIBLE | MF_FREEWALK | MF_NOHIT | MF_WATERWALK | MF_WALLWALK,
 		 MT_VEHICLE | MT_GOOD,
 			{
 				{0,255},	// idle
@@ -1087,19 +1087,19 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Chainball",255,255,0,AI_SpikeBall, // not yet implemented
-		 8,38,10,50,"graphics/spikeball.jsp",0,{},
+		{"Marvin",255,255,0,AI_SpikeBall, // not yet implemented
+		 8,8,40,50,"graphics/spikeball.jsp",0,{},
 		 MT_EVIL | MT_WACKY,
 			{
-				{0,255},	// idle
-				{0,255},	// move
-				{0,255},	// attack 1
-				{0,255},	// defeated
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
+				{0,255},						// idle
+				{0,1,2,3,4,5,6,7,255},			// move
+				{0,1,2,3,4,5,6,7,255},			// ???
+				{0,1,254,2,254,3,254,4,255},	// defeated
+				{0,1,2,3,4,5,6,7,255},			// ???
+				{0,1,2,3,4,5,6,7,255},			// ???
+				{0,1,2,3,4,5,6,7,255},			// ???
+				{0,1,2,3,4,5,6,7,255},			// ???
+				{0,1,2,3,4,5,6,7,255},			// ???
 			},0},
 		{"Foreman",255,255,0,NULL, // not yet implemented
 		 8,38,10,50,"graphics/foreman.jsp",0,{},
@@ -1116,7 +1116,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"MechaTruck",255,255,0,NULL, // not yet implemented
-		 8,38,10,50,"graphics/mechatruck.jsp",0,{},
+		 8,38,10,50,"graphics/mechatruck.jsp",0,MF_NOMOVE,
 		 MT_EVIL | MT_HIGHTECH | MT_VEHICLE | MT_WACKY,
 			{
 				{0,255},	// idle
@@ -1158,7 +1158,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Edison Coil",255,255,0,NULL, // not yet implemented
-		 8,38,10,50,"graphics/edisoncoil.jsp",0,{},
+		 8,38,10,50,"graphics/edisoncoil.jsp",0,MF_NOMOVE,
 		 MT_EVIL | MT_HIGHTECH | MT_URBAN,
 			{
 				{0,255},	// idle
@@ -1172,7 +1172,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"EDISON",255,255,0,NULL, // not yet implemented
-		 8,38,10,50,"graphics/edison.jsp",0,{},
+		 8,38,10,50,"graphics/edison.jsp",0,MF_NOMOVE,
 		 MT_EVIL | MT_BOSS | MT_HIGHTECH,
 			{
 				{0,255},	// idle
@@ -1200,18 +1200,18 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0 },
 		{"Punkin",255,255,0,AI_Punkin,
-		 9,10,10,1000,"graphics/punkin.jsp",0,{},
+		 10,20,20,1000,"graphics/punkin.jsp",0,{},
 		 MT_EVIL | MT_PUMPKIN | MT_VEGGIE | MT_URBAN,
 			{
 				{0,255},	// idle
 				{0,1,2,3,4,5,6,7,8,9,255},	// move
-				{0,255},	// attack
-				{0,0,0,0,255},	// die
-				{0,1,2,3,4,5,6,7,8,9,255},	// move
-				{0,1,2,3,4,5,6,7,8,9,255},	// move
-				{0,1,2,3,4,5,6,7,8,9,255},	// move
-				{0,1,2,3,4,5,6,7,8,9,255},	// move
-				{0,1,2,3,4,5,6,7,8,9,255},	// move
+				{10,11,12,13,12,11,255},	// attack
+				{14,15,16,17,18,19,255},	// die
+				{10,11,12,13,12,11,255},	// attack
+				{10,11,12,13,12,11,255},	// attack
+				{10,11,12,13,12,11,255},	// attack
+				{10,11,12,13,12,11,255},	// attack
+				{10,11,12,13,12,11,255},	// attack
 			},0},
 		{"Chef Angelo",255,255,0,NULL, // not yet implemented
 		 8,38,10,50,"graphics/angelo.jsp",0,{},
@@ -1292,6 +1292,34 @@ MonsterType monsType[NUM_MONSTERS]=
 				{4,5,6,5,4,5,6,7,7,7,8,9,10,255},	// open up
 				{11,11,12,12,13,13,14,14,254,15,254,15,255}, // die
 				{4,5,6,7,6,5,255},		// attack
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+			},0 },
+		{ "Hardhat Patroller",255,255,0,AI_Hardhat, // horizontal
+		 11,30,100,50,"graphics/patroller.jsp",0,{},
+		 MT_EVIL | MT_HUMAN | MT_TRAP,
+			{
+				{0,255},	// idle
+				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
+				{19,20,21,22,23,24,25,26,27,28,29,255},	// attack 1
+				{7,8,9,10,11,12,13,255},	// defeated
+				{14,15,16,17,18,18,18,17,16,15,14,255},	// taunt
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+			},0 },
+		{ "Hardhat Patroller",255,255,0,AI_Hardhat, // vertical
+		 11,30,100,50,"graphics/patroller.jsp",0,{},
+		 MT_EVIL | MT_HUMAN | MT_TRAP,
+			{
+				{0,255},	// idle
+				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
+				{19,20,21,22,23,24,25,26,27,28,29,255},	// attack 1
+				{7,8,9,10,11,12,13,255},	// defeated
+				{14,15,16,17,18,18,18,17,16,15,14,255},	// taunt
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,

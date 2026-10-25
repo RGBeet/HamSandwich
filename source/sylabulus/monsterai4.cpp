@@ -2109,7 +2109,7 @@ void AI_Yugo(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	{
 		if (RangeToTarget(me, goodguy) < 32 * FIXAMT && player.vehicle == 0)
 		{
-			if (!(GetTerrain(world, map->GetTile(me->mapx, me->mapy)->floor)->pathType & TRN_DRIVE))
+			if (!(GetTerrain(world, map->GetTile(me->mapx, me->mapy)->floor)->pathType == TRN_DRIVE))
 			{
 				// somehow the car ended up on non-minecart ground.. ridiculous!
 				for (x = me->mapx - 1;x <= me->mapx + 1;x++)
@@ -2373,8 +2373,8 @@ void AI_Punkin(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			FaceGoodguy(me, goodguy);
 		}
 
-		me->dx = 0;
-		me->dy = 0;
+		Dampen(&me->dx, FIXAMT / 2);
+		Dampen(&me->dy, FIXAMT / 2);
 	}
 	else
 	{

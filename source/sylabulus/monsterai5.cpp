@@ -2590,6 +2590,18 @@ void AI_SpikeBall(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	{
 		if (me->hp == 0)
 			MakeSound(SND_PUMPKINDIE, me->x, me->y, SND_CUTOFF, 1200);
+		else
+			MakeSound(SND_ZOMBIEOUCH, me->x, me->y, SND_CUTOFF, 1200);
+	}
+
+	if (me->action == ACTION_BUSY)
+	{
+		if (me->seq == ANIM_DIE && me->reload == 0)
+		{
+			ExplodeParticles(PART_SHRAPNEL, me->x, me->y, me->z, 8);
+			me->reload = 2;
+		}
+		return;	// can't do nothin' right now
 	}
 
 	if (me->mind2)
@@ -2631,7 +2643,7 @@ void AI_SpikeBall(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			me->dy = -me->dy / 2;
 		me->mind1 = 0;
 		me->GetShot(0, 0, x, map, world);
-		MakeSound(SND_SPIKEBOUNCE, me->x, me->y, SND_CUTOFF, 800);
+		MakeSound(SND_SPIKEBOUNCE, me->x, me->y, SND_CUTOFF, 200);
 		if(me->facing%2==0)
 			me->facing = (me->facing+4)&7;
 		else if (!Random(2))
@@ -2640,15 +2652,15 @@ void AI_SpikeBall(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			me->facing = (me->facing-2)&7;
 	}
 
-	Clamp(&me->dx, 10 * FIXAMT);
-	Clamp(&me->dy, 10 * FIXAMT);
+	Clamp(&me->dx, 8 * FIXAMT);
+	Clamp(&me->dy, 8 * FIXAMT);
 
 	if (me->seq != ANIM_MOVE)
 	{
 		me->seq = ANIM_MOVE;
 		me->frm = 0;
 		me->frmTimer = 0;
-		MakeSound(SND_SPIKECLANK, me->x, me->y, SND_CUTOFF, 200);
+		MakeSound(SND_SPIKECLANK, me->x, me->y, SND_ONE, 200);
 	}
 	if (me->seq == ANIM_MOVE)
 	{
