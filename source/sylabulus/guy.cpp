@@ -206,7 +206,7 @@ byte IsFlying(Guy* me)
 {
 	switch ((EntityType)me->aiType)
 	{
-		case EntityType::Umbrello:
+		case EntityType::Mikasa:
 			return me->mind != 0;
 		default:
 			return (MonsterFlags(me->type, me->aiType) & MF_FLYING);
@@ -1073,12 +1073,13 @@ void Guy::Render(byte light)
 	dword t = type, t2 = type;
 	if(type==MONS_BOUAPHA)
 	{
+		/*
 		if(player.playAs==PLAY_SHROOM)
 			t=(short)EntityType::PlayShroom;
 		else if(player.playAs==PLAY_LUNACHIK)
 			t=(short)EntityType::PlayLunachick;
 		else // bouapha is player
-			t=(short)EntityType::Player;
+			t=(short)EntityType::Player;*/
 
 		if(player.weapon==WPN_PWRARMOR)
 			t=(short)EntityType::PowerArmor;
@@ -1095,10 +1096,12 @@ void Guy::Render(byte light)
 			t2=(short)EntityType::MiniSub;
 		else if((EntityType)type==EntityType::Player)
 		{
+			/*
 			if(player.playAs==PLAY_SHROOM)
 				t2=(short)EntityType::PlayShroom;
 			else if(player.playAs==PLAY_LUNACHIK)
 				t2=(short)EntityType::PlayLunachick;
+			*/
 		}
 	}
 
@@ -2013,7 +2016,7 @@ Guy *FindVictim(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t
 			{
 				switch((EntityType)guys[i].aiType)
 				{
-					case EntityType::OilDrum:
+					case EntityType::DullDrum:
 						if(guys[i].mind!=1 && damage > 0)
 							guys[i].GetShot(dx, dy, damage, map, world);
 						break;
@@ -2031,10 +2034,6 @@ Guy *FindVictim(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t
 							guys[i].GetShot(dx, dy, damage, map, world);
 							guys[i].mind2 += damage/2;
 						}
-						break;
-						case EntityType::NastyTree:
-						if(guys[i].mind>0)
-							guys[i].GetShot(dx, dy, damage, map, world);
 						break;
 					default:
 						if (damage > 0)
@@ -3415,15 +3414,14 @@ byte Guy::IsAwake(void)
 	{
 		// these guys wake up when you get close to them
 		case EntityType::Mumble:
-		case EntityType::ManicMumble:
-		case EntityType::Umbrello:
+		case EntityType::TutUncommon:
+		case EntityType::Mikasa:
 		case EntityType::Pumpkin:
-		case EntityType::Kabocha:
+		case EntityType::Kaboocha:
 		case EntityType::EyeballTree:
-		case EntityType::HappyStickNinja:
+		case EntityType::HappyStickMan:
 		case EntityType::Squash:
-		case EntityType::SharkChest:
-		case EntityType::MushKing:
+		case EntityType::Jalapeno:
 		case EntityType::NohMannComedy:
 		case EntityType::NohMannTragedy:
 			return (mind > 0);

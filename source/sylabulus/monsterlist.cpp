@@ -106,20 +106,6 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Oui Ninja",255,255,0,AI_Ninja, // not yet implemented
-		 8,38,25,50,"graphics/ninja.jsp",0,{},
-		 MT_EVIL | MT_HUMAN,
-			{
-				{0,255},	// idle
-				{0,255},	// move
-				{0,255},	// attack 1
-				{0,255},	// defeated
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
-			},0},
 		{"Kaptana",255,255,0,AI_Kappa, // not yet implemented
 		 10,56,30,50,"graphics/kappa.jsp",0,{},
 		 MT_EVIL | MT_ANIMAL,
@@ -246,7 +232,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0 },
-		{"Kabocha",255,255,0,AI_Kabocha, // not yet implemented
+		{"Kaboocha",255,255,0,AI_Kabocha, // not yet implemented
 		 10,16,30,500,"graphics/kabocha.jsp",0,MF_GHOST,
 		 MT_EVIL | MT_PUMPKIN | MT_VEGGIE,
 			{
@@ -498,34 +484,6 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0 },
-		{"Shroomlord",255,255,0,AI_ShroomLord,
-		 15,14,45,300,"graphics/shrmlord.jsp",0,{},
-		 MT_EVIL | MT_VEGGIE,
-			{
-				{0,255},	// idle
-				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
-				{7,7,8,8,8,9,10,11,12,12,13,13,255},	// spit spores
-				{0,0,255},	// die
-				{7,7,8,8,8,9,10,11,12,12,13,13,255},	// spit spores
-				{7,7,8,8,8,9,10,11,12,12,13,13,255},	// spit spores
-				{7,7,8,8,8,9,10,11,12,12,13,13,255},	// spit spores
-				{7,7,8,8,8,9,10,11,12,12,13,13,255},	// spit spores
-				{7,7,8,8,8,9,10,11,12,12,13,13,255},	// spit spores
-			},0},
-		{"Mush the Shroom",255,255,0,AI_Mush,
-		 32,27,200,800,"graphics/bgshroom.jsp",0,MF_NOMOVE,
-		 MT_EVIL | MT_MINIBOSS | MT_VEGGIE,
-			{
-				{0,255},	// idle
-				{1,2,2,1,0,3,4,4,3,0,255},	// move
-				{5,6,6,7,8,9,10,255},	// attack=cannon fire
-				{21,22,23,24,25,26,26,26,26,255},	// die
-				{11,12,13,12,13,12,13,12,13,12,13,12,13,12,13,12,13,14,15,16,255},	// A1=sporegun fire
-				{17,18,19,20,19,18,19,20,19,18,17,255},	// A2=angry
-				{5,6,6,7,8,9,10,255},	// attack=cannon fire
-				NULL_ANIM,
-				NULL_ANIM,
-			},0},
 		{"Crazybone",0,3,0,AI_CrazyBone,
 		 8,35,10,100,"!2",0,{},
 		 MT_EVIL | MT_SPOOKY,
@@ -540,17 +498,17 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Manic Mumble",0,7,1,AI_Mumble,
-		 15,40,20,100,"!3",0,MF_NOMOVE,
+		{"Tut Uncommon",0,2,-2,AI_Mumble,
+		 15,40,50,100,"graphics/mumble.jsp",0,MF_NOMOVE,
 		 MT_EVIL | MT_DESERT | MT_SPOOKY,
 			{
 				{0,255},	// idle
-				{1,2,3,4,5,6,0,7,8,9,10,11,255},	// move
-				{12,13,14,15,16,17,18,19,20,21,22,255},	// attack=head crush
+				{1,2,3,4,5,6,0,7,8,9,10,11,255},				// move
+				{12,13,14,15,16,17,18,19,20,21,22,255},			// attack=head crush
 				{23,24,25,26,27,28,254,29,254,30,254,31,255},	// die
-				{12,13,14,15,16,17,18,19,20,21,22,255},	// attack=head crush
-				{12,13,14,15,16,17,18,19,20,21,22,255},	// attack=head crush
-				{12,13,14,15,16,17,18,19,20,21,22,255},	// attack=head crush
+				{32,33,34,35,36,36,36,36,37,38,39,255},			// a1 = shoot from gem
+				{12,13,14,15,16,17,18,19,20,21,22,255},			// attack=head crush
+				{12,13,14,15,16,17,18,19,20,21,22,255},			// attack=head crush
 				NULL_ANIM,
 				NULL_ANIM,
 			},0 },
@@ -666,36 +624,8 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Purple Kaptana",1,7,0,AI_Kappa, // not yet implemented
-		 10,56,30,50,"!9",0,{},
-		 MT_EVIL | MT_ANIMAL,
-			{
-				{0,255},	// idle
-				{0,255},	// move
-				{0,255},	// attack 1
-				{0,255},	// defeated
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
-			},0},
-		{"Thorn Bush",1,4,-2,AI_CrazyBush, // not yet implemented
-		 10,8,20,5,"!20",0,{},
-		 MT_EVIL | MT_VEGGIE,
-			{
-				{0,255},	// idle
-				{1,2,1,0,3,4,3,0,255},	// move
-				{0,255},	// attack
-				{5,6,7,255},	// die
-				{0,255},	// unused
-				{0,255},	// unused
-				{0,255},	// unused
-				{0,255},	// unused
-				{0,255},	// unused
-			},0},
-		{"Hot N' Sour",1,4,0,AI_HotShroom,
-		 15,23,10,50,"!35",0,{},
+		{"Hot N' Sour",1,2,0,AI_HotShroom,
+		 15,24,10,50,"!35",0,{},
 		 MT_EVIL | MT_VEGGIE,
 			{
 				{0,255},	// idle
@@ -708,8 +638,8 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,10,11,12,13,14,255},	// attack
 				{7,8,9,10,11,12,13,14,255},	// attack
 			},0},
-		{"Deathcap",1,7,-8,AI_Deathcap,
-		 15,23,30,50,"!35",0,{},
+		{"Deathcap",1,7,-4,AI_Deathcap,
+		 15,24,15,50,"!35",0,{},
 		 MT_EVIL | MT_VEGGIE | MT_TRAP,
 			{
 				{0,255},	// idle
@@ -721,34 +651,6 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,10,11,12,13,14,255},	// attack
 				{0,255},
 				{0,255},
-			},0},
-		{"Treasure Chest",255,255,0,AI_Chest,
-		 16,5,50,1000,"graphics/chest.jsp",0,MF_NOMOVE | MF_ONEFACE,
-		 MT_TRAP,
-			{
-				{0,255},	// idle
-				{0,255},	// move
-				{0,255},	// attack
-				{1,2,3,4,255},	// die
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
-			},0},
-		{"Sneaky Shark",255,255,0,AI_Sneaky2,
-		 11,32,50,1000,"graphics/snkyshrk2.jsp",0,MF_NOMOVE | MF_ONEFACE,
-		 MT_EVIL | MT_UNDERSEA | MT_TRAP,
-			{
-				{0,255},	// idle
-				{0,255},	// move
-				{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,6,5,4,3,2,1,255},	// attack
-				{0,0,0,255},	// die
-				{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,6,5,4,3,2,1,255},	// attack
-				{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,6,5,4,3,2,1,255},	// attack
-				{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,6,5,4,3,2,1,255},	// attack
-				{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,6,5,4,3,2,1,255},	// attack
-				{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,6,5,4,3,2,1,255},	// attack
 			},0},
 		{"Turret",255,255,0,AI_Turret, // NEW GRAPHICS?!
 		 10,8,80,200,"graphics/turret.jsp",0,MF_NOMOVE,
@@ -805,20 +707,6 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
-			},0},
-		{"Evil Clone",1,3,-2,AI_EvilClone,
-		 11,42,128,0,"!1",0,{},
-		 MT_EVIL | MT_HUMAN,
-			{
-				{0,255},	// idle
-				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
-				{7,8,9,10,11,12,13,14,15,16,255},	// attack
-				{0,0,0,0,0,0,0,26,27,28,255},		// die
-				{23,24,25,24,23,255},	// use item
-				{17,18,19,20,21,22,21,20,21,22,21,20,19,18,17,255},	// bored
-				{1,3,1,0,4,6,4,0,1,3,1,0,0,0,26,27,28,255},	// watery death
-				{7,8,9,10,11,12,13,14,15,16,255},	// attack
-				{7,8,9,10,11,12,13,14,15,16,255},	// attack
 			},0},
 		/////////
 		{"Mine Cart",255,255,0,AI_MineCart,
@@ -877,34 +765,6 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"LunaChick",255,255,0,NULL,	// playable char
-		 11,27,250,1000,"graphics/lunachick.jsp",0,MF_WATERWALK,
-		 MT_WEIRD,
-			{
-				{0,255},	// idle
-				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
-				{7,8,9,10,11,12,13,13,0,0,255},	// attack=fire gun
-				{14,15,16,17,18,19,20,21,22,23,24,25,26,255},	// die
-				{7,9,10,12,13,255},	// A1=use weapon
-				{14,15,16,17,18,17,16,15,14,15,17,15,14,0,0,255},	// A2=bored
-				{1,3,1,0,4,6,4,0,1,3,1,0,0,0,24,25,26,255},	// A3=watery death
-				{7,8,9,10,11,12,13,13,0,0,255},	// attack=fire gun
-				{7,8,9,10,11,12,13,13,0,0,255},	// attack=fire gun
-			},0},
-		{"Stupid Shroom",1,4,0,NULL,
-		 11,14,40,300,"!192",0,MF_WATERWALK,
-		 MT_WEIRD,
-			{
-				{0,255},	// idle
-				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
-				{7,7,8,8,9,10,11,12,12,13,255},	// attack
-				{0,0,0,0,0,0,0,0,0,0,255},	// die
-				{7,8,10,11,13,255},	// use item
-				{7,8,9,9,9,9,9,9,8,7,0,0,0,0,0,255},	// bored
-				{1,3,1,0,4,6,4,0,1,3,1,0,0,0,0,0,0,255},	// watery death
-				{7,7,8,8,9,10,11,12,12,13,255},	// attack
-				{7,7,8,8,9,10,11,12,12,13,255},	// attack
-			},0},
 		{"Creeping Cone",255,255,0,AI_Cone,
 		 10,24,30,25,"graphics/cone.jsp",0,{},
 		 MT_EVIL | MT_URBAN | MT_WACKY | MT_TRAP,
@@ -934,7 +794,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Parked Car",4,3,0,AI_ParkedCar,
-		 15,24,15,1000,"!62",0,MF_NOMOVE,
+		 15,24,15,1000,"!54",0,MF_NOMOVE,
 		 MT_VEHICLE | MT_TRAP | MT_URBAN,
 			{
 				{0,255},						// idle
@@ -948,7 +808,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Traffic",4,6,0,AI_Traffic,
-		 11,24,200,1000,"!62",0,MF_NOMOVE | MF_WALLWALK,
+		 11,24,200,1000,"!54",0,MF_NOMOVE | MF_WALLWALK,
 		 MT_VEHICLE | MT_TRAP | MT_EVIL | MT_URBAN,
 			{
 				{0,255},						// idle
@@ -961,6 +821,20 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
+		{ "Traffic",4,1,0,AI_Traffic,
+		 11,24,200,1000,"!54",0,MF_NOMOVE | MF_WALLWALK,
+		 MT_VEHICLE | MT_TRAP | MT_EVIL | MT_URBAN,
+			{
+				{0,255},						// idle
+				{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,255},	// move
+				{16,17,18,19,20,21,22,23,255},	// attack
+				{16,17,18,17,16,255},			// die
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+			},0 },
 		{"Mailboxer",255,255,0,AI_Mailboxer,
 		 12,40,40,1000,"graphics/mboxer.jsp",0,{},
 		 MT_EVIL | MT_URBAN,
@@ -1059,34 +933,20 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0 },
-		{"Gargoyle",255,255,0,NULL, // not yet implemented
-		 8,38,10,50,"graphics/gargoyle.jsp",0,{},
-		 MT_EVIL | MT_SPOOKY,
+		{"Gnome",255,255,0,AI_Pygmy,
+		 10,50,20,100,"graphics/gnome.jsp",0,{},
+		 MT_EVIL|MT_PYGMY|MT_HUMAN,
 			{
-				{0,255},	// idle
-				{0,255},	// move
-				{0,255},	// attack 1
-				{0,255},	// defeated
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
-			},0},
-		{"Nasty Tree",255,255,0,AI_NastyTree, // not yet implemented
-		 8,38,10,50,"graphics/tree.jsp",0,{},
-		 MT_EVIL | MT_VEGGIE | MT_WACKY,
-			{
-				{0,255},	// idle
-				{0,255},	// move
-				{0,255},	// attack 1
-				{0,255},	// defeated
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
-			},0},
+				{0,0,0,0,0,0,0,0,0,0,7,8,9,8,7,0,0,0,10,11,12,11,10,255},	// idle
+				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
+				{29,30,31,31,32,33,34,35,36,255},	// attack
+				{37,38,39,40,41,42,43,44,254,45,254,46,254,46,255},	// die
+				{14,15,16,17,18,19,20,16,17,18,19,15,14,255},	// (A1) bored (spin spear)
+				{21,22,23,24,25,26,26,26,27,28,27,26,27,28,27,26,255}, // (A2) bored (yawn)
+				{47,48,49,48,47,0,47,48,49,48,47,255},	// (A3) angry, spotted Bouapha
+				{0,255},
+				{0,255},
+			}},
 		{"Marvin",255,255,0,AI_SpikeBall, // not yet implemented
 		 8,8,40,50,"graphics/spikeball.jsp",0,{},
 		 MT_EVIL | MT_WACKY,
@@ -1101,20 +961,20 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,1,2,3,4,5,6,7,255},			// ???
 				{0,1,2,3,4,5,6,7,255},			// ???
 			},0},
-		{"Foreman",255,255,0,NULL, // not yet implemented
-		 8,38,10,50,"graphics/foreman.jsp",0,{},
-		 MT_EVIL | MT_HUMAN | MT_URBAN,
+		{"Gnome Accountant",255,255,0,AI_PygmyAcct,
+		 10,50,40,100,"graphics/gnomeacct.jsp",0,{},
+		 MT_EVIL|MT_PYGMY|MT_HUMAN|MT_URBAN,
 			{
-				{0,255},	// idle
-				{0,255},	// move
-				{0,255},	// attack 1
-				{0,255},	// defeated
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
-			},0},
+				{0,0,0,0,0,0,0,0,0,0,7,8,9,8,7,0,0,0,10,11,12,11,10,255},	// idle
+				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
+				{29,30,31,31,32,33,34,35,36,255},	// attack
+				{37,38,39,40,41,42,43,44,254,45,254,46,254,46,255},	// die
+				{14,15,16,17,18,19,20,16,17,18,19,15,14,255},	// (A1) bored (spin spear)
+				{47,48,49,48,47,0,47,48,49,48,47,255},	// (A3) angry, spotted Bouapha
+				{21,22,23,24,25,26,26,26,27,28,27,26,27,28,27,26,255}, // (A2) bored (yawn)
+				{0,255},
+				{0,255},
+			}},
 		{"MechaTruck",255,255,0,NULL, // not yet implemented
 		 8,38,10,50,"graphics/mechatruck.jsp",0,MF_NOMOVE,
 		 MT_EVIL | MT_HIGHTECH | MT_VEHICLE | MT_WACKY,
@@ -1213,20 +1073,6 @@ MonsterType monsType[NUM_MONSTERS]=
 				{10,11,12,13,12,11,255},	// attack
 				{10,11,12,13,12,11,255},	// attack
 			},0},
-		{"Chef Angelo",255,255,0,NULL, // not yet implemented
-		 8,38,10,50,"graphics/angelo.jsp",0,{},
-		 MT_EVIL | MT_HUMAN | MT_WACKY,
-			{
-				{0,255},	// idle
-				{0,255},	// move
-				{0,255},	// attack 1
-				{0,255},	// defeated
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
-				NULL_ANIM,
-			},0},
 		{"Jacko",255,255,-2,AI_BigPumpkin,
 		 14,16,50,500,"graphics/jacko.jsp",0,{},
 		 MT_EVIL | MT_PUMPKIN | MT_VEGGIE,
@@ -1255,20 +1101,6 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Tut Uncommon",0,2,-2,AI_Mumble,
-		 15,40,50,100,"graphics/mumble.jsp",0,MF_NOMOVE,
-		 MT_EVIL | MT_DESERT | MT_SPOOKY,
-			{
-				{0,255},	// idle
-				{1,2,3,4,5,6,0,7,8,9,10,11,255},				// move
-				{12,13,14,15,16,17,18,19,20,21,22,255},			// attack=head crush
-				{23,24,25,26,27,28,254,29,254,30,254,31,255},	// die
-				{32,33,34,35,36,36,36,36,37,38,39,255},			// a1 = shoot from gem
-				{12,13,14,15,16,17,18,19,20,21,22,255},			// attack=head crush
-				{12,13,14,15,16,17,18,19,20,21,22,255},			// attack=head crush
-				NULL_ANIM,
-				NULL_ANIM,
-			},0 },
 		{"Kerosene Lamp",4,6,0,AI_Lantern, // not yet implemented
 		 8,24,20,50,"graphics/lantern.jsp",0,MF_FLYING | MF_NOMOVE,
 		 MT_EVIL | MT_FLYING | MT_SPOOKY,

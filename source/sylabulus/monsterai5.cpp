@@ -308,8 +308,6 @@ void AI_Mumble(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			me->frm = 0;
 			me->frmTimer = 0;
 			me->frmAdvance = 128;
-			if (IsEntity(me, EntityType::ManicMumble))
-				me->frmAdvance = 256;
 			me->action = ACTION_BUSY;
 			me->dx = 0;
 			me->dy = 0;
@@ -336,9 +334,6 @@ void AI_Mumble(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			FaceGoodguy3(me, goodguy);
 			switch ((EntityType)me->aiType)
 			{
-				case EntityType::ManicMumble:
-					me->mind1 = 0;
-					break;
 				case EntityType::TutUncommon:
 					me->mind1 = 15;
 					break;
@@ -360,43 +355,36 @@ void AI_Mumble(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			case EntityType::TutUncommon:
 				me->frmAdvance = 96;
 				break;
-			case EntityType::ManicMumble:
-				me->frmAdvance = 256;
-				break;
 			}
 		}
 		else
 		{
 			switch ((EntityType)me->aiType)
 			{
-			case EntityType::ManicMumble:
-				me->dx = Cosine(me->facing * 32) * 4;
-				me->dy = Sine(me->facing * 32) * 4;
-				break;
-			case EntityType::TutUncommon:
-				if (!((me->frm >= 3 && me->frm <= 5) || (me->frm >= 9 && me->frm <= 11)))
-				{
-					me->dx = Cosine(me->facing * 32)*2;
-					me->dy = Sine(me->facing * 32)*2;
-				}
-				else
-				{
-					me->dx = 0;
-					me->dy = 0;
-				}
-				break;
-			default:
-				if (!((me->frm >= 3 && me->frm <= 5) || (me->frm >= 9 && me->frm <= 11)))
-				{
-					me->dx = Cosine(me->facing * 32);
-					me->dy = Sine(me->facing * 32);
-				}
-				else
-				{
-					me->dx = 0;
-					me->dy = 0;
-				}
-				break;
+				case EntityType::TutUncommon:
+					if (!((me->frm >= 3 && me->frm <= 5) || (me->frm >= 9 && me->frm <= 11)))
+					{
+						me->dx = Cosine(me->facing * 32)*2;
+						me->dy = Sine(me->facing * 32)*2;
+					}
+					else
+					{
+						me->dx = 0;
+						me->dy = 0;
+					}
+					break;
+				default:
+					if (!((me->frm >= 3 && me->frm <= 5) || (me->frm >= 9 && me->frm <= 11)))
+					{
+						me->dx = Cosine(me->facing * 32);
+						me->dy = Sine(me->facing * 32);
+					}
+					else
+					{
+						me->dx = 0;
+						me->dy = 0;
+					}
+					break;
 			}
 		}
 	}

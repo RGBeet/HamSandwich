@@ -242,173 +242,105 @@
 #define MONS_MINIWACKO	209
 #define MONS_JACKFROST	210
 
-// -- project sylabulus additions
-
-// new stuff
-
-// world 1
-#define MONS_YERFBOSS	211
-#define MONS_LANTERN	212
-#define MONS_HARDHAT	213
-#define MONS_PELICAN	214
-#define MONS_NINJA		215
-#define MONS_KAPPA		216
-#define MONS_KAPPA2		217 // ice kappa?
-#define MONS_TSUCHIZOID 218
-#define MONS_YOJIMBO	219	// bunny!
-#define MONS_UMBERELLO	220 // eversion meets umbrella monster
-#define MONS_KABOCHA	221
-
-#define MONS_NOHMANN1	222	// form A (uses two different sprites)
-#define MONS_NOHMANN2	223 // form B
-#define MONS_NOHARML	224
-#define MONS_NOHARMR	225
-
-#define MONS_EYETREE	226 // eyeball tree
-#define MONS_STICKNINJA	227 // miniboss: happy stick ninja
-#define MONS_PLAYROBOT	228 // playable: robot from RWK
-
-// recolors a
-#define MONS_CRAZYBUSH	229
-#define MONS_CRAZYBUSH2	230
-#define MONS_BOMBIE		231
-#define MONS_DEATHCAP	232
-#define MONS_GLUETRAP	233	// glue turret
-#define MONS_GINGERSNAP	234
-#define MONS_PURPLKAPPA	235
-
-#define MONS_URBOZOID	236
-#define MONS_FLAMINGO	237
-#define MONS_CROQUETBAL	238
-#define MONS_NASTYTREE	239
-#define MONS_SPIKEBALL	240
-
-#define MONS_MINIZOMB	241
-#define MONS_MINISKEL	242
-
-// world 2
-
-#define MONS_BODZHA			243
-#define MONS_MOLEY			244
-#define MONS_FOREMAN		245
-#define MONS_HARDHAT2		246
-#define MONS_STOPSIGN		247
-#define MONS_OILDRUM		248
-#define MONS_TRUCK			249
-#define MONS_EDICOIL		250
-#define MONS_TEKBRO			251
-#define MONS_EDISON			252
-#define MONS_EDISONBRAIN	253
-#define MONS_EDISONCORE		254
-#define MONS_LAWYER			255
-
 enum class EntityType {
-	None,
-	Player,
+	None,				// 0: Null
+	Player,				// 1: Bouapha
 
 	// world 1
-	Bonehead,
-	Mumble,
-	Zombie,
-	Lantern,
-	Hardhat,
-	Pelican,
-	WeeNinja,
-	Kaptana,
-	Aquazoid,
-	Tsuchizoid,
-	Bunny,
-	BunnyPath,
-	BunnyFollow,
-	BunnyJimbo,
-	Ninjabread,
-	Pumpkin,
-	Kabocha,
-	CrazyBush,
-	Umbrello,
-	EyeballTree,
-	Gingersnap,
-	HappyStickNinja,
-	NohMannComedy,
-	NohMannTragedy,
-	NohMannArmLeft,
-	NohMannArmRight,
+	Bonehead,			// 2
+	Mumble,				// 3
+	Zombie,				// 4
+	Lantern,			// 5
+	Hardhat,			// 6
+	FatCrow,			// 7
+
+	Kaptana,			// 8
+	Aquazoid,			// 9
+	Tsuchizoid,			// 10
+	Bunny,				// 11
+	BunnyPath,			// 12
+	BunnyFollow,		// 13
+	BunnyJimbo,			// 14
+	Ninjabread,			// 15
+	Pumpkin,			// 16
+	Kaboocha,			// 17
+	CrazyBush,			// 18
+	Mikasa,				// 19
+	EyeballTree,		// 20
+	EasterEgg,			// 21
+	HappyStickMan,		// 22
+	NohMannComedy,		// 23
+	NohMannTragedy,		// 24
+	NohMannMaskComedy,	// 25
+	NohMannMaskTragedy,	// 26
 
 	// recolors and misc
-	YerfdogHelper,
-	YerfdogBoss,
-	Nobody,				// used in case player goes invisible
-	Spider,
-	BigSpider,
-	EggSac,
-	MamaSpider,
-	Shroom,
-	Shroomlord,
-	MushKing,
-	Crazybone,
-	ManicMumble,
-	Bombie,
-	BobBiscuit,
-	PumpkinPatch,
-	Boomkin,
-	Squash,
-	Jalapeno,
-	MutantHardhat,
-	Madkap,
-	PurpleKaptana,
-	ThornBush,
-	HotNSour,
-	Deathcap,
-	TreasureChest,
-	SharkChest,
-	Turret,
-	MissileTurret,
-	DeathTurret,
-	GoodTurret,
-	EvilBouapha,
+	YerfdogHelper,		// 27
+	YerfdogBoss,		// 28
+	Nobody,				// 29
+	Spider,				// 30
+	BigSpider,			// 31
+	EggSac,				// 32
+	MamaSpider,			// 33
+	Shroom,				// 34
 
-	// vehciles/mechs
-	Minecart,
-	PowerArmor,			// used when player is in power armor
-	MiniSub,			// used when player is in mini submarine
-	YouGo,
-	PlayLunachick,		// play as: lunachick
-	PlayShroom,			// play as: shtupid shroom
+	Crazybone,			// 35
+	TutUncommon,		// 36
+	Bombie,				// 37
+	BobBiscuit,			// 38
+	PumpkinPatch,		// 39
+	Boomkin,			// 40
+	Squash,				// 41
+	Jalapeno,			// 42
+	MutantHardhat,		// 43
+	Madkap,				// 44
+
+	HotNSour,			// 45
+	Deathcap,			// 46
+	Turret,				// 47
+	MissileTurret,		// 48
+	DeathTurret,		// 49
+	GoodTurret,			// 50
+
+	// vehicles/mechs
+	Minecart,			// 51
+	PowerArmor,			// 52
+	MiniSub,			// 53
+	YouGo,				// 54
 
 	// world 2
-	CreepingCone,
-	Autozoid,
-	CarParked,
-	CarTraffic,
-	Mailboxer,
-	WetWilly,
-	StopSign,
-	OilDrum,
-	Bodzha,
-	PunkBunny,
-	Moley,
-	Gargoyle,
-	NastyTree,
-	SpikeBall,
-	Foreman,
-	MechaTruck,
-	KingCone,
-	Teckhead,
-	EdisonCoil,
-	EdisonBoss,
-	EdisonBrain,
-	Punkin,
-	ChefAngelo,
-	Jacko,
+	CreepingCone,		// 55
+	Autozoid,			// 56
+	CarParked,			// 57
+	CarTraffic,			// 58
+	CarTraffic2,		// 59
+	Mailboxer,			// 60
+	WetWilly,			// 61
+	StopSign,			// 62
+	DullDrum,			// 63
+	Bodzha,				// 64
+	PunkBunny,			// 65
+	Moley,				// 66
+	Gnome,				// 67
+	Marvin,				// 68
+	GnomeAccountant,	// 69
+	MechaTruck,			// 70
+	KingCone,			// 71
+	Teckhead,			// 72
+	EdisonCoil,			// 73
+	EdisonBoss,			// 74
+	EdisonBrain,		// 75
+	Punkin,				// 76
+	Jacko,				// 77
 
-	Redbone,
-	TutUncommon,
-	Kerosene,
-	OvenGen,
-	PatrollerH,
-	PatrollerV,
+	// recolors and variants
+	Redbone,			// 78
+	KeroseneLamp,		// 79
+	OvenGen,			// 80
+	PatrollerH,			// 81
+	PatrollerV,			// 82
 
-	MaxId // number of monster slots
+	MaxId
 };
 
 #define NUM_MONSTERS	243					// Can grow as needed

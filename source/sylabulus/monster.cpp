@@ -144,8 +144,6 @@ const char *MonsterName(short type)
 				return "Buddy Bunny:Determined";
 			case EntityType::BunnyFollow:
 				return "Buddy Bunny:Follow";
-			case EntityType::SharkChest:
-				return "Sneaky Shark:Chest";
 			case EntityType::NohMannComedy:
 				return "Noh-Mann:Comedy";
 			case EntityType::NohMannTragedy:
@@ -312,13 +310,6 @@ const sprite_t *GetMonsterSprite(Guy *me)
 		v+=8*monsType[type].framesPerDir;
 	}
 
-	switch (EntityType(type))
-	{
-		case EntityType::EvilBouapha:
-			v += 8 * monsType[type].framesPerDir;
-			break;
-	}
-
 	if(monsType[type].flags&MF_FACECMD)
 		v+=me->facing;
 
@@ -376,21 +367,18 @@ void DrawMe(Guy* g, const sprite_set_t* set) {
 
 	switch (EntityType(type))
 	{
-	case EntityType::Kaptana:
-		if (g->mind2 && g->seq != ANIM_DIE)
-			v += 24; // special case for Kaptana when mind == 3
-		break;
-	case EntityType::Umbrello:
-		if (v == 0 && g->mind > 0)
-			v = 8;
-		break;
-	case EntityType::OilDrum:
-		if (v == 0 && g->mind > 1)
-			v = 6;
-		break;
-	case EntityType::EvilBouapha:
-		v += 8 * monsType[type].framesPerDir;
-		break;
+		case EntityType::Kaptana:
+			if (g->mind2 && g->seq != ANIM_DIE)
+				v += 24; // special case for Kaptana when mind == 3
+			break;
+		case EntityType::Mikasa:
+			if (v == 0 && g->mind > 0)
+				v = 8;
+			break;
+		case EntityType::DullDrum:
+			if (v == 0 && g->mind > 1)
+				v = 6;
+			break;
 	}
 
 	// eight directions

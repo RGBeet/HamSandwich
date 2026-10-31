@@ -4594,6 +4594,18 @@ void AI_Traffic(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		}
 	}
 
+	// 0 = right, 1 = down, 2 = left, 3 = up.
+	auto GetTrackDirections = [&]()
+	{
+		ok[0] = (me->mapx < map->width - 1 && !GetTerrain(world, map->GetTile(me->mapx+1, me->mapy)->floor)->pathType == TRN_MINECART) && CanWalkTile(me->mapx+1,me->mapy,map,world);
+
+		ok[1] = (me->mapy < map->height - 1 && !GetTerrain(world, map->GetTile(me->mapx, me->mapy+1)->floor)->pathType == TRN_MINECART) && CanWalkTile(me->mapx,me->mapy+1,map,world);
+
+		ok[2] = (me->mapx > 0 && !GetTerrain(world, map->GetTile(me->mapx - 1, me->mapy)->floor)->pathType == TRN_MINECART) && CanWalkTile(me->mapx-1,me->mapy,map,world);
+
+		ok[3] = (me->mapy > 0 && !GetTerrain(world, map->GetTile(me->mapx, me->mapy - 1)->floor)->pathType == TRN_MINECART) && CanWalkTile(me->mapx,me->mapy-1,map,world);
+	};
+
 	// if you've reached the center of a tile, time to decide where to go
 	x = (me->mapx * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
 	y = (me->mapy * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
@@ -4602,31 +4614,8 @@ void AI_Traffic(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	{
 		me->x = x;
 		me->y = y;
-		// figure out which directions are valid minecart paths
-		if (me->mapx < map->width - 1 && (GetTerrain(world, map->map[me->mapx + 1 + me->mapy * map->width].floor)->pathType & TRN_DRIVE) &&
-			!(GetTerrain(world, map->map[me->mapx + 1 + me->mapy * map->width].floor)->pathType & TF_SOLID) &&
-			!TileHasObstacle(map,me->mapx,me->mapy))
-			ok[0] = 1;
-		else
-			ok[0] = 0;
-		if (me->mapy < map->height - 1 && (GetTerrain(world, map->map[me->mapx + (me->mapy + 1) * map->width].floor)->pathType & TRN_DRIVE) &&
-			!(GetTerrain(world, map->map[me->mapx + (me->mapy + 1) * map->width].floor)->pathType & TF_SOLID) &&
-			!TileHasObstacle(map, me->mapx, me->mapy))
-			ok[1] = 1;
-		else
-			ok[1] = 0;
-		if (me->mapx > 0 && (GetTerrain(world, map->map[me->mapx - 1 + me->mapy * map->width].floor)->pathType & TRN_DRIVE) &&
-			!(GetTerrain(world, map->map[me->mapx - 1 + me->mapy * map->width].floor)->pathType & TF_SOLID) &&
-			!TileHasObstacle(map, me->mapx, me->mapy))
-			ok[2] = 1;
-		else
-			ok[2] = 0;
-		if (me->mapy > 0 && (GetTerrain(world, map->map[me->mapx + (me->mapy - 1) * map->width].floor)->pathType & TRN_DRIVE) &&
-			!(GetTerrain(world, map->map[me->mapx + (me->mapy - 1) * map->width].floor)->type & TF_SOLID) &&
-			!TileHasObstacle(map, me->mapx, me->mapy))
-			ok[3] = 1;
-		else
-			ok[3] = 0;
+
+		GetTrackDirections();
 
 		ok[(((me->mind3 / 32) + 4) & 7) / 2] = 0;
 
@@ -4663,7 +4652,7 @@ void AI_Traffic(Guy* me, Map* map, world_t* world, Guy* goodguy)
 				{
 					// in the case of multiple directions, we must decide on one
 					// based on the type of car
-					if (me->aiType == MONS_TRAFFIC)
+					if (IsEntity(me,EntityType::CarTraffic))
 					{
 						if (ok[(me->mind3 / 64 + 1) & 3])	// direction to your right
 							me->mind3 = ((me->mind3 / 64 + 1) & 3) * 64;
