@@ -339,6 +339,10 @@ enum class EntityType {
 	OvenGen,			// 80
 	PatrollerH,			// 81
 	PatrollerV,			// 82
+	DecoyBouapha,		// 83
+	Cacton,				// 84
+	Radozoid,			// 85
+	MutantZombie,		// 86
 
 	MaxId
 };

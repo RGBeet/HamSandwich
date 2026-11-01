@@ -89,6 +89,10 @@ void SetupWater(int waterType)
 			GetDisplayMGL()->LoadBMP("graphics/lava.bmp");
 			waterColor = 4;
 			break;
+		case MAP_WTR_TOXIC:
+			GetDisplayMGL()->LoadBMP("graphics/water.bmp");
+			waterColor = 1; // green :x
+			break;
 	}
 
 	width = GetDisplayMGL()->GetWidth();

@@ -2005,6 +2005,17 @@ byte CheckHit(byte size,int xx,int yy,Guy *him)
 	return 0;
 }
 
+int GetEntityPriorityValue(Guy* g)
+{
+	switch ((EntityType)g->type)
+	{
+		case EntityType::DecoyBouapha:
+			return 3; // decoys are the highest priority to hit, so they get hit first
+		default:
+			return 0; // all other entities have no priority
+	}
+}
+
 Guy *FindVictim(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t *world,byte friendly)
 {
 	int i;
@@ -2034,6 +2045,9 @@ Guy *FindVictim(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t
 							guys[i].GetShot(dx, dy, damage, map, world);
 							guys[i].mind2 += damage/2;
 						}
+						break;
+					case EntityType::DecoyBouapha:
+						damage = 0;	// decoys don't take damage
 						break;
 					default:
 						if (damage > 0)
@@ -2083,26 +2097,35 @@ Guy *FindVictims2(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world
 	return guyHit;
 }
 
-word LockOnEvil(int x,int y)
+word LockOnEvil(int x, int y)
 {
 	int i;
-	int bestRange,range;
+	int bestRange, range;
+	int priority;
 	word bestguy;
 
-	bestguy=65535;
-	bestRange=320+240;
+	bestguy = 65535;
+	bestRange = 320 + 240;
 
-	for(i=0;i<maxGuys;i++)
-		if(guys[i].type && guys[i].hp && (guys[i].friendly==0) &&
-			(!(MonsterFlags(guys[i].type,guys[i].aiType)&(MF_NOHIT|MF_INVINCIBLE))))
+	for (i = 0; i < maxGuys; i++)
+	{
+		if (guys[i].type && guys[i].hp &&
+			(guys[i].friendly == 0) &&
+			(!(MonsterFlags(guys[i].type, guys[i].aiType) &
+				(MF_NOHIT | MF_INVINCIBLE))))
 		{
-			range=abs(x-(guys[i].x>>FIXSHIFT))+abs(y-(guys[i].y>>FIXSHIFT));
-			if((range<bestRange) || (range<320+240 && Random(32)==0))
+			range = abs(x - (guys[i].x >> FIXSHIFT)) +
+				abs(y - (guys[i].y >> FIXSHIFT));
+			priority = GetEntityPriorityValue(&guys[i]);
+			range -= priority * 64;
+
+			if (range < bestRange)
 			{
-				bestguy=i;
-				bestRange=range;
+				bestguy = i;
+				bestRange = range;
 			}
 		}
+	}
 
 	return bestguy;
 }
@@ -2111,6 +2134,7 @@ word LockOnEvil2(int x,int y)
 {
 	int i,j;
 	int range;
+	int priority;
 
 	for(j=0;j<128;j++)
 	{
@@ -2119,6 +2143,9 @@ word LockOnEvil2(int x,int y)
 			(!(MonsterFlags(guys[i].type,guys[i].aiType)&(MF_NOHIT|MF_INVINCIBLE))))
 		{
 			range=abs(x-(guys[i].x>>FIXSHIFT))+abs(y-(guys[i].y>>FIXSHIFT));
+			priority = GetEntityPriorityValue(&guys[i]);
+			range -= priority * 64;
+
 			if(range<160+120)
 			{
 				return i;
@@ -2133,6 +2160,7 @@ word LockOnGood(int x,int y)
 	int i;
 	int bestRange,range;
 	word bestguy;
+	int priority;
 
 	bestguy=65535;
 	bestRange=320+240;
@@ -2143,10 +2171,13 @@ word LockOnGood(int x,int y)
 			(player.invisibility==0 && player.stealthy==0)))
 		{
 			range=abs(x-(guys[i].x>>FIXSHIFT))+abs(y-(guys[i].y>>FIXSHIFT));
-			if((range<bestRange) || (range<320+240 && Random(32)==0))
+			priority = GetEntityPriorityValue(&guys[i]);
+			range -= priority * 64;
+
+			if (range < bestRange || (range < 320 + 240 && !Random(32)))
 			{
-				bestguy=i;
-				bestRange=range;
+				bestguy = i;
+				bestRange = range;
 			}
 		}
 
@@ -2157,6 +2188,7 @@ word LockOnGood2(int x,int y)
 {
 	int i,j;
 	int range;
+	int priority;
 
 	for(j=0;j<128;j++)
 	{
@@ -2165,6 +2197,8 @@ word LockOnGood2(int x,int y)
 			(!(MonsterFlags(guys[i].type,guys[i].aiType)&MF_NOHIT)))
 		{
 			range=abs(x-(guys[i].x>>FIXSHIFT))+abs(y-(guys[i].y>>FIXSHIFT));
+			priority = GetEntityPriorityValue(&guys[i]);
+			range -= priority * 64;
 			if(range<160+120)
 			{
 				return i;

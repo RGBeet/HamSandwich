@@ -21,7 +21,41 @@ byte tportclock;
 int pStartX=-1,pStartY=-1;
 static byte oldControls,newControls,checkTheControls;
 
-int maxAmmo[MAX_WEAPONS]={1000,20,99,5,50,1000,15,40,20,30,8,3,1,40,10,3,50,5,1000,5,1,25,5,10,15,128,3,10,16,3};
+int maxAmmo[MAX_WEAPONS] =
+{
+	1000,	// WPN_NONE
+	20,		// WPN_MISSILES
+	99,		// WPN_AK8087
+	5,		// WPN_BOMBS
+	50,		// WPN_FLAME
+	1000,	// WPN_PWRARMOR
+	15,		// WPN_BIGAXE
+	40,		// WPN_LIGHTNING
+	20,		// WPN_SPEAR
+	30,		// WPN_MACHETE
+	8,		// WPN_MINES
+	3,		// WPN_TURRET
+	1,		// WPN_MINDCONTROL
+	40,		// WPN_REFLECTOR
+	10,		// WPN_JETPACK
+	3,		// WPN_SWAPGUN
+	50,		// WPN_TORCH
+	5,		// WPN_SCANNER
+	1000,	// WPN_MINISUB
+	5,		// WPN_FREEZE
+	1,		// WPN_STOPWATCH
+	25,		// WPN_BOOMERANG
+	5,		// WPN_MEGAPHONE
+	10,		// WPN_ROCKETEER
+	15,		// WPN_RAINBOWGUN
+	128,	// WPN_LUNCHBOX
+	3,		// WPN_BLACKHOLE
+	10,		// WPN_GLUEGUN
+	16,		// WPN_THROWSTARS
+	3,		// WPN_BFG
+	10,		// WPN_DESTABILIZER
+	3		// WPN_DECOYKIT
+};
 Guy* intfaceEnemy;
 
 void ShouldCheckControls(byte n)
@@ -1170,6 +1204,35 @@ void PlayerFireWeapon(Guy *me)
 				AddShotFiredToProfile();
 			}
 			break;
+		case WPN_DECOYKIT:
+			if (GetCurrentWeaponAmmo())
+			{
+				Guy* g;
+
+				ScoreEvent(SE_SHOOT, 1);
+
+				// set down good turret
+				g = AddGuy(me->x + Cosine(me->facing * 32) * 32, me->y + Sine(me->facing * 32) * 32,
+					FIXAMT * 10, (short)EntityType::DecoyBouapha, me->friendly);
+				if (g == NULL || !g->CanWalk(g->x, g->y, curMap, &curWorld)) // can't set down turret
+				{
+					MakeSound(SND_TURRETBZZT, me->x, me->y, SND_CUTOFF, 1200);
+					if (g)
+						g->type = (short)EntityType::None;
+				}
+				else
+				{
+					MakeSound(SND_DEPLOY, me->x, me->y, SND_CUTOFF, 1200);
+					//add goodguy particles to the decoy so it looks like it's alive
+					TeamChangeRing(1, g->x, g->y, 0, 16, 2);
+					g->facing = me->facing;
+					ReduceCurrentWeaponAmmo(1);
+					AddShotFiredToProfile();
+				}
+
+				player.wpnReload = 25;
+			}
+			break;
 	}
 	if (ModifierActive(MDFY_RELOAD)) // slower reload modifier
 		player.reload *= 1.5;
@@ -2259,7 +2322,8 @@ static const int wpnIcons[] = {
 
 	31,		// glue gun
 	33,		// throwing stars
-	32		// bouapha's favorite gun
+	32,		// bouapha's favorite gun
+	35,		// molecular destabilizer
 };
 
 const char* GetWeaponName(byte weapon)

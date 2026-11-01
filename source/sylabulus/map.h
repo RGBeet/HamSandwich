@@ -112,6 +112,7 @@ enum MapWater : byte
 	MAP_WTR_WATER,			// simple fancy water
 	MAP_WTR_RAPIDS,			// goes down, great for rapid levels
 	MAP_WTR_LAVA,			// dark, brooding lava
+	MAP_WTR_TOXIC,			// green, toxic water (sewers)
 	MAP_WTR_MAX
 };
 

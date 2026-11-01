@@ -255,6 +255,9 @@ void sprite_t::DrawBright(int x, int y, MGLDraw *mgl, char bright) const
 	byte noDraw;
 	int i;
 
+	if (this == nullptr)
+		return;
+
 	if (bright == 0)
 	{ // don't waste time!
 		Draw(x, y, mgl);
