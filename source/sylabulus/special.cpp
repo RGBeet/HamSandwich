@@ -405,6 +405,7 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 			eff->text[0]='\0';
 			break;
 		case EFF_COLOR:
+		case EFF_RANDCOLOR:
 			eff->value=MONS_ANYBODY;
 			eff->value2=0;
 			eff->x=255;
@@ -1956,6 +1957,9 @@ void SpecialEffect(special_t *me,Map *map)
 					printf("OOPS! Song Layer %d not loaded...", v1);
 				}
 				break;
+			case EFF_RANDCOLOR:
+				SetRandomMonsterColor(!(me->effect[i].flags & EF_NOFX), me->effect[i].x, me->effect[i].y, me->effect[i].value, me->effect[i].value2);
+				break;
 		}
 	}
 	if(me->uses>0)
@@ -2462,6 +2466,7 @@ void AdjustSpecialEffectCoords(special_t *me,int dx,int dy)
 				}
 				break;
 			case EFF_COLOR:
+			case EFF_RANDCOLOR:
 				if(me->effect[i].x!=255)
 				{
 					me->effect[i].x+=dx;

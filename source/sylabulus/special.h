@@ -127,8 +127,9 @@
 #define EFF_VARTILE			47	// set var N to tile at X,Y
 
 #define EFF_SNGLAYER		48	// sets song layer 1-8 to volume 0-255 (if it isn't ON/OFF already)
+#define EFF_RANDCOLOR		49	// sets the set color of a monster to a random color
 
-#define EFF_MAX				49
+#define EFF_MAX				50
 
 #define OLD_MAX_TRIGGERS	33
 #define OLD_MAX_EFFECTS		38

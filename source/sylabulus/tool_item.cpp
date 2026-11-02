@@ -5,6 +5,8 @@
 #include "jamulspr.h"
 #include "itemedit.h"
 
+#define ITEMTOOL_RANDOM	9999
+
 ItemTool::ItemTool(void)
 {
 	active=0;
@@ -41,9 +43,9 @@ void ItemTool::Update(int msx,int msy)
 				active=i;
 				if(GetDisplayMGL()->RMouseDown())
 				{
-					item[i]=256;
+					item[i]=ITEMTOOL_RANDOM;
 				}
-
+					
 				MakeNormalSound(SND_MENUCLICK);
 			}
 		if(PointInRect(msx, msy, mgl->GetWidth()-258, mgl->GetHeight()-18, mgl->GetWidth()-258+30, mgl->GetHeight()-18+15))
@@ -103,8 +105,8 @@ void ItemTool::Render(int msx,int msy)
 			mgl->GetHeight()-56+TILE_HEIGHT*2
 		);
 
-		if(item[i]<256)
-			InstaRenderItem(mgl->GetWidth()-144+i*(TILE_WIDTH+4)+2+TILE_WIDTH/2,mgl->GetHeight()-56+TILE_HEIGHT+6,(byte)item[i],0,mgl);
+		if(item[i]<9999)
+			InstaRenderItem(mgl->GetWidth()-144+i*(TILE_WIDTH+4)+2+TILE_WIDTH/2,mgl->GetHeight()-56+TILE_HEIGHT+6,(word)item[i],0,mgl);
 		else
 		{
 			Print(mgl->GetWidth()-144+i*(TILE_WIDTH+4)+2,mgl->GetHeight()-56+2,"N",0,1);
@@ -165,25 +167,27 @@ void ItemTool::PlopOne(int x,int y)
 {
 	Map *m = EditorGetMap();
 
-	if (mapTile_t *target = m->TryGetTile(x, y); target && target->select && item[active]<256)//		m->map[x+y*m->width].wall==0)
+	if (mapTile_t* target = m->TryGetTile(x, y); target && target->select && item[active] < (NUM_ORIGINAL_ITEMS + MAX_CUSTOM_ITEMS))//		m->map[x+y*m->width].wall==0)
 	{
-		target->item=(byte)item[active];
-		switch (GetItem(item[active])->passability)
+		item_t* plopItem = GetItem(item[active]);
+		if (plopItem == nullptr)
+			return; // prevents crash if retrieving custom id results in nullptr
+
+		target->item = (word)item[active];
+		switch (plopItem->passability)
 		{
 			case ITP_SOLID:
 			case ITP_BULLETPROOF:
 				for (mapBadguy_t& guy : m->badguy)
-					if (guy.type && guy.x == x && guy.y == y)
-					{
-						// delete a guy if he's here - this item is solid
+					if (guy.type && guy.x == x && guy.y == y) // delete a guy if he's here - this item is solid
 						guy.type = 0;
-					}
 				break;
 		}
 	}
 
 	if(plopMode==PLOP_RANDOM)
 		active=(byte)Random(4);
+
 	if(plopMode==PLOP_CYCLE)
 	{
 		active++;
@@ -307,7 +311,7 @@ void ItemTool::ItemWasDeleted(int i)
 	{
 		if(item[n]==i)
 			item[n]=IT_HAMMERUP;
-		if(item[n]>i && item[n]!=256)
+		if(item[n]>i && item[n]!=ITEMTOOL_RANDOM)
 			item[n]--;
 	}
 }

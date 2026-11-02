@@ -499,6 +499,11 @@
 #define SND_XTRALIFE			592
 #define SND_LEVER				593
 
+#define SND_SHAMATTACK			594
+#define SND_SHAMBUMP			595
+#define SND_SHAMOUCH			596
+#define SND_SHAMDIE				597
+
 #define MAX_SOUNDS				1024	// doesn't mean a thing lol
 
 //--------------------------------

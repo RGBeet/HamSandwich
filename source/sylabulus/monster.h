@@ -343,6 +343,7 @@ enum class EntityType {
 	Cacton,				// 84
 	Radozoid,			// 85
 	MutantZombie,		// 86
+	Shamisen,			// 87
 
 	MaxId
 };

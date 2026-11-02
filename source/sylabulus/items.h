@@ -199,11 +199,12 @@ enum ItemType : word
 	IT_DUMPSTER,
 	IT_TRASHBAG,
 	IT_INVISIBLEBLOCK,	// used for big guys
-	NUM_ORIGINAL_ITEMS = 270,
+	NUM_ORIGINAL_ITEMS = 350,
 	IT_RANDOM = 65535
 };
 #define MAX_ITEMS			1000
-#define CUSTOM_ID_START		1000
+#define CUSTOM_ITEM_START	750
+#define MAX_CUSTOM_ITEMS	250
 
 enum ItemAppearance : byte
 {

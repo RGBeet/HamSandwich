@@ -737,7 +737,7 @@ byte Syl_LoadWorld(world_t* world, const char* fname)
 			if (start != NUM_ORIGINAL_ITEMS)
 			{
 				LogError("Syl_LoadWorld(%s): item definition offest NYI (expected %d, got %u)", fname, NUM_ORIGINAL_ITEMS, (unsigned int)(start));
-				return false;
+				//return false;
 			}
 			size_t item_count = section.read_varint();
 			for (size_t i = 0; i < item_count; ++i)

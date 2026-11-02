@@ -4256,3 +4256,352 @@ void AI_Radozoid(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		me->frmAdvance = 128;
 	}
 }
+
+// used for mechatruck
+void AI_Zomboni(Guy* me, Map* map, world_t* world, Guy* goodguy)
+{
+	int x, y;
+
+	if (me->reload)
+		me->reload--;
+
+	if (me->action == ACTION_BUSY)
+	{
+		if (me->seq == ANIM_DIE)
+		{
+			if (me->seq == ANIM_DIE && me->reload == 0)
+			{
+				FireBullet(me->x, me->y, 0, BLT_BOOM, me->friendly);
+				BlowSmoke(me->x - 32 * FIXAMT + Random(64 * FIXAMT),
+					me->y - 32 * FIXAMT + Random(64 * FIXAMT),
+					Random(64) << FIXSHIFT, Random(FIXAMT * 4));
+				me->reload = 5;
+			}
+			if (me->frm == 8)
+			{
+				// become a zombie
+				player.enemiesSlain--;
+				me->type = MONS_ZOMBIE;
+				me->aiType = MONS_ZOMBIE;
+				ham_strcpy(me->name, MonsterName(me->type));
+				me->mind = 0;
+				me->mind1 = 0;
+				me->hp = 20;
+				me->maxHP = 20;
+				me->seq = ANIM_IDLE;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 32;
+			}
+		}
+		return;	// can't do nothin' right now
+	}
+
+	if (me->seq == ANIM_MOVE && me->frm % 4 == 1 && me->frmTimer < 32)
+		MakeSound(SND_ZOMBONIZOOM, me->x, me->y, SND_CUTOFF, 1500);
+
+	if (me->mind == 0)
+	{
+		if ((goodguy && RangeToTarget(me, goodguy) < (400 * FIXAMT)) || (me->ouch))
+		{
+			me->mind = 1;	// start chasing him down
+		}
+	}
+	else
+	{
+		if (!me->reload)
+		{
+			FaceGoodguy2(me, goodguy);
+			me->reload = 8;
+		}
+		me->dx = Cosine(me->facing * 32) * 6;
+		me->dy = Sine(me->facing * 32) * 6;
+		if (me->seq != ANIM_MOVE)
+		{
+			me->seq = ANIM_MOVE;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 256;
+		}
+		if (RangeToTarget(me, goodguy) < 128 * FIXAMT)
+		{
+			x = me->x + Cosine(me->facing * 32) * 16;
+			y = me->y + Sine(me->facing * 32) * 16;
+			if (me->AttackCheck(64, x >> FIXSHIFT, y >> FIXSHIFT, goodguy))
+			{
+				goodguy->GetShot(Cosine(me->facing * 32) * 16, Sine(me->facing * 32) * 16, 10, map, world);
+			}
+		}
+	}
+}
+
+byte TargetInSight(Guy* me, Map* map, Guy* goodguy)
+{
+	if (!goodguy || goodguy->type == (short)EntityType::Nobody)
+		return 0;
+
+	switch (me->mind2)
+	{
+	case 0:
+		if (goodguy->mapx > me->mapx && goodguy->mapx - me->mapx < 12)
+		{
+			// on the right side anyway, and within the range
+			if (abs(goodguy->mapy - me->mapy) < 2 + (goodguy->mapx - me->mapx) / (12 / 6))
+			{
+				// within the cone
+				return map->FindGuy(me->mapx, me->mapy, 8, goodguy);
+			}
+		}
+		return 0;
+		break;
+	case 2:
+		if (goodguy->mapy > me->mapy && goodguy->mapy - me->mapy < 12)
+		{
+			// on the right side anyway, and within the range
+			if (abs(goodguy->mapx - me->mapx) < 2 + (goodguy->mapy - me->mapy) / (12 / 6))
+			{
+				// within the cone
+				return map->FindGuy(me->mapx, me->mapy, 8, goodguy);
+			}
+		}
+		return 0;
+		break;
+	case 4:
+		if (goodguy->mapx < me->mapx && -goodguy->mapx + me->mapx < 12)
+		{
+			// on the right side anyway, and within the range
+			if (abs(goodguy->mapy - me->mapy) < 2 + (-goodguy->mapx + me->mapx) / (12 / 6))
+			{
+				// within the cone
+				return map->FindGuy(me->mapx, me->mapy, 8, goodguy);
+			}
+		}
+		return 0;
+		break;
+	case 6:
+		if (goodguy->mapy < me->mapy && -goodguy->mapy + me->mapy < 12)
+		{
+			// on the right side anyway, and within the range
+			if (abs(goodguy->mapx - me->mapx) < 2 + (-goodguy->mapy + me->mapy) / (12 / 6))
+			{
+				// within the cone
+				return map->FindGuy(me->mapx, me->mapy, 8, goodguy);
+			}
+		}
+		return 0;
+		break;
+	}
+	return 0;
+}
+
+void AI_Patrol(Guy* me, Map* map, world_t* world, Guy* goodguy)
+{
+	int x, y;
+	byte a;
+
+	if (me->reload)
+		me->reload--;
+
+	if (me->ouch == 4)
+	{
+		if (me->hp > 0)
+			MakeSound(SND_HARDHATOUCH, me->x, me->y, SND_CUTOFF, 1200);
+		else
+			MakeSound(SND_HARDHATDIE, me->x, me->y, SND_CUTOFF, 1200);
+	}
+
+	if (me->action == ACTION_BUSY)
+	{
+		if (me->seq == ANIM_ATTACK && me->frm == 5 && me->frmTimer < 32)
+		{
+			x = me->x + Cosine(me->facing * 32) * 20;
+			y = me->y + Sine(me->facing * 32) * 20;
+			a = me->facing * 32 - 16 + Random(32);
+			FireExactBullet(x, y, FIXAMT * 20, Cosine(a) * 14, Sine(a) * 14, FIXAMT * 10, 0, 60, 0, BLT_CLAWHAMMER, me->friendly);
+			me->reload = 20;
+		}
+		return;	// can't do nothin' right now
+	}
+
+	if (abs(me->mind2 - me->facing) == 4)	// max distance
+	{
+		if (Random(2))
+			me->facing++;
+		else
+			me->facing--;
+		me->facing &= 7;
+	}
+	else if (me->mind2 == me->facing)
+	{
+	}
+	else	// rotate towards true facing
+	{
+		int dir, diff;
+
+		if (me->mind2 > me->facing)
+		{
+			diff = me->mind2 - me->facing;
+			if (diff > 4)
+			{
+				dir = -1;
+			}
+			else
+				dir = 1;
+		}
+		else
+		{
+			diff = me->facing - me->mind2;
+			if (diff > 4)
+			{
+				dir = 1;
+			}
+			else
+				dir = -1;
+		}
+		me->facing = (me->facing + dir) & 7;
+	}
+	if (me->mind == 0)	// newborn
+	{
+		me->facing = Random(8);
+		if (IsEntity(me,EntityType::PatrollerH))
+			me->mind2 = 0;	// desired facing/also direction of movement
+		else
+			me->mind2 = 2;	// desired facing/also direction of movement
+
+		me->mind = 1;
+	}
+	else if (me->mind == 1)	// pacing
+	{
+		if (me->mind1)	// bonked a wall
+		{
+			me->mind1 = 0;
+			if (me->mind2 < 4)
+				me->mind2 += 4;
+			else
+				me->mind2 -= 4;
+		}
+		if (me->mind2 != me->facing)
+		{
+			me->dx = 0;
+			me->dy = 0;
+		}
+		else
+		{
+			me->dx = Cosine(me->mind2 * 32)*2;
+			me->dy = Sine(me->mind2 * 32)*2;
+		}
+
+		if (me->seq != ANIM_MOVE)
+		{
+			me->seq = ANIM_MOVE;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 64;
+		}
+
+		if (me->mind2 == me->facing && TargetInSight(me, map, goodguy))
+		{
+			MakeSound(SND_HARDHATTAUNT, me->x, me->y, SND_CUTOFF, 1000);
+			me->seq = ANIM_A1;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 256;
+			me->action = ACTION_BUSY;
+			me->dx = 0;
+			me->dy = 0;
+			me->reload = 0;
+			if (IsEntity(goodguy, EntityType::Player))
+				player.spotted = 30 * 8;
+			me->mind = 2;	// start clapping!
+		}
+	}
+	else	// staring at goodguy
+	{
+		if (TargetInSight(me, map, goodguy))
+		{
+			if (IsEntity(goodguy, EntityType::Player))
+				player.spotted = 30 * 8;
+			MakeSound(SND_HARDHATSHOOT, me->x, me->y, SND_CUTOFF, 1000);
+			me->seq = ANIM_ATTACK;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 256;
+			me->action = ACTION_BUSY;
+			me->dx = 0;
+			me->dy = 0;
+			me->reload = 0;
+		}
+		else
+			me->mind = 1;
+	}
+}
+
+void AI_Shamisen(Guy* me, Map* map, world_t* world, Guy* goodguy)
+{
+	int x, y;
+
+	if (me->reload)
+		me->reload--;
+
+	if (me->ouch == 4)
+	{
+		if (me->hp > 0)
+			MakeSound(SND_SHAMOUCH, me->x, me->y, SND_CUTOFF, 1200);
+		else
+			MakeSound(SND_SHAMDIE, me->x, me->y, SND_CUTOFF, 1200);
+	}
+
+	if (me->action == ACTION_BUSY)
+	{
+		if (me->seq == ANIM_ATTACK && (me->frm == 5) && me->reload == 0 && goodguy)
+		{
+			FireBullet(me->x, me->y, me->facing*32, BLT_PAPER, me->friendly);
+			me->reload = 2;
+		}
+		return;	// can't do nothin' right now
+	}
+
+	if (me->mind==0)
+	{
+		me->mind = 1;
+		x = (byte)((Random(4)+1)*2-1);
+		me->dx = Cosine(x*32) * 3;
+		me->dy = Sine(x*32) * 3;
+	}
+	else if (me->mind == 1)
+	{
+		if (me->mind1 & 1)
+			me->dx = -me->dx;
+		if (me->mind1 & 2)
+			me->dy = -me->dy;
+		if (me->mind1)
+		{
+			MakeSound(SND_SHAMBUMP, me->x, me->y, SND_CUTOFF, 256);
+		}
+		FaceGoodguy(me, goodguy);
+		me->mind1 = 0;
+
+		if (goodguy)
+		{
+			if (RangeToTarget(me, goodguy) < 128 * FIXAMT && !Random(8))
+			{
+				FaceGoodguy(me, goodguy);
+				MakeSound(SND_SHAMATTACK, me->x, me->y, SND_CUTOFF, 1000);
+				me->seq = ANIM_ATTACK;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 192;
+				me->action = ACTION_BUSY;
+				return;
+			}
+		}
+
+		if (me->seq != ANIM_MOVE)
+		{
+			me->seq = ANIM_MOVE;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 128;
+		}
+	}
+}

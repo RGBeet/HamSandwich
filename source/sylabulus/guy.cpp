@@ -793,6 +793,9 @@ void Guy::Update(Map *map,world_t *world)
 			case EntityType::BunnyPath:
 			case EntityType::Autozoid:
 			case EntityType::YouGo:
+			case EntityType::PatrollerH:
+			case EntityType::PatrollerV:
+			case EntityType::Shamisen:
 				mind1 = 1; // tell it that it hit a wall
 		}
 
@@ -814,6 +817,9 @@ void Guy::Update(Map *map,world_t *world)
 			case EntityType::BunnyPath:
 			case EntityType::Autozoid:
 			case EntityType::YouGo:
+			case EntityType::PatrollerH:
+			case EntityType::PatrollerV:
+			case EntityType::Shamisen:
 				mind1 += 2; // tell it that it hit a wall
 		}
 		b=1;
@@ -2773,6 +2779,25 @@ void SetMonsterColor(byte fx,int x,int y,int type,int colCode)
 			continue;
 		guys[i].fromColor=fromCol;
 		guys[i].toColor=toCol;
+	}
+}
+
+void SetRandomMonsterColor(byte fx, int x, int y, int type, int colCode)
+{
+	int i;
+	byte fromCol, toCol;
+
+	fromCol = colCode % 256;
+
+	for (i = 0; i < maxGuys; i++)
+	{
+		if (!CheckMonsterType(&guys[i], x, y, type))
+			continue;
+
+		toCol = (byte)Random(256);
+
+		guys[i].fromColor = fromCol;
+		guys[i].toColor = toCol;
 	}
 }
 

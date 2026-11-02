@@ -177,6 +177,7 @@ void SetMonsterName(byte fx,int x,int y,int type,char *name);
 void SetMonsterGraphics(byte fx,int x,int y,int type,char *name);
 void SetMonsterColor(byte fx,int x,int y,int type,int colCode);
 void SetMonsterBright(byte fx,int x,int y,int type,int bright);
+void SetRandomMonsterColor(byte fx,int x,int y,int type,int colCode);
 
 byte CheckMonsterColor(int x,int y,int type,byte color);
 byte CheckMonsterProximity(int type,int proximity);

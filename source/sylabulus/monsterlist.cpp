@@ -975,14 +975,14 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},
 				{0,255},
 			}},
-		{"MechaTruck",255,255,0,NULL, // not yet implemented
-		 8,38,10,50,"graphics/mechatruck.jsp",0,MF_NOMOVE,
-		 MT_EVIL | MT_HIGHTECH | MT_VEHICLE | MT_WACKY,
+		{"MechaTruck",255,255,0,AI_Zomboni,
+		 50,24,150,1000,"graphics/uglytruck.jsp",0,MF_NOMOVE,
+		 MT_VEHICLE | MT_GOOD,
 			{
-				{0,255},	// idle
-				{0,255},	// move
-				{0,255},	// attack 1
-				{0,255},	// defeated
+				{0,255},						// idle
+				{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,255},	// move
+				{16,17,18,19,20,21,22,23,255},	// attack
+				{16,17,18,17,16,255},			// die
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
@@ -1129,7 +1129,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0 },
-		{ "Hardhat Patroller",255,255,0,AI_Hardhat, // horizontal
+		{ "Hardhat Patroller",255,255,0,AI_Patrol, // horizontal
 		 11,30,100,50,"graphics/patroller.jsp",0,{},
 		 MT_EVIL | MT_HUMAN | MT_TRAP,
 			{
@@ -1143,7 +1143,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0 },
-		{ "Hardhat Patroller",255,255,0,AI_Hardhat, // vertical
+		{ "Hardhat Patroller",255,255,0,AI_Patrol, // vertical
 		 11,30,100,50,"graphics/patroller.jsp",0,{},
 		 MT_EVIL | MT_HUMAN | MT_TRAP,
 			{
@@ -1210,6 +1210,20 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,9,10,11,12,13,13,14,15,16,17,18,19,255},	// attack
 				{7,8,9,9,10,11,12,13,13,14,15,16,17,18,19,255},	// attack
 				{7,8,9,9,10,11,12,13,13,14,15,16,17,18,19,255},	// attack
+				NULL_ANIM,
+				NULL_ANIM,
+			},0},
+		{"Shamisen",255,255,0,AI_Shamisen,
+		 9,16,20,100,"graphics/shamisen.jsp",0,MF_FLYING|MF_NOMOVE,
+		 MT_EVIL | MT_DESERT | MT_SPOOKY,
+			{
+				{0,255},	// idle
+				{0,1,2,1,0,3,4,5,4,3,255},	// move
+				{6,7,8,9,10,11,11,10,9,8,7,6,255},	// attack=head crush
+				{12,13,14,15,254,15,254,15,254,15,255},	// die
+				{6,7,8,9,10,11,11,10,9,8,7,6,255},	// attack=head crush
+				{6,7,8,9,10,11,11,10,9,8,7,6,255},	// attack=head crush
+				{6,7,8,9,10,11,11,10,9,8,7,6,255},	// attack=head crush
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},

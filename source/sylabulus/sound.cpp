@@ -427,6 +427,10 @@ static SoundDesc soundInfo2[512] = { // starts from index 512, doing this for no
 	{/*SND_,*/ "Large Gem Get",ST_EFFECT},
 	{/*SND_,*/ "Extra Life",ST_PLAYER|ST_VOCAL|ST_EFFECT},
 	{/*SND_,*/ "Lever Pull",ST_EFFECT},
+	{/*SND_,*/ "Shamisen Attack",ST_MONSTER},
+	{/*SND_,*/ "Shamisen Bump",ST_MONSTER},
+	{/*SND_,*/ "Shamisen Ouch",ST_MONSTER},
+	{/*SND_,*/ "Shamisen Die",ST_MONSTER},
 };
 
 static int numCustom;

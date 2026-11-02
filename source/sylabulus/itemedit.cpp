@@ -172,7 +172,7 @@ static const char directionName[4][16]={
 	"Up",
 };
 
-static byte itemList[256];
+static word itemList[256];
 static word itemsInList,itemStart=0,itemsShown;
 static byte justPicking;
 static byte mode;
@@ -183,7 +183,8 @@ static byte backColor;
 static byte realClick;
 
 static ItemThemes saveCurTheme = ITH_COLLECTIBLE;
-static byte saveCurItem=1,rememberMode,helpRemember;
+static word saveCurItem = 1;
+static byte rememberMode, helpRemember;
 static word saveItemStart=0;
 
 static byte canDrag=1;
@@ -206,7 +207,7 @@ static void CheckTileImgFlag()
 
 static void FlagClick(int id)
 {
-	byte b;
+	word b;
 
 	MakeNormalSound(SND_MENUCLICK);
 
@@ -261,6 +262,9 @@ static void DeleteClick(int id)
 		ToolItemWasDeleted(curItem);
 		curItem=1;
 	}
+
+	itemStart = 0;
+	MakeItemList();
 	ItemSetFlags();
 }
 
@@ -277,8 +281,8 @@ static void NewClick(int id)
 		MakeNormalSound(SND_MENUSELECT);
 		curItem=i;
 		curTheme=ITH_CUSTOM;
-		MakeItemList();
 		ItemSetFlags();
+		MakeItemList();
 	}
 }
 
@@ -293,13 +297,20 @@ static void CopyClick(int id)
 		MakeNormalSound(SND_MENUCLICK);
 	else
 	{
+
 		MakeNormalSound(SND_MENUSELECT);
-		memcpy(GetItem(i),GetItem(curItem),sizeof(item_t));
-		GetItem(i)->theme=ITH_CUSTOM;	// copy everything but the theme
-		sprintf(s,"Copy of %s",GetItem(curItem)->name);
+
+		memcpy(GetItem(i), GetItem(curItem), sizeof(item_t));
+
+		GetItem(i)->theme = ITH_CUSTOM; // copy everything BUT the name.
+
+		SDL_snprintf(s, sizeof(s), "Copy of %s", GetItem(curItem)->name);
 		SDL_strlcpy(GetItem(i)->name, s, sizeof(GetItem(i)->name));
-		curItem=i;
-		curTheme=ITH_CUSTOM;
+
+		curItem = i;
+		curTheme = ITH_CUSTOM;
+
+		itemStart = 0;
 		MakeItemList();
 		ItemSetFlags();
 	}
@@ -392,60 +403,92 @@ static void MoreItemsClick(int id)
 
 static void MakeItemList(void)
 {
-	int i,pos;
-	byte b,swapped;
+	int i, pos;
+	word b;
+	byte swapped;
 
-	ClearButtons(ID_PICKITEM,ID_PICKITEM+50);
-	ClearButtons(ID_MOREITEMS,ID_MOREITEMS);
+	ClearButtons(ID_PICKITEM, ID_PICKITEM + 50);
+	ClearButtons(ID_MOREITEMS, ID_MOREITEMS);
 
-	pos=0;
-	itemsInList=0;
-	// get all items which match this theme
-	for(i=0;i<NumItems();i++)
+	pos = 0;
+	itemsInList = 0;
+
+	for (i = 0; i < NumItems(); i++)
 	{
-		if(GetItem(i)->theme && (GetItem(i)->theme & curTheme) == curTheme)
+		if (curTheme == ITH_CUSTOM)
 		{
-			itemList[pos]=i;
-			itemsInList=pos+1;
-			pos++;
+			if (i < NUM_ORIGINAL_ITEMS)
+				continue;
 		}
+		else
+		{
+			if (i >= NUM_ORIGINAL_ITEMS)
+				continue;
+
+			if (!GetItem(i)->theme ||
+				(GetItem(i)->theme & curTheme) != curTheme)
+				continue;
+		}
+
+		if (pos >= sizeof(itemList))
+			break;
+
+		itemList[pos] = i;
+		pos++;
+		itemsInList = pos;
 	}
 
-	// now sort them alphabetically, simple bubble sort
-	swapped=1;
-	while(swapped)
+	swapped = 1;
+	while (swapped)
 	{
-		swapped=0;
-		for(i=0;i<itemsInList-1;i++)
+		swapped = 0;
+
+		for (i = 0; i < itemsInList - 1; i++)
 		{
-			if(strcmp(GetItem(itemList[i])->name,GetItem(itemList[i+1])->name)>0)
+			if (strcmp(GetItem(itemList[i])->name,
+				GetItem(itemList[i + 1])->name) > 0)
 			{
-				b=itemList[i+1];
-				itemList[i+1]=itemList[i];
-				itemList[i]=b;
-				swapped=1;
+				b = itemList[i + 1];
+				itemList[i + 1] = itemList[i];
+				itemList[i] = b;
+				swapped = 1;
 			}
 		}
 	}
 
-	// now make buttons for the first N, which is however many fit on the screen
-	pos=100;
-	itemsShown=0;
-	if(itemStart>=itemsInList)
-		itemStart=0;
-	for(i=itemStart;i<itemsInList;i++)
+	pos = 100;
+	itemsShown = 0;
+
+	if (itemStart >= itemsInList)
+		itemStart = 0;
+
+	for (i = itemStart; i < itemsInList; i++)
 	{
-		MakeButton(BTN_RADIO,ID_PICKITEM+i-itemStart,(curItem==itemList[i])*CHECK_ON,2,pos,156,16,GetItem(itemList[i])->name,PickItemClick);
+		MakeButton(BTN_RADIO,
+			ID_PICKITEM + i - itemStart,
+			(curItem == itemList[i]) * CHECK_ON,
+			2, pos, 156, 16,
+			GetItem(itemList[i])->name,
+			PickItemClick);
+
 		itemsShown++;
-		pos+=18;
-		if(pos>480-30)
+		pos += 18;
+
+		if (pos > 480 - 30)
 			break;
 	}
-	if(itemStart>0 || pos>480-30)
+
+	if (itemStart > 0 || pos > 480 - 30)
 	{
 		char buf[32];
-		ham_sprintf(buf, "More Items %d/%d", itemStart / ITEMS_PER_PAGE + 1, (itemsInList - 1) / ITEMS_PER_PAGE + 1);
-		MakeButton(BTN_NORMAL,ID_MOREITEMS,0,2,100+18*ITEMS_PER_PAGE,156,16,buf,MoreItemsClick);
+
+		ham_sprintf(buf, "More Items %d/%d",
+			itemStart / ITEMS_PER_PAGE + 1,
+			(itemsInList - 1) / ITEMS_PER_PAGE + 1);
+
+		MakeButton(BTN_NORMAL, ID_MOREITEMS, 0,
+			2, 100 + 18 * ITEMS_PER_PAGE,
+			156, 16, buf, MoreItemsClick);
 	}
 }
 

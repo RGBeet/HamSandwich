@@ -1700,7 +1700,28 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			}
 			else
 			{
-				ExplodeParticles(PART_WATER,me->x,me->y,0,16);
+				switch (curMap->waterType)
+				{
+					default:
+						ExplodeParticles(PART_WATER, me->x, me->y, 0, 16);
+						break;
+					case MAP_WTR_TOXIC:
+						x = me->x >> FIXSHIFT;
+						y = me->y >> FIXSHIFT;
+						ExplodeParticles(PART_SLIME, me->x, me->y, 0, 16);
+						BlowSmoke((x + me->rectx + Random(me->rectx2 - me->rectx)) << FIXSHIFT,
+							(y + me->recty + Random(me->recty2 - me->recty)) << FIXSHIFT,
+							me->z, FIXAMT);
+						break;
+					case MAP_WTR_LAVA:
+						x = me->x >> FIXSHIFT;
+						y = me->y >> FIXSHIFT;
+						BlowUpGuy(x + me->rectx, y + me->recty, x + me->rectx2, y + me->recty2, me->z, 2);
+						BlowSmoke((x + me->rectx + Random(me->rectx2 - me->rectx)) << FIXSHIFT,
+							(y + me->recty + Random(me->recty2 - me->recty)) << FIXSHIFT,
+							me->z, FIXAMT);
+						break;
+				}
 			}
 		}
 		if(me->seq==ANIM_DIE)

@@ -252,5 +252,6 @@ void AI_DullDrum(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_Bodzha(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_DecoyBouapha(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_Radozoid(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_Shamisen(Guy* me, Map* map, world_t* world, Guy* goodguy);
 
 #endif

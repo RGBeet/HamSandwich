@@ -2455,6 +2455,26 @@ static void SetupEffectButtons(int t,int y)
 			s[0]=effect.value2/256;
 			MakeButton(BTN_COLOR,ID_EFF0+OFS_CUSTOM+5+100*t,0,485,y+17,14,14,s,ColorClick2);
 			break;
+		case EFF_RANDCOLOR:
+			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Change",NULL);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,94,y+17,140,14,MonsterName(effect.value),MonsterClick);
+			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+2+100*t,0,238,y+17,1,1,"at",NULL);
+			if(effect.x==255)
+				strcpy(s,"Anywhere");
+			else
+				sprintf(s,"%d, %d",effect.x,effect.y);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,258,y+17,70,14,s,XY3Click);
+			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+4+100*t,0,332,y+17,1,1,"to Color Swap",NULL);
+
+			s[1] = '\0';
+			s[0] = effect.value2 % 256;
+
+			MakeButton(BTN_COLOR, ID_EFF0+OFS_CUSTOM+5+100*t,
+				0, 440, y+17, 14, 14, s, ColorClick1);
+
+			MakeButton(BTN_STATIC, ID_EFF0+OFS_CUSTOM+6+100*t,
+				0, 456, y+17, 1, 1, "-> Random", NULL);
+			break;
 		case EFF_MONSBRIGHT:
 			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Change",NULL);
 			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+1+100*t,0,94,y+17,140,14,MonsterName(effect.value),MonsterClick);

@@ -674,6 +674,86 @@ static const item_t baseItems[] = {
 	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
 	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
 	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
 };
 static_assert(std::size(baseItems) == NUM_ORIGINAL_ITEMS);
 
@@ -733,19 +813,17 @@ int NumItemSprites(void)
 
 int NewItem(void)
 {
-	if(items.size()==MAX_ITEMS)
+	if (items.size() >= NUM_ORIGINAL_ITEMS + MAX_CUSTOM_ITEMS)
 		return -1;
 
 	items.push_back(emptyItem);
 
-	return items.size()-1;
+	return (int)items.size()-1;
 }
 
 void DeleteItem(int itm)
 {
-	if(itm<CUSTOM_ID_START)
-		return;
-	if(itm>=NumItems())
+	if(itm < NUM_ORIGINAL_ITEMS || itm >= (int)items.size())
 		return;
 
 	RepairItems(itm);
@@ -1116,7 +1194,7 @@ int GetTotalRarity(void)
 
 const item_t *GetBaseItem(int type)
 {
-	if(type<0 || type>=CUSTOM_ID_START)
+	if(type<0 || type>=NUM_ORIGINAL_ITEMS)
 		return NULL;
 	return &baseItems[type];
 }
@@ -1504,7 +1582,7 @@ void MoveMovableItem(int x,int y,Map *map,world_t *world)
 
 byte IsCustomItem(word type)
 {
-	return type >= CUSTOM_ID_START;
+	return type >= NUM_ORIGINAL_ITEMS;
 }
 
 byte GetFlyingSolidCheck(word type, Guy* me, byte* result)
@@ -1621,16 +1699,6 @@ byte InteractWithItem(Guy *me,mapTile_t *m,int x,int y)
 		return 1;
 	}
 
-	if(GetTeamBumpCheck(type,me))
-	{
-		if(TriggerItem(me,m,x,y))
-		{
-			MakeSound(items[type].sound,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,SND_CUTOFF,1000);
-			if(items[type].msg[0])
-				NewMessage(items[type].msg,75,0);
-		}
-	}
-
 	if(GetVehicleCheck(type,me))
 	{
 		if(TriggerItem(me,m,x,y))
@@ -1638,9 +1706,19 @@ byte InteractWithItem(Guy *me,mapTile_t *m,int x,int y)
 			MakeSound(items[type].sound,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,SND_CUTOFF,1000);
 			if(items[type].msg[0])
 				NewMessage(items[type].msg,75,0);
+			result = 1;
 		}
-		if(GetSolidCheck(m->item)) // todo: if doesn't work, check supreme
-			result=1;	// special case: if the minecart hit smashed it away, then count it passable immediately
+	}
+
+	if(GetTeamBumpCheck(type,me))
+	{
+		if(TriggerItem(me,m,x,y))
+		{
+			MakeSound(items[type].sound,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,SND_CUTOFF,1000);
+			if(items[type].msg[0])
+				NewMessage(items[type].msg,75,0);
+			result = 1;
+		}
 	}
 
 	return result;
