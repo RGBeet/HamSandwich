@@ -2109,7 +2109,7 @@ void AI_Yugo(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	{
 		if (RangeToTarget(me, goodguy) < 32 * FIXAMT && player.vehicle == 0)
 		{
-			if (!(GetTerrain(world, map->GetTile(me->mapx, me->mapy)->floor)->pathType == TRN_DRIVE))
+			if (!(GetTerrain(world, map->GetTile(me->mapx, me->mapy)->floor)->pathType & TRN_DRIVE))
 			{
 				// somehow the car ended up on non-minecart ground.. ridiculous!
 				for (x = me->mapx - 1;x <= me->mapx + 1;x++)
@@ -2204,97 +2204,134 @@ void AI_Yugo(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			return;
 		}
 
-		if (!(GetTerrain(world, map->map[me->mapx + me->mapy * map->width].floor)->type == TRN_ICE) && me->z == 0)
-		{
-			Dampen(&me->dx, FIXAMT / 8);
-			Dampen(&me->dy, FIXAMT / 8);
+		mapTile_t* mapTile = map->TryGetTile(me->mapx, me->mapy);
+		byte terrainType = GetTerrain(world, mapTile->floor)->type;
+		byte terrainValue = GetTerrain(world, mapTile->floor)->value;
 
-			if (me->mind3 > 60)	// set max speed higher if in turbo mode
+		if(me->z == 0)
+			if (terrainType != TRN_ICE)
 			{
-				x = FIXAMT * 14;
-				// and spew particles for power!!
-				SpurtParticles(PART_HAMMER, 0, me->x, me->y, FIXAMT * 4, ((me->mind2) + 128) & 255, 6);
-				SpurtParticles(PART_HAMMER, 1, me->x, me->y, FIXAMT * 4, ((me->mind2) + 128) & 255, 6);
-				MakeSound(SND_FLAMEGO, me->x, me->y, SND_CUTOFF, 200);
-			}
-			else
-			{
-				x = FIXAMT * 9;
+				Dampen(&me->dx, FIXAMT / 8);
+				Dampen(&me->dy, FIXAMT / 8);
+				if (me->mind3 > 60)	// set max speed higher if in turbo mode
+				{
+					x = FIXAMT * 14;
+					// and spew particles for power!!
+					SpurtParticles(PART_HAMMER, 0, me->x, me->y, FIXAMT * 4, ((me->mind2) + 128) & 255, 6);
+					SpurtParticles(PART_HAMMER, 1, me->x, me->y, FIXAMT * 4, ((me->mind2) + 128) & 255, 6);
+					MakeSound(SND_FLAMEGO, me->x, me->y, SND_CUTOFF, 200);
+				}
+				else
+				{
+					x = FIXAMT * 9;
+				}
+				if ((me->dx + Cosine(me->mind2) / 2 < x &&
+					me->dx + Cosine(me->mind2) / 2 > -x) ||
+					(me->dx < 0 && Cosine(me->mind2)>0) ||
+					(me->dx > 0 && Cosine(me->mind2) < 0))
+					me->dx += Cosine(me->mind2) / 2;
+				if ((me->dy + Sine(me->mind2) / 2 < x &&
+					me->dy + Sine(me->mind2) / 2 > -x) ||
+					(me->dy < 0 && Sine(me->mind2)>0) ||
+					(me->dy > 0 && Sine(me->mind2) < 0))
+					me->dy += Sine(me->mind2) / 2;
 			}
 
-			if ((me->dx + Cosine(me->mind2) / 2 < x &&
-				me->dx + Cosine(me->mind2) / 2 > -x) ||
-				(me->dx < 0 && Cosine(me->mind2)>0) ||
-				(me->dx > 0 && Cosine(me->mind2) < 0))
-				me->dx += Cosine(me->mind2) / 2;
-			if ((me->dy + Sine(me->mind2) / 2 < x &&
-				me->dy + Sine(me->mind2) / 2 > -x) ||
-				(me->dy < 0 && Sine(me->mind2)>0) ||
-				(me->dy > 0 && Sine(me->mind2) < 0))
-				me->dy += Sine(me->mind2) / 2;
-		}
-		else if (me->z == 0)
-		{
-			if (me->mind3 > 60)	// you can only accelerate on ice if in turbo mode
+			switch (terrainType)
 			{
-				x = FIXAMT * 14;
-				// and spew particles for power!!
-				SpurtParticles(PART_HAMMER, 0, me->x, me->y, FIXAMT * 4, ((me->mind2) + 128) & 255, 6);
-				SpurtParticles(PART_HAMMER, 1, me->x, me->y, FIXAMT * 4, ((me->mind2) + 128) & 255, 6);
-				MakeSound(SND_FLAMEGO, me->x, me->y, SND_CUTOFF, 200);
-				if ((me->dx + Cosine(me->mind2) / 32 < x &&
-					me->dx + Cosine(me->mind2) / 32 > -x))
-					me->dx += Cosine(me->mind2) / 32;
-				if ((me->dy + Sine(me->mind2) / 32 < x &&
-					me->dy + Sine(me->mind2) / 32 > -x))
-					me->dy += Sine(me->mind2) / 32;
+				case TRN_MUD:
+				case TRN_QUICKSAND:
+					Dampen(&me->dx, FIXAMT / 4);
+					Dampen(&me->dy, FIXAMT / 4);
+					if (me->dx != 0 || me->dy != 0)
+					{
+						SpurtParticles(PART_DIRT, 0, me->x, me->y, FIXAMT * 4, ((me->mind2) + 128) & 255, 3);
+						SpurtParticles(PART_DIRT, 1, me->x, me->y, FIXAMT * 4, ((me->mind2) + 128) & 255, 3);
+					}
+					break;
+				case TRN_RUBBER:
+					me->dz = 16 * FIXAMT;
+					me->dx += Cosine(me->facing * 32);
+					me->dy += Sine(me->facing * 32);
+					MakeSound(SND_BOING + Random(3), me->x, me->y, SND_CUTOFF | SND_RANDOM, 2);
+					break;
+				case TRN_LNCHUP:
+				case TRN_LNCHDN:
+				case TRN_LNCHLF:
+				case TRN_LNCHRG:
+					me->dz = 16 * FIXAMT;
+					if (terrainType == TRN_LNCHLF || terrainType == TRN_LNCHRG)
+					{
+						me->facing = (terrainType == TRN_LNCHLF ? 4 : 0);
+						me->dx = FIXAMT * (terrainType == TRN_LNCHLF ? -1 : 1) * 8;
+					}
+					if (terrainType == TRN_LNCHUP || terrainType == TRN_LNCHDN)
+					{
+						me->facing = (terrainType == TRN_LNCHUP ? 6 : 2);
+						me->dy = FIXAMT * (terrainType == TRN_LNCHUP ? -1 : 1) * 8;
+					}
+					BlowSmoke(me->x, me->y, 0, FIXAMT);
+					MakeSound(SND_BOMBBOOM, me->x, me->y, SND_CUTOFF | SND_RANDOM, 2); // get better sound
+					player.stunned = 15;
+					break;
+				case TRN_NORMAL:
+					if (me->mind3 > 60)	// you can only accelerate on ice if in turbo mode
+					{
+						x = FIXAMT * 14;
+						// and spew particles for power!!
+						SpurtParticles(PART_HAMMER, 0, me->x, me->y, FIXAMT * 4, ((me->mind2) + 128) & 255, 6);
+						SpurtParticles(PART_HAMMER, 1, me->x, me->y, FIXAMT * 4, ((me->mind2) + 128) & 255, 6);
+						MakeSound(SND_FLAMEGO, me->x, me->y, SND_CUTOFF, 200);
+						if ((me->dx + Cosine(me->mind2) / 32 < x &&
+							me->dx + Cosine(me->mind2) / 32 > -x))
+							me->dx += Cosine(me->mind2) / 32;
+						if ((me->dy + Sine(me->mind2) / 32 < x &&
+							me->dy + Sine(me->mind2) / 32 > -x))
+							me->dy += Sine(me->mind2) / 32;
+					}
+					break;
+				case TRN_WATER:
+					goodguy->dx = 0;
+					goodguy->dy = 0;
+					goodguy->z = 0;
+					goodguy->dz = 0;
+					me->type = MONS_NONE;
+					x = me->x / FIXAMT;
+					y = me->y / FIXAMT;
+					BlowUpGuy(x + me->rectx, y + me->recty, x + me->rectx2, y + me->recty2, me->z, 1);
+					// drown player:
+					if (player.weapon == WPN_PWRARMOR)
+						player.weapon = 0;
+					goodguy->facing = (4 + goodguy->facing) & 7;
+					goodguy->hp = 0;
+					SetPlayerHP(goodguy->hp);
+					goodguy->seq = ANIM_A3;
+					goodguy->frm = 0;
+					goodguy->frmAdvance = 255;
+					goodguy->frmTimer = 0;
+					goodguy->action = ACTION_BUSY;
+					if (player.playAs == PLAY_LUNACHIK)
+						MakeSound(SND_LUNADROWN, x, y, SND_CUTOFF | SND_ONE, 65536);
+					else
+						MakeSound(SND_DROWN, x, y, SND_CUTOFF | SND_ONE, 65536);
+					if (player.shield)
+						CompleteGoal(57);	// fell in water while shielded
+					return;
+				case TRN_LAVA:
+					goodguy->z = 0;
+					me->type = MONS_NONE;
+					x = me->x / FIXAMT;
+					y = me->y / FIXAMT;
+					BlowUpGuy(x + me->rectx, y + me->recty, x + me->rectx2, y + me->recty2, me->z, 1);
+					goodguy->GetShot(0, 0, 32, map, world);
+					goodguy->dz = 8 * FIXAMT;
+					goodguy->dx = Cosine(me->facing) * -(goodguy->dx / Cosine(me->facing));
+					goodguy->dy = Cosine(me->facing) * -(goodguy->dy / Cosine(me->facing));
+					BlowSmoke(x, y, me->z, FIXAMT);
+					SetIgniteFrames(goodguy, 60);
+					MakeNormalSound(SND_LAVAHISS);
+					return;
 			}
-		}
-		if ((GetTerrain(world, map->map[me->mapx + me->mapy * map->width].floor)->type == TRN_MUD) && me->z == 0)
-		{
-			Dampen(&me->dx, FIXAMT / 4);
-			Dampen(&me->dy, FIXAMT / 4);
-			if (me->dx != 0 || me->dy != 0)
-			{
-				SpurtParticles(PART_DIRT, 0, me->x, me->y, FIXAMT * 4, ((me->mind2) + 128) & 255, 3);
-				SpurtParticles(PART_DIRT, 1, me->x, me->y, FIXAMT * 4, ((me->mind2) + 128) & 255, 3);
-			}
-		}
-		if ((GetTerrain(world, map->map[me->mapx + me->mapy * map->width].floor)->type == TRN_MUD) && me->z == 0)
-		{
-			me->dz = FIXAMT * 16;
-			MakeSound(SND_BOING + Random(3), me->x, me->y, SND_CUTOFF, 2);
-		}
-		if ((GetTerrain(world, map->map[me->mapx + me->mapy * map->width].floor)->type & TRN_MUD) && me->z == 0)
-		{
-			goodguy->dx = 0;
-			goodguy->dy = 0;
-			goodguy->z = 0;
-			goodguy->dz = 0;
-			me->type = MONS_NONE;
-			x = me->x / FIXAMT;
-			y = me->y / FIXAMT;
-			BlowUpGuy(x + me->rectx, y + me->recty, x + me->rectx2, y + me->recty2, me->z, 1);
-			// drown player:
-			if (player.weapon == WPN_PWRARMOR)
-				player.weapon = 0;
-			goodguy->facing = (4 + goodguy->facing) & 7;
-			goodguy->hp = 0;
-			SetPlayerHP(goodguy->hp);
-			goodguy->seq = ANIM_A3;
-			goodguy->frm = 0;
-			goodguy->frmAdvance = 255;
-			goodguy->frmTimer = 0;
-			goodguy->action = ACTION_BUSY;
-			if (player.playAs == PLAY_LUNACHIK)
-				MakeSound(SND_LUNADROWN, x, y, SND_CUTOFF | SND_ONE, 65536);
-			else
-				MakeSound(SND_DROWN, x, y, SND_CUTOFF | SND_ONE, 65536);
-			if (player.shield)
-				CompleteGoal(57);	// fell in water while shielded
-			return;
-		}
-
 
 		// confine the player to the car
 		goodguy->x = me->x + me->dx;
