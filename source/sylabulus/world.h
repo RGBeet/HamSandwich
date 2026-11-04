@@ -65,10 +65,11 @@ enum TerrainRestriction : byte
 
 enum TerrainPathType : byte
 {
-	TRN_NONE,		// no path
+	TRN_NOPATH,		// no path
 	TRN_MINECART,	// minecart
 	TRN_BUNNY,		// bunny
-	TRN_DRIVE,		// bunny + minecart
+	TRN_DRIVE,		// cars
+	TRN_CROSSWALK,	// cars + bunny
 	NUM_TRNPATH_TYPES
 };
 

@@ -1633,22 +1633,22 @@ void UpdateGuys(Map *map,world_t *world)
 
 			if (guys[i].friendly != goodguy->friendly && ModifierActive(MDFY_ENEMYSPD))
 				updates++;
-
-			switch(guys[i].aiType)
+			
+			switch((EntityType)guys[i].aiType)
 			{
-				case MONS_WOLF2:
-					if (guys[i].mind3)
+				case EntityType::Mikasa:
+					if (guys[i].mind == 1)
 					{
-						updates++;
-						render = 1;
+						//updates++;
+						render = 8;
 					}
 					break;
 			}
 		}
 		for(int j=0;j<updates;j++)
 			guys[i].Update(map, world);
-		if (render) // render extra if needed
-			guys[i].Render(1);
+		if (render>0) // render extra if needed
+			guys[i].Render(render);
 	}
 }
 

@@ -436,6 +436,15 @@ void AI_Lantern(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		return;	// can't do nothin' right now
 	}
 
+
+	//if (EntityType(me->aiType) == EntityType::KeroseneLamp) // this guy is extra annoying!
+	{
+		if (!Random(8))
+		{
+			map->TempTorch(me->mapx, me->mapy, 16);
+		}
+	}
+
 	if (me->mind == 1)		// when mind=0, singlemindedly lumber towards Bouapha
 	{
 		if (goodguy)
@@ -1539,6 +1548,19 @@ void AI_Jimbo(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	}
 }
 
+byte IsGuyLooking(Guy* me, Guy* g)
+{
+	if (!me || !g)
+		return 0;
+
+	byte angle = AngleFrom(g->x, g->y, me->x, me->y);
+	byte dir = ((angle + 16) / 32) % 8;
+
+	byte diff = (dir - g->facing + 8) % 8;
+
+	return (diff <= 1 || diff >= 7);
+}
+
 void AI_Umbrello(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
 	int x, y;
@@ -1549,154 +1571,119 @@ void AI_Umbrello(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	if (me->ouch == 4)
 	{
 		if (me->hp == 0)
-			MakeSound(SND_BATOUCH, me->x, me->y, SND_CUTOFF, 1200);
+			MakeSound(SND_UMBRELLOOUCH, me->x, me->y, SND_CUTOFF, 1200);
+		else
+			MakeSound(SND_UMBRELLODIE, me->x, me->y, SND_CUTOFF, 1200);
 	}
+
 	if (me->action == ACTION_BUSY)
 	{
 		if (me->seq == ANIM_ATTACK && me->frm == 2 && me->reload == 0 && goodguy)
 		{
 			x = me->x + Cosine(me->facing * 32) * 16;
 			y = me->y + Sine(me->facing * 32) * 16;
+
 			if (me->AttackCheck(16, x >> FIXSHIFT, y >> FIXSHIFT, goodguy))
 				goodguy->GetShot(Cosine(me->facing * 32) * 4, Sine(me->facing * 32) * 4, 2, map, world);
-			me->reload = 2;
 
+			me->reload = 2;
 		}
-		if (me->seq == ANIM_A1 && me->frm > 1 && goodguy && me->hp > 0)
-		{
-			// diving attack hit check
-			x = me->x;
-			y = me->y;
-			if (me->AttackCheck(16, x >> FIXSHIFT, y >> FIXSHIFT, goodguy))
-			{
-				goodguy->GetShot(Cosine(me->facing * 32) * 8, Sine(me->facing * 32) * 8, 6, map, world);
-				me->seq = ANIM_A2;	// bounce off
-				me->frm = 0;
-				me->frmTimer = 0;
-				me->frmAdvance = 64;
-				me->dx = -me->dx / 4;
-				me->dy = -me->dy / 4;
-			}
-		}
+
 		if (me->seq == ANIM_A2)
 		{
 			if (me->frm == 3)
 				me->mind = 0;
+
 			if (me->frm > 5 && me->z == 0 && !me->reload)
 			{
 				MakeSound(SND_BOMBREFLECT, me->x, me->y, SND_CUTOFF, 1200);
 				me->reload = 20;
 			}
 		}
-		return;	// can't do nothin' right now
+
+		return;
 	}
 
-	if (me->mind == 0)		// when mind=0, singlemindedly zip towards Bouapha
+	if (me->mind == 0)
 	{
-		if (goodguy)
+		if(goodguy)
 		{
-			if (RangeToTarget(me, goodguy) < 300 * FIXAMT || me->ouch)
-			{
-				MakeSound(SND_UMBRELLOTAUNT, me->x, me->y, SND_CUTOFF, 1200);
-				me->action = ACTION_BUSY;
-				me->seq = ANIM_A1;
-				me->frm = 0;
-				me->frmTimer = 0;
-				me->frmAdvance = 64;
-				me->mind = 1;
-				AddSpottedTimer(30*8);
-			}
-		}
-	}
-	else if (me->mind == 1)		// when mind=1, singlemindedly zip towards Bouapha
-	{
-		if (goodguy)
-		{
-			if (RangeToTarget(me, goodguy) < (64 * FIXAMT) && !Random(8))
-			{
-				// go back down
-				me->seq = ANIM_A2;
-				me->frm = 0;
-				me->frmTimer = 0;
-				me->frmAdvance = 128;
-				me->action = ACTION_BUSY;
-				me->dx = 0;
-				me->dy = 0;
-				me->reload = 0;
-				return;
-			}
-
-			if (RangeToTarget(me, goodguy) < (96 * FIXAMT) && !Random(32))
-			{
-				// get him!
-				MakeSound(SND_UMBRELLOSPEW, me->x, me->y, SND_CUTOFF, 1200);
-				me->seq = ANIM_ATTACK;
-				me->frm = 0;
-				me->frmTimer = 0;
-				me->frmAdvance = 128;
-				me->action = ACTION_BUSY;
-				me->dx = 0;
-				me->dy = 0;
-				me->reload = 0;
-				return;
-			}
-
 			FaceGoodguy(me, goodguy);
 
-			me->dx = Cosine(me->facing * 32) * 3;
-			me->dy = Sine(me->facing * 32) * 3;
-			if (me->seq != ANIM_MOVE)
+			if (!IsGuyLooking(me, goodguy) && RangeToTarget(me, goodguy) < 300 * FIXAMT)
 			{
-				me->seq = ANIM_MOVE;
-				me->frm = 0;
-				me->frmTimer = 0;
-				me->frmAdvance = 128;
+				if (me->mind1++ > 30)
+				{
+					MakeSound(SND_UMBRELLOTAUNT, me->x, me->y, SND_CUTOFF, 1200);
+					me->action = ACTION_BUSY;
+					me->seq = ANIM_A1;
+					me->frm = 0;
+					me->frmTimer = 0;
+					me->frmAdvance = 64;
+					me->mind = 1;
+					me->mind1 = 0;
+					AddSpottedTimer(30 * 8);
+				}
 			}
-			if (Random(16) == 0)
+			else if (me->mind1 > 0)
 			{
-				me->mind = 2;		// occasionally wander
-				me->mind1 = 1;
+				me->mind1 = 0;
 			}
-		}
-		else
-		{
-			me->mind = 2;	// if there's no goodguy, get random
-			me->mind1 = 1;
 		}
 	}
-	else if (me->mind == 2)	// random wandering
+	else if (me->mind == 1)
 	{
-		if (RangeToTarget(me, goodguy) < (64 * FIXAMT) && !Random(8))
+		if (goodguy)
 		{
-			// go back down
-			me->seq = ANIM_A2;
-			me->frm = 0;
-			me->frmTimer = 0;
-			me->frmAdvance = 128;
-			me->action = ACTION_BUSY;
-			me->dx = 0;
-			me->dy = 0;
-			me->reload = 0;
-			return;
-		}
+			if (!IsGuyLooking(me, goodguy)) // if the player isn't looking at me, chase him down
+			{
+				if (me->mind1)
+					me->mind1 = 0;
+				FaceGoodguy(me, goodguy);
+				me->dx = Cosine(me->facing * 32) * 4;
+				me->dy = Sine(me->facing * 32) * 4;
 
-		if (!(me->mind1--))	// time to get a new direction
-		{
-			if ((goodguy) && !Random(3))
-				me->mind = 1;	// get back on track
+				// lil scary fumes
+				if(!Random(8))
+				{
+					StinkySteam(me->x - FIXAMT * 20 + Random(FIXAMT * 40),
+						me->y - FIXAMT * 20 + Random(FIXAMT * 40),
+						me->z + FIXAMT * 40, FIXAMT * 2);
+				}
+
+				if (RangeToTarget(me, goodguy) < (96 * FIXAMT) && !Random(32))
+				{
+					// get him!
+					MakeSound(SND_UMBRELLOSPEW, me->x, me->y, SND_CUTOFF, 1200);
+
+					me->seq = ANIM_ATTACK;
+					me->frm = 0;
+					me->frmTimer = 0;
+					me->frmAdvance = 128;
+					me->action = ACTION_BUSY;
+					me->dx = 0;
+					me->dy = 0;
+					me->reload = 0;
+					return;
+				}
+			}
 			else
-				me->facing = (byte)Random(8);
-			me->mind1 = Random(40) + 1;
-		}
+			{
+				if (me->mind1++ > 30)
+				{
+					MakeSound(SND_UMBRELLOSPEW, me->x, me->y, SND_CUTOFF, 1200);
+					me->action = ACTION_BUSY;
+					me->seq = ANIM_A2;
+					me->frm = 0;
+					me->frmTimer = 0;
+					me->frmAdvance = 64;
+					me->mind = 0;
+					me->mind1 = 0;
+				}
 
-		me->dx = Cosine(me->facing * 32) * 3;
-		me->dy = Sine(me->facing * 32) * 3;
-		if (me->seq != ANIM_MOVE)
-		{
-			me->seq = ANIM_MOVE;
-			me->frm = 0;
-			me->frmTimer = 0;
-			me->frmAdvance = 110;
+				Dampen(&me->dx, FIXAMT / 8);
+				Dampen(&me->dy, FIXAMT / 8);
+			}
 		}
 	}
 }

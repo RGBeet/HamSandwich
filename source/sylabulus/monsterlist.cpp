@@ -8,7 +8,7 @@ MonsterType monsType[NUM_MONSTERS]=
 	{
 		{"Null",255,255,0,NULL,
 		 0,0,0,0,"",0,{},MT_NONE,{},0},
-		{"Bouapha",1,4,0,NULL,
+		{"Bouapha",255,255,0,NULL,
 		 11,42,128,0,"graphics/bouapha.jsp",0,MF_WATERWALK,
 		 MT_GOOD | MT_HUMAN,
 			{
@@ -1101,8 +1101,8 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Kerosene Lamp",4,6,0,AI_Lantern, // not yet implemented
-		 8,24,20,50,"graphics/lantern.jsp",0,MF_FLYING | MF_NOMOVE,
+		{"Kerosene Lamp",255,255,2,AI_Lantern, // not yet implemented
+		 8,24,20,50,"graphics/lantern.jsp",0,MF_FLYING | MF_NOMOVE | MF_GLOW | MF_ENEMYWALK | MF_FREEWALK,
 		 MT_EVIL | MT_FLYING | MT_SPOOKY,
 			{
 				{0,255},	// idle

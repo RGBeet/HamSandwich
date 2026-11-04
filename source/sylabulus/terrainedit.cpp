@@ -84,10 +84,10 @@ static const char terrainRestrictNames[][16] = {
 
 // flag
 static const TerrainPathType terrainPath[] = {
-	TRN_MINECART,TRN_BUNNY,TRN_DRIVE,
+	TRN_NOPATH,TRN_MINECART,TRN_BUNNY,TRN_DRIVE,TRN_CROSSWALK
 };
 static const char terrainPathNames[][16] = {
-	"N/A", "Minecart Path", "Bunny Path", "Drive Path"
+	"N/A", "Minecart Path", "Bunny Path", "Drive Path", "Bunny+Drive"
 };
 
 void TerrainSetupButtons(void);
