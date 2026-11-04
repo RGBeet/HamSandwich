@@ -191,11 +191,15 @@ byte TryToPushItem(int x,int y,int destx,int desty,Map *map,world_t *world)
 			if((guys[i].type) && (guys[i].hp>0) &&
 				(abs(guys[i].mapx-destx)<8) && (abs(guys[i].mapy-desty)<8))
 				if(TileBonkCheck(xx,yy,&guys[i]))
+				{
+					printf("Bumped into guy #%d\n", i);
 					return 0;	// the pushy block would hit the guy
+				}
 
 		// the floor is pushonable, let's do it
 		tile->item=map->GetTile(x,y)->item;
 		map->GetTile(x,y)->item=0;
+		printf("TRYING TO PUSH ITEM\n");
 		return 1;
 	}
 	else

@@ -1564,7 +1564,7 @@ void AI_Autozoid(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 		x = (me->x + me->dx) / (TILE_WIDTH * FIXAMT);
 		y = (me->y + me->dy) / (TILE_HEIGHT * FIXAMT);
-		if (mapTile_t* tile = map->TryGetTile(x, y); tile && !tile->wall && !(GetTerrain(world, tile->floor)->pathType & TRN_DRIVE))
+		if (mapTile_t* tile = map->TryGetTile(x, y); tile && !tile->wall && !(GetTerrain(world, tile->floor)->pathType == TRN_DRIVE))
 		{
 			// you would've gone offroad
 			me->dx = 0;
@@ -2109,7 +2109,7 @@ void AI_Yugo(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	{
 		if (RangeToTarget(me, goodguy) < 32 * FIXAMT && player.vehicle == 0)
 		{
-			if (!(GetTerrain(world, map->GetTile(me->mapx, me->mapy)->floor)->pathType & TRN_DRIVE))
+			if (!(GetTerrain(world, map->GetTile(me->mapx, me->mapy)->floor)->pathType == TRN_DRIVE))
 			{
 				// somehow the car ended up on non-minecart ground.. ridiculous!
 				for (x = me->mapx - 1;x <= me->mapx + 1;x++)
@@ -2154,7 +2154,7 @@ void AI_Yugo(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		y = (me->y + me->dy) / (TILE_HEIGHT * FIXAMT);
 		if (mapTile_t* tile = map->TryGetTile(x, y); tile &&
 			!tile->wall &&
-			!(GetTerrain(world, tile->floor)->pathType & TRN_DRIVE))
+			!(GetTerrain(world, tile->floor)->pathType == TRN_DRIVE))
 		{
 			// you would've gotten off of driveable terrain
 			me->mind3 = 0;
@@ -4429,6 +4429,19 @@ void AI_ParkedCar(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	}
 }
 
+byte CanTraffic(Guy* me, int x, int y, Map* map, world_t* world)
+{
+	if (x < 0 || y < 0 || x >= map->width || y >= map->height || !CanWalkTile(x, y, map, world))
+		return 0;
+	switch (GetTerrain(world, map->GetTile(x, y)->floor)->pathType)
+	{
+		case TRN_DRIVE:
+			return 1;
+		default:
+			return 0;
+	}
+}
+
 void AI_Traffic(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
 	int x, y;
@@ -4504,13 +4517,13 @@ void AI_Traffic(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	// 0 = right, 1 = down, 2 = left, 3 = up.
 	auto GetTrackDirections = [&]()
 	{
-		ok[0] = (me->mapx < map->width - 1 && !GetTerrain(world, map->GetTile(me->mapx+1, me->mapy)->floor)->pathType == TRN_MINECART) && CanWalkTile(me->mapx+1,me->mapy,map,world);
+		ok[0] = (me->mapx < map->width - 1) && CanTraffic(me, me->mapx + 1, me->mapy, map, world);
 
-		ok[1] = (me->mapy < map->height - 1 && !GetTerrain(world, map->GetTile(me->mapx, me->mapy+1)->floor)->pathType == TRN_MINECART) && CanWalkTile(me->mapx,me->mapy+1,map,world);
+		ok[1] = (me->mapy < map->height - 1) && CanTraffic(me, me->mapx, me->mapy + 1, map, world);
 
-		ok[2] = (me->mapx > 0 && !GetTerrain(world, map->GetTile(me->mapx - 1, me->mapy)->floor)->pathType == TRN_MINECART) && CanWalkTile(me->mapx-1,me->mapy,map,world);
+		ok[2] = (me->mapx > 0) && CanTraffic(me, me->mapx - 1, me->mapy, map, world);
 
-		ok[3] = (me->mapy > 0 && !GetTerrain(world, map->GetTile(me->mapx, me->mapy - 1)->floor)->pathType == TRN_MINECART) && CanWalkTile(me->mapx,me->mapy-1,map,world);
+		ok[3] = (me->mapy > 0) && CanTraffic(me, me->mapx, me->mapy - 1, map, world);
 	};
 
 	// if you've reached the center of a tile, time to decide where to go

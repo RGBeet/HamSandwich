@@ -757,7 +757,7 @@ void DrawPowerupBar(int x,int y,MGLDraw *mgl)
 
 	width[0]=player.shield*POWERUP_WIDTH/240;
 	color[0]=32*3+16;	// blue for shield
-	width[1]=player.garlic*POWERUP_WIDTH/255;
+	width[1]=player.waterWalk*POWERUP_WIDTH/255;
 	color[1]=32*0+20;	// light grey for garlic
 	width[2]=goodguy->speed*POWERUP_WIDTH/player.speed[1];
 	color[2]=32*7+16;	// aqua for speed

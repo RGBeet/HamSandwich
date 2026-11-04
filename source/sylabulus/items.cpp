@@ -1437,6 +1437,7 @@ byte TriggerItem(Guy *me,mapTile_t *m,int x,int y)
 		case IE_PUSH:
 			if(!me)
 			{
+				printf("TRY TO PUSH...\n");
 				i=0;
 				if(items[m->item].triggerType == ITRG_PROJECTILE)
 				{

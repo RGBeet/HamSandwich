@@ -374,7 +374,7 @@ void AI_Mattie2Body(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 static byte IsBunnyAble(const mapTile_t* m, world_t* world)
 {
-	if (!(GetTerrain(world, m->floor)->pathType & TRN_BUNNY))
+	if (GetTerrain(world, m->floor)->pathType != TRN_BUNNY)
 		return 0;
 
 	switch(GetItem(m->item)->passability)
