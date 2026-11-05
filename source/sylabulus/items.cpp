@@ -571,8 +571,8 @@ static const item_t baseItems[] = {
 	{"Trash Bag",0,0,0,174,0,0,0,
 		0,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_URBAN,ITA_SHADOW,ITP_BULLETPROOF,ITRG_NONE,ITB_NONE,0,
 		IE_NONE,0,"",0},
-	{"Invisible Block",0,0,0,172,0,0,0,0,{},ITA_NONE,ITP_SOLID,ITRG_NONE,ITB_NONE,0,0,0,"",0}, // used for big guys
-	{"Trash Bag",0,0,0,174,0,0,0,
+	{"Invisible Block",0,0,0,172,0,0,0,0,ITH_OBSTACLE,ITA_NONE,ITP_SOLID,ITRG_NONE,ITB_NONE,0,0,0,"",0}, // used for big guys
+	{"Watercooler",0,0,0,178,0,0,0,
 		0,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_URBAN,ITA_SHADOW,ITP_BULLETPROOF,ITRG_NONE,ITB_NONE,0,
 		IE_NONE,0,"",0},
 	{"Cactus 1",0,0,0,176,0,0,0,

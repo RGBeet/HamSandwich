@@ -4459,6 +4459,13 @@ void AI_Patrol(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	}
 	else if (me->mind == 1)	// pacing
 	{
+		// if lighting is dark, turn on flashlight
+		mapTile_t* mt = &map->map[me->mapx + me->mapy * map->width];
+		if (mt->templight < -5) // un-stealth it!
+		{
+			map->BrightTorch(me->mapx, me->mapy, 8, 8);
+		}
+
 		if (me->mind1)	// bonked a wall
 		{
 			me->mind1 = 0;
