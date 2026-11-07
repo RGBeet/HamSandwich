@@ -75,8 +75,8 @@ class Guy final
 
 		int hp,maxHP;
 
-		int type;		// what kind of monster?
-		int aiType;		// behavior type (which function to use)
+		word type;		// what kind of monster?
+		word aiType;		// behavior type (which function to use)
 		int age;		// # of frames
 		int size;		// takes monsSize
 
@@ -115,9 +115,6 @@ class Guy final
 			int speed, int endX, int endY);			
 		bool FollowPath(Map* map, world_t* world, int speed = 4);		// puts the guy on the path, returns 1 if successful
 		int GetPathDistance();
-
-		// new
-		void AvoidGuys(int buffer=0);
 };
 
 extern Guy *goodguy;
@@ -204,7 +201,6 @@ void SetSpeedFrames(Guy* g, word frames);
 
 byte TerrainCheck(Guy* g,byte target,mapTile_t *mapTile,world_t *world);
 byte ConveyorCheck(Guy* g, mapTile_t* mapTile, world_t* world);
-void WakeUpGuys(Guy* g, int x, int y, byte size, Map* map, world_t* world, byte friendly);
 void AddSpottedTimer(int frames);
 void SetParent(Guy* g, Guy* parent);
 

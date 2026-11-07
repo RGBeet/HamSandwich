@@ -155,11 +155,11 @@ byte TerrainIsDrivable(Guy* me, world_t* world, Map* map, int mapx, int mapy)
 	switch (terrain->pathType)
 	{
 		case TRN_BUNNY:
-			return me->aiType == (short)EntityType::BunnyPath;
+			return me->aiType == ENT_BUNNYPATH;
 		case TRN_MINECART:
-			return me->aiType == (short)EntityType::Minecart;
+			return me->aiType == ENT_MINECART;
 		case TRN_DRIVE:
-			return me->aiType == (short)EntityType::YouGo;
+			return me->aiType == ENT_YOUGO;
 		default:
 			return 0;
 	}

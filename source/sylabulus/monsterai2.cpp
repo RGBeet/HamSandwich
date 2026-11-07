@@ -5,7 +5,6 @@
 #include "player.h"
 #include "editor.h"
 
-
 void AI_MineCart(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
 	int x, y;
@@ -254,8 +253,16 @@ void AI_MineCart(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	goodguy->dy = 0;
 	goodguy->dz = 0;
 
-	if (me->mind1 < 96)
-		me->mind1++;
+	if (!PlayerIsMovingAgainstVehicle(me, goodguy))
+	{
+		if (me->mind1 < 96)
+			me->mind1++;
+	}
+	else
+	{
+		if (me->mind1 > 8)
+			me->mind1--;
+	}
 
 	if (me->seq != ANIM_MOVE)
 	{
@@ -289,7 +296,7 @@ void AI_Raft(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	byte tries;
 	byte terrain;
 
-	goodguy = GetGuyOfAIType(MONS_BOUAPHA);
+	goodguy = GetGuyOfAIType(ENT_BOUAPHA);
 	if (!goodguy)
 		return;
 
@@ -388,7 +395,7 @@ void AI_Raft(Guy* me, Map* map, world_t* world, Guy* goodguy)
 				if (tries == 4)	// there was no spot to put the player
 				{
 					NewMessage("Your raft broke!", 60, 0);
-					me->type = (short)EntityType::None;
+					me->type = ENT_NONE;
 					player.vehicle = 0;
 					return;
 				}
@@ -424,8 +431,20 @@ void AI_Raft(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		goodguy->dy = 0;
 		goodguy->dz = 0;
 
-		if (me->mind1 < 16)
-			me->mind1++;
+		if (PlayerIsMovingAgainstVehicle(me, goodguy))
+		{
+			if (me->mind1>4)
+				me->mind1--;
+			if (me->mind1>16)
+				me->mind1--;
+		}
+		else
+		{
+			if(me->mind1<8)
+				me->mind1++;
+			if(me->mind1<24)
+				me->mind1++;
+		}
 
 		if (me->seq != ANIM_MOVE)
 		{
@@ -2519,18 +2538,18 @@ void AI_Turret(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		{
 			x = me->x + Cosine(me->facing * 32) * 12;
 			y = me->y + Sine(me->facing * 32) * 12;
-			switch ((EntityType)me->aiType)
+			switch (me->aiType)
 			{
-				case EntityType::Turret:
+				case ENT_TURRET:
 					MakeSound(SND_ROBOSHOOT, me->x, me->y, SND_CUTOFF, 1200);
 					FireExactBullet(x, y, FIXAMT * 4, Cosine(me->facing * 32) * 8, Sine(me->facing * 32) * 8, 0, 0, 30, me->facing * 32, BLT_ENERGY, me->friendly);
 					me->reload = 30;
 					break;
-				case EntityType::MissileTurret:
+				case ENT_MISSILETURRET:
 					FireBullet(x, y, me->facing, BLT_MISSILE, me->friendly);
 					me->reload = 60;
 					break;
-				case EntityType::DeathTurret:
+				case ENT_DEATHTURRET:
 					if (RangeToTarget(me, goodguy) < 400 * FIXAMT)
 					MakeSound(SND_ROBOSHOOT, me->x, me->y, SND_CUTOFF, 1200);
 					a = (me->facing * 32 - 16 + Random(33)) & 255;
@@ -2553,7 +2572,7 @@ void AI_Turret(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		if (goodguy && RangeToTarget(me, goodguy) < 800 * FIXAMT)
 		{
 			me->mind = 1;
-			if ((EntityType)me->aiType != EntityType::DeathTurret)
+			if (me->aiType != ENT_DEATHTURRET)
 				me->reload = (byte)Random(60);
 			else
 				me->reload = 5;
@@ -2571,9 +2590,9 @@ void AI_Turret(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			me->frm = 0;
 			me->frmTimer = 0;
 
-			switch ((EntityType)me->aiType)
+			switch (me->aiType)
 			{
-				case EntityType::DeathTurret:
+				case ENT_DEATHTURRET:
 					me->frmAdvance = 512;
 					break;
 				default:

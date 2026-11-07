@@ -116,9 +116,8 @@ word MonsterHP(dword type)
 	return monsType[type].hp;
 }
 
-const char *MonsterName(short type)
+const char *MonsterName(word type)
 {
-	EntityType realType = (EntityType)type;
 	// These special monster IDs used in specials have hardcoded names.
 	switch (type)
 	{
@@ -138,21 +137,21 @@ const char *MonsterName(short type)
 	// These monsters have different names in the editor.
 	if (editing)
 	{
-		switch (realType)
+		switch (type)
 		{
-			case EntityType::BunnyPath:
+			case ENT_BUNNYPATH:
 				return "Buddy Bunny:Determined";
-			case EntityType::BunnyFollow:
+			case ENT_BUNNYFOLLOW:
 				return "Buddy Bunny:Follow";
-			case EntityType::NohMannComedy:
+			case ENT_NOHMANNCOMEDY:
 				return "Noh-Mann:Comedy";
-			case EntityType::NohMannTragedy:
+			case ENT_NOHMANNTRAGEDY:
 				return "Noh-Mann:Tragedy";
-			case EntityType::YerfdogBoss:
+			case ENT_YERFDOGBOSS:
 				return "Yerfdog:Boss";
-			case EntityType::PatrollerH:
+			case ENT_PATROLLERH:
 				return "Patroller:Horizontal";
-			case EntityType::PatrollerV:
+			case ENT_PATROLLERV:
 				return "Patroller:Vertical";
 		}
 	}
@@ -305,7 +304,7 @@ const sprite_t *GetMonsterSprite(Guy *me)
 	if(!(monsType[type].flags&MF_ONEFACE))
 		v+= me->facing*monsType[type].framesPerDir;
 
-	if ((EntityType)type == EntityType::Player && PlayerHasHammer())
+	if (type == ENT_BOUAPHA && PlayerHasHammer())
 	{
 		v+=8*monsType[type].framesPerDir;
 	}
@@ -365,17 +364,17 @@ void DrawMe(Guy* g, const sprite_set_t* set) {
 	if (v == FRAME_INVIS || v == FRAME_END) // 255 = end of frame
 		return;	// don't draw this frame
 
-	switch (EntityType(type))
+	switch (type)
 	{
-		case EntityType::Kaptana:
+		case ENT_KAPTANA:
 			if (g->mind2 && g->seq != ANIM_DIE)
 				v += 24; // special case for Kaptana when mind == 3
 			break;
-		case EntityType::Mikasa:
+		case ENT_MIKASA:
 			if (v == 0 && g->mind > 0)
 				v = 8;
 			break;
-		case EntityType::DullDrum:
+		case ENT_DULLDRUM:
 			if (v == 0 && g->mind > 1)
 				v = 6;
 			break;
@@ -389,7 +388,7 @@ void DrawMe(Guy* g, const sprite_set_t* set) {
 	int y = g->y >> FIXSHIFT;
 	int z = g->z >> FIXSHIFT;
 
-	if ((EntityType)g->type == EntityType::Player) // do player stuff
+	if (g->type == ENT_BOUAPHA) // do player stuff
 	{
 		if (PlayerHasHammer())
 		{
@@ -946,7 +945,7 @@ void FlailLock(Guy *me)
 	}
 }
 
-byte IsEntity(Guy *g, EntityType targetType)
+byte IsEntity(Guy *g, word targetType)
 {
-	return (g->aiType == (short)targetType);
+	return (g->aiType == targetType);
 }

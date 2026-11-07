@@ -818,7 +818,7 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 				FireExactBullet(me->x,me->y,me->z,Cosine(i)*12,Sine(i)*12,0,0,16,i,BLT_SPORE,me->friendly);
 				FireExactBullet(me->x,me->y,me->z,Cosine(i)*6,Sine(i)*6,0,0,16,i,BLT_SPORE,me->friendly);
 			}
-			g=AddGuy(me->x-me->dx*2,me->y-me->dy*2,me->z,(short)EntityType::Shroom,me->friendly);	// become a living shroom
+			g=AddGuy(me->x-me->dx*2,me->y-me->dy*2,me->z,ENT_SHROOM,me->friendly);	// become a living shroom
 			if(g && (!g->CanWalk(g->x,g->y,map,world)))
 				RemoveGuy(g);
 
@@ -943,7 +943,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 				}
 				if(primaryCheck)
 				{
-					if((EntityType)g->aiType == EntityType::Tsuchizoid)
+					if(IsEntity(g,ENT_TSUCHIZOID))
 					{
 						g->mind2 += 30;	// make him angry]
 						if (g->mind2 > 60) // pursuit mode

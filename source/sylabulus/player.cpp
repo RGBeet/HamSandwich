@@ -978,12 +978,12 @@ void PlayerFireWeapon(Guy *me)
 
 				// set down good turret
 				g=AddGuy(me->x+Cosine(me->facing*32)*32,me->y+Sine(me->facing*32)*32,
-					FIXAMT*10,(short)EntityType::GoodTurret, me->friendly);
+					FIXAMT*10,ENT_GOODTURRET, me->friendly);
 				if(g==NULL || !g->CanWalk(g->x,g->y,curMap,&curWorld)) // can't set down turret
 				{
 					MakeSound(SND_TURRETBZZT,me->x,me->y,SND_CUTOFF,1200);
 					if(g)
-						g->type=(short)EntityType::None;
+						g->type=ENT_NONE;
 				}
 				else
 				{
@@ -1213,12 +1213,12 @@ void PlayerFireWeapon(Guy *me)
 
 				// set down good turret
 				g = AddGuy(me->x + Cosine(me->facing * 32) * 32, me->y + Sine(me->facing * 32) * 32,
-					FIXAMT * 10, (short)EntityType::DecoyBouapha, me->friendly);
+					FIXAMT * 10, ENT_DECOYBOUAPHA, me->friendly);
 				if (g == NULL || !g->CanWalk(g->x, g->y, curMap, &curWorld)) // can't set down turret
 				{
 					MakeSound(SND_TURRETBZZT, me->x, me->y, SND_CUTOFF, 1200);
 					if (g)
-						g->type = (short)EntityType::None;
+						g->type = ENT_NONE;
 				}
 				else
 				{
@@ -1652,7 +1652,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			}
 			return;
 		}
-		else if ((EntityType)me->parent->aiType == EntityType::Minecart)
+		else if (me->parent->aiType == ENT_MINECART)
 		{
 			me->dx=0;
 			me->dy=0;
@@ -1668,7 +1668,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			}
 			me->z=FIXAMT*8;
 		}
-		else if((EntityType)me->parent->aiType == EntityType::YouGo)
+		else if(me->parent->aiType == ENT_YOUGO)
 		{
 			me->x=me->parent->x;
 			me->y=me->parent->y;
@@ -2107,6 +2107,16 @@ void PlayerControlPowerArmor(Guy *me,mapTile_t *mapTile,world_t *world)
 			me->frmAdvance=128;
 		}
 	}
+}
+
+
+byte PlayerIsMovingAgainstVehicle(Guy *vehicle, Guy *goodguy)
+{
+	byte c = GetControls();
+	if (!goodguy || !vehicle || vehicle->mind == 0)
+		return 0;
+
+	return (((c & CONTROL_UP) && vehicle->dy > 0) || ((c & CONTROL_DN) && vehicle->dy < 0) || ((c & CONTROL_LF) && vehicle->dx > 0) || ((c & CONTROL_RT) && vehicle->dx < 0));
 }
 
 void PlayerControlMiniSub(Guy *me,mapTile_t *mapTile,world_t *world)

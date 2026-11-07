@@ -293,10 +293,10 @@ static int BrainsForMonster(int type, int item)
 	int result = 0, brainsPerBrain = BrainsGiven(IT_BRAIN), brainsForItem = BrainsGiven(item);
 	
 	// get entity type
-	switch((EntityType)type)
+	switch(type)
 	{
-		case EntityType::Zombie:
-		case EntityType::Bombie:
+		case ENT_ZOMBIE:
+		case ENT_BOMBIE:
 			result += 1;
 			break;
 	}

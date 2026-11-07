@@ -456,7 +456,7 @@ void AI_BuddyBunny(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	if (me->mind1)
 	{
 		me->mind1 = 0;
-		if ((EntityType)me->aiType == EntityType::Bunny)
+		if (me->aiType == ENT_BUNNY)
 			me->mind3 = Random(4) * 64;
 		me->mind = 30;	// wait 1 seconds before trying again
 		me->dx = 0;
@@ -516,7 +516,7 @@ void AI_BuddyBunny(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 		if (y == 0)	// no directions to go!
 		{
-			if ((EntityType)me->aiType == EntityType::Bunny)
+			if (me->aiType == ENT_BUNNY)
 				me->mind3 = Random(4) * 64;
 			me->mind = 30;	// wait 1 second before trying again
 			me->dx = 0;

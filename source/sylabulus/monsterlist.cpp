@@ -78,7 +78,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Hardhat",255,255,0,AI_Hardhat, // not yet implemented
+		{"Hardhat",255,255,0,AI_Hardhat,
 		 11,30,40,50,"graphics/hardhat.jsp",0,{},
 		 MT_EVIL | MT_HUMAN,
 			{
@@ -92,8 +92,8 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Fat Crow",255,255,0,AI_Pelican, // not yet implemented
-		 14,26,20,50,"graphics/fatcrow.jsp",0,MF_FLYING,
+		{"Fat Crow",255,255,0,AI_Pelican,
+		 14,26,20,50,"graphics/fatcrow.jsp",0,MF_FLYING|MF_WATERWALK,
 		 MT_EVIL | MT_ANIMAL | MT_FLYING,
 			{
 				{0,1,2,3,2,1,0,4,5,6,5,4,255},	// idle
@@ -1227,4 +1227,18 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
+		{"Raft",255,255,0,AI_Raft,
+		 8,8,100,500,"graphics/raft.jsp",0,MF_NOMOVE|MF_INVINCIBLE|MF_FREEWALK|MF_NOHIT|MF_ONEFACE|MF_AQUATIC|MF_WATERWALK,
+		 MT_VEHICLE|MT_GOOD,
+			{
+				{0,1,2,3,4,3,2,1,0,5,6,7,8,7,6,5,255},	// idle
+				{0,1,2,3,4,3,2,1,0,5,6,7,8,7,6,5,255},	// idle
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+			}},
 	};

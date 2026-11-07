@@ -41,7 +41,7 @@ void AI_Bonehead(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		{
 			x = me->x + Cosine(me->facing * 32) * 16;
 			y = me->y + Sine(me->facing * 32) * 16;
-			if(!IsEntity(me,EntityType::Crazybone))
+			if(!IsEntity(me, ENT_CRAZYBONE))
 				FireBullet(x, y, me->facing * 32, BLT_ENERGY, me->friendly);
 			else
 				FireBullet(x, y, me->facing * 32, BLT_BIGSHELL, me->friendly);
@@ -49,7 +49,7 @@ void AI_Bonehead(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			me->mind1 = 1;
 		}
 		// crazybone: 1 in 6 revival chance
-		if (me->seq == ANIM_DIE && IsEntity(me, EntityType::Crazybone) && me->frm == 7 && !Random(6))
+		if (me->seq == ANIM_DIE && IsEntity(me, ENT_CRAZYBONE) && me->frm == 7 && !Random(6))
 		{
 			// come back!
 			if (me->friendly != goodguy->friendly)
@@ -78,7 +78,7 @@ void AI_Bonehead(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		me->seq = ANIM_A2;
 		me->frm = 0;
 		me->frmTimer = 0;
-		if (IsEntity(me, EntityType::Crazybone))
+		if (IsEntity(me, ENT_CRAZYBONE))
 			me->frmAdvance = 128;
 		else
 			me->frmAdvance = 96;
@@ -92,9 +92,9 @@ void AI_Bonehead(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	{
 		if (goodguy)
 		{
-			switch ((EntityType) me->aiType)
+			switch (me->aiType)
 			{
-				case EntityType::Bonehead:
+				case ENT_BONEHEAD:
 					if (RangeToTarget(me, goodguy) < (48 * FIXAMT) && !Random(8))
 					{
 						// get him!
@@ -110,8 +110,8 @@ void AI_Bonehead(Guy* me, Map* map, world_t* world, Guy* goodguy)
 						return;
 					}
 					break;
-				case EntityType::Redbone:
-				case EntityType::Crazybone:
+				case ENT_REDBONE:
+				case ENT_CRAZYBONE:
 					if (RangeToTarget(me, goodguy) < (256 * FIXAMT) && !Random(32))
 					{
 						// spit at him
@@ -119,7 +119,7 @@ void AI_Bonehead(Guy* me, Map* map, world_t* world, Guy* goodguy)
 						me->seq = ANIM_A1;
 						me->frm = 0;
 						me->frmTimer = 0;
-						if (!IsEntity(me, EntityType::Crazybone))
+						if (!IsEntity(me, ENT_CRAZYBONE))
 							me->frmAdvance = 96;
 						else
 							me->frmAdvance = 128;
@@ -135,13 +135,13 @@ void AI_Bonehead(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 			FaceGoodguy(me, goodguy);
 
-			switch ((EntityType)me->aiType)
+			switch (me->aiType)
 			{
 				default:
 					me->dx = Cosine(me->facing * 32) * 4;
 					me->dy = Sine(me->facing * 32) * 4;
 					break;
-				case EntityType::Crazybone:
+				case ENT_CRAZYBONE:
 					me->dx = Cosine(me->facing * 32) * 5;
 					me->dy = Sine(me->facing * 32) * 5;
 					break;
@@ -152,7 +152,7 @@ void AI_Bonehead(Guy* me, Map* map, world_t* world, Guy* goodguy)
 				me->seq = ANIM_MOVE;
 				me->frm = 0;
 				me->frmTimer = 0;
-				if (!IsEntity(me, EntityType::Crazybone))
+				if (!IsEntity(me, ENT_CRAZYBONE))
 					me->frmAdvance = 96;
 				else
 					me->frmAdvance = 128;
@@ -172,10 +172,10 @@ void AI_Bonehead(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	}
 	else if (me->mind == 1)	// random wandering
 	{
-		switch ((EntityType)me->aiType)
+		switch (me->aiType)
 		{
-			case EntityType::Redbone:
-			case EntityType::Crazybone:
+			case ENT_REDBONE:
+			case ENT_CRAZYBONE:
 				if (RangeToTarget(me, goodguy) < (256 * FIXAMT) && !Random(32))
 				{
 					// spit at him
@@ -202,13 +202,13 @@ void AI_Bonehead(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			me->mind1 = Random(40) + 1;
 		}
 
-		switch ((EntityType)me->aiType)
+		switch (me->aiType)
 		{
 			default:
 				me->dx = Cosine(me->facing * 32) * 4;
 				me->dy = Sine(me->facing * 32) * 4;
 				break;
-			case EntityType::Crazybone:
+			case ENT_CRAZYBONE:
 				me->dx = Cosine(me->facing * 32) * 6;
 				me->dy = Sine(me->facing * 32) * 6;
 				break;
@@ -219,7 +219,7 @@ void AI_Bonehead(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			me->seq = ANIM_MOVE;
 			me->frm = 0;
 			me->frmTimer = 0;
-			if (!IsEntity(me, EntityType::Crazybone))
+			if (!IsEntity(me, ENT_CRAZYBONE))
 				me->frmAdvance = 96;
 			else
 				me->frmAdvance = 128;
@@ -283,7 +283,7 @@ void AI_Mumble(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 	if (me->mind == 0)	// not yet aware
 	{
-		if (!IsEntity(me,EntityType::Mumble))
+		if (!IsEntity(me,ENT_MUMBLE))
 			me->mind = 1;
 
 		if (goodguy && RangeToTarget(me, goodguy) < 200 * FIXAMT)
@@ -300,7 +300,7 @@ void AI_Mumble(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	}
 	else
 	{
-		if (!IsEntity(me, EntityType::TutUncommon) && RangeToTarget(me, goodguy) < (60 * FIXAMT) && !Random(8) && !me->reload)
+		if (!IsEntity(me, ENT_TUTUNCOMMON) && RangeToTarget(me, goodguy) < (60 * FIXAMT) && !Random(8) && !me->reload)
 		{
 			// crush his skull
 			MakeSound(SND_MUMBLECRUSH, me->x, me->y, SND_CUTOFF, 1000);
@@ -314,7 +314,7 @@ void AI_Mumble(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			me->reload = 0;
 			return;
 		}
-		if (IsEntity(me, EntityType::TutUncommon) && RangeToTarget(me, goodguy) < (256 * FIXAMT) && !Random(32) && !me->reload)
+		if (IsEntity(me, ENT_TUTUNCOMMON) && RangeToTarget(me, goodguy) < (256 * FIXAMT) && !Random(32) && !me->reload)
 		{
 			// crush his skull
 			MakeSound(SND_SKELSHOOT, me->x, me->y, SND_CUTOFF, 1000);
@@ -332,9 +332,9 @@ void AI_Mumble(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		{
 			// turns only once a second
 			FaceGoodguy3(me, goodguy);
-			switch ((EntityType)me->aiType)
+			switch (me->aiType)
 			{
-				case EntityType::TutUncommon:
+				case ENT_TUTUNCOMMON:
 					me->mind1 = 15;
 					break;
 				default:
@@ -347,21 +347,21 @@ void AI_Mumble(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			me->seq = ANIM_MOVE;
 			me->frm = 0;
 			me->frmTimer = 0;
-			switch ((EntityType)me->aiType)
+			switch (me->aiType)
 			{
 			default:
 				me->frmAdvance = 64;
 				break;
-			case EntityType::TutUncommon:
+			case ENT_TUTUNCOMMON:
 				me->frmAdvance = 96;
 				break;
 			}
 		}
 		else
 		{
-			switch ((EntityType)me->aiType)
+			switch (me->aiType)
 			{
-				case EntityType::TutUncommon:
+				case ENT_TUTUNCOMMON:
 					if (!((me->frm >= 3 && me->frm <= 5) || (me->frm >= 9 && me->frm <= 11)))
 					{
 						me->dx = Cosine(me->facing * 32)*2;
@@ -437,7 +437,7 @@ void AI_Lantern(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	}
 
 
-	//if (EntityType(me->aiType) == EntityType::KeroseneLamp) // this guy is extra annoying!
+	if (me->aiType == ENT_KEROSENELAMP) // this guy is extra annoying!
 	{
 		if (!Random(8))
 		{
@@ -449,7 +449,7 @@ void AI_Lantern(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	{
 		if (goodguy)
 		{
-			switch ((EntityType)me->aiType)
+			switch (me->aiType)
 			{
 				default:
 					if (RangeToTarget(me, goodguy) < (48 * FIXAMT) && !Random(8))
@@ -471,7 +471,7 @@ void AI_Lantern(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 			FaceGoodguy(me, goodguy);
 
-			switch ((EntityType)me->aiType)
+			switch (me->aiType)
 			{
 			default:
 				me->dx = Cosine(me->facing * 32) * 3;
@@ -501,7 +501,7 @@ void AI_Lantern(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	}
 	else if (me->mind == 0)	// random wandering
 	{
-		switch ((EntityType)me->aiType)
+		switch (me->aiType)
 		{
 			default:
 			if (RangeToTarget(me, goodguy) < (256 * FIXAMT) && !Random(32))
@@ -530,7 +530,7 @@ void AI_Lantern(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			me->mind1 = Random(40) + 1;
 		}
 
-		switch ((EntityType)me->aiType)
+		switch (me->aiType)
 		{
 			default:
 				me->dx = Cosine(me->facing * 32) * 3;
@@ -1362,6 +1362,9 @@ void AI_Jimbo(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	if (me->reload)
 		me->reload--;
 
+	if (me->mind2)
+		me->mind2--;
+
 	if (me->ouch == 4)
 	{
 		if (me->hp > 0)
@@ -1451,15 +1454,15 @@ void AI_Jimbo(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	}
 	else	// hunting for fresh meat
 	{
-		if (goodguy == NULL || IsEntity(goodguy,EntityType::Nobody) || RangeToTarget(me, bouapha) > 320 * FIXAMT)	// got too far from papa!!
+		if (goodguy == NULL || IsEntity(goodguy,ENT_NOBODY) || RangeToTarget(me, bouapha) > 320 * FIXAMT)	// got too far from papa!!
 		{
 			me->mind = 1;
 			return;
 		}
 		else
 		{
-			Dampen(&me->dx, FIXAMT / 8);
-			Dampen(&me->dy, FIXAMT / 8);
+			Dampen(&me->dx, FIXAMT / 4);
+			Dampen(&me->dy, FIXAMT / 4);
 
 			if (me->x < goodguy->x)
 				me->dx += FIXAMT;
@@ -1473,19 +1476,19 @@ void AI_Jimbo(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			me->dx += -FIXAMT / 2 + Random(FIXAMT);
 			me->dy += -FIXAMT / 2 + Random(FIXAMT);
 
-			if (RangeToTarget(me, goodguy) < 100 * FIXAMT && !Random(32))
+			if (RangeToTarget(me, goodguy) < 100 * FIXAMT && !Random(16))
 			{
 				me->seq = ANIM_ATTACK;
 				me->frm = 0;
 				me->frmTimer = 0;
-				me->frmAdvance = 128;
+				me->frmAdvance = 192;
 				me->dx = 0;
 				me->dy = 0;
 				me->action = ACTION_BUSY;
 				FaceGoodguy(me, goodguy);
 				return;
 			}
-			if (RangeToTarget(me, goodguy) >= 100 * FIXAMT && !Random(32))
+			if (RangeToTarget(me, goodguy) >= 100 * FIXAMT && !Random(16))
 			{
 				me->seq = ANIM_A1;
 				me->frm = 0;
@@ -1708,37 +1711,37 @@ void AI_NohMannComedy(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	{
 		if (me->seq == ANIM_ATTACK && me->frm == 6 && me->frmTimer < 32)
 		{
-			if ((EntityType)me->aiType == EntityType::NohMannComedy)
+			if (me->aiType == ENT_NOHMANNCOMEDY)
 			{
 
 			}
-			else if ((EntityType)me->aiType == EntityType::NohMannTragedy)
+			else if (me->aiType == ENT_NOHMANNTRAGEDY)
 			{
 
 			}
 		}
 		if (me->seq == ANIM_A1 && me->frm == 6 && me->frmTimer < 32)
 		{
-			if ((EntityType)me->aiType == EntityType::NohMannComedy)
+			if (me->aiType == ENT_NOHMANNCOMEDY)
 			{
 
 			}
-			else if ((EntityType)me->aiType == EntityType::NohMannTragedy)
+			else if (me->aiType == ENT_NOHMANNTRAGEDY)
 			{
 
 			}
 		}
 		if (me->seq == ANIM_A2 && me->frm == 7 && me->frmTimer < 32)
 		{
-			if ((EntityType)me->type == EntityType::NohMannComedy)
-				me->type = (short)EntityType::NohMannTragedy;
-			else if((EntityType)me->type == EntityType::NohMannTragedy)
-				me->type = (short)EntityType::NohMannComedy;
+			if (me->type == ENT_NOHMANNCOMEDY)
+				me->type = ENT_NOHMANNTRAGEDY;
+			else if(me->type == ENT_NOHMANNTRAGEDY)
+				me->type = ENT_NOHMANNCOMEDY;
 
-			if ((EntityType)me->aiType == EntityType::NohMannComedy)
-				me->aiType = (short)EntityType::NohMannTragedy;
-			else if ((EntityType)me->aiType == EntityType::NohMannTragedy)
-				me->aiType = (short)EntityType::NohMannComedy;
+			if (me->aiType == ENT_NOHMANNCOMEDY)
+				me->aiType = ENT_NOHMANNTRAGEDY;
+			else if (me->aiType == ENT_NOHMANNTRAGEDY)
+				me->aiType = ENT_NOHMANNCOMEDY;
 		}
 		if (me->seq == ANIM_DIE)
 		{
@@ -2886,7 +2889,7 @@ void AI_MiniBonehead(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 byte IsTargetVisible(Guy* me, Map* map, Guy* goodguy)
 {
-	if (!goodguy || goodguy->type == (short)EntityType::Nobody)
+	if (!goodguy || goodguy->type == ENT_NOBODY)
 		return 0;
 
 	switch (me->facing)
@@ -3241,7 +3244,7 @@ void AI_Kabocha(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	{
 		if (me->seq == ANIM_DIE && me->reload == 0)
 		{
-			if (me->aiType == MONS_BOOMKIN && me->frm == 0)
+			if (me->aiType == ENT_BOOMKIN && me->frm == 0)
 				FireBullet(me->x, me->y, 0, BLT_BOOM, me->friendly);
 			ExplodeParticles(PART_HAMMER, me->x, me->y, me->z, 8);
 			me->reload = 2;
@@ -3331,7 +3334,7 @@ void AI_Pumpkin(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		if (me->seq == ANIM_DIE && !me->reload)
 		{
 			me->frmAdvance = 64;
-			if (IsEntity(me,EntityType::Boomkin) && me->frm == 3)
+			if (IsEntity(me,ENT_BOOMKIN) && me->frm == 3)
 				FireBullet(me->x, me->y, 0, BLT_BOOM, me->friendly);
 			ExplodeParticles(PART_HAMMER, me->x, me->y, me->z, 8);
 			me->reload = 2;
@@ -3341,7 +3344,7 @@ void AI_Pumpkin(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 	if (me->seq == ANIM_MOVE && me->frm == 2 && goodguy)	// hits on this frame
 	{
-		if (IsEntity(me, EntityType::Boomkin))
+		if (IsEntity(me, ENT_BOOMKIN))
 		{
 			if (FindVictim(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 32, 0, 0, 0, map, world, me->friendly))
 			{
@@ -3403,7 +3406,7 @@ void AI_Pumpkin(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			return;
 		}
 
-		if (IsEntity(me, EntityType::Boomkin))
+		if (IsEntity(me, ENT_BOOMKIN))
 		{
 			me->dx = Cosine(me->facing * 32) * 6;
 			me->dy = Sine(me->facing * 32) * 6;
@@ -3453,7 +3456,7 @@ void AI_PumpkinPatch(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		}
 		if (me->seq == ANIM_A1 && me->frm == 7 && me->reload == 0)
 		{
-			g = AddBaby(me->x, me->y + FIXAMT * 2, 0, (int)EntityType::Pumpkin, me);
+			g = AddBaby(me->x, me->y + FIXAMT * 2, 0, ENT_PUMPKIN, me);
 
 			if (g)
 			{
@@ -3507,7 +3510,7 @@ void AI_Oven(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	{
 		if (me->seq == ANIM_ATTACK && me->frm == 8 && me->reload == 0)
 		{
-			g = AddBaby(me->x, me->y + FIXAMT * 64, 0, (int)EntityType::Ninjabread, me);
+			g = AddBaby(me->x, me->y + FIXAMT * 64, 0, ENT_NINJABREAD, me);
 
 			if (g)
 			{
@@ -4268,8 +4271,8 @@ void AI_Zomboni(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			{
 				// become a zombie
 				player.enemiesSlain--;
-				me->type = MONS_ZOMBIE;
-				me->aiType = MONS_ZOMBIE;
+				me->type = ENT_ZOMBIE;
+				me->aiType = ENT_ZOMBIE;
 				ham_strcpy(me->name, MonsterName(me->type));
 				me->mind = 0;
 				me->mind1 = 0;
@@ -4324,7 +4327,7 @@ void AI_Zomboni(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 byte TargetInSight(Guy* me, Map* map, Guy* goodguy)
 {
-	if (!goodguy || goodguy->type == (short)EntityType::Nobody)
+	if (!goodguy || goodguy->type == ENT_NOBODY)
 		return 0;
 
 	switch (me->mind2)
@@ -4450,7 +4453,7 @@ void AI_Patrol(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	if (me->mind == 0)	// newborn
 	{
 		me->facing = Random(8);
-		if (IsEntity(me,EntityType::PatrollerH))
+		if (IsEntity(me,ENT_PATROLLERH))
 			me->mind2 = 0;	// desired facing/also direction of movement
 		else
 			me->mind2 = 2;	// desired facing/also direction of movement
@@ -4504,7 +4507,7 @@ void AI_Patrol(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			me->dx = 0;
 			me->dy = 0;
 			me->reload = 0;
-			if (IsEntity(goodguy, EntityType::Player))
+			if (IsEntity(goodguy, ENT_BOUAPHA))
 				player.spotted = 30 * 8;
 			me->mind = 2;	// start clapping!
 		}
@@ -4513,7 +4516,7 @@ void AI_Patrol(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	{
 		if (TargetInSight(me, map, goodguy))
 		{
-			if (IsEntity(goodguy, EntityType::Player))
+			if (IsEntity(goodguy, ENT_BOUAPHA))
 				player.spotted = 30 * 8;
 			MakeSound(SND_HARDHATSHOOT, me->x, me->y, SND_CUTOFF, 1000);
 			me->seq = ANIM_ATTACK;

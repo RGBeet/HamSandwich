@@ -674,10 +674,10 @@ static byte TeleportGuy(Guy *victim,int x,int y,Map *map,byte noFX, bool sphinxE
 	if(victim==NULL)
 		return 0;	// nobody to teleport
 
-	if(victim->aiType==(short)EntityType::Nobody)
+	if(victim->aiType==ENT_NOBODY)
 		return 0;	// NOBODY to teleport
 
-	if(victim->aiType==MONS_BOUAPHA)
+	if(victim->aiType==ENT_BOUAPHA)
 	{
 		if(GetTportClock())
 			return 0;	// can't teleport yet
@@ -688,7 +688,7 @@ static byte TeleportGuy(Guy *victim,int x,int y,Map *map,byte noFX, bool sphinxE
 	victim->y=(y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT;
 	victim->dx=0;
 	victim->dy=0;
-	if(victim->aiType==MONS_BOUAPHA)
+	if(victim->aiType==ENT_BOUAPHA)
 	{
 		PutCamera(victim->x,victim->y);
 		UpdateCamera(victim->x>>FIXSHIFT,victim->y>>FIXSHIFT,victim->dx,victim->dy,map);

@@ -208,9 +208,9 @@ byte TryToPushItem(int x,int y,int destx,int desty,Map *map,world_t *world)
 
 byte IsFlying(Guy* me)
 {
-	switch ((EntityType)me->aiType)
+	switch (me->aiType)
 	{
-		case EntityType::Mikasa:
+		case ENT_MIKASA:
 			return me->mind != 0;
 		default:
 			return (MonsterFlags(me->type, me->aiType) & MF_FLYING);
@@ -273,7 +273,7 @@ byte Walkable(Guy *me,int x,int y,Map *map,world_t *world)
 
 	if(!result)	// bumped a wall, see if that triggers a special
 	{
-		if((x!=me->lastBumpX || y!=me->lastBumpY) && me->type!=(short)EntityType::Nobody)
+		if((x!=me->lastBumpX || y!=me->lastBumpY) && me->type!=ENT_NOBODY)
 			EventOccur(EVT_STEP,me->ID,x,y,me);
 		me->lastBumpX=x;
 		me->lastBumpY=y;
@@ -578,23 +578,23 @@ byte EntityIsPlayer(int type)
 // entity does not exist.
 byte EntityIsNoneOrNobody(int type)
 {
-	return type == (short)EntityType::None || type == (short)EntityType::Nobody;
+	return type == ENT_NONE || type == ENT_NOBODY;
 }
 
 // entity is type typically put on team 1 (the goodguy team)
 byte EntityIsGoodguy(int type)
 {
-	switch ((EntityType)type)
+	switch (type)
 	{
-		case EntityType::Player:
-		case EntityType::Bunny:
-		case EntityType::BunnyPath:
-		case EntityType::BunnyFollow:
-		case EntityType::BunnyJimbo:
-		case EntityType::PunkBunny:
-		case EntityType::GoodTurret:
-		case EntityType::Minecart:
-		case EntityType::YouGo:
+		case ENT_BOUAPHA:
+		case ENT_BUNNY:
+		case ENT_BUNNYPATH:
+		case ENT_BUNNYFOLLOW:
+		case ENT_BUNNYJIMBO:
+		case ENT_PUNKBUNNY:
+		case ENT_GOODTURRET:
+		case ENT_MINECART:
+		case ENT_YOUGO:
 			return 1;
 		default:
 			return 0;
@@ -632,10 +632,10 @@ void Guy::Update(Map *map,world_t *world)
 	byte b;
 	static byte burnFlip=0;
 
-	if((EntityType)type == EntityType::None)
+	if(type==ENT_NONE)
 		return;
 
-	if(type!=(short)EntityType::Nobody)
+	if(type!=ENT_NOBODY)
 	{
 		if(x<0)
 			x=0;
@@ -646,7 +646,7 @@ void Guy::Update(Map *map,world_t *world)
 		if(y>=(map->height*TILE_HEIGHT*FIXAMT))
 			y=map->height*TILE_HEIGHT*FIXAMT-1;
 	}
-	if(hp==0 && seq!=ANIM_DIE && ((EntityType)aiType!=EntityType::Player || seq!=ANIM_A3))
+	if(hp==0 && seq!=ANIM_DIE && (aiType!=ENT_BOUAPHA || seq!=ANIM_A3))
 	{
 		// MEGA HACK!?  Why on earth?!?!?!!?!?!!?  Something to do with mine cart kills
 		// resurrecting the little bastard bats
@@ -654,9 +654,9 @@ void Guy::Update(Map *map,world_t *world)
 		return;
 	}
 
-	if(parent && (EntityType)parent->type==EntityType::None)
+	if(parent && parent->type==ENT_NONE)
 	{
-		if((EntityType)aiType!=EntityType::Player)
+		if(aiType!=ENT_BOUAPHA)
 			player.vehicle=0;
 		SetParent(this,NULL);
 	}
@@ -787,19 +787,19 @@ void Guy::Update(Map *map,world_t *world)
 	if(!CanWalk(x,y,map,world))
 	{
 		x-=dx;
-		if((EntityType)aiType==EntityType::Minecart)
+		if(aiType==ENT_MINECART)
 			x=(mapx*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT;
 
-		switch ((EntityType)aiType)
+		switch (aiType)
 		{
-			case EntityType::Player:
-			case EntityType::Bunny:
-			case EntityType::BunnyPath:
-			case EntityType::Autozoid:
-			case EntityType::YouGo:
-			case EntityType::PatrollerH:
-			case EntityType::PatrollerV:
-			case EntityType::Shamisen:
+			case ENT_BOUAPHA:
+			case ENT_BUNNY:
+			case ENT_BUNNYPATH:
+			case ENT_AUTOZOID:
+			case ENT_YOUGO:
+			case ENT_PATROLLERH:
+			case ENT_PATROLLERV:
+			case ENT_SHAMISEN:
 				mind1 = 1; // tell it that it hit a wall
 		}
 
@@ -811,19 +811,19 @@ void Guy::Update(Map *map,world_t *world)
 	if(!CanWalk(x,y,map,world))
 	{
 		y-=dy;
-		if(aiType==MONS_MINECART)
+		if(aiType==ENT_MINECART)
 			y=(mapy*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT;
 
-		switch ((EntityType)aiType)
+		switch (aiType)
 		{
-			case EntityType::Player:
-			case EntityType::Bunny:
-			case EntityType::BunnyPath:
-			case EntityType::Autozoid:
-			case EntityType::YouGo:
-			case EntityType::PatrollerH:
-			case EntityType::PatrollerV:
-			case EntityType::Shamisen:
+			case ENT_BOUAPHA:
+			case ENT_BUNNY:
+			case ENT_BUNNYPATH:
+			case ENT_AUTOZOID:
+			case ENT_YOUGO:
+			case ENT_PATROLLERH:
+			case ENT_PATROLLERV:
+			case ENT_SHAMISEN:
 				mind1 += 2; // tell it that it hit a wall
 		}
 		b=1;
@@ -894,7 +894,7 @@ void Guy::Update(Map *map,world_t *world)
 		frmTimer-=255;
 		NextFrame();
 	}
-	if((EntityType)type== EntityType::None)
+	if(type == ENT_NONE)
 	{
 		facing=0;
 		return;	// NextFrame may have killed you
@@ -903,16 +903,16 @@ void Guy::Update(Map *map,world_t *world)
 	mapx=(x>>FIXSHIFT)/TILE_WIDTH;
 	mapy=(y>>FIXSHIFT)/TILE_HEIGHT;
 
-	if((EntityType)aiType==EntityType::Player)	// special case, Bouapha is the player, follow him
+	if(aiType == ENT_BOUAPHA)	// special case, Bouapha is the player, follow him
 	{
-		if(player.vehicle==0 && !editing && !player.cheated)
+		if(player.vehicle == 0 && !editing && !player.cheated)
 		{
 			profile.progress.footDistance+=abs(dx/FIXAMT)+abs(dy/FIXAMT);
 		}
 		int tdx,tdy;
 		tdx=dx;
 		tdy=dy;
-		if(player.vehicle==VE_YUGO || player.vehicle==VE_MINECART)
+		if(player.vehicle == VE_YUGO || player.vehicle == VE_MINECART)
 		{
 			if(goodguy->parent)
 			{
@@ -1037,7 +1037,7 @@ void Guy::Update(Map *map,world_t *world)
 			map->GetTile(mapx,mapy)->floor=GetTerrain(world,map->GetTile(mapx,mapy)->floor)->next;
 		}
 	}
-	if((oldmapx!=mapx || oldmapy!=mapy) && type!=(short)EntityType::Nobody)
+	if((oldmapx!=mapx || oldmapy!=mapy) && type!=ENT_NOBODY)
 		EventOccur(EVT_STEP,ID,mapx,mapy,this);
 
 	if(mapx<map->width && mapy<map->height)
@@ -1067,7 +1067,7 @@ void Guy::Render(byte light)
 	if(aiType==MONS_BOUAPHA && (player.vehicle==VE_YUGO || player.vehicle==VE_MINECART))
 		return;	// don't render him if he's in a car or minecart
 
-	if((EntityType)aiType==EntityType::Minecart && player.vehicle==VE_MINECART && goodguy->parent==this)
+	if(aiType==ENT_MINECART && player.vehicle==VE_MINECART && goodguy->parent==this)
 	{
 		goodguy->x=x;
 		goodguy->y=y+1;
@@ -1083,28 +1083,20 @@ void Guy::Render(byte light)
 	dword t = type, t2 = type;
 	if(type==MONS_BOUAPHA)
 	{
-		/*
-		if(player.playAs==PLAY_SHROOM)
-			t=(short)EntityType::PlayShroom;
-		else if(player.playAs==PLAY_LUNACHIK)
-			t=(short)EntityType::PlayLunachick;
-		else // bouapha is player
-			t=(short)EntityType::Player;*/
-
 		if(player.weapon==WPN_PWRARMOR)
-			t=(short)EntityType::PowerArmor;
+			t=ENT_POWERARMOR;
 		if(player.weapon==WPN_MINISUB)
-			t=(short)EntityType::MiniSub;
+			t=ENT_MINISUB;
 	}
 
-	bool isBouapha = (EntityType)aiType==EntityType::Player;
+	bool isBouapha = aiType==ENT_BOUAPHA;
 	if(isBouapha)
 	{
 		if(player.weapon==WPN_PWRARMOR)
-			t2=(short)EntityType::PowerArmor;
+			t2=ENT_POWERARMOR;
 		else if(player.weapon==WPN_MINISUB)
-			t2=(short)EntityType::MiniSub;
-		else if((EntityType)type==EntityType::Player)
+			t2=ENT_MINISUB;
+		else if(aiType==ENT_BOUAPHA)
 		{
 			/*
 			if(player.playAs==PLAY_SHROOM)
@@ -1152,13 +1144,14 @@ void Guy::MonsterControl(Map *map,world_t *world)
 				FIXAMT*2+Random(FIXAMT*4));
 	}
 
-	switch ((EntityType)aiType)
+	switch (aiType)
 	{
-		case EntityType::Bunny:
-		case EntityType::BunnyPath:
-		case EntityType::EggSac:
-		case EntityType::YouGo:
-		case EntityType::CarTraffic:
+		case ENT_BUNNY:
+		case ENT_BUNNYPATH:
+		case ENT_EGGSAC:
+		case ENT_YOUGO:
+		case ENT_TRAFFIC:
+		case ENT_TRAFFIC2:
 			// these monsters don't ever stop functioning, and can't be tricked by
 			// invisibility
 			target = goodguy;
@@ -1315,10 +1308,10 @@ void Guy::GetShot(int dx,int dy,word damage,Map *map,world_t *world, bool bypass
 
 		bool notFriendly = (goodguy->friendly != friendly); // cannot add rage if goodguy or friend
 
-		switch((EntityType)type)
+		switch(type)
 		{
-			case EntityType::Zombie:
-			case EntityType::Bombie:
+			case ENT_ZOMBIE:
+			case ENT_BOMBIE:
 				if (!map->DropItem(mapx, mapy, IT_BRAIN))
 				{
 					PlayerGetBrain(1);	// if you can't drop it, just give it to the player!
@@ -1477,7 +1470,7 @@ void ExitGuys(void)
 
 byte HasVehicleAI(int aiType)
 {
-	return aiType == MONS_MINECART || aiType == MONS_RAFT || aiType == MONS_YUGO;
+	return aiType == MONS_MINECART || aiType == ENT_RAFT || aiType == MONS_YUGO;
 }
 
 byte HasPlayerAI(int aiType)
@@ -1634,9 +1627,9 @@ void UpdateGuys(Map *map,world_t *world)
 			if (guys[i].friendly != goodguy->friendly && ModifierActive(MDFY_ENEMYSPD))
 				updates++;
 			
-			switch((EntityType)guys[i].aiType)
+			switch(guys[i].aiType)
 			{
-				case EntityType::Mikasa:
+				case ENT_MIKASA:
 					if (guys[i].mind == 1)
 					{
 						//updates++;
@@ -1720,25 +1713,25 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 
 	if(type==MONS_ANYBODY)
 	{
-		type=(short)EntityType::Nobody;
+		type=ENT_NOBODY;
 		while(EntityIsNoneOrNobody(type) || (MonsterTheme(type) == MT_NONE))
 			type=Random(NUM_MONSTERS);
 	}
 	else if(type==MONS_NONPLAYER)
 	{
-		type=(short)EntityType::Nobody;
+		type= ENT_NOBODY;
 		while(EntityIsNoneOrNobody(type) || EntityIsPlayer(type) || (MonsterTheme(type) == MT_NONE))
 			type=Random(NUM_MONSTERS);
 	}
 	else if(type==MONS_BADGUY)
 	{
-		type=(short)EntityType::Nobody;
+		type=(short)ENT_NOBODY;
 		while(EntityIsNoneOrNobody(type) || EntityIsGoodguy(type) || (MonsterTheme(type) == MT_NONE))
 			type=Random(NUM_MONSTERS);
 	}
 	else if(type==MONS_GOODGUY)
 	{
-		type=(short)EntityType::Nobody;
+		type=(short)ENT_NOBODY;
 		while(EntityIsNoneOrNobody(type) || !EntityIsGoodguy(type) || EntityIsPlayer(type) || (MonsterTheme(type) == MT_NONE))
 			type=Random(NUM_MONSTERS);
 	}
@@ -1776,7 +1769,7 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 					guys[i].target=&guys[j];
 				else
 					guys[i].target=NULL;
-				if((EntityType)type==EntityType::BunnyPath)
+				if(type == ENT_BUNNYPATH)
 				{
 					guys[i].mind1=1;
 					guys[i].mind3=64;
@@ -1899,7 +1892,7 @@ void AddMapGuys(Map *map)
 	goodguy=NULL;
 
 	// add a nobody in case the player goes invisible
-	nobody=AddGuy(0,0,0,(short)EntityType::Nobody,1);
+	nobody=AddGuy(0,0,0,ENT_NOBODY,1);
 	nobody->item=0;
 
 	// discover what type for each generator, and remove the template monster
@@ -1958,17 +1951,17 @@ void AddMapGuys(Map *map)
 				{
 					g->mind=genType[i];
 
-					switch((EntityType)genType[i])
+					switch(genType[i])
 					{
-						case EntityType::Player:
-						case EntityType::Bunny:
-						case EntityType::BunnyPath:
-						case EntityType::BunnyFollow:
-						case EntityType::BunnyJimbo:
-						case EntityType::GoodTurret:
-						case EntityType::PunkBunny:
-						case EntityType::Minecart:
-						case EntityType::YouGo:
+						case ENT_BOUAPHA:
+						case ENT_BUNNY:
+						case ENT_BUNNYPATH:
+						case ENT_BUNNYFOLLOW:
+						case ENT_BUNNYJIMBO:
+						case ENT_GOODTURRET:
+						case ENT_PUNKBUNNY:
+						case ENT_MINECART:
+						case ENT_YOUGO:
 							player.totalEnemies--;
 							g->friendly = 1;
 							break;
@@ -2017,9 +2010,9 @@ byte CheckHit(byte size,int xx,int yy,Guy *him)
 
 int GetEntityPriorityValue(Guy* g)
 {
-	switch ((EntityType)g->type)
+	switch (g->type)
 	{
-		case EntityType::DecoyBouapha:
+		case ENT_DECOYBOUAPHA:
 			return 3; // decoys are the highest priority to hit, so they get hit first
 		default:
 			return 0; // all other entities have no priority
@@ -2035,20 +2028,20 @@ Guy *FindVictim(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t
 		{
 			if(CheckHit(size,x,y,&guys[i]))
 			{
-				switch((EntityType)guys[i].aiType)
+				switch(guys[i].aiType)
 				{
-					case EntityType::DullDrum:
+					case ENT_DULLDRUM:
 						if(guys[i].mind!=1 && damage > 0)
 							guys[i].GetShot(dx, dy, damage, map, world);
 						break;
-					case EntityType::Kaptana:
-					case EntityType::Madkap:
+					case ENT_KAPTANA:
+					case ENT_MADKAP:
 						if (guys[i].mind2)
 							guys[i].GetShot(dx, dy, damage, map, world);
 						else if (guys[i].mind3 + 10 < 100)
 							guys[i].mind3 += 10;
 						break;
-					case EntityType::Tsuchizoid:
+					case ENT_TSUCHIZOID:
 						PrimaryWeaponCheck();
 						if (damage > 0)
 						{
@@ -2056,7 +2049,7 @@ Guy *FindVictim(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t
 							guys[i].mind2 += damage/2;
 						}
 						break;
-					case EntityType::DecoyBouapha:
+					case ENT_DECOYBOUAPHA:
 						damage = 0;	// decoys don't take damage
 						break;
 					default:
@@ -2340,7 +2333,7 @@ byte RaftNearby(void)
 	gy=((goodguy->y-goodguy->dy)>>FIXSHIFT)/TILE_HEIGHT;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i].type && guys[i].aiType==MONS_RAFT)
+		if(guys[i].type && guys[i].aiType==ENT_RAFT)
 		{
 			if(RangeToTarget(&guys[i],goodguy)<32*FIXAMT && player.vehicle==0)
 			{
@@ -2665,7 +2658,7 @@ void KillMonster(int x,int y,int type,byte nofx)
 			player.enemiesSlain++;
 
 		// force player out of the vehicle
-		if (((guys[i].aiType == MONS_RAFT || guys[i].aiType == MONS_MINECART) && guys[i].mind != 0)
+		if (((guys[i].aiType == ENT_RAFT || guys[i].aiType == MONS_MINECART) && guys[i].mind != 0)
 			|| (guys[i].aiType == MONS_YUGO && guys[i].mind == 2))
 		{
 			player.vehicle = VE_NONE;	// player was riding it
@@ -2970,7 +2963,7 @@ void AddSpottedTimer(int b)
 // is the good guy in sight?!
 byte GoodguyInSight(Guy* me, Guy* goodguy, byte facing)
 {
-	if (!goodguy || goodguy->type == (short)EntityType::Nobody or StealthyCheck(goodguy))
+	if (!goodguy || goodguy->type == ENT_NOBODY or StealthyCheck(goodguy))
 		return 0;
 
 	static const int dirX[8] = { 1, 1, 0,-1,-1,-1, 0, 1 };
@@ -3206,7 +3199,7 @@ Guy *FindMonster(int x,int y,int type)
 	Guy *g;
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i].type!=MONS_NONE && guys[i].type!=(short)EntityType::Nobody && (x==255 || (guys[i].mapx==x && guys[i].mapy==y)))
+		if(guys[i].type!=MONS_NONE && guys[i].type!=ENT_NOBODY && (x==255 || (guys[i].mapx==x && guys[i].mapy==y)))
 		{
 			g=&guys[i];
 			if (!CheckMonsterType(g, x, y, type))
@@ -3473,25 +3466,25 @@ byte Guy::IsAwake(void)
 		return 0;	// frozen monsters are always asleep!
 	if(target==nobody)
 		return 0;	// monsters with no target are asleep
-	switch((EntityType)aiType)
+	switch(aiType)
 	{
 		// these guys wake up when you get close to them
-		case EntityType::Mumble:
-		case EntityType::TutUncommon:
-		case EntityType::Mikasa:
-		case EntityType::Pumpkin:
-		case EntityType::Kaboocha:
-		case EntityType::EyeballTree:
-		case EntityType::HappyStickMan:
-		case EntityType::Squash:
-		case EntityType::Jalapeno:
-		case EntityType::NohMannComedy:
-		case EntityType::NohMannTragedy:
+		case ENT_MUMBLE:
+		case ENT_TUTUNCOMMON:
+		case ENT_MIKASA:
+		case ENT_PUMPKIN:
+		case ENT_KABOOCHA:
+		case ENT_EYEBALLTREE:
+		case ENT_HAPPYSTICKMAN:
+		case ENT_SQUASH:
+		case ENT_JALAPENO:
+		case ENT_NOHMANNCOMEDY:
+		case ENT_NOHMANNTRAGEDY:
 			return (mind > 0);
-		case EntityType::Bombie:
+		case ENT_BOMBIE:
 			return (seq == ANIM_A1); // bombie is doing the funny
 		// this but for bunny
-		case EntityType::BunnyFollow:
+		case ENT_BUNNYFOLLOW:
 			return (mind == 1);
 		default:
 			return 1;	// by default, monsters that don't do a wake-up are awake
@@ -3828,25 +3821,6 @@ int Guy::GetPathDistance()
 	return distance;
 }
 
-void Guy::AvoidGuys(int buffer)
-{
-	int i;
-
-	for (i = 0; i < maxGuys; i++)
-	{
-		if (&guys[i] == this)
-			continue;
-
-		if (!guys[i].type || guys[i].hp <= 0 || !guys[i].IsAwake())
-			continue;
-
-		if (MonsterFlags(type, aiType) & MF_FREEWALK)
-			continue;
-
-	}
-	// fix this
-}
-
 byte TerrainCheck(Guy* g, byte target, mapTile_t* mapTile, world_t* world)
 {
 	if (!g || EntityIsNoneOrNobody(g->type))
@@ -3877,9 +3851,9 @@ void WakeUpGuys(Guy *g,int x, int y, byte size, Map* map, world_t* world, byte f
 	for (i = 0;i < maxGuys;i++)
 	{
 		pass = (guys[i].type && guys[i].hp && (guys[i].friendly == friendly || friendly == 255) && guys[i].mind == 0 && guys[i].action != ACTION_WAKING);
-		switch ((EntityType)g->aiType)
+		switch (g->aiType)
 			{
-				case EntityType::Pumpkin:
+				case ENT_PUMPKIN:
 					pass = pass && (g->aiType == guys[i].aiType);
 					break;
 			}

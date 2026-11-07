@@ -240,5 +240,6 @@ word PlayerGetAccelerate(void);
 
 Guy* GetInterfaceEnemy();
 void SetInterfaceEnemy(Guy* g);
+byte PlayerIsMovingAgainstVehicle(Guy* vehicle, Guy* goodguy);
 
 #endif

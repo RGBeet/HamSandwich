@@ -2171,7 +2171,7 @@ void AI_Mush(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			if (me->GetPathDistance() < 60 * FIXAMT && !Random(8) && map->FindGuy(me->mapx, me->mapy, 8, goodguy))
 				me->mind = 3; // in range, start killing
 
-			me->AvoidGuys();
+			//me->AvoidGuys();
 			StartMoveAnimation(me, 128);
 		}
 		else
@@ -2627,7 +2627,6 @@ void AI_SuperZombie(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			if (me->GetPathDistance() < 120 * FIXAMT && !Random(8) && map->FindGuy(me->mapx, me->mapy, 15, goodguy))
 				me->mind = 3; // in range, start killing
 
-			me->AvoidGuys();
 			if (result) // stand still!
 			{
 				StartMoveAnimation(me, 128);

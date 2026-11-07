@@ -242,111 +242,111 @@
 #define MONS_MINIWACKO	209
 #define MONS_JACKFROST	210
 
-enum class EntityType {
-	None,				// 0: Null
-	Player,				// 1: Bouapha
 
-	// world 1
-	Bonehead,			// 2
-	Mumble,				// 3
-	Zombie,				// 4
-	Lantern,			// 5
-	Hardhat,			// 6
-	FatCrow,			// 7
+#define ENT_NONE				0
+#define ENT_BOUAPHA				1
 
-	Kaptana,			// 8
-	Aquazoid,			// 9
-	Tsuchizoid,			// 10
-	Bunny,				// 11
-	BunnyPath,			// 12
-	BunnyFollow,		// 13
-	BunnyJimbo,			// 14
-	Ninjabread,			// 15
-	Pumpkin,			// 16
-	Kaboocha,			// 17
-	CrazyBush,			// 18
-	Mikasa,				// 19
-	EyeballTree,		// 20
-	EasterEgg,			// 21
-	HappyStickMan,		// 22
-	NohMannComedy,		// 23
-	NohMannTragedy,		// 24
-	NohMannMaskComedy,	// 25
-	NohMannMaskTragedy,	// 26
+// world 1
+#define ENT_BONEHEAD			2
+#define ENT_MUMBLE				3
+#define ENT_ZOMBIE				4
+#define ENT_LANTERN				5
+#define ENT_HARDHAT				6
+#define ENT_FATCROW				7
 
-	// recolors and misc
-	YerfdogHelper,		// 27
-	YerfdogBoss,		// 28
-	Nobody,				// 29
-	Spider,				// 30
-	BigSpider,			// 31
-	EggSac,				// 32
-	MamaSpider,			// 33
-	Shroom,				// 34
+#define ENT_KAPTANA				8
+#define ENT_AQUAZOID			9
+#define ENT_TSUCHIZOID			10
+#define ENT_BUNNY				11
+#define ENT_BUNNYPATH			12
+#define ENT_BUNNYFOLLOW			13
+#define ENT_BUNNYJIMBO			14
+#define ENT_NINJABREAD			15
+#define ENT_PUMPKIN				16
+#define ENT_KABOOCHA			17
+#define ENT_CRAZYBUSH			18
+#define ENT_MIKASA				19
+#define ENT_EYEBALLTREE			20
+#define ENT_EASTEREGG			21
+#define ENT_HAPPYSTICKMAN		22
+#define ENT_NOHMANNCOMEDY		23
+#define ENT_NOHMANNTRAGEDY		24
+#define ENT_NOHMANNMASKCOMEDY	25
+#define ENT_NOHMANNMASKTRAGEDY	26
 
-	Crazybone,			// 35
-	TutUncommon,		// 36
-	Bombie,				// 37
-	BobBiscuit,			// 38
-	PumpkinPatch,		// 39
-	Boomkin,			// 40
-	Squash,				// 41
-	Jalapeno,			// 42
-	MutantHardhat,		// 43
-	Madkap,				// 44
+// recolors and misc
+#define ENT_YERFDOGHELPER		27
+#define ENT_YERFDOGBOSS			28
+#define ENT_NOBODY				29
+#define ENT_SPIDER				30
+#define ENT_BIGSPIDER			31
+#define ENT_EGGSAC				32
+#define ENT_MAMASPIDER			33
+#define ENT_SHROOM				34
 
-	HotNSour,			// 45
-	Deathcap,			// 46
-	Turret,				// 47
-	MissileTurret,		// 48
-	DeathTurret,		// 49
-	GoodTurret,			// 50
+#define ENT_CRAZYBONE			35
+#define ENT_TUTUNCOMMON			36
+#define ENT_BOMBIE				37
+#define ENT_BOBBISCUIT			38
+#define ENT_PUMPKINPATCH		39
+#define ENT_BOOMKIN				40
+#define ENT_SQUASH				41
+#define ENT_JALAPENO			42
+#define ENT_MUTANTHARDHAT		43
+#define ENT_MADKAP				44
 
-	// vehicles/mechs
-	Minecart,			// 51
-	PowerArmor,			// 52
-	MiniSub,			// 53
-	YouGo,				// 54
+#define ENT_HOTNSOUR			45
+#define ENT_DEATHCAP			46
+#define ENT_TURRET				47
+#define ENT_MISSILETURRET		48
+#define ENT_DEATHTURRET			49
+#define ENT_GOODTURRET			50
 
-	// world 2
-	CreepingCone,		// 55
-	Autozoid,			// 56
-	CarParked,			// 57
-	CarTraffic,			// 58
-	CarTraffic2,		// 59
-	Mailboxer,			// 60
-	WetWilly,			// 61
-	StopSign,			// 62
-	DullDrum,			// 63
-	Bodzha,				// 64
-	PunkBunny,			// 65
-	Moley,				// 66
-	Gnome,				// 67
-	Marvin,				// 68
-	GnomeAccountant,	// 69
-	MechaTruck,			// 70
-	KingCone,			// 71
-	Teckhead,			// 72
-	EdisonCoil,			// 73
-	EdisonBoss,			// 74
-	EdisonBrain,		// 75
-	Punkin,				// 76
-	Jacko,				// 77
+// vehicles/mechs
+#define ENT_MINECART			51
+#define ENT_POWERARMOR			52
+#define ENT_MINISUB				53
+#define ENT_YOUGO				54
 
-	// recolors and variants
-	Redbone,			// 78
-	KeroseneLamp,		// 79
-	OvenGen,			// 80
-	PatrollerH,			// 81
-	PatrollerV,			// 82
-	DecoyBouapha,		// 83
-	Cacton,				// 84
-	Radozoid,			// 85
-	MutantZombie,		// 86
-	Shamisen,			// 87
+// world 2
+#define ENT_CREEPINGCONE		55
+#define ENT_AUTOZOID			56
+#define ENT_CARPARKED			57
+#define ENT_TRAFFIC				58
+#define ENT_TRAFFIC2			59
+#define ENT_MAILBOXER			60
+#define ENT_WETWILLY			61
+#define ENT_STOPSIGN			62
+#define ENT_DULLDRUM			63
+#define ENT_BODZHA				64
+#define ENT_PUNKBUNNY			65
+#define ENT_MOLEY				66
+#define ENT_GNOME				67
+#define ENT_MARVIN				68
+#define ENT_GNOMEACCOUNTANT		69
+#define ENT_MECHATRUCK			70
+#define ENT_KINGCONE			71
+#define ENT_TECKHEAD			72
+#define ENT_EDISONCOIL			73
+#define ENT_EDISONBOSS			74
+#define ENT_EDISONBRAIN			75
+#define ENT_PUNKIN				76
+#define ENT_JACKO				77
 
-	MaxId
-};
+// recolors and variants
+#define ENT_REDBONE				78
+#define ENT_KEROSENELAMP		79
+#define ENT_OVENGEN				80
+#define ENT_PATROLLERH			81
+#define ENT_PATROLLERV			82
+#define ENT_DECOYBOUAPHA		83
+#define ENT_CACTON				84
+#define ENT_RADOZOID			85
+#define ENT_MUTANTZOMBIE		86
+#define ENT_SHAMISEN			87
+#define ENT_RAFT				88
+
+#define ENT_MAXID				89
 
 #define NUM_MONSTERS	243					// Can grow as needed
 #define NUM_PROFILE_MONSTERS 211			// Do not change without redoing the profile format
@@ -506,7 +506,7 @@ MonsterThemes MonsterTheme(dword type);
 byte MonsterFrames(dword type,dword aiType);
 word MonsterHP(dword type);
 word MonsterPoints(dword type);
-const char *MonsterName(short type);
+const char *MonsterName(word type);
 Monster_AIFunc MonsterAI(dword type);
 int8_t MonsterBrightnessChange(dword type);
 
@@ -535,5 +535,5 @@ void FlailLock(Guy *me);
 void FacePoint(Guy* me, int x, int y);
 
 void DrawMe(Guy* g, const sprite_set_t* set);
-byte IsEntity(Guy* g, EntityType targetType);
+byte IsEntity(Guy* g, word targetType);
 #endif

@@ -1728,7 +1728,7 @@ void AI_KingCone(Guy* me, Map* map, world_t* world, Guy* goodguy)
 				y = me->y + (-256 + Random(513)) * FIXAMT;
 				if (x<me->x - FIXAMT * 64 || x>me->x + FIXAMT * 64 || y<me->y - FIXAMT * 64 || y>me->y + FIXAMT * 64)
 				{
-					g = AddBaby(x, y, FIXAMT * 10, (short)EntityType::CreepingCone, me);
+					g = AddBaby(x, y, FIXAMT * 10, ENT_CREEPINGCONE, me);
 					if (g && !g->CanWalk(g->x, g->y, map, world))
 						g->type = MONS_NONE;
 				}
@@ -4572,7 +4572,7 @@ void AI_Traffic(Guy* me, Map* map, world_t* world, Guy* goodguy)
 				{
 					// in the case of multiple directions, we must decide on one
 					// based on the type of car
-					if (IsEntity(me,EntityType::CarTraffic))
+					if (IsEntity(me,ENT_TRAFFIC) || IsEntity(me,ENT_TRAFFIC2))
 					{
 						if (ok[(me->mind3 / 64 + 1) & 3])	// direction to your right
 							me->mind3 = ((me->mind3 / 64 + 1) & 3) * 64;
@@ -5419,7 +5419,7 @@ void AI_PunkBunny(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	}
 	else	// hunting for fresh meat
 	{
-		if (goodguy == NULL || goodguy->type == (short)EntityType::Nobody || RangeToTarget(me, bouapha) > 320 * FIXAMT)	// got too far from papa!!
+		if (goodguy == NULL || goodguy->type == ENT_NONE || RangeToTarget(me, bouapha) > 320 * FIXAMT)	// got too far from papa!!
 		{
 			me->mind = 1;
 			return;

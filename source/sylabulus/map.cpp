@@ -1798,7 +1798,7 @@ Guy* GetGuyOnTile(int tx, int ty)
 		if (!g)
 			continue;
 
-		if (g->type == (short)EntityType::Nobody)
+		if (g->type == ENT_NOBODY)
 			continue;
 
 		if (g->hp <= 0)
