@@ -252,6 +252,8 @@ void ClearProgress(void)
 	profile.progress.totalPercent=0;
 	profile.progress.loonyKeys=0;
 	profile.progress.loonyKeysUsed=0;
+	profile.progress.totalCheatzies=0;
+	profile.progress.cheatziesSpent=0;
 
 	profile.progress.totalPercent=0.0f;
 	profile.progress.num_worlds=0;
@@ -638,17 +640,31 @@ const char* GetDifficultyName(int difficulty)
 	return "???";
 }
 
-byte GetDifficulty()
+byte GetDifficulty() // deprecated, but still used in some places
 {
 	return profile.difficulty;
 }
 
 byte CheatBookPurchased()
 {
-	return (profile.progress.purchase[9] & SIF_BOUGHT); // cheat menu is available
+	return (profile.progress.purchase[9] & SIF_BOUGHT) != 0; // cheat menu is available
 }
 
-byte ModifierActive(byte index)
+byte GetModifierActive(byte index)
 {
-	return false;
+	return (profile.progress.purchase[GetShopIndex(STYP_MODIFIER, index)] & SIF_ACTIVE) != 0;
+}
+
+byte GetModifierBought(byte index) // gets shop index
+{
+	return (profile.progress.purchase[GetShopIndex(STYP_MODIFIER, index)] & SIF_BOUGHT) != 0;
+}
+
+void SetModifierActive(byte index, byte state) // gets shop index
+{
+	if (state)
+		profile.progress.purchase[GetShopIndex(STYP_MODIFIER, index)] |= SIF_ACTIVE;
+	else
+		profile.progress.purchase[GetShopIndex(STYP_MODIFIER, index)] &= ~SIF_ACTIVE;
+	printf("SetModifierActive: Modifier %d set to %d\n", index, state);
 }

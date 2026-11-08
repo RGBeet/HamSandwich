@@ -504,6 +504,10 @@
 #define SND_SHAMOUCH			596
 #define SND_SHAMDIE				597
 
+#define SND_SHOPKEEPER1			598
+#define SND_SHOPKEEPER2			599
+#define SND_SHOPKEEPER3			600
+
 #define MAX_SOUNDS				1024	// doesn't mean a thing lol
 
 //--------------------------------

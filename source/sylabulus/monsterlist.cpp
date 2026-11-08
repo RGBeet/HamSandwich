@@ -1241,4 +1241,18 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			}},
+		{"Shopkeeper",255,255,0,AI_Shopkeeper,
+		 11,19,500,0,"graphics/shopkeeper.jsp",0,MF_FREEWALK|MF_INVINCIBLE|MF_NOHIT,
+		 MT_GOOD | MT_HUMAN,
+			{
+				{0,255},																// idle
+				{1,2,3,2,1,0,4,5,6,5,4,0,255},											// move
+				{7,8,9,10,11,12,13,13,12,11,10,11,12,13,13,12,11,10,9,8,7,255},	// wave hello
+				{0,0,0,0,0,0,0,0,0,0,255},												// die normally
+				{0,0,0,0,0,0,0,0,0,0,255},												// cross arms
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+			},0},
 	};

@@ -345,8 +345,9 @@
 #define ENT_MUTANTZOMBIE		86
 #define ENT_SHAMISEN			87
 #define ENT_RAFT				88
+#define ENT_SHOPKEEPER			89
 
-#define ENT_MAXID				89
+#define ENT_MAXID				90
 
 #define NUM_MONSTERS	243					// Can grow as needed
 #define NUM_PROFILE_MONSTERS 211			// Do not change without redoing the profile format
@@ -506,7 +507,7 @@ MonsterThemes MonsterTheme(dword type);
 byte MonsterFrames(dword type,dword aiType);
 word MonsterHP(dword type);
 word MonsterPoints(dword type);
-const char *MonsterName(word type);
+const char *MonsterName(short type);
 Monster_AIFunc MonsterAI(dword type);
 int8_t MonsterBrightnessChange(dword type);
 

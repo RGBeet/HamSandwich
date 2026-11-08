@@ -22,6 +22,7 @@
 #define MDFY_RELOAD				4	// player fires weapons slower
 #define MDFY_PLAYERDMG			5	// player deals less damage
 #define MDFY_ENEMYHEAL			6	// (most) enemies heal over time
+#define NUM_MODIFIERS			7
 
 // positive mods
 #define MDFY_BRAINRADAR			7	// locate brains if lost
@@ -51,12 +52,8 @@
 // Playable characters. SERIALIZED in profile, specials, and leaderboards.
 enum : byte
 {
-	PLAY_BOUAPHA  = 0,
-	PLAY_HAPPY    = 1,
-	PLAY_LUNATIC  = 2,
-	PLAY_SHROOM   = 3,
-	PLAY_LUNACHIK = 4,
-	PLAY_MECHA    = 5,
+	PLAY_BOUAPHA	= 0,
+	PLAY_AXOLOTL	= 1,
 
 	MAX_PLAYAS // End marker. Add new items above this.
 };
@@ -95,6 +92,10 @@ TASK(byte) UpdateShopping(MGLDraw *mgl);
 void RenderShopping(MGLDraw *mgl);
 
 void ResetAllPurchases(void); // need this for cheat.cpp
+byte HasCheatsPurchased(void);
+byte IsCheatPurchased(byte b);
+byte IsModifierPurchased(byte b);
+word GetShopIndex(byte type, byte item);
 
 float ShopPercent(void);
 

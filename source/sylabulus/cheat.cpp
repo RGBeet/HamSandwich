@@ -6,22 +6,18 @@
 #include <ctype.h>
 
 const char cheatName[NUM_CHEATS][16]={
-	"Win Level",
-	"Ultra Hammer-Up",
-	"Max. Health",
-	"Energy Barrier",
-	"KABLOOIE!",
-	"Freeze Enemies",
-	"All Brains",
-	"All Keys",
-	"Free Scanner",
 	"Ammo Crate",
-	"Lights On",
-	"Walk On Water",
-	"Infinite Oxygen",
-	"No-Skid Boots",
-	"Super Speed",
-	"Max. Rage",
+	"Killer Aura",
+	"Bombs Away!",
+	"Pairs & Pairs",
+	"Keymaster",
+	"Healthy Glow",
+	"Brainiac",
+	"Secret Agent",
+	"Small Shield",
+	"MEGA RAGE!",
+	"Stoneskin",
+	"Super Speed"
 };
 
 #define NUM_TYPE_CHEATS	5
@@ -66,33 +62,7 @@ void CheatKey(char c)
 		if(!strcmp(cheatCode[i],&lastKeys[16-strlen(cheatCode[i])]))
 		{
 			// cheat was triggered
-#ifdef IGF
-			switch(i)
-			{
-				case 0:	// everything
-					for(j=0;j<256;j++)
-					{
-						profile.progress.purchase[j]|=SIF_BOUGHT;
-						profile.progress.purchase[j]&=(~SIF_AVAILABLE);
-					}
-					profile.progress.purchase[ShopItemNumber(SHOP_DONATION,0)]=7;
-					for(j=0;j<NUM_PROFILE_MONSTERS;j++)
-						profile.progress.scanned[j]=1;
-					for(j=0;j<100;j++)
-						profile.progress.goal[j]=1;
-					for(j=0;j<20;j++)
-						profile.progress.movie[j]=1;
-					NewBigMessage("IGF SUPREME!",60);
-					SetupShops(curMap);
-					SetupGalPix(curMap);
-					break;
-				case 1:	// get 100,000 coins & 50 loonykeys
-					profile.progress.totalCoins+=100000;
-					profile.progress.loonyKeys+=50;
-					NewBigMessage("IGF CHEESE!",60);
-					break;
-			}
-#else
+
 			switch(i)
 			{
 				case 0:	// cheats
@@ -120,50 +90,97 @@ void CheatKey(char c)
 					NewBigMessage("RESET!",60);
 					break;
 			}
-#endif
-
 			lastKeys[15]='\0';	// scrap the highest letter, effectively clearing the buffer
 		}
 	}
 }
 
+/*
+#define CHET_AMMOCRATE			0	// ammo supreme crate
+#define CHET_AURADMG			1	// gives aura damage for 10s
+#define CHET_KABLOOIE			2	// explodes the screen
+#define CHET_MAXPANTS			3	// =4 pants, gives a hammer too
+#define CHET_KEYMASTER			4	// skeleton key
+#define CHET_MEDIC				5	// full health
+#define	CHET_ALLBRAINS			6	// ALL the brains!
+#define CHET_INVISIBLE			7	// invisible cloak drop
+#define CHET_SHIELD				8	// energy barrier drop
+#define CHET_POCKET				9	// max pocket space
+#define CHET_RAGE				10	// full rage bar
+#define CHET_STONESKIN			11	// strength
+#define CHET_SUPERFAST			12	// super fast
+*/
+
+byte CanCheat(byte w)
+{
+	if (curMap->type == MAP_TYPE_HUB)
+		return 0;
+
+	switch (w)
+	{
+		case CHET_ALLBRAINS: // won't work on boss levels
+			return player.brains < curMap->numBrains && !(curMap->type == MAP_TYPE_BOSS);
+		case CHET_MAXPANTS:
+			return (player.hamSpeed > 0); // max pants
+		case CHET_KEYMASTER:
+			return (player.keys[0] < 3 || player.keys[1] == 0 && player.keys[2] == 0 || player.keys[3] == 0);
+		case CHET_SUPERFAST:
+			return (player.speed[0] == 0); // not speedy
+		case CHET_INVISIBLE:
+			return (player.invisibility[0] == 0); // not invisible
+		case CHET_RAGE:
+			return (player.rage < 127 * 256); // not at max rage
+		case CHET_POCKET:
+			return (player.wpnSlots < 8); // not at max pockets
+		case CHET_STONESKIN:
+			return (goodguy && goodguy->strength == 0); // not already strong
+		case CHET_MEDIC:
+			return (goodguy && goodguy->hp < goodguy->maxHP); // not at max health
+		case CHET_SHIELD:
+			return (player.shield == 0); // not shielded
+		case CHET_AMMOCRATE:
+			return (player.ammoCrate == 0); // not ammo'd
+	}
+	return 1;
+}
+
 void DoCheat(byte w)
 {
-	if(w == CHEAT_WINLEVEL && curMap->type == MAP_TYPE_HUB)
+	int cost = 1;
+
+	// editing bypasses cheatzy requirement, otherwise, check if the cheat is available and if the player has enough cheatzies to spend
+	if (!editing && (!CanCheat(w) || ((profile.progress.totalCheatzies - profile.progress.cheatziesSpent) < cost)))
 	{
+		// NOPE!
 		MakeNormalSound(SND_TURRETBZZT);
 		return;
 	}
 
-	player.cheated=1;
+	player.cheated = 1;
+	profile.progress.cheatziesSpent++;
 	if(!editing && verified)
 		profile.progress.cheats++;
+
 	switch(w)
 	{
-		case CHEAT_WINLEVEL:
-			MakeNormalSound(SND_CHEATWIN);
-			NewMessage("Lemme out!",30,0);
-			SendMessageToGame(MSG_WINLEVEL,0);
-			break;
-		case CHEAT_HAMMERUP:
-			player.hammers=5;
+		case CHET_MAXPANTS:
+			if(player.hammers<1)
+				player.hammers=1;
 			player.hamSpeed=0;
-			player.cheesePower=255;
-			player.hammerFlags|=HMR_REVERSE|HMR_REFLECT;
 			MakeNormalSound(SND_CHEATWIN);
-			NewMessage("ULTRA HAMMER UP!!",30,0);
 			break;
-		case CHEAT_LIFE:
+		case CHET_MEDIC:
 			PlayerHeal(128);
 			NewMessage("Aaaaah",30,0);
 			MakeNormalSound(SND_CHEATWIN);
 			break;
-		case CHEAT_SHIELD:
+		case CHET_SHIELD:
 			player.shield=255;
 			MakeNormalSound(SND_CHEATWIN);
 			break;
-		case CHEAT_BOOM:
+		case CHET_KABLOOIE:
 		{
+			MakeNormalSound(SND_BOMBIELEAP);
 			auto [cx, cy] = GetCamera();
 			cx-=320;
 			cy-=240;
@@ -175,15 +192,12 @@ void DoCheat(byte w)
 			ShakeScreen(10);	// make the screen shake!
 			break;
 		}
-		case CHEAT_FREEZE:
-			PlayerSetTimeStop(30*12);
-			break;
-		case CHEAT_BRAINS:
+		case CHET_ALLBRAINS:
 			player.brains=curMap->numBrains;
 			SetPlayerGlow(128);
 			MakeNormalSound(SND_CHEATWIN);
 			break;
-		case CHEAT_KEYS:
+		case CHET_KEYMASTER:
 			player.keys[0]=3;
 			player.keys[1]=1;
 			player.keys[2]=1;
@@ -191,41 +205,39 @@ void DoCheat(byte w)
 			MakeNormalSound(SND_CHEATWIN);
 			NewMessage("I am the keymaster!",30,0);
 			break;
-		case CHEAT_SCANNER:
-			TakeWeapon(WPN_SCANNER, 5); // gimme scanner
-			NewMessage("Scanner!",30,0);
-			break;
-		case CHEAT_AMMO:
+		case CHET_AMMOCRATE:
+			MakeNormalSound(SND_AMMOCRATE);
 			if(GetFirstAvailableWeaponSlot() == 255) // give a gun if you have no weapon
 				TakeWeapon(WPN_AK8087,1);
 			player.ammoCrate=255;
 			NewMessage("Ammo Crate!",30,0);
 			break;
-		case CHEAT_LIGHT:
-			player.hammerFlags^=HMR_LIGHT;
-			MakeNormalSound(SND_LIGHTSON);
-			break;
-		case CHEAT_WATER:
-			ToggleWaterwalk();
-			MakeNormalSound(SND_CHEATWIN);
-			break;
-		case CHEAT_OXYGEN:
-			player.hammerFlags^=HMR_OXYGEN;
-			player.oxygen=127*256;
-			MakeNormalSound(SND_CHEATWIN);
-			break;
-		case CHEAT_NOSKID:
-			player.hammerFlags^=HMR_NOSKID;
-			MakeNormalSound(SND_CHEATWIN);
-			break;
-		case CHEAT_SPEED:
+		case CHET_SUPERFAST:
 			player.speed[1]=30*60;
-			SetSpeedFrames(goodguy,30*60);
+			SetSpeedFrames(goodguy,30*30);
 			CalculateMusicSpeed(); // 2x
+			MakeNormalSound(SND_SPEEDUP);
+			break;
+		case CHET_RAGE:
+			player.rage=127*256;
 			MakeNormalSound(SND_CHEATWIN);
 			break;
-		case CHEAT_RAGE:
-			player.rage=127*256;
+		case CHET_POCKET:
+			player.wpnSlots = 8;
+			MakeNormalSound(SND_CHEATWIN);
+			break;
+		case CHET_AURADMG:
+			NewMessage("Mad Aura!",30,0);
+			PlayerSetAuraDamage(30*30);
+			MakeNormalSound(SND_CHEATWIN);
+			break;
+		case CHET_STONESKIN:
+			goodguy->strength = 30*10;
+			MakeNormalSound(SND_CHEATWIN);
+			break;
+		case CHET_INVISIBLE:
+			player.invisibility[0] = 30*20;
+			player.invisibility[1] = 30*20;
 			MakeNormalSound(SND_CHEATWIN);
 			break;
 	}

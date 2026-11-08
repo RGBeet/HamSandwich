@@ -625,16 +625,17 @@ void AI_Cone(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 	if (me->ouch == 4)
 	{
-		/*
-		if(me->hp>0)
-			MakeSound(SND_SEALOUCH,me->x,me->y,SND_CUTOFF,1200);
-		else
-			MakeSound(SND_SEALDIE,me->x,me->y,SND_CUTOFF,1200);
-			*/
+		if(me->hp==0)
+			MakeSound(SND_PUMPKINDIE,me->x,me->y,SND_CUTOFF,1200);
 	}
 
 	if (me->action == ACTION_BUSY)
 	{
+		if (me->seq == ANIM_DIE && me->reload == 0)
+		{
+			ExplodeParticles(PART_HAMMER, me->x, me->y, me->z, 8);
+			me->reload = 2;
+		}
 		if (me->seq == ANIM_ATTACK && me->frm == 2 && me->reload == 0)
 		{
 			x = me->x + Cosine(me->facing * 32) * 16;
@@ -1564,7 +1565,7 @@ void AI_Autozoid(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 		x = (me->x + me->dx) / (TILE_WIDTH * FIXAMT);
 		y = (me->y + me->dy) / (TILE_HEIGHT * FIXAMT);
-		if (mapTile_t* tile = map->TryGetTile(x, y); tile && !tile->wall && !(GetTerrain(world, tile->floor)->pathType == TRN_DRIVE))
+		if (CanDrive(me, x, y, map, world, goodguy))
 		{
 			// you would've gone offroad
 			me->dx = 0;
@@ -2109,7 +2110,7 @@ void AI_Yugo(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	{
 		if (RangeToTarget(me, goodguy) < 32 * FIXAMT && player.vehicle == 0)
 		{
-			if (!(GetTerrain(world, map->GetTile(me->mapx, me->mapy)->floor)->pathType == TRN_DRIVE))
+			if (CanDrive(me, me->mapx, me->mapy, map, world, goodguy))
 			{
 				// somehow the car ended up on non-minecart ground.. ridiculous!
 				for (x = me->mapx - 1;x <= me->mapx + 1;x++)
@@ -2152,9 +2153,7 @@ void AI_Yugo(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 		x = (me->x + me->dx) / (TILE_WIDTH * FIXAMT);
 		y = (me->y + me->dy) / (TILE_HEIGHT * FIXAMT);
-		if (mapTile_t* tile = map->TryGetTile(x, y); tile &&
-			!tile->wall &&
-			!(GetTerrain(world, tile->floor)->pathType == TRN_DRIVE))
+		if (CanDrive(me, x, y, map, world, goodguy))
 		{
 			// you would've gotten off of driveable terrain
 			me->mind3 = 0;
@@ -2310,10 +2309,7 @@ void AI_Yugo(Guy* me, Map* map, world_t* world, Guy* goodguy)
 					goodguy->frmAdvance = 255;
 					goodguy->frmTimer = 0;
 					goodguy->action = ACTION_BUSY;
-					if (player.playAs == PLAY_LUNACHIK)
-						MakeSound(SND_LUNADROWN, x, y, SND_CUTOFF | SND_ONE, 65536);
-					else
-						MakeSound(SND_DROWN, x, y, SND_CUTOFF | SND_ONE, 65536);
+					MakeSound(SND_DROWN, x, y, SND_CUTOFF | SND_ONE, 65536);
 					if (player.shield)
 						CompleteGoal(57);	// fell in water while shielded
 					return;
@@ -4429,17 +4425,11 @@ void AI_ParkedCar(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	}
 }
 
-byte CanTraffic(Guy* me, int x, int y, Map* map, world_t* world)
+byte CanTraffic(Guy* me, int x, int y, Map* map, world_t* world, Guy* goodguy)
 {
 	if (x < 0 || y < 0 || x >= map->width || y >= map->height || !CanWalkTile(x, y, map, world))
 		return 0;
-	switch (GetTerrain(world, map->GetTile(x, y)->floor)->pathType)
-	{
-		case TRN_DRIVE:
-			return 1;
-		default:
-			return 0;
-	}
+	return (!CanDrive(me, x, y, map, world, goodguy));
 }
 
 void AI_Traffic(Guy* me, Map* map, world_t* world, Guy* goodguy)
@@ -4517,13 +4507,13 @@ void AI_Traffic(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	// 0 = right, 1 = down, 2 = left, 3 = up.
 	auto GetTrackDirections = [&]()
 	{
-		ok[0] = (me->mapx < map->width - 1) && CanTraffic(me, me->mapx + 1, me->mapy, map, world);
+		ok[0] = (me->mapx < map->width - 1) && CanTraffic(me, me->mapx + 1, me->mapy, map, world, goodguy);
 
-		ok[1] = (me->mapy < map->height - 1) && CanTraffic(me, me->mapx, me->mapy + 1, map, world);
+		ok[1] = (me->mapy < map->height - 1) && CanTraffic(me, me->mapx, me->mapy + 1, map, world, goodguy);
 
-		ok[2] = (me->mapx > 0) && CanTraffic(me, me->mapx - 1, me->mapy, map, world);
+		ok[2] = (me->mapx > 0) && CanTraffic(me, me->mapx - 1, me->mapy, map, world, goodguy);
 
-		ok[3] = (me->mapy > 0) && CanTraffic(me, me->mapx, me->mapy - 1, map, world);
+		ok[3] = (me->mapy > 0) && CanTraffic(me, me->mapx, me->mapy - 1, map, world, goodguy);
 	};
 
 	// if you've reached the center of a tile, time to decide where to go

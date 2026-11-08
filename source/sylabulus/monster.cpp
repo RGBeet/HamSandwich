@@ -116,7 +116,7 @@ word MonsterHP(dword type)
 	return monsType[type].hp;
 }
 
-const char *MonsterName(word type)
+const char *MonsterName(short type)
 {
 	// These special monster IDs used in specials have hardcoded names.
 	switch (type)
@@ -235,16 +235,8 @@ const sprite_t* GetMonsterSprite2(dword type, byte seq, byte frm, byte facing)
 			type = MONS_MINISUB; // is this ok???
 		else if (type == MONS_BOUAPHA)
 		{
-			if (player.playAs == PLAY_LUNATIC)
-				type = MONS_DRL;
-			else if (player.playAs == PLAY_HAPPY)
-				type = MONS_STICKMAN;
-			else if (player.playAs == PLAY_MECHA)
-				type = MONS_PLAYMECHA;
-			else if (player.playAs == PLAY_SHROOM)
-				type = MONS_PLAYSHROOM;
-			else if (player.playAs == PLAY_LUNACHIK)
-				type = MONS_LUNACHICK;
+			//if (player.playAs == PLAY_LUNATIC)
+			//	type = MONS_DRL;
 		}
 	}
 
@@ -280,16 +272,8 @@ const sprite_t *GetMonsterSprite(Guy *me)
 			type=MONS_MINISUB; // is this ok???
 		else if(type==MONS_BOUAPHA)
 		{
-			if(player.playAs==PLAY_LUNATIC)
-				type=MONS_DRL;
-			else if(player.playAs==PLAY_HAPPY)
-				type=MONS_STICKMAN;
-			else if(player.playAs==PLAY_MECHA)
-				type=MONS_PLAYMECHA;
-			else if(player.playAs==PLAY_SHROOM)
-				type=MONS_PLAYSHROOM;
-			else if(player.playAs==PLAY_LUNACHIK)
-				type=MONS_LUNACHICK;
+			// if(player.playAs==PLAY_LUNATIC)
+			//	type=MONS_DRL;
 		}
 	}
 
@@ -335,16 +319,8 @@ void DrawMe(Guy* g, const sprite_set_t* set) {
 			type = MONS_PWRBOUAPHA;
 		else if (type == MONS_BOUAPHA)
 		{
-			if (player.playAs == PLAY_LUNATIC)
-				type = MONS_DRL;
-			else if (player.playAs == PLAY_HAPPY)
-				type = MONS_STICKMAN;
-			else if (player.playAs == PLAY_MECHA)
-				type = MONS_PLAYMECHA;
-			else if (player.playAs == PLAY_SHROOM)
-				type = MONS_PLAYSHROOM;
-			else if (player.playAs == PLAY_LUNACHIK)
-				type = MONS_LUNACHICK;
+			//if (player.playAs == PLAY_LUNATIC)
+			//	type = MONS_DRL;
 		}
 	}
 
@@ -416,7 +392,7 @@ void DrawMe(Guy* g, const sprite_set_t* set) {
 			SprDraw(g->x >> FIXSHIFT, (g->y >> FIXSHIFT) + 1, 1 + (g->z >> FIXSHIFT), 255, g->bright, curSpr, DISPLAY_DRAWME | DISPLAY_GLOW);
 
 		// invisibility
-		shld = player.invisibility;
+		shld = player.invisibility[0];
 
 		if (GetGameMode() == GAMEMODE_RAGE)
 		{
@@ -562,7 +538,7 @@ void MonsterDraw(
 			return;
 		//if(shld)
 		//	SprDraw(x>>FIXSHIFT,(y>>FIXSHIFT)+1,1+(z>>FIXSHIFT),255,bright,curSpr,DISPLAY_DRAWME|DISPLAY_GLOW);
-		if(player.invisibility)
+		if(player.invisibility[0] > 0)
 		{
 			curSpr=set->GetSprite(v);
 			if(!curSpr)

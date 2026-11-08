@@ -35,7 +35,7 @@ namespace ButtonIdNs
 		DelProf,
 		BrainRadar,
 		CandleRadar,
-		MoveNShoot,
+		Modifiers,
 		Exit,
 		KeyConfig,
 		Difficulty,
@@ -84,7 +84,7 @@ static const profButton_t btn[]={
 	{20,90,122,"Character", ButtonId::Character},
 	{20,120,122,"Brain Radar", ButtonId::BrainRadar},
 	{20,150,122,"Candle Radar", ButtonId::CandleRadar},
-	{20,180,122,"Move N' Shoot", ButtonId::MoveNShoot},
+	{20,180,122,"Edit Modifiers", ButtonId::Modifiers},
 	{20,210,122,"Record Book", ButtonId::Records},
 	{20,374,200,"Configure Keys", ButtonId::KeyConfig},
 	{20,396,200,"Edit Song Playlists", ButtonId::Playlist},
@@ -129,7 +129,7 @@ static char fileList[PRFNAME_LEN*MAX_PROFS];
 static int numFiles;
 static byte profChoice;
 
-static byte recordBook,candleRadar,brainRadar,moveNShoot;
+static byte recordBook,candleRadar,brainRadar,moveNShoot,hasModifiers;
 
 static ButtonId curButton;
 static byte oldc;
@@ -216,9 +216,11 @@ void InitProfMenu(MGLDraw *mgl)
 	candleRadar = 1;
 	brainRadar = 1;
 	moveNShoot = 1;
+	hasModifiers = 1;
 
 	curButton = ButtonId::None;
 	oldc = ~0;
+	PlaySong("profile.ogg");
 }
 
 void ExitProfMenu(void)
@@ -337,11 +339,11 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 					case ButtonId::CandleRadar:
 						curButton = ButtonId::BrainRadar;
 						break;
-					case ButtonId::MoveNShoot:
+					case ButtonId::Modifiers:
 						curButton = ButtonId::CandleRadar;
 						break;
 					case ButtonId::Records:
-						curButton = ButtonId::MoveNShoot;
+						curButton = ButtonId::Modifiers;
 						break;
 					case ButtonId::KeyConfig:
 						curButton = ButtonId::Records;
@@ -390,9 +392,9 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 						curButton = ButtonId::CandleRadar;
 						break;
 					case ButtonId::CandleRadar:
-						curButton = ButtonId::MoveNShoot;
+						curButton = ButtonId::Modifiers;
 						break;
-					case ButtonId::MoveNShoot:
+					case ButtonId::Modifiers:
 						curButton = ButtonId::Records;
 						break;
 					case ButtonId::Records:
@@ -438,7 +440,7 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 					case ButtonId::Character:
 					case ButtonId::BrainRadar:
 					case ButtonId::CandleRadar:
-					case ButtonId::MoveNShoot:
+					case ButtonId::Modifiers:
 					case ButtonId::Records:
 					case ButtonId::KeyConfig:
 					case ButtonId::Playlist:
@@ -462,8 +464,8 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 					case ButtonId::CandleRadar:
 						profile.candleRadar=1-profile.candleRadar;
 						break;
-					case ButtonId::MoveNShoot:
-						profile.moveNShoot=1-profile.moveNShoot;
+					case ButtonId::Modifiers:
+						return 5;
 						break;
 					case ButtonId::Records:
 						if(recordBook)
@@ -519,6 +521,7 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 					candleRadar = 1;
 					brainRadar = 1;
 					moveNShoot = 1;
+					hasModifiers = 1;
 				}
 			}
 
@@ -576,10 +579,11 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 						else	// load profile #1 if you just deleted #0
 							LoadProfile(ShortName(&fileList[PRFNAME_LEN]));
 						ScanProfiles();
-						recordBook = 1;		//ItemPurchased(SHOP_MAJOR, MAJOR_RECORDBOOK);
-						candleRadar = 1;	//ItemPurchased(SHOP_ABILITY, ABIL_CANDLE);
-						brainRadar = 1;		//ItemPurchased(SHOP_ABILITY, ABIL_BRAIN);
-						moveNShoot = 1;		//ItemPurchased(SHOP_ABILITY, ABIL_MOVESHOOT);
+						recordBook		= 1;		// unlocked by default
+						candleRadar		= 1;		// unlocked by default
+						brainRadar		= 1;		// unlocked by default
+						moveNShoot		= 1;		// unlocked by default (TODO: turn into a modifier)
+						hasModifiers	= 1;		// purchase at least one modifier
 					}
 					mode=PROF_NORMAL;
 					curButton = mb ? ButtonId::None : ButtonId::Exit;
@@ -920,7 +924,7 @@ void RenderProfButton(int x,int y,int wid,const char *txt,MGLDraw *mgl, ButtonId
 		mgl->FillBox(x+1,y+1,x+wid-1,y+PBTN_HEIGHT-1,32+8);
 	}
 	else
-		mgl->Box(x,y,x+wid,y+PBTN_HEIGHT,32+16);
+		mgl->Box(x,y,x+wid,y+PBTN_HEIGHT,32*3+16);
 
 	Print(x+2,y+3,txt,0,2);
 }
@@ -929,8 +933,8 @@ void RenderProfList(int x,int y,MGLDraw *mgl)
 {
 	int i;
 
-	mgl->FillBox(x,y,x+150,y+361,32*1+4);
-	mgl->Box(x,y,x+150,y+361,32*1+16);
+	mgl->FillBox(x,y,x+150,y+361,32*3+4);
+	mgl->Box(x,y,x+150,y+361,32*3+16);
 
 	for(i=0;i<numFiles;i++)
 	{
@@ -967,7 +971,7 @@ void RenderProfMenu(MGLDraw *mgl)
 			RenderProfButton(btn[i].x,btn[i].y,btn[i].wid,"?????",mgl,btn[i].id);
 		else if(btn[i].id==ButtonId::BrainRadar && !brainRadar)
 			RenderProfButton(btn[i].x,btn[i].y,btn[i].wid,"?????",mgl,btn[i].id);
-		else if(btn[i].id==ButtonId::MoveNShoot && !moveNShoot)
+		else if(btn[i].id==ButtonId::Modifiers && !hasModifiers)
 			RenderProfButton(btn[i].x,btn[i].y,btn[i].wid,"?????",mgl,btn[i].id);
 		else
 			RenderProfButton(btn[i].x,btn[i].y,btn[i].wid,btn[i].txt,mgl,btn[i].id);
@@ -985,8 +989,8 @@ void RenderProfMenu(MGLDraw *mgl)
 		Print(146,122,yesno[profile.brainRadar],0,2);
 	if(candleRadar)
 		Print(146,152,yesno[profile.candleRadar],0,2);
-	if(moveNShoot)
-		Print(146,182,yesno[profile.moveNShoot],0,2);
+	if(hasModifiers)
+		Print(146,182,yesno[profile.hasModifiers],0,2);
 
 	if(mode==PROF_DELETE)
 	{
@@ -1075,6 +1079,7 @@ TASK(void) ProfMenu(MGLDraw *mgl)
 		lastTime+=TimeLength();
 		StartClock();
 		done=UpdateProfMenu(&lastTime,mgl);
+
 		if(mode!=PROF_KEYCONFIG)
 			RenderProfMenu(mgl);
 		else
@@ -1086,7 +1091,7 @@ TASK(void) ProfMenu(MGLDraw *mgl)
 			done=1;
 		EndClock();
 
-		if(done==2)
+		if(done==2) // TODO: get rid of this for now
 		{
 			AWAIT PlayListMenu(mgl);
 			oldc = ~0;
@@ -1102,6 +1107,11 @@ TASK(void) ProfMenu(MGLDraw *mgl)
 		if(done==4)
 		{
 			AWAIT RecordBook(mgl);
+			done=0;
+		}
+		if(done==5)
+		{
+			AWAIT ModifierMenu(mgl);
 			done=0;
 		}
 	}

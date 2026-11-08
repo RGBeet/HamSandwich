@@ -137,7 +137,6 @@ void InitPlayer(byte level,const char *fname)
 	player.rage			= 0;
 	player.varbar		= 0;
 	player.varbarMax	= 0;
-	player.invisibility	= 0;
 	player.jetting		= 0;
 	player.oxygen		= 127*256;
 	player.ammoCrate	= 0;
@@ -150,19 +149,20 @@ void InitPlayer(byte level,const char *fname)
 	player.comboClock	= 0;		// combo timer (go to 0 = lose combo)
 	player.bestCombo	= 0;		// best combo, for high score purposes
 
-
 	player.cheesePower	= 0;		// squeezy cheeze
 	player.timer		= 0;		// timer (to be set later)
 
 	player.cheated = 0;
 
-	player.timeStop[0]	= 0;		// stopwatch stop time
-	player.timeStop[1]	= 1;
-
-	player.speed[0]		= 0;		// particle acceleration
-	player.speed[1]		= 1;
-
-	player.lives		= 0;
+	player.timeStop[0]		= 0;		// stopwatch stop time
+	player.timeStop[1]		= 1;
+	player.speed[0]			= 0;		// particle acceleration
+	player.speed[1]			= 1;
+	player.invisibility[0]	= 0;
+	player.invisibility[1]	= 1;
+	player.auraDmg[0]		= 0;
+	player.auraDmg[1]		= 1;
+	player.lives			= 0;
 	
 	for(i=1;i<6;i++)
 	{
@@ -177,15 +177,32 @@ void InitPlayer(byte level,const char *fname)
 	player.stunned		= 0;
 	player.playAs=profile.playAs;
 
+	player.scoreMultiplier = 1.0f;
+	for (i = 1;i < NUM_MODIFIERS;i++)
+	{
+		if (GetModifierBought(i) && GetModifierActive(i))
+		{
+			player.modifier[i] = 1;
+			// add to modifierMult
+		}
+		else
+		{
+			player.modifier[i] = 0;
+		}
+	}
+
 	intfaceEnemy=NULL;
 }
 
 void ExitPlayer(void)
 {
-	player.playAs		= profile.playAs;
-	player.shield		= 0;
-	player.speed[0]		= 0;
-	player.invisibility	= 0;
+	player.playAs			= profile.playAs;
+	player.shield			= 0;
+
+	player.speed[0]			= 0;
+	player.invisibility[0]	= 0;
+	player.auraDmg[0]		= 0;
+
 	SaveProfile();
 }
 
@@ -343,7 +360,8 @@ byte PlayerPowerup(int powerup)
 				CalculateMusicSpeed(); // speed up music
 				break;
 			case PU_INVISO:
-				player.invisibility=255;
+				player.invisibility[0] = 30*10;
+				player.invisibility[1] = 30*10;
 				break;
 			case PU_AMMO:
 				if(GetCurrentWeaponType()==0)
@@ -413,9 +431,9 @@ byte PlayerPowerup(int powerup)
 				CalculateMusicSpeed();
 				return 1;
 			case PU_INVISO:
-				if (!player.invisibility)
+				if (!player.invisibility[0])
 					return 0;
-				player.invisibility=0;
+				player.invisibility[0] = 0;
 				return 1;
 			case PU_AMMO:
 				if (!player.ammoCrate)
@@ -494,7 +512,8 @@ void PlayerRadioactiveFood(void)
 			break;
 		case 5:
 			NewMessage("Atomic Inviso-Power!",75,0);
-			player.invisibility=255;
+			player.invisibility[0] = 30 * 10;
+			player.invisibility[1] = 30 * 10;
 			break;
 	}
 }
@@ -569,16 +588,8 @@ byte PlayerGetBrain(int amt)
 		player.brains=total;
 		if(player.playAs==PLAY_BOUAPHA)
 			MakeNormalSound(SND_KOOLKAT);
-		else if(player.playAs==PLAY_LUNATIC)
-			MakeNormalSound(SND_DRLLAUGH);
-		else if(player.playAs==PLAY_HAPPY)
-			MakeNormalSound(SND_HAPPYDIE);
-		else if(player.playAs==PLAY_MECHA)
-			MakeNormalSound(SND_FACTORYGO);
-		else if(player.playAs==PLAY_SHROOM)
+		else if(player.playAs==PLAY_AXOLOTL)
 			MakeNormalSound(SND_MUSHMAD);
-		else if(player.playAs==PLAY_LUNACHIK)
-			MakeNormalSound(SND_LUNABRAINS);
 
 		playerGlow=127;
 		return 2;
@@ -722,24 +733,9 @@ void PlayerThrowHammer(Guy *me)
 	if(player.hammerFlags&HMR_REVERSE)
 		ScoreEvent(SE_SHOOT,player.hammers);
 
-	if(player.playAs==PLAY_BOUAPHA || player.playAs==PLAY_MECHA || player.playAs==PLAY_LUNACHIK)
+	if(player.playAs==PLAY_BOUAPHA || player.playAs==PLAY_AXOLOTL)
 	{
 		HammerLaunch(me->x,me->y,me->facing,player.hammers,player.hammerFlags);
-	}
-	else if(player.playAs==PLAY_LUNATIC)
-	{
-		MakeSound(SND_BALLLIGHTNING,me->x,me->y,SND_CUTOFF,600);
-		FireBullet(me->x,me->y,me->facing,BLT_BALLLIGHTNING,1);
-		if(player.hammerFlags&HMR_REVERSE)
-			FireBullet(me->x,me->y,(byte)Random(8),BLT_BALLLIGHTNING,1);
-	}
-	else if(player.playAs==PLAY_HAPPY)
-	{
-		HappyLaunch(me->x,me->y,me->facing,player.hammers,player.hammerFlags);
-	}
-	else if(player.playAs==PLAY_SHROOM)
-	{
-		ShroomSpew(me->x,me->y,me->facing,player.hammers,player.hammerFlags);
 	}
 
 	player.reload=player.hamSpeed+2;
@@ -1234,7 +1230,7 @@ void PlayerFireWeapon(Guy *me)
 			}
 			break;
 	}
-	if (ModifierActive(MDFY_RELOAD)) // slower reload modifier
+	if (player.modifier[MDFY_RELOAD]) // slower reload modifier
 		player.reload *= 1.5;
 	if(!player.ammoCrate && !GetCurrentWeaponAmmo())
 	{
@@ -1424,8 +1420,8 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	if(player.rageClock && GetGameMode()!=GAMEMODE_RAGE)
 		DoRage(me);
 
-	if(player.invisibility)
-		player.invisibility--;
+	if(player.invisibility[0])
+		player.invisibility[0]--;
 
 	if(player.cheesePower)
 		player.cheesePower--;
@@ -1571,32 +1567,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			else if(me->seq==ANIM_DIE)	// so it doesn't do this if you're drowning
 				MakeSound(SND_BOUAPHADIE,me->x,me->y,SND_CUTOFF|SND_ONE,2000);
 		}
-		if(player.playAs==PLAY_LUNACHIK)
-		{
-			if(me->hp>0)
-				MakeSound(SND_LUNAOUCH,me->x,me->y,SND_CUTOFF|SND_ONE,2000);
-			else if(me->seq==ANIM_DIE)	// so it doesn't do this if you're drowning
-				MakeSound(SND_LUNADIE,me->x,me->y,SND_CUTOFF|SND_ONE,2000);
-		}
-		else if(player.playAs==PLAY_LUNATIC)
-		{
-			if(me->hp>0)
-				MakeSound(SND_DRLOUCH,me->x,me->y,SND_CUTOFF|SND_ONE,2000);
-			else if(me->seq==ANIM_DIE)	// so it doesn't do this if you're drowning
-				MakeSound(SND_DRLDIE,me->x,me->y,SND_CUTOFF|SND_ONE,2000);
-		}
-		else if(player.playAs==PLAY_MECHA)
-		{
-			if(me->hp>0)
-				MakeSound(SND_ROBOBOUAPHAOUCH,me->x,me->y,SND_CUTOFF|SND_ONE,2000);
-			else if(me->seq==ANIM_DIE)	// so it doesn't do this if you're drowning
-			{
-				x=me->x>>FIXSHIFT;
-				y=me->y>>FIXSHIFT;
-				BlowUpGuy(x+me->rectx,y+me->recty,x+me->rectx2,y+me->recty2,me->z,1);
-			}
-		}
-		else if(player.playAs==PLAY_SHROOM)
+		else if(player.playAs==PLAY_AXOLOTL)
 		{
 			if(me->hp>0)
 				MakeSound(SND_MUSHOUCH,me->x,me->y,SND_CUTOFF|SND_ONE,2000);
@@ -1727,13 +1698,6 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		if(me->seq==ANIM_DIE)
 		{
 			me->facing=(me->facing+1)&7;
-
-			if(player.playAs==PLAY_MECHA)
-			{
-				x=me->x>>FIXSHIFT;
-				y=me->y>>FIXSHIFT;
-				BlowUpGuy(x+me->rectx,y+me->recty,x+me->rectx2,y+me->recty2,me->z,1);
-			}
 		}
 
 		return;
@@ -1778,7 +1742,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			if(player.hammers>0)
 				PlayerThrowHammer(me);
 			player.reload+=(10-(4-(player.hamSpeed>>2)));;
-			if(ModifierActive(MDFY_RELOAD)) // slower reload modifier
+			if(player.modifier[MDFY_RELOAD]) // slower reload modifier
 				player.reload*=1.5;
 		}
 		else
@@ -1910,10 +1874,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		player.boredom++;
 		if(player.boredom>(int)(200+Random(3200)))
 		{
-			if(player.playAs==PLAY_LUNACHIK)
-				MakeSound(SND_LUNABORED,me->x,me->y,SND_CUTOFF|SND_ONE,2000);
-			else
-				MakeSound(SND_BOUAPHABORED,me->x,me->y,SND_CUTOFF|SND_ONE,2000);
+			MakeSound(SND_BOUAPHABORED,me->x,me->y,SND_CUTOFF|SND_ONE,2000);
 			me->seq=ANIM_A2;
 			me->frm=0;
 			me->frmTimer=0;
@@ -2626,7 +2587,7 @@ byte PlayerCanThrowHammers()
 
 byte PlayerHasPowerup()
 {
-	return ((goodguy && goodguy->poison) || player.shield > 0 || PlayerGetAccelerate() > 0 || player.invisibility > 0 || player.ammoCrate > 0 || player.cheesePower > 0 || player.garlic > 0);
+	return ((goodguy && goodguy->poison) || player.shield > 0 || PlayerGetAccelerate() > 0 || player.invisibility[0] > 0 || player.ammoCrate > 0 || player.cheesePower > 0 || player.garlic > 0);
 }
 
 word PlayerGetTimer()
@@ -2658,6 +2619,15 @@ word PlayerGetAccelerate()
 {
 	return goodguy ? goodguy->speed : 0;
 }
+void PlayerSetAuraDamage(word amt)
+{
+	player.auraDmg[0] = amt;
+	player.auraDmg[1] = amt;
+}
+word PlayerGetAuraDamage()
+{
+	return player.auraDmg[0];
+}
 
 Guy* GetInterfaceEnemy()
 {
@@ -2677,23 +2647,16 @@ byte PlayerGetKey(byte type, int amt)
 		if (player.keys[type])
 			return 0;
 		else
-		{
-			if (!editing && !player.cheated && verified && ++profile.progress.keysFound >= 100)
-				CompleteGoal(73);
 			player.keys[type] = 1;
-			return 1;
-		}
 	}
 	else
 	{
 		if (!player.keys[type])
 			return 0;
 		else
-		{
 			player.keys[type] = 0;
-			return 1;
-		}
 	}
+	return 1;
 }
 
 byte PlayerGetHammer(int amt)

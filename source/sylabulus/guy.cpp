@@ -632,6 +632,17 @@ void Guy::Update(Map *map,world_t *world)
 	byte b;
 	static byte burnFlip=0;
 
+	age++;
+	if (friendly != goodguy->friendly && hp < maxHP && player.modifier[MDFY_ENEMYHEAL])
+	{
+		b = player.modifier[MDFY_ENEMYSPD] ? 30 : 20; // nerf synergy with +enemy spd
+		if (player.clock % b == 0)
+		{
+			hp++;
+			ExplodeParticles(PART_BUBBLE, x, y, z, 6); // TODO: HEALING
+		}
+	}
+
 	if(type==ENT_NONE)
 		return;
 
@@ -980,10 +991,7 @@ void Guy::Update(Map *map,world_t *world)
 				frmAdvance=255;
 				frmTimer=0;
 				action=ACTION_BUSY;
-				if(player.playAs==PLAY_LUNACHIK)
-					MakeSound(SND_LUNADROWN,x,y,SND_CUTOFF|SND_ONE,65536);
-				else
-					MakeSound(SND_DROWN,x,y,SND_CUTOFF|SND_ONE,65536);
+				MakeSound(SND_DROWN,x,y,SND_CUTOFF|SND_ONE,65536);
 				if(player.shield)
 					CompleteGoal(57);	// fell in water while shielded
 			}
@@ -1158,7 +1166,7 @@ void Guy::MonsterControl(Map *map,world_t *world)
 		break;
 		default:
 			// lose sight of the invisible goodguy
-			if ((player.invisibility || player.stealthy) && target == goodguy)
+			if ((player.invisibility[0] > 0 || player.stealthy) && target == goodguy)
 			{
 				target = nobody;	// target the randomly moving, invisible, invincible, ghostly, nobody
 			}
@@ -1180,7 +1188,7 @@ void Guy::MonsterControl(Map *map,world_t *world)
 					target = nobody;
 				}
 			}
-			if (target == nobody && !friendly && player.invisibility == 0 && player.stealthy == 0 && goodguy)
+			if (target == nobody && !friendly && player.invisibility[0] == 0 && player.stealthy == 0 && goodguy)
 				target = goodguy;
 		break;
 	}
@@ -1206,22 +1214,29 @@ void Guy::GetShot(int dx,int dy,word damage,Map *map,world_t *world, bool bypass
 {
 	int formerHP,newHP;
 
-	if(hp==0 || type==0 || (aiType == MONS_BOUAPHA && PlayerShield()) || (!bypassInvincible && (MonsterFlags(type, aiType) & MF_INVINCIBLE)))
+	if(hp==0 || type==0 || (aiType == ENT_BOUAPHA && PlayerShield()) || (!bypassInvincible && (MonsterFlags(type, aiType) & MF_INVINCIBLE)))
 		return;
 
-	if(aiType==MONS_BOUAPHA && frozen)
-		frozen/=2;
+	if(aiType == ENT_BOUAPHA && frozen)
+		frozen /=2;
 
-	if (ModifierActive(MDFY_ENEMYDMG) && friendly != goodguy->friendly)
-		damage *= 1.5;
+	if (ouch > 0) // if you're already hurt, you take less damage
+		damage /= 2;
 
-	if (ModifierActive(MDFY_PLAYERDMG) && this == goodguy)
+	if (player.modifier[MDFY_ENEMYDMG] && this->friendly != goodguy->friendly)
+	{
+		printf("OUCH!! DAMAGE X4\n");
+		damage *= 4;
+	}
+
+	if (player.modifier[MDFY_PLAYERDMG] && this == goodguy)
 		damage *= 0.6;
 
-	if (!damage)
+	if (damage<1)
 		damage = 1;
 
-	if (aiType == MONS_BOUAPHA)
+
+	if (aiType == ENT_BOUAPHA)
 	{
 		player.ouchFrms = 12;
 		if (player.weapon == WPN_PWRARMOR || player.weapon == WPN_MINISUB)
@@ -1624,7 +1639,7 @@ void UpdateGuys(Map *map,world_t *world)
 				render = 1;
 			}
 
-			if (guys[i].friendly != goodguy->friendly && ModifierActive(MDFY_ENEMYSPD))
+			if (guys[i].friendly != goodguy->friendly && player.modifier[MDFY_ENEMYSPD])
 				updates++;
 			
 			switch(guys[i].aiType)
@@ -3571,7 +3586,7 @@ void SetPoisonFrames(Guy* g, word frames)
 	{
 		if (PlayerShield())
 			return; // don't poison if shielded
-		if (ModifierActive(MDFY_STATEFCT))
+		if (player.modifier[MDFY_STATEFCT])
 			frames *= 1.5;
 	}
 	g->poison = (frames < MAX_STATUS_FRAMES) ? frames : MAX_STATUS_FRAMES;
@@ -3583,7 +3598,7 @@ void SetIgniteFrames(Guy* g, word frames)
 	{
 		if (PlayerShield())
 			return; // don't ignite if shielded
-		if (ModifierActive(MDFY_STATEFCT))
+		if (player.modifier[MDFY_STATEFCT])
 			frames *= 1.5;
 	}
 	g->ignite = (frames < MAX_STATUS_FRAMES) ? frames : MAX_STATUS_FRAMES;
@@ -3628,7 +3643,7 @@ void SetStrengthFrames(Guy* g, word frames)
 {
 	if (g == goodguy)
 	{
-		if (ModifierActive(MDFY_STATEFCT) && g->weaken)
+		if (player.modifier[MDFY_STATEFCT] && g->weaken)
 			frames *= 0.75;
 	}
 	g->strength = (frames < MAX_STATUS_FRAMES) ? frames : MAX_STATUS_FRAMES;
@@ -3638,7 +3653,7 @@ void SetSpeedFrames(Guy* g, word frames)
 {
 	if (g == goodguy)
 	{
-		if (ModifierActive(MDFY_STATEFCT) && g->weaken)
+		if (player.modifier[MDFY_STATEFCT] && g->weaken)
 			frames *= 0.75;
 	}
 	g->speed = (frames < MAX_STATUS_FRAMES) ? frames : MAX_STATUS_FRAMES;
@@ -3874,4 +3889,19 @@ void SetParent(Guy* g, Guy* parent)
 	}
 	g->parent = parent;
 	printf("Set parent of guy %d to %d\n", g->ID, parent ? parent->ID : -1);
+}
+
+byte CanDrive(Guy* me, int x, int y, Map* map, world_t* world, Guy* goodguy)
+{
+	mapTile_t* tile = map->TryGetTile(x, y);
+	if(!tile || tile->wall)
+		return 0;
+	switch(GetTerrain(world, tile->floor)->pathType)
+	{
+		case TRN_DRIVE:
+		case TRN_CROSSWALK:
+			return 0;
+		default:
+			return 1;
+	}
 }

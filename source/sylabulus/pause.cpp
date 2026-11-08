@@ -8,6 +8,8 @@
 #include "music.h"
 #include "game.h"
 #include <memory>
+#include <algorithm>
+#include <array>
 
 #define PE_CONTINUE	0	// back to gameplay
 #define PE_RETRY	1	// retry this level
@@ -28,6 +30,7 @@
 #define PE_SHOP		16	// go shopping, go back to playing
 #define PE_WPNLOCK	17	// weapon lock
 #define PE_HUDCHOICE   18
+#define PE_BACKMENU	19	// a marker to indicate the list is done
 
 #define PE_CHEATS	50
 
@@ -43,7 +46,7 @@ static const pauseItem_t gamePause[]={
 	{PE_GIVEUP,"Give Up"},
 	{PE_WORLDSEL,"World Select"},
 	{PE_SNDVOL,""},
-	{PE_MUSIC,"Music Options"},
+	{PE_MUSVOL,""},
 	{PE_WPNLOCK,"Weapon Lock"},
 	{PE_SHOP,"Quit & Shop"},
 	{PE_EXIT,"Exit Game"},
@@ -53,7 +56,7 @@ static const pauseItem_t gamePause[]={
 static const pauseItem_t shopPause[]={
 	{PE_CONTINUE,"Continue"},
 	{PE_SNDVOL,""},
-	{PE_MUSIC,"Music Options"},
+	{PE_MUSVOL,""},
 	{PE_SHOP,"Quit & Play"},
 	{PE_EXIT,"Main Menu"},
 	{PE_DONE,""}
@@ -64,7 +67,8 @@ static const pauseItem_t editPause[]={
 	{PE_RETRY,"Retry"},
 	{PE_GIVEUP,"Give Up"},
 	{PE_SNDVOL,""},
-	{PE_MUSIC,"Music Options"},
+	{PE_MUSVOL,""},
+	//{PE_MUSIC,"Music Options"},
 	{PE_CHEAT,"Cheats!!"},
 	{PE_WPNLOCK,"Weapon Lock"},
 	{PE_EXIT,"Editor"},
@@ -77,40 +81,13 @@ static const pauseItem_t gameCheatPause[]={
 	{PE_GIVEUP,"Give Up"},
 	{PE_WORLDSEL,"World Select"},
 	{PE_SNDVOL,""},
-	{PE_MUSIC,"Music Options"},
+	{PE_MUSVOL,""},
+	//{PE_MUSIC,"Music Options"},
 	{PE_CHEAT,"Cheats!!"},
 	{PE_WPNLOCK,"Weapon Lock"},
 	{PE_SHOP,"Quit & Shop"},
 	{PE_EXIT,"Exit Game"},
 	{PE_DONE,""}
-};
-
-static const pauseItem_t cheatPause[]={
-	{PE_CHEAT,"Stop Cheating!"},
-	{PE_CHEATS+CHEAT_WINLEVEL,"Win Level"},
-	{PE_CHEATS+CHEAT_HAMMERUP,"UltraHammerUp"},
-	{PE_CHEATS+CHEAT_LIFE,"Max Health"},
-	{PE_CHEATS+CHEAT_RAGE,"Max Rage"},
-	{PE_CHEATS+CHEAT_SHIELD,"Energy Barrier"},
-	{PE_CHEATS+CHEAT_BOOM,"KABLOOIE!"},
-	{PE_CHEATS+CHEAT_FREEZE,"Freeze Enemies"},
-	{PE_CHEATS+CHEAT_BRAINS,"All Brains"},
-	{PE_CHEATS+CHEAT_KEYS,"All Keys"},
-	{PE_MORECHEATS,"More Cheats"},
-	{PE_DONE,""},
-};
-
-static const pauseItem_t cheatPause2[]={
-	{PE_PREVCHEATS,"Prev. Cheats"},
-	{PE_CHEATS+CHEAT_SCANNER,"Free Scanner"},
-	{PE_CHEATS+CHEAT_AMMO,"Ammo Crate"},
-	{PE_CHEATS+CHEAT_LIGHT,"Lights On"},
-	{PE_CHEATS+CHEAT_WATER,"Walk On Water"},
-	{PE_CHEATS+CHEAT_OXYGEN,"Infinite Oxygen"},
-	{PE_CHEATS+CHEAT_NOSKID,"No-Skid Boots"},
-	{PE_CHEATS+CHEAT_SPEED,"Super Speed"},
-	{PE_CHEAT,"Stop Cheating!"},
-	{PE_DONE,""},
 };
 
 static const pauseItem_t musicPause[]={
@@ -137,6 +114,7 @@ namespace
 	dword oldGamepad = ~0;
 	char worldName[64];
 	int pauseClock = 0;
+	byte currentPage = 0;
 
 	const byte volumeSpot[]={0,26,51,77,102,128,153,179,204,230,255};
 }
@@ -232,7 +210,7 @@ void SetupSoundItems(void)
 				sprintf(menu[i].text,"Sound: %d%%",(profile.sound*100/255));
 				break;
 			case PE_MUSVOL:
-				sprintf(menu[i].text,"Volume: %d%%",(profile.music*100/255));
+				sprintf(menu[i].text,"Music: %d%%",(profile.music*100/255));
 				break;
 			case PE_MUSICTYPE:
 				switch(profile.musicMode&7)
@@ -291,21 +269,64 @@ void FillPauseMenu(const pauseItem_t *src)
 			break;
 		}
 		else
-		{
 			memcpy(&menu[i],&src[i],sizeof(pauseItem_t));
-			if(menu[i].effect>=PE_CHEATS)
-			{
-				// squigglize cheats that aren't owned
-				if(!editing)
-				{
-					strcpy(menu[i].text,"????????");
-					menu[i].effect=PE_BZZT;
-				}
-			}
-		}
 	}
 	SetupSoundItems();
 	SetupOptionItems();
+}
+
+static const pauseItem_t cheatMenu[] = {
+	{ PE_CHEATS+CHET_AMMOCRATE, "Ammo Crate" },
+	{ PE_CHEATS+CHET_AURADMG, "Killer Aura" },
+	{ PE_CHEATS+CHET_KABLOOIE, "Bombs Away!" },
+	{ PE_CHEATS+CHET_MAXPANTS, "Pairs & Pairs" },
+	{ PE_CHEATS+CHET_KEYMASTER, "Keymaster" },
+	{ PE_CHEATS+CHET_MEDIC, "Healthy Glow" },
+	{ PE_CHEATS+CHET_ALLBRAINS, "Brainiac" },
+	{ PE_CHEATS+CHET_INVISIBLE, "Secret Agent" },
+	{ PE_CHEATS+CHET_SHIELD, "Small Shield" },
+	{ PE_CHEATS+CHET_POCKET, "Hammer Space" },
+	{ PE_CHEATS+CHET_RAGE, "MEGA RAGE!" },
+	{ PE_CHEATS+CHET_STONESKIN, "Stoneskin" },
+	{ PE_CHEATS+CHET_SUPERFAST, "Super Speed" },
+};
+
+#define CHEATS_PER_PAGE 8
+void BuildCheatMenu()
+{
+	std::vector<pauseItem_t> menu;
+	std::vector<pauseItem_t> availableCheats;
+
+	for (int i = 0; i < NUM_CHEATS; i++)
+	{
+		if (editing || IsCheatPurchased(i))
+			availableCheats.push_back(cheatMenu[i]);
+	}
+
+	int totalCheats = (int)availableCheats.size();
+	int totalPages = (totalCheats + CHEATS_PER_PAGE - 1) / CHEATS_PER_PAGE;
+
+	if (totalPages == 0)
+		currentPage = 0;
+	else if (currentPage >= totalPages)
+		currentPage = totalPages - 1;
+
+	int first = currentPage * CHEATS_PER_PAGE;
+	int last = std::min(first + CHEATS_PER_PAGE, totalCheats);
+
+	if (currentPage > 0)
+		menu.push_back({ PE_PREVCHEATS, "Prev. Page" });
+
+	for (int i = first; i < last; i++)
+		menu.push_back(availableCheats[i]);
+
+	if (currentPage < totalPages - 1)
+		menu.push_back({ PE_MORECHEATS, "Next Page" });
+
+	menu.push_back({ PE_BACKMENU, "Stop Cheating!" });
+	menu.push_back({ PE_DONE, "" });
+
+	FillPauseMenu(menu.data());
 }
 
 void InitPauseMenu(void)
@@ -332,9 +353,9 @@ void InitPauseMenu(void)
 	}
 
 	menu.push_back({ PE_SNDVOL, "" });
-	menu.push_back({ PE_MUSIC, "Music Options" });
+	menu.push_back({ PE_MUSVOL, "Music Options" });
 
-	if (editing) // editing OR cheats purchased
+	if (editing || HasCheatsPurchased()) // editing OR cheats purchased
 		menu.push_back({ PE_CHEAT, "Cheats!!" });
 
 	if (!shopping)
@@ -584,16 +605,7 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 				}
 				else
 				{
-					if(!shopping && !editing)
-					{
-						FillPauseMenu(gamePause);
-					}
-					else if(!shopping)
-					{
-						FillPauseMenu(editPause);
-					}
-					else
-						FillPauseMenu(shopPause);
+					InitPauseMenu();
 				}
 				i=100;
 				break;
@@ -615,32 +627,25 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 				return PAUSE_SHOP;
 			case PE_CHEAT:
 				cursor=0;
-				menuMode=1-menuMode;
-				if(menuMode==1)
-				{
-					FillPauseMenu(cheatPause);
-				}
-				else
-				{
-					if(!editing)
-					{
-						FillPauseMenu(gamePause);
-					}
-					else
-					{
-						FillPauseMenu(editPause);
-					}
-				}
+				BuildCheatMenu();
 				i=100;
 				break;
 			case PE_MORECHEATS:
 				cursor=0;
-				FillPauseMenu(cheatPause2);
+				currentPage++;
+				BuildCheatMenu();
 				i=100;
 				break;
 			case PE_PREVCHEATS:
 				cursor=0;
-				FillPauseMenu(cheatPause);
+				if(currentPage>0)
+					currentPage--;
+				BuildCheatMenu();
+				i=100;
+				break;
+			case PE_BACKMENU:
+				cursor=0;
+				InitPauseMenu();
 				i=100;
 				break;
 			case PE_BZZT:

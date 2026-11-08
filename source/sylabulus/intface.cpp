@@ -761,7 +761,7 @@ void DrawPowerupBar(int x,int y,MGLDraw *mgl)
 	color[1]=32*0+20;	// light grey for garlic
 	width[2]=goodguy->speed*POWERUP_WIDTH/player.speed[1];
 	color[2]=32*7+16;	// aqua for speed
-	width[3]=player.invisibility*POWERUP_WIDTH/255;
+	width[3]=player.invisibility[0]*POWERUP_WIDTH/player.invisibility[1];
 	color[3]=32*6+16;	// purple for invis
 	width[4]=player.ammoCrate*POWERUP_WIDTH/255;
 	color[4]=32*4+16;	// red for ammo

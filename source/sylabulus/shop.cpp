@@ -10,6 +10,8 @@
 #include "gallery.h"
 #include "goal.h"
 
+static sprite_set_t* shopIcons;
+
 struct ShopItem
 {
 	byte shop;
@@ -23,7 +25,7 @@ struct ShopItem
 struct Shop
 {
 	const char name[32];
-	int keeperSprite;				// which init frame of shopkeeper.jsp to use
+	int keeperSprite;				// which init frame of shopicon.jsp to use
 	byte x;
 	byte y;
 	std::vector<ShopItem*> items;	// the currently available items
@@ -61,7 +63,7 @@ ShopItem shopItems[NUM_SHOP_ITEMS] = {
 };
 
 Shop shoppes[1] = {
-	{"Triton's Treasures", 0, 6, 7, {} }
+	{"Triton's Treasures", 0, 16, 18, {} }
 };
 
 int curSelection	= 0;
@@ -80,6 +82,7 @@ static byte mallMode = 0;
 
 void ExitShop()
 {
+	delete shopIcons;
 	currentShop		= nullptr;
 	curSelection	= 0;
 	scrollOffset	= 0;
@@ -99,6 +102,7 @@ void EnterShop(Shop *shopToLoad)
 
 	canBuy			= currentShop->items.size()>0;
 	MakeNormalSound(SND_SHOPBELL);
+	shopIcons = new sprite_set_t("graphics/shopicon.jsp");
 	SendMessageToGame(MSG_SHOPNOW, 0);
 }
 
@@ -186,7 +190,7 @@ void SetupShops(Map* map)
 	if (shopping == 1)
 	{
 		shopping = 2;
-		printf("Randomizing shoppes");
+		//printf("Randomizing shoppes");
 
 		MGL_srand(profile.randomSeed); // seeded random
 		// randomize the shop contents based on the profile seed
@@ -218,6 +222,8 @@ TASK(void) InitShopping(int x, int y)
 
 	for (i = 0; i < 1; i++)
 	{
+		printf("Shoppe x = %d y=%d\n", shoppes[i].x, shoppes[i].y);
+		printf("Bouapha x = %d y=%d\n", x, y);
 		if (shoppes[i].x == x && shoppes[i].y == y)
 		{
 			EnterShop(&shoppes[i]); // we found the shop!
@@ -559,8 +565,9 @@ void RenderShopping(MGLDraw* mgl)
 
 	char s[32];
 
-	sprintf(s, "Sprite #%d", currentShop->keeperSprite);
-	Print(ix1, iy1, s, 0, 1);
+	//sprintf(s, "Sprite #%d", currentShop->keeperSprite);
+	shopIcons->GetSprite(currentShop->keeperSprite)->Draw(ix1, iy1, mgl);
+	//Print(ix1, iy1, s, 0, 1);
 
 	PrintRect(
 		ix1 + 80,
@@ -691,29 +698,17 @@ void RenderShopping(MGLDraw* mgl)
 
 	// Buy
 	if (canBuy)
-		CenterPrint(
-			bx1 + 10,
-			buttonY,
-			"BUY",
-			0,
-			2);
+		shopIcons->GetSprite(10)->Draw(bx1 + 10,
+			buttonY, mgl);
 
 	// Exit
-	CenterPrint(
-		ex1 + 10,
-		buttonY,
-		"EXIT",
-		0,
-		2);
+	shopIcons->GetSprite(10)->Draw(ex1 + 10,
+		buttonY, mgl);
 }
 
 static const char charName[][16] = {
 	"Bouapha",
-	"Happy Stick Man",
-	"Dr. Lunatic",
-	"Shtupid Shroom",
-	"LunaChick",
-	"MechaBouapha",
+	"Rio",
 };
 static_assert(std::size(charName) == MAX_PLAYAS, "Must give new playable character a name");
 
@@ -724,3 +719,46 @@ const char* GetPlayableCharacterName(int playAs)
 	return "???";
 }
 
+byte HasCheatsPurchased(void)
+{
+	int i;
+	for (i = 0;i < NUM_SHOP_ITEMS;i++)
+	{
+		if (shopItems[i].type == STYP_CHEAT && IsPurchased(i))
+			return 1;
+	}
+	return 0;
+}
+
+byte IsCheatPurchased(byte b)
+{
+	int i;
+	for (i = 0;i < NUM_SHOP_ITEMS;i++)
+	{
+		if (shopItems[i].type == STYP_CHEAT && IsPurchased(i) && b == shopItems[i].item)
+			return 1;
+	}
+	return 0;
+}
+
+byte IsModifierPurchased(byte b)
+{
+	int i;
+	for (i = 0;i < NUM_SHOP_ITEMS;i++)
+	{
+		if (shopItems[i].type == STYP_MODIFIER && IsPurchased(i) && b == shopItems[i].item)
+			return 1;
+	}
+	return 0;
+}
+
+word GetShopIndex(byte type, byte item)
+{
+	int i;
+	for (i = 0;i < NUM_SHOP_ITEMS;i++)
+	{
+		if (shopItems[i].type == type && shopItems[i].item == item)
+			return i;
+	}
+	return 65534;
+}

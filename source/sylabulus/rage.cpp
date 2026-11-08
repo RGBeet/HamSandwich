@@ -43,9 +43,9 @@ void StartRaging(void)
 	switch(rageWpn)
 	{
 		case WPN_NONE:
-			player.rageClock=10;
-			if(player.playAs==PLAY_LUNACHIK)
-				player.rageClock=40;
+			player.rageClock=20;
+			if(player.playAs==PLAY_AXOLOTL)
+				player.rageClock=30;
 			break;
 		case WPN_MISSILES:
 			player.rageClock=16;
@@ -120,26 +120,7 @@ void DoRage(Guy *me)
 					if(player.rageClock==(player.rageClock/4)*4)
 						HammerLaunch(me->x,me->y,me->facing,5,HMR_REVERSE|HMR_REFLECT);
 					break;
-				case PLAY_MECHA:
-					if(player.rageClock==(player.rageClock/4)*4)
-						HammerLaunch(me->x,me->y,me->facing,5,HMR_REVERSE|HMR_REFLECT);
-					break;
-				case PLAY_LUNATIC:
-					if(player.rageClock==(player.rageClock/4)*4)
-					{
-						for(i=0;i<10;i++)
-							FireBullet(me->x,me->y,(byte)Random(8),BLT_BALLLIGHTNING,1);
-					}
-					break;
-				case PLAY_HAPPY:
-					if(player.rageClock==(player.rageClock/4)*4)
-						HappyLaunch(me->x,me->y,me->facing,5,HMR_REVERSE|HMR_REFLECT);
-					break;
-				case PLAY_SHROOM:
-					if(player.rageClock==(player.rageClock/4)*4)
-						HappyLaunch(me->x,me->y,me->facing,5,HMR_REVERSE|HMR_REFLECT);
-					break;
-				case PLAY_LUNACHIK:
+				case PLAY_AXOLOTL:
 					FireExactBullet(me->x,me->y,FIXAMT*20,Cosine((player.rageClock*16))*12,Sine((player.rageClock*16))*12,0,0,50,0,BLT_LUNA2,1);
 					break;
 			}

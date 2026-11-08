@@ -174,6 +174,7 @@ struct profile_t
 
 	// hahaha
 	dword randomSeed;	// seed
+	byte hasModifiers;	// has purchased at least one modifier
 };
 
 extern profile_t profile;
@@ -205,6 +206,9 @@ void CalcFinishedWorlds(void);
 
 void ApplyControlSettings();
 byte CheatBookPurchased(void); // does the player have cheat book?
-byte ModifierActive(byte index);
+
+byte GetModifierActive(byte index);
+byte GetModifierBought(byte index);
+void SetModifierActive(byte index, byte state);
 
 #endif

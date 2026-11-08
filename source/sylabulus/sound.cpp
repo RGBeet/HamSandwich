@@ -431,6 +431,9 @@ static SoundDesc soundInfo2[512] = { // starts from index 512, doing this for no
 	{/*SND_,*/ "Shamisen Bump",ST_MONSTER},
 	{/*SND_,*/ "Shamisen Ouch",ST_MONSTER},
 	{/*SND_,*/ "Shamisen Die",ST_MONSTER},
+	{/*SND_,*/ "SK:Hello!",ST_VOCAL},
+	{/*SND_,*/ "SK:Hi!",ST_VOCAL},
+	{/*SND_,*/ "SK:How's It Going?",ST_VOCAL},
 };
 
 static int numCustom;

@@ -203,5 +203,6 @@ byte TerrainCheck(Guy* g,byte target,mapTile_t *mapTile,world_t *world);
 byte ConveyorCheck(Guy* g, mapTile_t* mapTile, world_t* world);
 void AddSpottedTimer(int frames);
 void SetParent(Guy* g, Guy* parent);
+byte CanDrive(Guy* me, int x, int y, Map* map, world_t* world, Guy* goodguy);
 
 #endif

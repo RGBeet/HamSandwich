@@ -4602,3 +4602,69 @@ void AI_Shamisen(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		}
 	}
 }
+
+void AI_Shopkeeper(Guy* me, Map* map, world_t* world, Guy* goodguy)
+{
+	int i;
+	if (me->reload)
+		me->reload--;
+
+	if (me->ouch == 4)
+	{
+		if (me->hp > 0)
+			MakeSound(SND_BOUAPHAOUCH, me->x, me->y, SND_CUTOFF, 1200);
+		else
+			MakeSound(SND_BOUAPHADIE, me->x, me->y, SND_CUTOFF, 1200);
+	}
+
+	if (me->action == ACTION_BUSY)
+	{
+		FaceGoodguy(me, goodguy);
+		return;	// can't do nothin' right now
+	}
+
+	if (me->mind == 0)	// idling
+	{
+		// face the player if he's close enough
+		if (goodguy && RangeToTarget(me, goodguy) < 192 * FIXAMT)
+		{
+			FaceGoodguy(me, goodguy);
+			i = 256;
+			if (goodguy->dx == 0 && goodguy->dy == 0)
+				i = 64;
+			if(!Random(i))
+			{
+				i=Random(100);
+				if (i < 50)
+					MakeSound(SND_SHOPKEEPER1, me->x, me->y, SND_ONE|SND_RANDOM, 1000);
+				else if (i < 80)
+					MakeSound(SND_SHOPKEEPER2, me->x, me->y, SND_ONE|SND_RANDOM, 1000);
+				else
+					MakeSound(SND_SHOPKEEPER3, me->x, me->y, SND_ONE|SND_RANDOM, 1000);
+
+				me->seq = ANIM_ATTACK;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 128;
+				me->action = ACTION_BUSY;
+				return;
+			}
+		}
+
+		if (me->seq != ANIM_IDLE)
+		{
+			me->seq = ANIM_IDLE;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 128;
+		}
+	}
+	else if (me->mind == 1)
+	{
+		me->mind = 0;
+		me->seq = ANIM_A1;
+		me->frm = 0;
+		me->frmTimer = 0;
+		me->frmAdvance = 64;
+	}
+}

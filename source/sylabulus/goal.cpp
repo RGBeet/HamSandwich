@@ -132,32 +132,7 @@ void GoalTallyPage(int score,byte perfect,byte destruct,int time)
 {
 	if(tutorial)
 		return;
-
-	if(score>=5000)
-		CompleteGoal(0);
-	if(score>=20000)
-		CompleteGoal(1);
-	if(score==0)
-		CompleteGoal(2);
-	if(perfect)
-		CompleteGoal(3);
-	if(destruct)
-		CompleteGoal(4);
-	if(perfect && destruct)
-		CompleteGoal(5);
-	if(time<15*30)
-		CompleteGoal(6);
-	if(profile.playAs!=PLAY_BOUAPHA)
-		CompleteGoal(50);
-	if(profile.playAs==PLAY_SHROOM)
-		CompleteGoal(51);
-
-	if(profile.progress.totalCoins>=10000)
-		CompleteGoal(81);
-	if(profile.progress.totalCoins>=100000)
-		CompleteGoal(82);
-	if(profile.progress.totalCoins-profile.progress.coinsSpent>=25000)
-		CompleteGoal(83);
+	// add gallery goals here
 }
 
 void GoalTimeDist(void)

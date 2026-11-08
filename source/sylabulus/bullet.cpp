@@ -3203,7 +3203,7 @@ void HammerLaunch(int x,int y,byte facing,byte count,HammerFlags flags)
 		dz=FIXAMT*6;
 		timer=30;
 	}
-	if(player.playAs==PLAY_LUNACHIK)
+	if(player.playAs==PLAY_AXOLOTL)
 	{
 		if(type==BLT_HAMMER)
 			type=BLT_LUNA;

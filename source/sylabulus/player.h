@@ -113,7 +113,6 @@ struct player_t
 	word rage;
 	word varbar, varbarMax;
 	byte varbarColor;
-	byte invisibility;
 	byte jetting;
 	byte lavaTimer;
 	byte stealthy;
@@ -124,6 +123,8 @@ struct player_t
 	byte cheesePower;
 	byte waterWalk;
 	byte gotRecords;
+	word auraDmg[2];				// now word
+	word invisibility[2];			// now word
 
 	byte lives;
 	byte collectFrms;
@@ -152,6 +153,9 @@ struct player_t
 	int brainX,brainY,candleX,candleY;
 	word brainTime,candleTime;
 	byte playAs;
+
+	byte modifier[64];
+	float scoreMultiplier;
 };
 
 extern player_t player;
@@ -234,9 +238,11 @@ byte PlayerHasPowerup(void);
 
 void PlayerSetTimeStop(word amt);
 void PlayerSetAccelerate(word amt);
+void PlayerSetAuraDamage(word amt);
 word PlayerGetTimer(void);
 word PlayerGetTimeStop(void);
 word PlayerGetAccelerate(void);
+word PlayerGetAuraDamage(void);
 
 Guy* GetInterfaceEnemy();
 void SetInterfaceEnemy(Guy* g);

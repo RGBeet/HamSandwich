@@ -834,7 +834,7 @@ byte CheckForItem(byte item,int count,byte flags)
 					amt=player.speed[0];
 					break;
 				case PU_INVISO:
-					amt=player.invisibility;
+					amt=player.invisibility[0];
 					break;
 			}
 			break;
@@ -1523,7 +1523,7 @@ byte TriggerYes(special_t *me,trigger_t *t,Map *map)
 			answer=0;
 			break;
 		case TRG_STEALTHY:
-			answer = ((player.stealthy > 0 && !player.spotted) || player.invisibility > 0); // player is S
+			answer = ((player.stealthy > 0 && !player.spotted) || player.invisibility[0] > 0); // player is S
 			break;
 	}
 
