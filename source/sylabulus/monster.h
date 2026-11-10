@@ -346,8 +346,10 @@
 #define ENT_SHAMISEN			87
 #define ENT_RAFT				88
 #define ENT_SHOPKEEPER			89
+#define ENT_GHOST				90
+#define ENT_SPOTLIGHT			91
 
-#define ENT_MAXID				90
+#define ENT_MAXID				92
 
 #define NUM_MONSTERS	243					// Can grow as needed
 #define NUM_PROFILE_MONSTERS 211			// Do not change without redoing the profile format

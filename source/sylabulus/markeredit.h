@@ -8,7 +8,6 @@
 #include "mapdialog.h"
 #include "editor.h"
 
-
 // view marker info
 void MarkerEdit_Init(int s);
 void MarkerEdit_Update(int mouseX, int mouseY, int scroll, MGLDraw* mgl);
@@ -19,5 +18,7 @@ void MarkerEdit_Exit(void);
 void MarkerPick_Init(int s);
 void MarkerPick_Update(int mouseX, int mouseY, int scroll, MGLDraw* mgl);
 void MarkerPick_Render(int mouseX, int mouseY, MGLDraw* mgl);
+
+void MarkerEdit_Key(char k);
 
 #endif

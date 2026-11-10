@@ -224,6 +224,7 @@ static void SetupMonsterDisplay(void)
 void MonsterEdit_Init(byte modeFrom,world_t *wrld)
 {
 	rememberMode=modeFrom;
+	printf("Mode From is %d.\n", modeFrom);
 	GetDisplayMGL()->MouseTap();
 	world=wrld;
 	mode=MMODE_NORMAL;

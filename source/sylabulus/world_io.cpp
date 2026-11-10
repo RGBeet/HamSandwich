@@ -144,6 +144,7 @@ static void LoadMapMarker(hamworld::Section* f, marker_t* mrkr)
 	mrkr->y2 = f->read_varint();
 	mrkr->value = f->read_varint();
 	mrkr->value2 = f->read_varint();
+	printf("Loading marker with x1,x2 = %d,%d and y1,y2 = %d,%d\n", mrkr->x1,mrkr->x2,mrkr->y1,mrkr->y2);
 	f->read_varint();  // ignore extension flags
 }
 
@@ -794,10 +795,10 @@ byte Syl_LoadWorld(world_t* world, const char* fname)
 			size_t w = section.read_varint();
 			size_t h = section.read_varint();
 			Map* map = world->map[world->numMaps++] = new Map(w, h, "");
-
 			section.read_string(map->name);
 			section.read_string(map->song);
 
+			printf("Loading map %s...\n", map->name);
 			map->type			= (MapType)section.read_varint();
 			map->weather		= (MapWeather)section.read_varint();
 			map->lighting		= (MapLighting)section.read_varint();
@@ -828,6 +829,7 @@ byte Syl_LoadWorld(world_t* world, const char* fname)
 			size_t marker_count = section.read_varint();
 			for (size_t i = 0; i < marker_count; ++i)
 				LoadMapMarker(&section, &map->marker[i]);
+			SetMarkerCount((int)marker_count);
 
 			LoadMapData(&section, map);
 

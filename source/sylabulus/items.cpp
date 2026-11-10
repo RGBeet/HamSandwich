@@ -959,6 +959,7 @@ void RenderAnimatedItem(int x, int y, word start, byte frames, byte type, char b
 #define ASPR_BIGBRAIN	64
 #define ASPR_POCKET		72
 #define ASPR_TOTEM		80
+#define ASPR_COIN		88
 
 void RenderItem(int x,int y,int type,char bright,MapRenderFlags flags)
 {
@@ -1052,6 +1053,9 @@ void RenderItem(int x,int y,int type,char bright,MapRenderFlags flags)
 				return;
 			case IT_TOTEM:
 				RenderAnimatedItem((x + items[type].xofs) * FIXAMT, (y + items[type].yofs) * FIXAMT, ASPR_TOTEM, 8, type, bright, flags);
+				return;
+			case IT_COIN:
+				RenderAnimatedItem((x + items[type].xofs) * FIXAMT, (y + items[type].yofs) * FIXAMT, ASPR_COIN, 8, type, bright, flags);
 				return;
 		}
 		if(items[type].appearance == ITA_SHADOW || items[type].appearance == ITA_LOONYKEY)

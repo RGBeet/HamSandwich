@@ -54,6 +54,7 @@ Map::Map(byte width, byte height, const char *name)
 	
 	marker.fill({});
 	InitMarkers(marker);
+
 	
 	numBrains=0;
 	numCandles=0;

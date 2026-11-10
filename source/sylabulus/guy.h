@@ -55,6 +55,7 @@ class Guy final
 		byte mind1;
 		byte mind2;
 		byte mind3;
+		byte mind4;
 		byte reload;
 
 		byte ouch;
@@ -65,24 +66,24 @@ class Guy final
 		byte seq;
 
 		char bright;
-		byte friendly; // which team? (TODO: add multi-team support)
+		byte friendly;						// which team? (TODO: add multi-team support)
 
 		dword pushStamp;
 		Guy *target;
 		Guy *parent;
 
-		Guy *lastAttacker; // last guy to have attacked
+		Guy *lastAttacker;					// last guy to have attacked
 
 		int hp,maxHP;
 
-		word type;		// what kind of monster?
-		word aiType;		// behavior type (which function to use)
-		int age;		// # of frames
-		int size;		// takes monsSize
+		word type;							// what kind of monster?
+		word aiType;						// behavior type (which function to use)
+		int age;							// # of frames
+		int size;							// takes monsSize
 
-		int rectx,recty,rectx2,recty2;	// for collision checks
-		word ID;	// just a copy of the guy's number
-		word item;	// what item you're carrying
+		int rectx,recty,rectx2,recty2;		// for collision checks
+		word ID;							// just a copy of the guy's number
+		word item;							// what item you're carrying
 
 		// 255 = 8.5 seconds? too short!
 

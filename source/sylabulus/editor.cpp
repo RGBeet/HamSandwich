@@ -6,6 +6,7 @@
 #include "monsteredit.h"
 #include "bulletedit.h"
 #include "specialedit.h"
+#include "markeredit.h"
 #include "tool.h"
 #include "edithelp.h"
 #include "yesnodialog.h"
@@ -270,7 +271,7 @@ TASK(void) UpdateMouse(void)
 			SpecialEdit_Update(mouseX,mouseY,scroll,editmgl);
 			break;
 		case EDITMODE_MARKER:
-			SpecialEdit_Update(mouseX, mouseY, scroll, editmgl);
+			MarkerEdit_Update(mouseX, mouseY, scroll, editmgl);
 			break;
 		case EDITMODE_ITEM:
 			ItemEdit_Update(mouseX,mouseY,editmgl);
@@ -562,6 +563,43 @@ void ShowSpecials(MGLDraw* mgl)
 	}
 }
 
+void ShowMarkers(MGLDraw* mgl)
+{
+	if (!(displayFlags & MAP_SHOWSPECIALS))
+		return;
+
+	auto [sx, sy] = GetCamera();
+
+	for (int i = 0; i < GetMarkerCount(); i++)
+	{
+		const marker_t& marker = editorMap->marker[i];
+
+		int xx1 = marker.x1 * TILE_WIDTH + 2 - sx + mgl->GetWidth() / 2;
+		int yy1 = marker.y1 * TILE_HEIGHT - sy + mgl->GetHeight() / 2;
+
+		int xx2 = marker.x2 * TILE_WIDTH + TILE_WIDTH + 2 - sx + mgl->GetWidth() / 2;
+		int yy2 = marker.y2 * TILE_HEIGHT + TILE_HEIGHT - sy + mgl->GetHeight() / 2;
+
+		if (xx1 > xx2)
+			std::swap(xx1, xx2);
+
+		if (yy1 > yy2)
+			std::swap(yy1, yy2);
+
+		spclSprite->GetSprite(20)->Draw(xx1, yy1, mgl);
+
+		int i1 = (i / 100) % 10;
+		int i2 = (i / 10) % 10;
+		int i3 = i % 10;
+
+		spclSprite->GetSprite(2 + i1)->Draw(xx1 + 15, yy1, mgl);
+		spclSprite->GetSprite(2 + i2)->Draw(xx1 + 22, yy1, mgl);
+		spclSprite->GetSprite(2 + i3)->Draw(xx1 + 29, yy1, mgl);
+
+		// Draw the full marker area.
+		DrawBox(xx1, yy1, xx2, yy2, 32 * 6 + 16);
+	}
+}
 void EditorShowRect(void)
 {
 	static byte col=0;
@@ -614,6 +652,7 @@ void EditorDraw(MGLDraw* mgl)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials(editmgl);
+			ShowMarkers(editmgl);
 			ToolShowTarget();
 			if(editMenu)
 				ToolRender(mouseX,mouseY,editmgl);
@@ -626,6 +665,7 @@ void EditorDraw(MGLDraw* mgl)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials(editmgl);
+			ShowMarkers(editmgl);
 			ToolShowTarget();
 			Print(3,editmgl->GetHeight()-480+466,"Click on a location!",-32,1);
 			Print(1,editmgl->GetHeight()-480+464,"Click on a location!",-32,1);
@@ -641,6 +681,7 @@ void EditorDraw(MGLDraw* mgl)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials(editmgl);
+			ShowMarkers(editmgl);
 			rectX1=tileX;
 			rectY1=tileY;
 			rectX2=tileX+pickerWid;
@@ -660,6 +701,7 @@ void EditorDraw(MGLDraw* mgl)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials(editmgl);
+			ShowMarkers(editmgl);
 			ToolShowTarget();
 			Print(3,editmgl->GetHeight()-480+466,"Click a corner of your rectangle!",-32,1);
 			Print(1,editmgl->GetHeight()-480+464,"Click a corner of your rectangle!",-32,1);
@@ -675,6 +717,7 @@ void EditorDraw(MGLDraw* mgl)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials(editmgl);
+			ShowMarkers(editmgl);
 			EditorShowRect();
 			Print(3,editmgl->GetHeight()-480+466,"Click the other corner of your rectangle!",-32,1);
 			Print(1,editmgl->GetHeight()-480+464,"Click the other corner of your rectangle!",-32,1);
@@ -690,6 +733,7 @@ void EditorDraw(MGLDraw* mgl)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials(editmgl);
+			ShowMarkers(editmgl);
 			ToolShowTarget();
 			if(editMenu)
 				ToolRender(mouseX,mouseY,editmgl);
@@ -709,6 +753,10 @@ void EditorDraw(MGLDraw* mgl)
 			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			SpecialEdit_Render(mouseX,mouseY,editmgl);
 			break;
+		case EDITMODE_MARKER:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
+			MarkerEdit_Render(mouseX, mouseY, editmgl);
+			break;
 		case EDITMODE_SOUND:
 			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			SoundEdit_Render(mouseX,mouseY,editmgl);
@@ -726,6 +774,7 @@ void EditorDraw(MGLDraw* mgl)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials(editmgl);
+			ShowMarkers(editmgl);
 			RenderFileDialog(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_EXIT:
@@ -734,6 +783,7 @@ void EditorDraw(MGLDraw* mgl)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials(editmgl);
+			ShowMarkers(editmgl);
 			RenderYesNoDialog(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_MAPMENU:
@@ -742,6 +792,7 @@ void EditorDraw(MGLDraw* mgl)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials(editmgl);
+			ShowMarkers(editmgl);
 			RenderMapDialog(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_LEVELMENU:
@@ -758,6 +809,7 @@ void EditorDraw(MGLDraw* mgl)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials(editmgl);
+			ShowMarkers(editmgl);
 			RenderExportDialog(editmgl, mouseX, mouseY);
 			break;
 		case EDITMODE_PICKTRG:
@@ -995,6 +1047,11 @@ static TASK(void) HandleKeyPresses(void)
 	else if(editMode==EDITMODE_SPECIAL)
 	{
 		SpecialEdit_Key(lastKey);
+		lastKey=0;
+	}
+	else if(editMode==EDITMODE_MARKER)
+	{
+		MarkerEdit_Key(lastKey);
 		lastKey=0;
 	}
 	else if(editMode==EDITMODE_MAPMENU)

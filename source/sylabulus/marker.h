@@ -4,7 +4,10 @@
 #include "bitflags.h"
 
 #define MRK_NONE    0
-#define MRK_PATH    1   //
+#define MRK_PATH    1
+#define MRK_PART	2
+
+#define N_MRKTYPES	3
 
 #define MAX_MARKER 128
 
@@ -30,5 +33,9 @@ void SlideMarkers(Map *map,int dx,int dy);
 void AdjustMarkerCoords(marker_t *me,int dx,int dy);
 bool CheckMarker(const marker_t& me);
 void CheckMarkers(Map* map);
+
+word GetPathMarker(Guy* me, byte pathValue, byte currentPriority);
+void SetMarkerCount(int count);
+byte GetMarkerCount(void);
 
 #endif

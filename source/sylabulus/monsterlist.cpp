@@ -106,7 +106,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Kaptana",255,255,0,AI_Kappa, // not yet implemented
+		{"Kaptana",255,255,0,AI_Kappa,
 		 10,56,30,50,"graphics/kappa.jsp",0,{},
 		 MT_EVIL | MT_ANIMAL,
 			{
@@ -554,20 +554,20 @@ MonsterType monsType[NUM_MONSTERS]=
 				{3,4,5,6,7,8,9,10,255},	// A1=summon
 				{3,4,5,6,7,8,9,10,255},	// A1=summon
 			},0},
-		{"Boomkin",2,4,5,AI_Pumpkin,
-		 10,20,5,500,"!17",0,{},
-		 MT_EVIL | MT_VEGGIE | MT_PUMPKIN,
+		{"Boomkin",2,4,4,AI_Pumpkin,
+		 10,20,5,500,"graphics/pumpkin.jsp",0,{},
+		 MT_EVIL | MT_PUMPKIN | MT_VEGGIE,
 			{
 				{0,255},	// idle
 				{1,2,3,4,5,0,255},	// move
 				{5,6,7,8,9,9,8,7,0,255},	// move
 				{16,17,18,19,255},	// die (just long enough to spew shrapnel)
-				{1,2,3,4,5,0,255},	// move
-				{1,2,3,4,5,0,255},	// move
-				{1,2,3,4,5,0,255},	// move
-				{1,2,3,4,5,0,255},	// move
-				{1,2,3,4,5,0,255},	// move
-			},0},
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+			},0 },
 		{"Squash",255,255,0,AI_Squash,
 		 8,14,10,100,"graphics/squash.jsp",0,{},
 		 MT_EVIL | MT_VEGGIE | MT_PUMPKIN,
@@ -583,7 +583,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,10,9,8,7,255},	// attack
 			},0},
 		{"Jalapeno",1,4,4,AI_Jalapeno,
-		 8,14,5,100,"!44",0,{},
+		 8,14,5,100,"graphics/squash.jsp",0,{},
 		 MT_EVIL | MT_VEGGIE | MT_PUMPKIN,
 			{
 				{0,255},	// idle
@@ -610,22 +610,22 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Madkap",1,4,0,AI_Kappa, // not yet implemented
-		 10,56,30,50,"!9",0,{},
+		{"Madkap",1,3,2,AI_Kappa, // not yet implemented
+		 10,56,30,50,"graphics/kappa.jsp",0,{},
 		 MT_EVIL | MT_ANIMAL,
 			{
-				{0,255},	// idle
-				{0,255},	// move
-				{0,255},	// attack 1
-				{0,255},	// defeated
-				NULL_ANIM,
+				{0,255},									// idle
+				{0,1,2,3,2,1,0,4,5,6,5,4,255},				// move
+				{7,8,9,10,11,12,13,14,15,16,17,255},		// attack
+				{25,48,49,50,51,52,53,254,54,254,55,255},	// defeated
+				{18,19,20,21,21,21,22,23,255},				// water pour
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
 		{"Hot N' Sour",1,2,0,AI_HotShroom,
-		 15,24,10,50,"!35",0,{},
+		 15,24,10,50,"graphics/shroom.jsp",0,{},
 		 MT_EVIL | MT_VEGGIE,
 			{
 				{0,255},	// idle
@@ -639,7 +639,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,10,11,12,13,14,255},	// attack
 			},0},
 		{"Deathcap",1,7,-4,AI_Deathcap,
-		 15,24,15,50,"!35",0,{},
+		 15,24,15,50,"graphics/shroom.jsp",0,{},
 		 MT_EVIL | MT_VEGGIE | MT_TRAP,
 			{
 				{0,255},	// idle
@@ -794,7 +794,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Parked Car",4,3,0,AI_ParkedCar,
-		 15,24,15,1000,"!54",0,MF_NOMOVE,
+		 15,24,15,1000,"graphics/yugo.jsp",0,MF_NOMOVE,
 		 MT_VEHICLE | MT_TRAP | MT_URBAN,
 			{
 				{0,255},						// idle
@@ -808,7 +808,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0},
 		{"Traffic",4,6,0,AI_Traffic,
-		 11,24,200,1000,"!54",0,MF_NOMOVE | MF_WALLWALK,
+		 11,24,200,1000,"graphics/yugo.jsp",0,MF_NOMOVE|MF_WALLWALK,
 		 MT_VEHICLE | MT_TRAP | MT_EVIL | MT_URBAN,
 			{
 				{0,255},						// idle
@@ -821,8 +821,8 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{ "Traffic",4,1,0,AI_Traffic,
-		 11,24,200,1000,"!54",0,MF_NOMOVE | MF_WALLWALK,
+		{"Traffic",4,1,0,AI_Traffic,
+		 11,24,200,1000,"!54",0,MF_NOMOVE|MF_WALLWALK,
 		 MT_VEHICLE | MT_TRAP | MT_EVIL | MT_URBAN,
 			{
 				{0,255},						// idle
@@ -977,7 +977,7 @@ MonsterType monsType[NUM_MONSTERS]=
 			}},
 		{"MechaTruck",255,255,0,AI_Zomboni,
 		 50,24,150,1000,"graphics/uglytruck.jsp",0,MF_NOMOVE,
-		 MT_VEHICLE | MT_GOOD,
+		 MT_VEHICLE | MT_URBAN | MT_HIGHTECH,
 			{
 				{0,255},						// idle
 				{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,255},	// move
@@ -1255,4 +1255,28 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
+		{"Spirit",255,255,0,AI_Ghost,
+		 16,16,15,300,"graphics/ghost.jsp",0,MF_WALLWALK|MF_NOSHADOW|MF_FLYING|MF_GHOST|MF_ENEMYWALK|MF_FREEWALK,
+		 MT_EVIL|MT_SPOOKY|MT_FLYING,
+			{
+				{0,255},								// idle
+				{0,11,12,13,14,15,14,13,12,11,255},		// idle
+				{1,2,3,4,5,6,7,255},					// attack (scream)
+				{8,9,8,254,9,254,10,254,11,255},		// die
+				{8,9,10,11,10,9,255},					// A1=teleport
+				{254,255},								// A2=idle invisible
+				{11,10,9,8,255},						// A3=materialize
+				{1,2,3,4,5,6,7,255},					// attack (scream)
+				{1,2,3,4,5,6,7,255},					// attack (scream)
+			}},
+		
+		{"Spotlight",255,255,16,AI_Spotlight,
+		 11,29,6,300,"graphics/burner.jsp",0,MF_WATERWALK|MF_FREEWALK,
+		 MT_EVIL|MT_TRAP,
+			{
+				{254,255},	// idle
+				{254,255},	// move
+				{254,255},	// attack
+				{254,255},	// die
+			}},
 	};

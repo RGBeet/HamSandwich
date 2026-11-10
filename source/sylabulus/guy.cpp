@@ -633,7 +633,7 @@ void Guy::Update(Map *map,world_t *world)
 	static byte burnFlip=0;
 
 	age++;
-	if (friendly != goodguy->friendly && hp < maxHP && player.modifier[MDFY_ENEMYHEAL])
+	if (hp>0 && friendly != goodguy->friendly && hp < maxHP && player.modifier[MDFY_ENEMYHEAL])
 	{
 		b = player.modifier[MDFY_ENEMYSPD] ? 30 : 20; // nerf synergy with +enemy spd
 		if (player.clock % b == 0)
@@ -1223,13 +1223,12 @@ void Guy::GetShot(int dx,int dy,word damage,Map *map,world_t *world, bool bypass
 	if (ouch > 0) // if you're already hurt, you take less damage
 		damage /= 2;
 
-	if (player.modifier[MDFY_ENEMYDMG] && this->friendly != goodguy->friendly)
+	if (player.modifier[MDFY_ENEMYDMG] && this == goodguy)
 	{
-		printf("OUCH!! DAMAGE X4\n");
-		damage *= 4;
+		damage *= 2;
 	}
 
-	if (player.modifier[MDFY_PLAYERDMG] && this == goodguy)
+	if (player.modifier[MDFY_PLAYERDMG] && this != goodguy)
 		damage *= 0.6;
 
 	if (damage<1)

@@ -61,13 +61,13 @@ void AI_MineCart(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	// 0 = right, 1 = down, 2 = left, 3 = up.
 	auto GetTrackDirections = [&]()
 	{
-		ok[0] = (me->mapx < map->width - 1 && !GetTerrain(world, map->GetTile(me->mapx+1, me->mapy)->floor)->pathType == TRN_MINECART);
+		ok[0] = (me->mapx < map->width - 1 && GetTerrain(world, map->GetTile(me->mapx+1, me->mapy)->floor)->pathType == TRN_MINECART);
 
-		ok[1] = (me->mapy < map->height - 1 && !GetTerrain(world, map->GetTile(me->mapx, me->mapy+1)->floor)->pathType == TRN_MINECART);
+		ok[1] = (me->mapy < map->height - 1 && GetTerrain(world, map->GetTile(me->mapx, me->mapy+1)->floor)->pathType == TRN_MINECART);
 
-		ok[2] = (me->mapx > 0 && !GetTerrain(world, map->GetTile(me->mapx - 1, me->mapy)->floor)->pathType == TRN_MINECART);
+		ok[2] = (me->mapx > 0 && GetTerrain(world, map->GetTile(me->mapx - 1, me->mapy)->floor)->pathType == TRN_MINECART);
 
-		ok[3] = (me->mapy > 0 && !GetTerrain(world, map->GetTile(me->mapx, me->mapy - 1)->floor)->pathType == TRN_MINECART);
+		ok[3] = (me->mapy > 0 && GetTerrain(world, map->GetTile(me->mapx, me->mapy - 1)->floor)->pathType == TRN_MINECART);
 	};
 
 	if (me->mind == 0)

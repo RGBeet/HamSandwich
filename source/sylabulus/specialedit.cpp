@@ -206,7 +206,8 @@ static const char effName[][32]={
 	"Create Particle",
 	"Move Special Along Grid",
 	"Set Var. to Tile Value",
-	"Edit Song Layer"
+	"Edit Song Layer",
+	"Set Entity Color (Random)"
 };
 
 void SetGlobalState(byte tf)

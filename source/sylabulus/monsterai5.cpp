@@ -2310,11 +2310,38 @@ void AI_GlueTrap(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	}
 }
 
+static void FacePathMarker(Guy* me, marker_t* marker)
+{
+	if (!marker)
+		return;
+
+	int targetX = marker->x1 * FIXAMT + FIXAMT / 2;
+	int targetY = marker->y1 * FIXAMT + FIXAMT / 2;
+
+	int dx = targetX - me->x;
+	int dy = targetY - me->y;
+
+	float angle = atan2f((float)dy, (float)dx);
+	int angle256 = (int)(angle * (128.0f / 3.14159265f));
+
+	if (angle256 < 0)
+		angle256 += 256;
+
+	me->facing = ((angle256 + 16) / 32) & 7;
+	printf("Facing marker %d...\n", marker);
+}
+
 void AI_Gingersnap(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
 	byte b;
 	int x, y;
-	x = me->maxHP - me->hp + 5;	// more damaged=faster
+
+	// mind2 = current path priority
+	// mind3 = current marker index + 1
+	// mind1 = reserved
+
+	// More damaged = faster.
+	x = me->maxHP - me->hp + 5;
 
 	if (me->reload)
 		me->reload--;
@@ -2333,21 +2360,79 @@ void AI_Gingersnap(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		{
 			x = me->x >> FIXSHIFT;
 			y = me->y >> FIXSHIFT;
-			BlowUpGuy(x + me->rectx, y + me->recty, x + me->rectx2, y + me->recty2, me->z, 1);
+
+			BlowUpGuy(x + me->rectx, y + me->recty,
+				x + me->rectx2, y + me->recty2, me->z, 1);
 		}
 
-
-		if (me->seq == ANIM_ATTACK && me->frmTimer < 128 && goodguy && (me->frm == 6 || me->frm == 10))
+		if (me->seq == ANIM_ATTACK && me->frmTimer < 128 &&
+			goodguy && (me->frm == 6 || me->frm == 10))
 		{
-			MakeSound(SND_MUSHMISSILE, me->x, me->y, SND_CUTOFF|SND_RANDOM, 1200);
-			x = me->x + Cosine(me->facing * 32)*16;
+			MakeSound(SND_MUSHMISSILE, me->x, me->y,
+				SND_CUTOFF | SND_RANDOM, 1200);
+
+			x = me->x + Cosine(me->facing * 32) * 16;
 			y = me->y + Sine(me->facing * 32);
-			b = ((me->facing * 32) + (Random(17) - 8)) & 255;
-			FireExactBullet(x, y, FIXAMT*10, Cosine(b)*4, Sine(b)*4, FIXAMT*16, 0, 60, b, BLT_GRENADE, me->friendly);
+
+			b = (me->facing * 32 + (Random(17) - 8)) & 255;
+
+			FireExactBullet(
+				x, y,
+				FIXAMT * 10,
+				Cosine(b) * 4,
+				Sine(b) * 4,
+				FIXAMT * 16,
+				0, 60, b,
+				BLT_GRENADE,
+				me->friendly
+			);
+
 			if (me->frm == 10)
 				me->reload = 30;
 		}
-		return;	// can't do nothin' right now
+
+		return;
+	}
+
+	// set the marker
+	if (!me->mind3)
+	{
+		word path = GetPathMarker(me, 1, me->mind2);
+
+		if (path == 65535)
+		{
+			me->dx = 0;
+			me->dy = 0;
+			return;
+		}
+
+		me->mind3 = path + 1;
+	}
+
+	word path = me->mind3 - 1;
+	marker_t* node = GetMarker(path);
+
+	if (!node || node->x1 == 255 || node->type != MRK_PATH)
+	{
+		me->mind3 = 0;
+		me->dx = 0;
+		me->dy = 0;
+		return;
+	}
+
+	int targetX = (node->x1 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+	int targetY = (node->y1 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
+
+	// arrived at the marker
+	if (RangeToPoint(me, targetX, targetY) <= 8 * FIXAMT)
+	{
+		me->mind2 = node->value2;
+		me->mind3 = 0;
+
+		me->dx = 0;
+		me->dy = 0;
+
+		return;
 	}
 
 	if (me->seq != ANIM_MOVE)
@@ -2358,58 +2443,70 @@ void AI_Gingersnap(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		me->frmAdvance = 96;
 	}
 
-	if (me->seq == ANIM_MOVE)
+	me->frmAdvance = 96 + (x - 5) * 96 / me->maxHP;
+
+	x = 6 + (x - 5) * 6 / me->maxHP;
+
+	if (me->frm < 4 && (me->z + me->dz) < 1 * FIXAMT)
 	{
-		me->frmAdvance = 96 + (x - 5) * 96 / me->maxHP;
-		x = 6 + (x - 5) * 6 / me->maxHP;
+		if (me->mind1)
+		{
+			MakeSound(SND_SPIKECLANK, me->x, me->y,
+				SND_CUTOFF, 1200);
 
+			me->mind1 = 0;
+		}
 
-		if (me->frm < 4 && (me->z + me->dz) < 1*FIXAMT)
-		{
-			if (me->mind3)
-			{
-				MakeSound(SND_SPIKECLANK, me->x, me->y, SND_CUTOFF, 1200);
-				me->mind3 = 0;
-			}
-			Dampen(&me->dx, FIXAMT*2);
-			Dampen(&me->dy, FIXAMT*2);
-		}
-		else if (me->frm == 4 && me->frmTimer < me->frmAdvance)
-		{
-			FaceGoodguy2(me, goodguy);
-			MakeSound(SND_HAMMERTOSS, me->x, me->y, SND_CUTOFF, 2);
-			me->dz = x * FIXAMT;
-			me->mind3 = 1;
+		Dampen(&me->dx, FIXAMT * 2);
+		Dampen(&me->dy, FIXAMT * 2);
+	}
+	else if (me->frm == 4 && me->frmTimer < me->frmAdvance)
+	{
+		byte angle = AngleFrom(me->x, me->y, targetX, targetY);
 
-			me->dx = Cosine(me->facing * 32) * x;
-			me->dy = Sine(me->facing * 32) * x;
-		}
-		else if (me->frm > 4)
-		{
-			Dampen(&me->dx, FIXAMT/4);
-			Dampen(&me->dy, FIXAMT/4);
-		}
-		if (goodguy && !me->reload && abs(me->dx + me->dy) > 1 * FIXAMT && RangeToTarget(me, goodguy) < 44 * FIXAMT)
-		{
-			goodguy->GetShot(me->dx, me->dy, 6, map, world);
-			me->reload = 2;
-		}
+		me->facing = ((angle + 16) / 32) & 7;
+
+		MakeSound(SND_HAMMERTOSS, me->x, me->y,
+			SND_CUTOFF, 2);
+
+		me->dz = x * FIXAMT;
+		me->mind1 = 1;
+
+		me->dx = Cosine(angle) * x;
+		me->dy = Sine(angle) * x;
+	}
+	else if (me->frm > 4)
+	{
+		Dampen(&me->dx, FIXAMT / 4);
+		Dampen(&me->dy, FIXAMT / 4);
 	}
 
-	if (RangeToTarget(me, goodguy) < (128 * FIXAMT) && Random(32) == 0 && !me->reload)
+	if (goodguy && !me->reload && abs(me->dx + me->dy) > 1 * FIXAMT && RangeToTarget(me, goodguy) < 44 * FIXAMT)
 	{
-		// get him!
+		goodguy->GetShot(me->dx, me->dy, 6, map, world);
+		me->reload = 2;
+	}
+
+	if (goodguy && RangeToTarget(me, goodguy) < 128 * FIXAMT && !Random(32) && !me->reload)
+	{
 		me->seq = ANIM_ATTACK;
 		me->frm = 0;
 		me->frmTimer = 0;
 		me->frmAdvance = 128 + (x - 5) * 128 / me->maxHP;
 		me->action = ACTION_BUSY;
+
 		me->dx = 0;
 		me->dy = 0;
 		me->reload = 0;
+
+		FaceGoodguy(me, goodguy);
+
 		return;
 	}
-	FaceGoodguy(me, goodguy);
+
+	// face the marker
+	byte angle = AngleFrom(me->x, me->y, targetX, targetY);
+	me->facing = ((angle + 16) / 32) & 7;
 }
 
 void AI_PurpleKappa(Guy* me, Map* map, world_t* world, Guy* goodguy)
@@ -4667,4 +4764,80 @@ void AI_Shopkeeper(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		me->frmTimer = 0;
 		me->frmAdvance = 64;
 	}
+}
+
+void AI_Spotlight(Guy* me, Map* map, world_t* world, Guy* goodguy)
+{
+
+	if (me->mind1)
+	{
+		me->mind1--;
+		map->BrightTorch(me->mapx, me->mapy, 4, 4);
+	}
+	else
+	{
+		me->mind1 = 30;
+		map->BrightTorch(me->mapx, me->mapy, 16, 8);
+		MakeSound(SND_LIGHTSON, me->x, me->y, SND_CUTOFF, 1200);
+	}
+
+	// mind2 = current path priority
+	// mind3 = current marker index + 1 (0 means no marker selected)
+
+	// Find the next waypoint
+	if (!me->mind3)
+	{
+		word path = GetPathMarker(me, 1, me->mind2);
+
+		if (path == 65535)
+		{
+			me->dx = 0;
+			me->dy = 0;
+			return;
+		}
+
+		me->mind3 = path + 1;
+	}
+
+	word path = me->mind3 - 1;
+	marker_t* node = GetMarker(path);
+
+	if (!node || node->x1 == 255 || node->type != MRK_PATH)
+	{
+		me->mind3 = 0;
+		me->dx = 0;
+		me->dy = 0;
+		return;
+	}
+
+	int targetX = (node->x1 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+	int targetY = (node->y1 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
+
+	// Reached waypoint
+	if (RangeToPoint(me, targetX, targetY) <= 8 * FIXAMT)
+	{
+		me->mind2 = node->value2;
+		me->mind3 = 0;
+		me->dx = 0;
+		me->dy = 0;
+		return;
+	}
+
+	// Move directly toward waypoint
+	byte angle = AngleFrom(me->x, me->y, targetX, targetY);
+
+	me->facing = ((angle + 16) / 32) & 7;
+
+	if (me->seq != ANIM_MOVE)
+	{
+		me->seq = ANIM_MOVE;
+		me->frm = 0;
+		me->frmTimer = 0;
+		me->frmAdvance = 96;
+	}
+
+	int speed = 6;
+
+	me->dx = Cosine(angle) * speed;
+	me->dy = Sine(angle) * speed;
 }
