@@ -569,35 +569,27 @@ void ShowMarkers(MGLDraw* mgl)
 		return;
 
 	auto [sx, sy] = GetCamera();
-
-	for (int i = 0; i < GetMarkerCount(); i++)
+	for (int i = 0;i < MAX_MARKER;i++)
 	{
 		const marker_t& marker = editorMap->marker[i];
+		if (marker.x1 != 255)
+		{
+			int xx = marker.x1 * TILE_WIDTH + 2 - sx + editmgl->GetWidth() / 2;
+			int yy = marker.y1 * TILE_HEIGHT - sy + editmgl->GetHeight() / 2;
 
-		int xx1 = marker.x1 * TILE_WIDTH + 2 - sx + mgl->GetWidth() / 2;
-		int yy1 = marker.y1 * TILE_HEIGHT - sy + mgl->GetHeight() / 2;
+			spclSprite->GetSprite(0)->Draw(xx, yy, mgl);
 
-		int xx2 = marker.x2 * TILE_WIDTH + TILE_WIDTH + 2 - sx + mgl->GetWidth() / 2;
-		int yy2 = marker.y2 * TILE_HEIGHT + TILE_HEIGHT - sy + mgl->GetHeight() / 2;
+			int i1 = (i / 100) % 10;
+			int i2 = (i / 10) % 10;
+			int i3 = i % 10;
 
-		if (xx1 > xx2)
-			std::swap(xx1, xx2);
+			// draw number
+			spclSprite->GetSprite(2 + i1)->Draw(xx + 15, yy, mgl);
+			spclSprite->GetSprite(2 + i2)->Draw(xx + 22, yy, mgl);
+			spclSprite->GetSprite(2 + i3)->Draw(xx + 29, yy, mgl);
 
-		if (yy1 > yy2)
-			std::swap(yy1, yy2);
-
-		spclSprite->GetSprite(20)->Draw(xx1, yy1, mgl);
-
-		int i1 = (i / 100) % 10;
-		int i2 = (i / 10) % 10;
-		int i3 = i % 10;
-
-		spclSprite->GetSprite(2 + i1)->Draw(xx1 + 15, yy1, mgl);
-		spclSprite->GetSprite(2 + i2)->Draw(xx1 + 22, yy1, mgl);
-		spclSprite->GetSprite(2 + i3)->Draw(xx1 + 29, yy1, mgl);
-
-		// Draw the full marker area.
-		DrawBox(xx1, yy1, xx2, yy2, 32 * 6 + 16);
+			spclSprite->GetSprite(20)->Draw(xx + 17, yy + 18, mgl);
+		}
 	}
 }
 void EditorShowRect(void)
@@ -898,6 +890,17 @@ static TASK(void) HandleKeyPresses(void)
 			break;
 		case SDL_SCANCODE_F2:
 			ToggleDisplayFlag(MAP_ZOOMOUT);
+			break;
+		case SDL_SCANCODE_F4:
+			printf("Checking Markers...");
+			int i = 0;
+			for (i = 0;i < MAX_MARKER;i++)
+			{
+				marker_t *cm = GetMarker(i);
+				if (cm->x1 = 255)
+					continue;
+				printf("Marker #%03f:\nx1,x2 = %d,%d ... y1,y2 = %d,%d\nType %d, Values %d,%d",i,cm->x1,cm->x2,cm->y1,cm->y2,cm->type,cm->value,cm->value2);
+			}
 			break;
 	}
 

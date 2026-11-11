@@ -415,6 +415,10 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 			eff->value2=0;
 			eff->x=255;
 			break;
+		case EFF_MARKASBOSS:
+			eff->value=MONS_ANYBODY;
+			eff->x=255;
+			break;
 		case EFF_PLAYAS:
 			eff->value=MONS_BOUAPHA;
 			break;
@@ -659,7 +663,9 @@ struct SpecialEvent
 static constexpr int MAX_EVENT = 128;
 static SpecialEvent events[MAX_EVENT];
 static int nextEvent;
-static Guy *victim, *tagged;
+static Guy* victim, *tagged, *cameraFocus;
+
+static Guy* boss[32];
 
 Guy *TaggedMonster(void)
 {
@@ -1960,6 +1966,9 @@ void SpecialEffect(special_t *me,Map *map)
 			case EFF_RANDCOLOR:
 				SetRandomMonsterColor(!(me->effect[i].flags & EF_NOFX), me->effect[i].x, me->effect[i].y, me->effect[i].value, me->effect[i].value2);
 				break;
+			case EFF_MARKASBOSS:
+				victim = FindMonster(me->effect[i].x, me->effect[i].y, me->effect[i].value);
+				break;
 		}
 	}
 	if(me->uses>0)
@@ -2068,6 +2077,7 @@ void InitSpecialsForPlay(void)
 
 	victim=NULL;
 	tagged=NULL;
+	boss=NULL;
 }
 
 #define SPR_MAPX	171

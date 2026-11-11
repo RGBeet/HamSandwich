@@ -1031,29 +1031,29 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"EDISON",255,255,0,NULL, // not yet implemented
-		 8,38,10,50,"graphics/edison.jsp",0,MF_NOMOVE,
+		{"EDISON",255,255,0,AI_Edison, // not yet implemented
+		 54,15,400,50,"graphics/edisonhead.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_NOGRAV|MF_ENEMYWALK|MF_FREEWALK,
 		 MT_EVIL | MT_BOSS | MT_HIGHTECH,
 			{
 				{0,255},	// idle
 				{0,255},	// move
-				{0,255},	// attack 1
-				{0,255},	// defeated
-				NULL_ANIM,
+				{1,2,3,3,4,4,5,5,4,3,2,1,255},	// attack 1
+				{10,11,12,13,14,255},	// defeated
+				{6,7,8,8,9,9,9,8,7,6,255},	// attack 2
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
 			},0 },
-		{"EDISON's Brain",255,255,0,NULL, // not yet implemented
-		 8,38,10,50,"graphics/edison.jsp",0,{},
+		{"EDISON's Brain",255,255,0,AI_Edison, // not yet implemented
+		 54,1,400,50,"graphics/edisonhead.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_NOGRAV|MF_ENEMYWALK|MF_FREEWALK,
 		 MT_BITS,
 			{
 				{0,255},	// idle
 				{0,255},	// move
-				{0,255},	// attack 1
-				{0,255},	// defeated
-				NULL_ANIM,
+				{1,2,3,3,4,4,5,5,5,5,5,5,4,3,2,1,255},	// attack 1
+				{10,11,12,13,14,255},	// defeated
+				{6,7,8,8,9,9,9,8,7,6,255},	// attack 2
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
@@ -1279,4 +1279,32 @@ MonsterType monsType[NUM_MONSTERS]=
 				{254,255},	// attack
 				{254,255},	// die
 			}},
+		{"EDISON's Treads",255,255,0,AI_EdisonTreads, // not yet implemented
+		 100,6,1000,50,"graphics/edisontreads.jsp",0,MF_ENEMYWALK,
+		 MT_BITS,
+			{
+				{0,255},	// idle
+				{0,1,2,3,4,5,255},	// move
+				{0,1,2,3,4,5,255},	// move
+				{0,1,2,3,4,5,255},	// move
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+			},0 },
+		{"EDISON's Body",255,255,0,AI_EdisonBody, // not yet implemented
+		 8,1,10,50,"graphics/edisonbody.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_NOGRAV|MF_ENEMYWALK|MF_FREEWALK|MF_INVINCIBLE,
+		 MT_BITS,
+			{
+				{0,255},	// idle
+				{0,255},	// move
+				{0,255},	// attack 1
+				{0,255},	// defeated
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+			},0 },
 	};

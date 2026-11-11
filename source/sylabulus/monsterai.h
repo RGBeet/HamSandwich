@@ -256,4 +256,9 @@ void AI_Shamisen(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_Shopkeeper(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_Spotlight(Guy* me, Map* map, world_t* world, Guy* goodguy);
 
+void AI_Edison(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_EdisonBody(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_EdisonTreads(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_EdisonArm(Guy* me, Map* map, world_t* world, Guy* goodguy);
+
 #endif

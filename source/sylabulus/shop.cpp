@@ -222,13 +222,23 @@ TASK(void) InitShopping(int x, int y)
 
 	for (i = 0; i < 1; i++)
 	{
-		printf("Shoppe x = %d y=%d\n", shoppes[i].x, shoppes[i].y);
-		printf("Bouapha x = %d y=%d\n", x, y);
+		//printf("Shoppe x = %d y=%d\n", shoppes[i].x, shoppes[i].y);
+		//printf("Bouapha x = %d y=%d\n", x, y);
 		if (shoppes[i].x == x && shoppes[i].y == y)
 		{
 			EnterShop(&shoppes[i]); // we found the shop!
 			break;
 		}
+	}
+	if (GalleryBump(x, y))
+	{
+		goodguy->x = (goodguy->mapx * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+		goodguy->y = (goodguy->mapy * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
+		goodguy->dx = 0;
+		goodguy->dy = 0;
+		AWAIT ShowGalleryPic();
+		RestoreGameplayGfx();
+		CO_RETURN;
 	}
 }
 

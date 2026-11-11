@@ -982,6 +982,9 @@ void RenderItem(int x,int y,int type,char bright,MapRenderFlags flags)
 		if(items[type].passability != ITP_PICKUP)
 			return;
 
+	if(type==IT_INVISIBLEBLOCK && !editing)
+		return;
+
 	if(items[type].appearance == ITA_TILEIMG)
 	{
 		// can't shadow, glow, loonycolor, or even offcolor!

@@ -4841,3 +4841,146 @@ void AI_Spotlight(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	me->dx = Cosine(angle) * speed;
 	me->dy = Sine(angle) * speed;
 }
+
+
+void AI_Edison(Guy* me, Map* map, world_t* world, Guy* goodguy)
+{
+	int x, y;
+
+	if (me->ouch == 4)
+	{
+		OuchKids(me);
+		if (me->hp > 0)
+			MakeSound(SND_RICHIEOUCH, me->x, me->y, SND_CUTOFF, 1200);
+	}
+
+	if (me->reload)
+		me->reload--;
+
+	if (me->action == ACTION_BUSY)
+	{
+		if (me->seq == ANIM_ATTACK)
+		{
+
+		}
+		if (me->seq == ANIM_A1)
+		{
+
+		}
+		if (me->seq == ANIM_DIE)
+		{
+			x = me->x >> FIXSHIFT;
+			y = me->y >> FIXSHIFT;
+			BlowUpGuy(x + me->rectx, y + me->recty, x + me->rectx2, y + me->recty2, me->z, 2);
+			BlowSmoke((x + me->rectx + Random(me->rectx2 - me->rectx)) << FIXSHIFT,
+				(y + me->recty + Random(me->recty2 - me->recty)) << FIXSHIFT,
+				me->z, FIXAMT);
+			ShakeScreen(10);
+		}
+		return;	// can't do nothin' right now
+	}
+	if (me->mind == 0)
+	{
+		me->mind = 1;
+	}
+	if (me->mind == 1) // fire grenades mode
+	{
+		// lob grenades occasionally
+		if (me->reload == 0 && !Random(16))
+		{
+			me->mind1 = 25;
+			me->reload = 80;
+		}
+		if (me->mind1 > 0)
+		{
+			FaceGoodguy2(me,goodguy);
+			me->mind1--;
+			if ((me->mind1 % 10) == 0)
+			{
+				MakeSound(SND_ARMORSHOOT, me->x, me->y, SND_CUTOFF, 1500);
+				FireExactBullet(me->x, me->y + FIXAMT * 20, me->z, FIXAMT * Random(7) - 4, FIXAMT * Random(4) + 3, FIXAMT * 2, 0, 90, 2, BLT_GRENADE, me->friendly);
+			}
+		}
+		if (!Random(128))
+		{
+			me->seq = ANIM_ATTACK;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 96;
+			return;
+		}
+		if (!Random(128))
+		{
+			me->seq = ANIM_A1;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 96;
+			return;
+		}
+	}
+}
+
+void AI_EdisonBody(Guy* me, Map* map, world_t* world, Guy* goodguy)
+{
+	if (me->parent)
+	{
+		me->x = me->parent->x;
+		me->y = me->parent->y - 8 * FIXAMT;
+		me->z = me->parent->z - 96 * FIXAMT;
+	}
+}
+
+void AI_EdisonTreads(Guy* me, Map* map, world_t* world, Guy* goodguy)
+{
+	if (me->parent)
+	{
+		me->parent->x = me->x;
+		me->parent->y = me->y + 16 * FIXAMT;
+		me->parent->z = me->z + 196 * FIXAMT;
+	}
+
+	int x, y;
+
+	if (me->ouch == 4)
+	{
+		if (!me->parent && me->hp > 0)
+			MakeSound(SND_ARMORHIT, me->x, me->y, SND_CUTOFF, 1200);
+	}
+
+	if (me->action == ACTION_BUSY)
+	{
+		if (me->seq == ANIM_DIE)
+		{
+			x = me->x >> FIXSHIFT;
+			y = me->y >> FIXSHIFT;
+			BlowUpGuy(x + me->rectx, y + me->recty, x + me->rectx2, y + me->recty2, me->z, 1);
+		}
+		return;	// can't do nothin' right now
+	}
+
+	if (me->mind == 0)
+	{
+		me->mind = 1;
+	}
+	else if (me->mind == 1)
+	{
+
+		me->dx = Cosine(me->facing * 32) * 3;
+		me->dy = Sine(me->facing * 32) * 3;
+
+		FaceGoodguy2(me, goodguy);
+
+		if (me->seq != ANIM_MOVE)
+		{
+			me->seq = ANIM_MOVE;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 96;
+		}
+	}
+}
+
+void AI_EdisonArm(Guy* me, Map* map, world_t* world, Guy* goodguy)
+{
+
+}

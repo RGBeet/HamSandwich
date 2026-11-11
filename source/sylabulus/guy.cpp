@@ -20,6 +20,9 @@ static Guy *nobody;
 
 static byte oldPlayAs;
 
+Guy *bosses[32];
+byte numBosses;
+
 //------------------------------------------------------------------------
 // CLASS GUY
 
@@ -1270,32 +1273,6 @@ void Guy::GetShot(int dx,int dy,word damage,Map *map,world_t *world, bool bypass
 				y-=dy;
 	}
 
-	if(!editing && !player.cheated && verified)
-	{
-		if(profile.difficulty==DIFFICULTY_NORMAL)
-		{
-			if(aiType==MONS_BOUAPHA)
-				profile.progress.damageTaken+=damage*2;
-			else
-				profile.progress.damageDone+=damage/2;
-		}
-		else if(profile.difficulty==DIFFICULTY_HARD)
-		{
-			if(aiType==MONS_BOUAPHA)
-				profile.progress.damageTaken+=damage;
-			else
-				profile.progress.damageDone+=damage;
-		}
-		else if (profile.difficulty==DIFFICULTY_LUNATIC)
-		{
-			if(aiType==MONS_BOUAPHA)
-				profile.progress.damageTaken+=damage/2;
-			else
-				profile.progress.damageDone+=damage*2;
-		}
-		static_assert(MAX_DIFFICULTY == 3, "Must handle new difficulty here");
-	}
-
 	newHP=hp;
 
 	if(hp<=0)
@@ -1863,6 +1840,18 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 			guys[i].customSpr=nullptr;
 			guys[i].pushStamp=0;
 
+			switch (type)
+			{
+			case ENT_EDISONBOSS:
+				guys[i].z = 128 * FIXAMT;
+				g = AddGuy(x, y, 0, ENT_EDISONTREADS, friendly);
+				if (g)
+					g->parent = &guys[i];
+				g = AddGuy(x, y, 64 * FIXAMT, ENT_EDISONBODY, friendly);
+				if (g)
+					g->parent = &guys[i];
+			}
+
 			return &guys[i];
 		}
 	return NULL;
@@ -2044,6 +2033,15 @@ Guy *FindVictim(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t
 			{
 				switch(guys[i].aiType)
 				{
+					case ENT_EDISONTREADS:
+						if (damage > 0)
+						{
+							if(guys[i].parent == NULL)
+								guys[i].GetShot(dx, dy, damage, map, world);
+							else
+								guys[i].parent->GetShot(dx, dy, damage, map, world);
+						}
+						break;
 					case ENT_DULLDRUM:
 						if(guys[i].mind!=1 && damage > 0)
 							guys[i].GetShot(dx, dy, damage, map, world);
@@ -2315,6 +2313,19 @@ byte MossCheck(int x,int y)
 				((guys[i].y>>FIXSHIFT)/TILE_HEIGHT==y))
 				return 1;	// moss is in the way
 	return 0;
+}
+
+void OuchKids(Guy* g)
+{
+	int i;
+
+	for (i = 0;i < maxGuys;i++)
+		if (guys[i].type && guys[i].parent == g)
+		{
+			OuchKids(&guys[i]);	// kill my children too
+			if (guys[i].ouch == 0)
+				guys[i].ouch = 4;
+		}
 }
 
 void KillKids(Guy *g)
@@ -3902,5 +3913,26 @@ byte CanDrive(Guy* me, int x, int y, Map* map, world_t* world, Guy* goodguy)
 			return 0;
 		default:
 			return 1;
+	}
+}
+
+void MarkAsBoss(Guy* g, bool setAs)
+{
+	if (!g)
+		return;
+	for (int i = 0; i < numBosses; i++)
+	{
+		if (bosses[i] != g)
+			continue;
+		if (setAs)
+			return;
+		for (int j = i; j < numBosses - 1; j++)
+			bosses[j] = bosses[j + 1];
+		bosses[--numBosses] = NULL;
+		return;
+	}
+	if (setAs && numBosses < 32)
+	{
+		bosses[numBosses++] = g;
 	}
 }

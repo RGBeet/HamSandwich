@@ -144,12 +144,13 @@ void SetupShow(void)
 	GetDisplayMGL()->ClearScreen();
 	//GetDisplayMGL()->Flip();  // TODO: is this needed?
 
-	if(profile.progress.goal[bumpedPic]==0)
+	if(0) // profile.progress.goal[bumpedPic]==0
 	{
 		DrawFillBox(0,0,639,479,32*1-4);
 		sprintf(s,"This painting will be unveiled when you complete Gallery Goal #%d!",bumpedPic+1);
-		PrintUnGlow(320-GetStrLength(s,2)/2,220,s,2);
-		PrintUnGlow(170,440,"Press Fire, Weapon, or ESC to exit",2);
+		Print(320-GetStrLength(s,2)/2,220,s,0,2);
+		Print(170,440,"Press Fire, Weapon, or ESC to exit",1,1);
+		MakeNormalSound(SND_WORLDTURN);
 	}
 	else if(showMode==0)
 	{
@@ -168,8 +169,8 @@ void SetupShow(void)
 
 		PrintUnGlowRect(10,120,630,400,16,galpix[bumpedPic].desc,1);
 
-		PrintUnGlow(10,440,"Press Fire to view artwork!",2);
-		PrintUnGlow(400,440,"Press Weapon or ESC to exit",2);
+		PrintUnGlow(10,440,"Press CTRL/Z to view artwork!",1);
+		PrintUnGlow(400,440,"Press Shift/X/Esc to exit.",1);
 	}
 	else
 	{
@@ -227,9 +228,10 @@ byte UpdateShowPic(int *lastTime,MGLDraw *mgl)
 
 	if(t&CONTROL_B1)
 	{
-		if(!profile.progress.goal[bumpedPic])
+		if(0)//(!profile.progress.goal[bumpedPic])
 			return 1;
 		showMode=1-showMode;
+		MakeNormalSound(SND_MENUCLICK);
 		SetupShow();
 	}
 	if(t&CONTROL_B2)

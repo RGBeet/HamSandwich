@@ -88,16 +88,14 @@ void DeleteMarker(int i)
 {
 	int j;
 
-	if (i < 0 || i >= numMarkers)
-		return;
-
-	for (int j = i; j < numMarkers - 1; j++)
-		mrkr[j] = mrkr[j + 1];
-
-	numMarkers--;
-
-	mrkr[numMarkers] = marker_t{};
-	mrkr[numMarkers].x1 = 255;
+	if (i >= 0 && i < numMarkers)
+	{
+		mrkr[i].x1 = 255;
+		for (j = i;j < numMarkers - 1;j++)
+			mrkr[j] = mrkr[j + 1];
+		mrkr[numMarkers - 1].x1 = 255;
+		numMarkers--;
+	}
 }
 
 void SlideMarkers(Map *map,int dx,int dy)
@@ -123,7 +121,13 @@ void SlideMarkers(Map *map,int dx,int dy)
 void CheckMarkers(Map* map)
 {
 	int i;
-	// do stuff i guess
+
+	for (i = 0;i < numMarkers;i++)
+	{
+		if (mrkr[i].x1 == 255)
+			continue;
+
+	}
 }
 
 bool CheckMarker(const marker_t *me)

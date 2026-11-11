@@ -80,7 +80,7 @@ struct profButton_t
 };
 
 static const profButton_t btn[]={
-	{20,60,122,"Difficulty", ButtonId::Difficulty},
+	//{20,60,122,"Difficulty", ButtonId::Difficulty},
 	{20,90,122,"Character", ButtonId::Character},
 	{20,120,122,"Brain Radar", ButtonId::BrainRadar},
 	{20,150,122,"Candle Radar", ButtonId::CandleRadar},

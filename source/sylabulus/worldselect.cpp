@@ -12,7 +12,6 @@
 #include "appdata.h"
 #include "vanilla_extract.h"
 #include "steam.h"
-#include "leaderboard.h"
 #include "strnatcmp.h"
 
 enum Done : byte
@@ -39,9 +38,9 @@ enum class ButtonId
 	ResetHighScores,
 	ExitToMenu,
 	RecordScoresTimes,
-	SteamLeaderboardScore,
-	SteamLeaderboardTime,
-	ViewInWorkshop,
+	//SteamLeaderboardScore,
+	//SteamLeaderboardTime,
+	//ViewInWorkshop,
 	PrevLevel,
 	NextLevel,
 	Yes,
@@ -509,19 +508,6 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 			{
 				curButton = ButtonId::NextLevel;
 			}
-			// Steam features
-			else if (PointInRect(msx,msy,180,395,180+150,395+WBTN_HEIGHT) && !list[choice].dimmed && worldMeta.steamWorkshopId)
-			{
-				curButton = ButtonId::ViewInWorkshop;
-			}
-			else if (PointInRect(msx,msy,180,419,180+150,419+WBTN_HEIGHT) && !list[choice].dimmed && Steam()->LeaderboardIdScore())
-			{
-				curButton = ButtonId::SteamLeaderboardScore;
-			}
-			else if (PointInRect(msx,msy,180,443,180+150,443+WBTN_HEIGHT) && !list[choice].dimmed && Steam()->LeaderboardIdTime())
-			{
-				curButton = ButtonId::SteamLeaderboardTime;
-			}
 		}
 		else if (mode == MODE_CONFIRM_ERASE_PROGRESS || mode == MODE_CONFIRM_ERASE_SCORES)
 		{
@@ -584,23 +570,6 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 				case ButtonId::ExitToMenu:
 					curButton = ButtonId::ResetHighScores;
 					break;
-				case ButtonId::ViewInWorkshop:
-					curButton = ButtonId::RecordScoresTimes;
-					break;
-				case ButtonId::SteamLeaderboardScore:
-					if (worldMeta.steamWorkshopId)
-						curButton = ButtonId::ViewInWorkshop;
-					else
-						curButton = ButtonId::RecordScoresTimes;
-					break;
-				case ButtonId::SteamLeaderboardTime:
-					if (Steam()->LeaderboardIdScore())
-						curButton = ButtonId::SteamLeaderboardScore;
-					else if (worldMeta.steamWorkshopId)
-						curButton = ButtonId::ViewInWorkshop;
-					else
-						curButton = ButtonId::RecordScoresTimes;
-					break;
 				default: break;
 			}
 		}
@@ -635,20 +604,6 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 				case ButtonId::SortComplete:
 					curButton = ButtonId::PlayThisWorld;
 					break;
-				case ButtonId::RecordScoresTimes:
-					if (worldMeta.steamWorkshopId)
-						curButton = ButtonId::ViewInWorkshop;
-					else if (Steam()->LeaderboardIdScore())
-						curButton = ButtonId::SteamLeaderboardScore;
-					else if (Steam()->LeaderboardIdTime())
-						curButton = ButtonId::SteamLeaderboardTime;
-					break;
-				case ButtonId::ViewInWorkshop:
-					if (Steam()->LeaderboardIdScore())
-						curButton = ButtonId::SteamLeaderboardScore;
-					else if (Steam()->LeaderboardIdTime())
-						curButton = ButtonId::SteamLeaderboardTime;
-					break;
 				default: break;
 			}
 		}
@@ -664,42 +619,20 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 				case ButtonId::ResetThisWorld:
 					if (!list[choice].dimmed)
 					{
-						if (worldMeta.steamWorkshopId)
-							curButton = ButtonId::ViewInWorkshop;
-						else
-							curButton = ButtonId::RecordScoresTimes;
+						curButton = ButtonId::RecordScoresTimes;
 					}
 					break;
 				case ButtonId::ResetHighScores:
 					if (!list[choice].dimmed)
 					{
-						if (Steam()->LeaderboardIdScore())
-							curButton = ButtonId::SteamLeaderboardScore;
-						else if (worldMeta.steamWorkshopId)
-							curButton = ButtonId::ViewInWorkshop;
-						else
-							curButton = ButtonId::RecordScoresTimes;
+						curButton = ButtonId::RecordScoresTimes;
 					}
 					break;
 				case ButtonId::ExitToMenu:
 					if (!list[choice].dimmed)
 					{
-						if (Steam()->LeaderboardIdTime())
-							curButton = ButtonId::SteamLeaderboardTime;
-						else if (Steam()->LeaderboardIdScore())
-							curButton = ButtonId::SteamLeaderboardScore;
-						else if (worldMeta.steamWorkshopId)
-							curButton = ButtonId::ViewInWorkshop;
-						else
-							curButton = ButtonId::RecordScoresTimes;
+						curButton = ButtonId::RecordScoresTimes;
 					}
-					break;
-				case ButtonId::RecordScoresTimes:
-				case ButtonId::ViewInWorkshop:
-				case ButtonId::SteamLeaderboardScore:
-				case ButtonId::SteamLeaderboardTime:
-					if (!noScoresAtAll)
-						curButton = ButtonId::PrevLevel;
 					break;
 				case ButtonId::PrevLevel:
 					curButton = ButtonId::NextLevel;
@@ -732,15 +665,6 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 					break;
 				case ButtonId::SortComplete:
 					curButton = ButtonId::SortAuthor;
-					break;
-				case ButtonId::ViewInWorkshop:
-					curButton = ButtonId::ResetThisWorld;
-					break;
-				case ButtonId::SteamLeaderboardScore:
-					curButton = ButtonId::ResetHighScores;
-					break;
-				case ButtonId::SteamLeaderboardTime:
-					curButton = ButtonId::ExitToMenu;
 					break;
 				default: break;
 			}
@@ -838,26 +762,6 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 						level=0;
 					FetchScores(0);
 					break;
-
-				case ButtonId::ViewInWorkshop: {
-					std::string url = "https://steamcommunity.com/sharedfiles/filedetails/?id=";
-					url.append(std::to_string(worldMeta.steamWorkshopId));
-					Steam()->OpenURLOverlay(url.c_str());
-					break;
-				}
-
-				case ButtonId::SteamLeaderboardScore:
-					AWAIT ViewWorldLeaderboard(mgl, &tmpWorld, WorldLeaderboardKind::Score, Steam()->LeaderboardIdScore());
-					mouseZ=mgl->mouse_z;
-					oldc = ~0;
-					CO_RETURN WS_CONTINUE;
-
-				case ButtonId::SteamLeaderboardTime:
-					AWAIT ViewWorldLeaderboard(mgl, &tmpWorld, WorldLeaderboardKind::Time, Steam()->LeaderboardIdTime());
-					mouseZ=mgl->mouse_z;
-					oldc = ~0;
-					CO_RETURN WS_CONTINUE;
-
 				default: break;
 			}
 		}
@@ -1240,20 +1144,6 @@ void RenderWorldSelect(MGLDraw *mgl)
 				}
 				Print(615-GetStrLength(s,2),395+i*20,s,0,2);
 			}
-		}
-
-		if (worldMeta.steamWorkshopId)
-		{
-			RenderWorldSelectButton(180,395,150, "View in Workshop", mgl, ButtonId::ViewInWorkshop);
-		}
-
-		if (Steam()->LeaderboardIdScore())
-		{
-			RenderWorldSelectButton(180,419,150, "Steam Top Scores", mgl, ButtonId::SteamLeaderboardScore);
-		}
-		if (Steam()->LeaderboardIdTime())
-		{
-			RenderWorldSelectButton(180,443,150, "Steam Top Times", mgl, ButtonId::SteamLeaderboardTime);
 		}
 	}
 

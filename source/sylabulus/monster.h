@@ -349,7 +349,10 @@
 #define ENT_GHOST				90
 #define ENT_SPOTLIGHT			91
 
-#define ENT_MAXID				92
+#define ENT_EDISONTREADS		92
+#define ENT_EDISONBODY			93
+
+#define ENT_MAXID				94
 
 #define NUM_MONSTERS	243					// Can grow as needed
 #define NUM_PROFILE_MONSTERS 211			// Do not change without redoing the profile format
@@ -383,22 +386,23 @@ constexpr byte FRAME_END = 255;
 // flags
 enum MonsterFlags_ : dword
 {
-	MF_FLYING     = 1 << 0,
-	MF_WATERWALK  = 1 << 1,
-	MF_ONEFACE    = 1 << 2,
-	MF_ENEMYWALK  = 1 << 3,	// other enemies can stomp all over this one (but not Bouapha)
-	MF_NOMOVE     = 1 << 4,	// doesn't move when hit
-	MF_AQUATIC    = 1 << 5,	// can ONLY move on water/lava, not land
-	MF_INVINCIBLE = 1 << 6, // totally invulnerable to harm
-	MF_SPRITEBOX  = 1 << 7,	// use the sprite's rect for collision checks instead of standard size-box method
-	MF_FACECMD    = 1 << 8,	// this monster's "facing" value should just be added to the sprite number, it's calculated by his AI (only useful for MF_ONEFACE monsters)
-	MF_NOGRAV     = 1 << 9,
-	MF_FREEWALK   = 1 << 10, // Bouapha can walk right through it
-	MF_WALLWALK   = 1 << 11, // walk through walls
-	MF_NOSHADOW   = 1 << 12, // doesn't cast a shadow
-	MF_GHOST      = 1 << 13, // draw using ghost draw
-	MF_NOHIT      = 1 << 14, // bullets pass through it
-	MF_GLOW       = 1 << 15, // draw using glow draw
+	MF_FLYING		= 1 << 0,
+	MF_WATERWALK	= 1 << 1,
+	MF_ONEFACE		= 1 << 2,
+	MF_ENEMYWALK	= 1 << 3,	// other enemies can stomp all over this one (but not Bouapha)
+	MF_NOMOVE		= 1 << 4,	// doesn't move when hit
+	MF_AQUATIC		= 1 << 5,	// can ONLY move on water/lava, not land
+	MF_INVINCIBLE	= 1 << 6, // totally invulnerable to harm
+	MF_SPRITEBOX	= 1 << 7,	// use the sprite's rect for collision checks instead of standard size-box method
+	MF_FACECMD		= 1 << 8,	// this monster's "facing" value should just be added to the sprite number, it's calculated by his AI (only useful for MF_ONEFACE monsters)
+	MF_NOGRAV		= 1 << 9,
+	MF_FREEWALK		= 1 << 10, // Bouapha can walk right through it
+	MF_WALLWALK		= 1 << 11, // walk through walls
+	MF_NOSHADOW		= 1 << 12, // doesn't cast a shadow
+	MF_GHOST		= 1 << 13, // draw using ghost draw
+	MF_NOHIT		= 1 << 14, // bullets pass through it
+	MF_GLOW			= 1 << 15, // draw using glow draw
+	MF_FIVEFACE		= 1 << 16,	// only faces forward (right, down-right, down, down-left, left) - used when back-facing sprites are ridiculous
 };
 BITFLAGS(MonsterFlags_)
 
