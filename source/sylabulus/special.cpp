@@ -2077,7 +2077,7 @@ void InitSpecialsForPlay(void)
 
 	victim=NULL;
 	tagged=NULL;
-	boss=NULL;
+	//boss=NULL;
 }
 
 #define SPR_MAPX	171

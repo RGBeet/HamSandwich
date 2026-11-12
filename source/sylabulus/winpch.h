@@ -17,8 +17,8 @@
 
 // TODO: MAKE WIDESCREEN
 
-const int SCRWID = 640;
-const int SCRHEI = 480;
+const int SCRWID = 1280;
+const int SCRHEI = 720;
 const int FIXSHIFT = 8;
 const int FIXAMT = 256;
 

@@ -983,7 +983,7 @@ void RenderProfMenu(MGLDraw *mgl)
 	sprintf(s,"Username: %s",profile.name);
 	Print(20,20,s,0,2);
 
-	Print(146,62,GetDifficultyName(profile.difficulty),0,2);
+	//Print(146,62,GetDifficultyName(profile.difficulty),0,2);
 	Print(146,92,GetPlayableCharacterName(profile.playAs),0,2);
 	if(brainRadar)
 		Print(146,122,yesno[profile.brainRadar],0,2);

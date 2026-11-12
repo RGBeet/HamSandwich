@@ -1850,6 +1850,12 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 				g = AddGuy(x, y, 64 * FIXAMT, ENT_EDISONBODY, friendly);
 				if (g)
 					g->parent = &guys[i];
+				g = AddGuy(x - 32*FIXAMT, y, 64 * FIXAMT, ENT_EDISONARMLEFT, friendly);
+				if (g)
+					g->parent = &guys[i];
+				g = AddGuy(x + 32*FIXAMT, y, 64 * FIXAMT, ENT_EDISONARMRIGHT, friendly);
+				if (g)
+					g->parent = &guys[i];
 			}
 
 			return &guys[i];

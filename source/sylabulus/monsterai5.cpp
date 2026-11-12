@@ -4842,7 +4842,6 @@ void AI_Spotlight(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	me->dy = Sine(angle) * speed;
 }
 
-
 void AI_Edison(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
 	int x, y;
@@ -4869,13 +4868,38 @@ void AI_Edison(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		}
 		if (me->seq == ANIM_DIE)
 		{
-			x = me->x >> FIXSHIFT;
-			y = me->y >> FIXSHIFT;
-			BlowUpGuy(x + me->rectx, y + me->recty, x + me->rectx2, y + me->recty2, me->z, 2);
-			BlowSmoke((x + me->rectx + Random(me->rectx2 - me->rectx)) << FIXSHIFT,
-				(y + me->recty + Random(me->recty2 - me->recty)) << FIXSHIFT,
-				me->z, FIXAMT);
-			ShakeScreen(10);
+
+			if (me->frm == 4)
+			{
+				if (me->aiType == ENT_EDISONBOSS) // turn into edison brain
+				{
+					me->type = ENT_EDISONBRAIN;
+					me->aiType = ENT_EDISONBRAIN;
+					ham_strcpy(me->name, MonsterName(me->type));
+					if (!me->friendly)
+						player.enemiesSlain--;
+					me->hp = MonsterHP(ENT_EDISONBRAIN);
+					me->maxHP = me->hp;
+					me->seq = ANIM_IDLE;
+					me->frm = 0;
+					me->frmTimer = 0;
+					me->frmAdvance = 128;
+					me->action = ACTION_IDLE;
+					me->reload = 100;
+					me->facing = 0;
+				}
+				return;
+			}
+			else
+			{
+				x = me->x >> FIXSHIFT;
+				y = me->y >> FIXSHIFT;
+				BlowUpGuy(x + me->rectx, y + me->recty, x + me->rectx2, y + me->recty2, me->z, 2);
+				BlowSmoke((x + me->rectx + Random(me->rectx2 - me->rectx)) << FIXSHIFT,
+					(y + me->recty + Random(me->recty2 - me->recty)) << FIXSHIFT,
+					me->z, FIXAMT);
+				ShakeScreen(10);
+			}
 		}
 		return;	// can't do nothin' right now
 	}
@@ -4932,6 +4956,7 @@ void AI_EdisonBody(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 void AI_EdisonTreads(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
+	int i;
 	if (me->parent)
 	{
 		me->parent->x = me->x;
@@ -4977,10 +5002,100 @@ void AI_EdisonTreads(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			me->frmTimer = 0;
 			me->frmAdvance = 96;
 		}
+
+		if (!Random(128) && me->z == 0)
+		{
+			me->mind = 2;
+			me->dz = 12 * FIXAMT;
+		}
+	}
+	else if (me->mind == 2)
+	{
+		if (me->mind1 < 12)
+		{
+			me->dz += FIXAMT / 4;
+			me->mind1++;
+		}
+		else if (me->mind1 == 12)
+		{
+			ShakeScreen(120);
+			MakeSound(SND_BOMBBOOM, me->x, me->y, SND_CUTOFF, 1200);
+			FireBullet(me->x, me->y - FIXAMT, 0, BLT_SHOCKWAVE, me->friendly);
+			for (i = 0;i < 10;i++)
+			{
+				x = me->x + ((256 - Random(513)) << FIXSHIFT);
+				y = me->y + ((256 - Random(513)) << FIXSHIFT);
+				FireExactBullet(x, y, FIXAMT * 80 + (Random(40) << FIXSHIFT),
+					0, 0, 0, 0, 30, 2, BLT_ROCK, me->friendly);
+			}
+			me->reload = 5;
+			me->mind1 = 1;
+			me->mind = 1;
+		}
 	}
 }
 
 void AI_EdisonArm(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
+	int x, y, i;
 
+	if (me->parent)
+	{
+		if (me->aiType == ENT_EDISONARMRIGHT) // goes on the left
+			me->x = me->parent->x + 64 * FIXAMT;
+		else // goes on the right
+			me->x = me->parent->x - 64 * FIXAMT;
+	}
+	me->y = me->parent->y - 8 * FIXAMT;
+	me->z = me->parent->z - 64 * FIXAMT;
+
+	if (me->ouch == 4 && !me->parent->ouch)
+	{
+		if (me->hp > 0)
+			MakeSound(SND_ARMORHIT, me->x, me->y, SND_CUTOFF, 1200);
+	}
+
+	if (me->action == ACTION_BUSY)
+	{
+		if (me->seq == ANIM_DIE)
+		{
+			x = me->x >> FIXSHIFT;
+			y = me->y >> FIXSHIFT;
+			BlowUpGuy(x + me->rectx, y + me->recty, x + me->rectx2, y + me->recty2, me->z, 1);
+		}
+		return;	// can't do nothin' right now
+	}
+
+	if (me->parent->mind == 0)
+		return;
+
+	if (!Random(128))
+	{
+		me->seq = ANIM_MOVE;
+		me->frm = 0;
+		me->frmTimer = 0;
+		me->frmAdvance = 128;
+		me->action = ACTION_BUSY;
+		return;
+	}
+
+	if (!Random(128))
+	{
+		me->seq = ANIM_ATTACK;
+		me->frm = 0;
+		me->frmTimer = 0;
+		me->frmAdvance = 96;
+		me->action = ACTION_BUSY;
+		return;
+	}
+
+	if (!Random(128))
+	{
+		me->seq = ANIM_A1;
+		me->frm = 0;
+		me->frmTimer = 0;
+		me->frmAdvance = 96;
+		me->action = ACTION_BUSY;
+		return;
+	}
 }

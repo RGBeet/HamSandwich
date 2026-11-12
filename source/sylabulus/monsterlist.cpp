@@ -1280,7 +1280,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{254,255},	// die
 			}},
 		{"EDISON's Treads",255,255,0,AI_EdisonTreads, // not yet implemented
-		 100,6,1000,50,"graphics/edisontreads.jsp",0,MF_ENEMYWALK,
+		 100,6,1000,50,"graphics/edisontreads.jsp",0,MF_NOMOVE|MF_ENEMYWALK|MF_INVINCIBLE|MF_NOHIT,
 		 MT_BITS,
 			{
 				{0,255},	// idle
@@ -1294,7 +1294,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0 },
 		{"EDISON's Body",255,255,0,AI_EdisonBody, // not yet implemented
-		 8,1,10,50,"graphics/edisonbody.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_NOGRAV|MF_ENEMYWALK|MF_FREEWALK|MF_INVINCIBLE,
+		 8,1,10,50,"graphics/edisonbody.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_NOGRAV|MF_ENEMYWALK|MF_FREEWALK|MF_INVINCIBLE|MF_NOHIT,
 		 MT_BITS,
 			{
 				{0,255},	// idle
@@ -1302,6 +1302,34 @@ MonsterType monsType[NUM_MONSTERS]=
 				{0,255},	// attack 1
 				{0,255},	// defeated
 				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+			},0 },
+		{"EDISON's Arm",255,255,0,AI_EdisonArm,
+		 50,22,300,50,"graphics/edisonarmright.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_NOGRAV|MF_ENEMYWALK|MF_FREEWALK,
+		 MT_BITS,
+			{
+				{0,255},											// idle
+				{1,2,3,4,5,4,3,2,1,255},							// move
+				{6,7,8,9,10,10,10,9,8,7,6,255},						// attack 1
+				{16,17,18,17,16,17,18,19,20,21,254,21,254,21,255},	// defeated
+				{11,12,13,14,15,15,15,14,13,12,11,255},				// attack 2
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+				NULL_ANIM,
+			},0 },
+		{"EDISON's Arm",255,255,0,AI_EdisonArm,
+		 50,22,300,50,"graphics/edisonarmleft.jsp",0,MF_NOMOVE|MF_ONEFACE|MF_NOGRAV|MF_ENEMYWALK|MF_FREEWALK,
+		 MT_BITS,
+			{
+				{0,255},											// idle
+				{1,2,3,4,5,4,3,2,1,255},							// move
+				{6,7,8,9,10,10,10,9,8,7,6,255},						// attack 1
+				{16,17,18,17,16,17,18,19,20,21,254,21,254,21,255},	// defeated
+				{11,12,13,14,15,15,15,14,13,12,11,255},				// attack 2
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
