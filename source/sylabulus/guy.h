@@ -207,4 +207,11 @@ void SetParent(Guy* g, Guy* parent);
 byte CanDrive(Guy* me, int x, int y, Map* map, world_t* world, Guy* goodguy);
 void OuchKids(Guy* g);
 
+void MarkAsBoss(Guy* g, bool setAs);
+void MarkAsCameraFocus(Guy* g);
+void ResetCameraFocus(void);
+byte IsMarkedBoss(Guy* g);
+
+std::pair<int,int> GetBossHP(void);
+
 #endif

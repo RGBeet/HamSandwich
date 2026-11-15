@@ -2587,12 +2587,12 @@ static void SetupEffectButtons(int t,int y)
 			else
 				MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,520,y+17,65,14,"Play FX",NoFXClick);
 			break;
-		case EFF_CAMERAFOCUS:
+		case EFF_CAMERAFOCUS: // FIX!!!
 			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 60, 14, "Focus camera on", NULL);
 			sprintf(s, "%d, %d", effect.x, effect.y);
 			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 258, y + 17, 70, 14, s, XY3Click);
 			break;
-		case EFF_CAMERAGUY:
+		case EFF_CAMERAGUY: // FIX!!!
 			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 60, 14, "Focus camera on", NULL);;
 			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 94, y + 17, 140, 14, MonsterName(effect.value), MonsterClick);
 			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 2 + 100 * t, 0, 238, y + 17, 1, 1, "at", NULL);
@@ -2602,13 +2602,16 @@ static void SetupEffectButtons(int t,int y)
 				sprintf(s, "%d, %d", effect.x, effect.y);
 			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 3 + 100 * t, 0, 258, y + 17, 70, 14, s, XY3Click);
 			break;
-		case EFF_CAMERASCROLL:
-			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 60, 14, "Focus camera on", NULL);
-			sprintf(s, "%d, %d", effect.x, effect.y);
-			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 199, y + 17, 70, 14, s, XY3Click);
-			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 2 + 100 * t, 0, 249, y + 17, 60, 14, "at speed", NULL);
+		case EFF_CAMERAOFFSET: // FIX!!!
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 50, y + 17, 1, 1, "Set Camera offset to", NULL);
+
 			sprintf(s, "%d", effect.value);
-			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 3 + 100 * t, 0, 309, y + 17, 70, 14, s, NumberClick);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 3 + 100 * t, 0, 319, y + 17, 40, 14, s, NumberClick);
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 4 + 100 * t, 0, 351, y + 17, 1, 1, " X,", NULL);
+
+			sprintf(s, "%d", effect.value2);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 5 + 100 * t, 0, 343, y + 17, 40, 14, s, Number2Click);
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 6 + 100 * t, 0, 386, y + 17, 1, 1, " Y.", NULL);
 			break;
 		case EFF_MARKASBOSS:
 			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "Mark", NULL);

@@ -2,6 +2,7 @@
 #include "intface.h"
 #include "player.h"
 #include "shop.h"
+#include "guy.h"
 #include <algorithm>
 
 constexpr int SPR_LIFEMETER		= 68;
@@ -73,6 +74,9 @@ static byte monsAlive=0;
 static int curMonsLife;
 static int comboY,curCombo;
 
+static int curBossLife;
+static int maxBossLife;
+
 // these are for the enemy life meter
 static char monsName[32];
 static int monsHP;
@@ -99,6 +103,7 @@ enum {
 	INTF_COMBO,
 	INTF_COUNTDOWN,
 	INTF_LIVES,
+	INTF_BOSS,
 	NUM_INTF,
 };
 
@@ -134,7 +139,8 @@ enum {
 	IV_TIME,
 	IV_LOCK,
 	IV_COMBO,
-	IV_LIVES
+	IV_LIVES,
+	IV_BOSS
 };
 
 struct intface_t
@@ -251,12 +257,19 @@ intface_t defaultSetup[NUM_INTF]={
 	 12,3,
 	 0,0,
 	 20},
-	{-32,100,-32,100,	// lives (usually not present lol
+	{-32,100,-32,100,	// extra life meter
 	 999, // render sprite specially
 	 IV_NUMBER,2,
 	 0,0,
 	 0,0,
 	 0 },
+	{SCRWID/2-50,SCRHEI+20,SCRWID/2-50,SCRHEI+20,	// COUNTDOWN
+	 999,
+	 IV_BOSS,128,
+	 12,3,
+	 0,0,
+	 20},
+
 };
 
 static byte intfFlip;
@@ -461,6 +474,15 @@ void ShowEnemyLife(char *name,byte formerLife,byte life,byte alive)
 	monsAlive=alive;
 	intf[INTF_ENEMY].ty=GetDisplayMGL()->GetHeight()-1;
 }
+
+void ShowBossLife()
+{
+	std::pair<int, int> values = GetBossHP();
+	curBossLife = values.first;
+	maxBossLife = values.second;
+	//intf[INTF_ENEMY].ty = GetDisplayMGL()->GetHeight() - 1;
+}
+
 
 void RenderRage(byte size,MGLDraw *mgl)
 {
@@ -986,6 +1008,36 @@ void DrawLives(int x, int y, MGLDraw* mgl)
 	DrawSmallNumber(x, y, player.lives, 2, mgl, 2);
 }
 
+void DrawBossBar(int x, int y, MGLDraw* mgl)
+{
+
+	byte c = 140;
+	int amt = intf[INTF_BOSS].value * 144 / intf[INTF_BOSS].valueLength;
+
+	DrawFillBox(x,y+1,x,y+12,c-6);
+	DrawFillBox(x+amt,y+1,x+amt,y+12,c-6);
+	if(amt>1)
+	{
+		DrawFillBox(x+1,y+1,x+1,y+12,c-1);
+		DrawFillBox(x+amt-1,y+1,x+amt-1,y+12,c-1);
+		if(amt>3)
+		{
+			// here's the short parts on top and bottom
+			DrawFillBox(x+2,y,x+(amt-2),y,c-3);
+			DrawFillBox(x+2,y+13,x+(amt-2),y+13,c-3);
+			// and here's the normal part
+			DrawFillBox(x+2,y+1,x+amt-2,y+1,c);
+			DrawFillBox(x+2,y+12,x+amt-2,y+12,c);
+			DrawFillBox(x+2,y+2,x+amt-2,y+2,c+8);
+			DrawFillBox(x+2,y+3,x+amt-2,y+11,c+4);
+		}
+	}
+
+	DrawSmallNumber(x, y, curBossLife, 6, mgl);
+	Print(x + 56, y, "/", 0, 2);
+	DrawSmallNumber(x + 72, y, maxBossLife, 6, mgl);
+}
+
 void UpdateInterface(Map *map)
 {
 	int i,j;
@@ -1142,15 +1194,6 @@ void UpdateInterface(Map *map)
 	if (yy > SCRHEI - 30)
 		yy = SCRHEI - 30;
 
-	if (player.timer > 0)
-	{
-		intf[INTF_COUNTDOWN].ty = SCRHEI-22;
-	}
-	else
-	{
-		intf[INTF_COUNTDOWN].ty = SCRHEI+22;
-	}
-
 	if (player.comboClock && player.combo > 1)
 	{
 		intf[INTF_COMBO].ty = yy;
@@ -1158,6 +1201,28 @@ void UpdateInterface(Map *map)
 	}
 	else
 		intf[INTF_COMBO].ty = SCRHEI + 50;
+
+	yy = SCRHEI;
+
+	// boss
+	if (curBossLife > 0)
+	{
+		intf[INTF_BOSS].ty = yy - 22;
+	}
+	else
+	{
+		intf[INTF_BOSS].ty = yy + 22;
+	}
+
+	// timer
+	if (player.timer > 0)
+	{
+		intf[INTF_COUNTDOWN].ty = yy-22;
+	}
+	else
+	{
+		intf[INTF_COUNTDOWN].ty = yy+22;
+	}
 
 	intfFlip=1-intfFlip;
 	for(i=0;i<NUM_INTF;i++)
@@ -1258,6 +1323,14 @@ void UpdateInterface(Map *map)
 			case INTF_LIVES:
 				intf[i].vDesired = player.lives;
 				break;
+			case INTF_BOSS:
+			{
+				int maxHP = std::max(1, maxBossLife);
+				int hp = std::clamp(curBossLife, 0, maxHP);
+				intf[i].vDesired =
+					(int)((int64_t)hp * intf[i].valueLength / maxHP);
+				break;
+			}
 		}
 		if(intf[i].value<intf[i].vDesired)
 			intf[i].value++;
@@ -1424,6 +1497,9 @@ void RenderInterface(MGLDraw *mgl)
 				break;
 			case IV_LIVES:
 				DrawLives(intf[i].x + intf[i].vOffX, intf[i].y + intf[i].vOffY, mgl);
+				break;
+			case IV_BOSS:
+				DrawBossBar(intf[i].x + intf[i].vOffX, intf[i].y + intf[i].vOffY, mgl);
 				break;
 		}
 	}

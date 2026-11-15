@@ -5,7 +5,6 @@
 #include "jamulfmv.h"
 #include "game.h"
 #include "editor.h"
-#include "theater.h"
 #include "goal.h"
 #include "config.h"
 #include "message.h"
@@ -24,6 +23,31 @@ DisplayList *dispList;
 static byte gammaCorrection=0;
 
 static char cursor[] = "}";
+
+struct CameraBounds // used to determine camera bounds
+{
+	int left, top;
+	int right, bottom;
+	bool active;
+};
+CameraBounds cameraBounds = { 0,0,0,0,false };
+
+struct CameraFocus // used to determine camera focus
+{
+	int x, y;
+	int dx, dy;
+	Guy* g;
+	byte focusType;
+	bool active;
+};
+CameraFocus cameraFocus = { 0,0,0,0,NULL,0,false };
+
+struct CameraOffset
+{
+	int x, y;
+	bool active;
+};
+CameraOffset cameraOffset = { 0,0,false };
 
 MGLDraw *GetDisplayMGL(void)
 {
@@ -184,12 +208,6 @@ TASK(void) ShowImageOrFlic(const char *str,byte nosnd,byte mode)
 	AWAIT FLI_play(nm,0,speed,mgl);
 	mgl->LoadBMP("graphics/title.bmp");
 	RestoreGameplayGfx();
-
-	if(!editing && (verified || shopping))
-	{
-		SeeMovie(fname);
-		GoalPurchase();
-	}
 }
 
 byte *GetDisplayScreen(void)
@@ -229,73 +247,153 @@ void PutCamera(int x,int y)
 	scry=(rscry>>FIXSHIFT);
 }
 
-void UpdateCamera(int x,int y,int dx,int dy,Map *map)
-{
-	int desiredX,desiredY;
 
-	if(config.camera)
+void UpdateCamera(int x, int y, int dx, int dy, Map* map)
+{
+	int desiredX, desiredY, desiredX1, desiredY1;
+	Guy* cf;
+
+	if (config.camera)
 	{
-		if(player.vehicle==VE_YUGO || player.vehicle==VE_MINECART)
+		if (player.vehicle == VE_YUGO || player.vehicle == VE_MINECART)
 		{
-			desiredX=((x<<FIXSHIFT)+dx*20)>>FIXSHIFT;
-			desiredY=((y<<FIXSHIFT)+dy*20)>>FIXSHIFT;
+			desiredX = ((x << FIXSHIFT) + dx * 20) >> FIXSHIFT;
+			desiredY = ((y << FIXSHIFT) + dy * 20) >> FIXSHIFT;
 		}
 		else
 		{
-			desiredX=((x<<FIXSHIFT)+dx*20)>>FIXSHIFT;
-			desiredY=((y<<FIXSHIFT)+dy*20)>>FIXSHIFT;
+			desiredX = ((x << FIXSHIFT) + dx * 20) >> FIXSHIFT;
+			desiredY = ((y << FIXSHIFT) + dy * 20) >> FIXSHIFT;
 		}
 	}
 	else
 	{
-		desiredX=x;
-		desiredY=y;
-		scrx=x;
-		scry=y;
-		rscrx=x*FIXAMT;
-		rscry=y*FIXAMT;
-		scrdx=0;
-		scrdy=0;
+		desiredX = x;
+		desiredY = y;
+		scrx = x;
+		scry = y;
+		rscrx = x * FIXAMT;
+		rscry = y * FIXAMT;
+		scrdx = 0;
+		scrdy = 0;
 	}
 
-	rscrx+=scrdx;
-	rscry+=scrdy;
+	// set the focus, prioritize entity focus if set
+	if (cameraFocus.active)
+	{
+		if (cameraFocus.g)
+		{
+			int focusX = cameraFocus.g->x / FIXAMT;
+			int focusY = cameraFocus.g->y / FIXAMT;
 
-	int minX = (GetDisplayMGL()->GetWidth() / 2) << FIXSHIFT;
-	int maxX = ((map->width * TILE_WIDTH) << FIXSHIFT) - minX;
-	int minY = (GetDisplayMGL()->GetHeight() / 2) << FIXSHIFT;
-	int maxY = ((map->height * TILE_HEIGHT) << FIXSHIFT) - minY;
-	minY -= TILE_HEIGHT << FIXSHIFT;
+			if (cameraFocus.focusType == 1) // shared focus
+			{
+				int halfWidth = GetDisplayMGL()->GetWidth() / 2;
+				int halfHeight = GetDisplayMGL()->GetHeight() / 2;
 
-	if (minX > maxX)
-		rscrx = (minX + maxX) / 2;
-	else if (rscrx < minX)
-		rscrx = minX;
-	else if (rscrx > maxX)
-		rscrx = maxX;
+				bool onScreen =
+					focusX >= scrx - halfWidth &&
+					focusX <= scrx + halfWidth &&
+					focusY >= scry - halfHeight &&
+					focusY <= scry + halfHeight;
 
-	if (minY > maxY)
-		rscry = (minY + maxY) / 2;
-	else if (rscry < minY)
-		rscry = minY;
-	else if (rscry > maxY)
-		rscry = maxY;
+				if (onScreen)
+				{
+					int playerX = ((x << FIXSHIFT) + dx * 20) >> FIXSHIFT;
+					int playerY = ((y << FIXSHIFT) + dy * 20) >> FIXSHIFT;
 
-	if(scrx>desiredX+10)
-		scrdx=-((scrx-(desiredX+10))*FIXAMT/16);
-	if(scrx<desiredX-10)
-		scrdx=(((desiredX-10)-scrx)*FIXAMT/16);
-	if(scry>desiredY+20)
-		scrdy=-((scry-(desiredY+10))*FIXAMT/16);
-	if(scry<desiredY-20)
-		scrdy=(((desiredY-10)-scry)*FIXAMT/16);
+					desiredX = (playerX + focusX) / 2;
+					desiredY = (playerY + focusY) / 2;
+				}
+			}
+			else
+			{
+				desiredX = cameraFocus.g->x / FIXAMT;
+				desiredY = cameraFocus.g->y / FIXAMT;
+			}
+		}
+		else
+		{
+			desiredX = cameraFocus.x;
+			desiredY = cameraFocus.y;
+		}
+	}
 
-	Dampen(&scrdx,1<<FIXSHIFT);
-	Dampen(&scrdy,1<<FIXSHIFT);
+	// add the offset
+	if (cameraOffset.active)
+	{
+		desiredX += cameraOffset.x * TILE_WIDTH;
+		desiredY += cameraOffset.y * TILE_HEIGHT;
+	}
 
-	scrx=(rscrx>>FIXSHIFT);
-	scry=(rscry>>FIXSHIFT);
+	rscrx += scrdx;
+	rscry += scrdy;
+
+	int minX, maxX, minY, maxY;
+
+	int halfWidth = (GetDisplayMGL()->GetWidth() / 2) << FIXSHIFT;
+	int halfHeight = (GetDisplayMGL()->GetHeight() / 2) << FIXSHIFT;
+
+	if (cameraBounds.active)
+	{
+		minX = (cameraBounds.left << FIXSHIFT) + halfWidth;
+		maxX = (cameraBounds.right << FIXSHIFT) - halfWidth;
+
+		minY = (cameraBounds.top << FIXSHIFT) + halfHeight;
+		maxY = (cameraBounds.bottom << FIXSHIFT) - halfHeight;
+
+		// Prevent the camera from moving outside the bounds.
+		// If the area is smaller than the viewport, center it.
+		if (minX > maxX)
+			rscrx = (minX + maxX) / 2;
+		else
+			rscrx = std::clamp(rscrx, minX, maxX);
+
+		if (minY > maxY)
+			rscry = (minY + maxY) / 2;
+		else
+			rscry = std::clamp(rscry, minY, maxY);
+	}
+	else
+	{
+		minX = halfWidth;
+		maxX = ((map->width * TILE_WIDTH) << FIXSHIFT) - minX;
+
+		minY = halfHeight;
+		maxY = ((map->height * TILE_HEIGHT) << FIXSHIFT) - minY;
+		minY -= TILE_HEIGHT << FIXSHIFT;
+
+		if (minX > maxX)
+			rscrx = (minX + maxX) / 2;
+		else if (rscrx < minX)
+			rscrx = minX;
+		else if (rscrx > maxX)
+			rscrx = maxX;
+
+		if (minY > maxY)
+			rscry = (minY + maxY) / 2;
+		else if (rscry < minY)
+			rscry = minY;
+		else if (rscry > maxY)
+			rscry = maxY;
+	}
+
+	if (scrx > desiredX + 10)
+		scrdx = -((scrx - (desiredX + 10)) * FIXAMT / 16);
+	if (scrx < desiredX - 10)
+		scrdx = (((desiredX - 10) - scrx) * FIXAMT / 16);
+	if (scry > desiredY + 20)
+		scrdy = -((scry - (desiredY + 10)) * FIXAMT / 16);
+	if (scry < desiredY - 20)
+		scrdy = (((desiredY - 10) - scry) * FIXAMT / 16);
+
+	Dampen(&scrdx, 1 << FIXSHIFT);
+	Dampen(&scrdy, 1 << FIXSHIFT);
+
+	scrx = (rscrx >> FIXSHIFT);
+	scry = (rscry >> FIXSHIFT);
 }
+
 
 void Print(int x,int y,std::string_view s,char bright,byte font)
 {
@@ -779,4 +877,54 @@ void CenterPrintCompressed(int midx, int y, std::string_view s, byte compression
 		FontPrintCharBright(x, y, ch, bright, gameFont[font]);
 		x += (CharWidth(ch, gameFont[font]) + gameFont[font]->gapSize) * compression / 100;
 	}
+}
+
+void SetCameraBounds(int left, int top, int right, int bottom)
+{
+	cameraBounds.left = left;
+	cameraBounds.top = top;
+	cameraBounds.right = right;
+	cameraBounds.bottom = bottom;
+	cameraBounds.active = true;
+}
+
+void ClearCameraBounds()
+{
+	cameraBounds.active = false;
+}
+
+void SetCameraFocusAsPoint(int x, int y)
+{
+	cameraFocus.x = x;
+	cameraFocus.y = y;
+	cameraFocus.g = NULL;
+	cameraFocus.active = true;
+}
+
+void SetCameraFocusAsGuy(Guy *g, byte type)
+{
+	printf("Set Guy %d as Camera Focus.", g);
+	cameraFocus.g = g;
+	cameraFocus.x = 0;
+	cameraFocus.y = 0;
+	cameraFocus.active = true;
+	cameraFocus.focusType = type;
+}
+
+void ClearCameraFocus()
+{
+	cameraFocus.active		= false;
+	cameraFocus.focusType	= 0;
+}
+
+void SetCameraOffset(int x, int y)
+{
+	cameraOffset.x = x;
+	cameraOffset.y = y;
+	cameraOffset.active = true;
+}
+
+void ClearCameraOffset()
+{
+	cameraOffset.active = false;
 }

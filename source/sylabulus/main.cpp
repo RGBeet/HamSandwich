@@ -29,7 +29,6 @@
 #include "moron.h"
 #include "config.h"
 #include "log.h"
-#include "netmenu.h"
 #include "internet.h"
 #include "appdata.h"
 #include "steam.h"
@@ -120,9 +119,6 @@ TASK(int) main(int argc, char* argv[])
 			case 3:	// EDITOR
 				shopping=0;
 				AWAIT LunaticEditor(mainmgl);
-				break;
-			case 4:	// EXTRAS (instructions, internet, etc)
-				//AWAIT ExtrasMenu(mainmgl);
 				break;
 			case 8:	// insta-play the last world you were on
 				shopping=0;

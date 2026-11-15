@@ -448,7 +448,7 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 		case EFF_CAMERAGUY:
 			eff->value = MONS_ANYBODY;
 			break;
-		case EFF_CAMERASCROLL:
+		case EFF_CAMERAOFFSET:
 			eff->value		= 0;
 			eff->value2		= 0;
 			break;
@@ -1927,13 +1927,13 @@ void SpecialEffect(special_t *me,Map *map)
 				player.timer += me->effect[i].value;
 				break;
 			case EFF_CAMERAFOCUS:
-				//FocusCameraOnPoint(me->effect[i].x, me->effect[i].y);
+				SetCameraFocusAsPoint(me->effect[i].x * TILE_WIDTH + TILE_WIDTH / 2, me->effect[i].y * TILE_HEIGHT + TILE_HEIGHT / 2);
 				break;
 			case EFF_CAMERAGUY:
-				//FocusOnMonster(!(me->effect[i].flags & EF_NOFX), me->effect[i].x, me->effect[i].y, me->effect[i].value);
+				MarkAsCameraFocus(FindMonster(me->effect[i].x, me->effect[i].y, me->effect[i].value));
 				break;
-			case EFF_CAMERASCROLL:
-				//SetCameraScroll(me->effect[i].value, me->effect[i].value2);
+			case EFF_CAMERAOFFSET:
+				SetCameraOffset(me->effect[i].value, me->effect[i].value2);
 				break;
 			case EFF_PARTICLE:
 				if (me->effect[i].value > 14)
@@ -1967,7 +1967,7 @@ void SpecialEffect(special_t *me,Map *map)
 				SetRandomMonsterColor(!(me->effect[i].flags & EF_NOFX), me->effect[i].x, me->effect[i].y, me->effect[i].value, me->effect[i].value2);
 				break;
 			case EFF_MARKASBOSS:
-				victim = FindMonster(me->effect[i].x, me->effect[i].y, me->effect[i].value);
+				MarkAsBoss(FindMonster(me->effect[i].x, me->effect[i].y, me->effect[i].value),true);
 				break;
 		}
 	}

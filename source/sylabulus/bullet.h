@@ -86,9 +86,9 @@ enum BulletType : byte
 	BLT_LANTERN			= 68,		// lantern shot
 	BLT_SHRUIKENBAD		= 69,
 	BLT_GIFTBOMB		= 70,		// santa claus's gift bomb
-	BLT_HEXATK			= 71,		// shaman's new attack
+	BLT_EDISONSTRIKE	= 71,		// shaman's new attack
 	BLT_ORBITER3		= 72,		// new type of orbiter?!
-	BLT_TORNADO			= 73,
+	BLT_EDISONSHELL		= 73,
 	BLT_ROCKETBOOM		= 74,		// slightly larger boom for the rocket
 	BLT_CLAWHAMMER		= 75,		// claw hammer for the hardhat
 

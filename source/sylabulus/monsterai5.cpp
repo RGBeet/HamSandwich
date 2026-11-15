@@ -4888,6 +4888,10 @@ void AI_Edison(Guy* me, Map* map, world_t* world, Guy* goodguy)
 					me->reload = 100;
 					me->facing = 0;
 				}
+				else // you're done
+				{
+					KillKids(me);
+				}
 				return;
 			}
 			else
@@ -4985,7 +4989,11 @@ void AI_EdisonTreads(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 	if (me->mind == 0)
 	{
-		me->mind = 1;
+		if (RangeToTarget(me, goodguy) < 300 * FIXAMT || me->ouch > 0)
+		{
+			MakeSound(SND_MORONHELLO, me->x, me->y, SND_CUTOFF, 1200);
+			me->mind = 1;
+		}
 	}
 	else if (me->mind == 1)
 	{
@@ -5039,6 +5047,9 @@ void AI_EdisonArm(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
 	int x, y, i;
 
+	if (me->reload)
+		me->reload--;
+
 	if (me->parent)
 	{
 		if (me->aiType == ENT_EDISONARMRIGHT) // goes on the left
@@ -5057,6 +5068,30 @@ void AI_EdisonArm(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 	if (me->action == ACTION_BUSY)
 	{
+		if (me->seq == ANIM_A1 && me->frm == 6 && !me->reload)
+		{
+			if (me->aiType == ENT_EDISONARMRIGHT)
+				i = (Random(16)-9)&255;
+			else
+				i = (Random(16)-9+128) & 255;
+			x = me->x + Cosine(i) * 48;
+			y = me->y + Sine(i) * 48;
+			FireExactBullet(x, y, FIXAMT * 256, 0, 0, -FIXAMT * 12, 0, 64, 0, BLT_EDISONSTRIKE, me->friendly);
+			me->reload = 20;
+			MakeSound(SND_BALLLIGHTNING, x, y, SND_CUTOFF | SND_RANDOM, 1200);
+		}
+		if (me->seq == ANIM_ATTACK && me->frm == 6 && !me->reload)
+		{
+			if (me->aiType == ENT_EDISONARMRIGHT)
+				i = (Random(16) - 9 + 64) & 255;
+			else
+				i = (Random(16) - 9 + 160) & 255;
+			x = me->x + Cosine(i) * 48;
+			y = me->y + Sine(i) * 48;
+			FireExactBullet(x, y, FIXAMT * 256, 0, 0, -FIXAMT * 12, 0, 64, 0, BLT_EDISONSTRIKE, me->friendly);
+			me->reload = 20;
+			MakeSound(SND_BALLLIGHTNING, x, y, SND_CUTOFF | SND_RANDOM, 1200);
+		}
 		if (me->seq == ANIM_DIE)
 		{
 			x = me->x >> FIXSHIFT;

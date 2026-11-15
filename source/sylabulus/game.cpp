@@ -156,6 +156,8 @@ byte InitLevel(byte map)
 		msgFromOtherModules=0;
 
 	InitGuys(config.numGuys+1);
+	ShowBossLife();
+
 	InitBullets();
 	InitPlayer(map,player.worldName);
 	InitMessage();
@@ -171,6 +173,9 @@ byte InitLevel(byte map)
 
 	GetSpecialsFromMapAndWorld(curMap->special, curWorld.special);
 	InitSpecialsForPlay();
+	ClearCameraBounds();
+	ClearCameraFocus();
+	ClearCameraOffset();
 
 	// song stuff
 	PlaySong(curMap->song);

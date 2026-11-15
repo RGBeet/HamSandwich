@@ -15,13 +15,17 @@ static std::unique_ptr<Guy[]> guys;
 static std::unique_ptr<bool[]> changed;
 static int maxGuys;
 
-Guy *goodguy;
-static Guy *nobody;
 
+// handles the boss bar stuff
+static Guy* bossGuys[32];
+static int maxBossGuys;
+int numBosses;
+
+Guy *goodguy;
+Guy *cameraFocus;
+static Guy *nobody;
 static byte oldPlayAs;
 
-Guy *bosses[32];
-byte numBosses;
 
 //------------------------------------------------------------------------
 // CLASS GUY
@@ -495,7 +499,10 @@ void Guy::SeqFinished(void)
 			canRespawn = CheckLives(this);
 		}
 		if (!canRespawn)
-			type = MONS_NONE;
+		{
+			if (IsMarkedBoss(this))
+				MarkAsBoss(this, false);
+		}
 	}
 	seq=ANIM_IDLE;
 	frm=0;
@@ -1379,10 +1386,18 @@ void Guy::GetShot(int dx,int dy,word damage,Map *map,world_t *world, bool bypass
 	}
 	if(aiType!=MONS_BOUAPHA)
 	{
-		if(hp<=maxHP)
-			ShowEnemyLife(name,formerHP*128/maxHP,hp*128/maxHP,(byte)(newHP>0));
+		if (!IsMarkedBoss(this))
+		{
+			if (hp <= maxHP)
+				ShowEnemyLife(name, formerHP * 128 / maxHP, hp * 128 / maxHP, (byte)(newHP > 0));
+			else
+				ShowEnemyLife(name, 128, 128, (byte)(newHP > 0));
+		}
 		else
-			ShowEnemyLife(name,128,128,(byte)(newHP>0));
+		{
+			// it's a boss!
+			ShowBossLife();
+		}
 
 		if(friendly)
 		{
@@ -1443,8 +1458,13 @@ void InitGuys(int max)
 
 	goodguy = nullptr;
 	nobody = nullptr;
+	cameraFocus = nullptr;
 
 	oldPlayAs = profile.playAs;
+
+	int i;
+	for(i=0;i<32;i++)
+		bossGuys[i]=nullptr;
 }
 
 void ExitGuys(void)
@@ -3922,23 +3942,95 @@ byte CanDrive(Guy* me, int x, int y, Map* map, world_t* world, Guy* goodguy)
 	}
 }
 
+void MarkPartsAsBoss(Guy* g)
+{
+	if (!g)
+		return;
+
+	for (int i = 0; i < maxGuys; i++)
+	{
+		Guy* part = &guys[i];
+
+		if (!part->type ||
+			part->parent != g ||
+			(MonsterFlags(part->type, part->aiType) & (MF_INVINCIBLE | MF_NOHIT)))
+			continue;
+
+		MarkAsBoss(part, true);
+	}
+}
+
 void MarkAsBoss(Guy* g, bool setAs)
 {
 	if (!g)
 		return;
+
+	printf("Marking guy %p as boss: %s\n", (void*)g, setAs ? "TRUE" : "FALSE");
+
 	for (int i = 0; i < numBosses; i++)
 	{
-		if (bosses[i] != g)
+		if (bossGuys[i] != g)
 			continue;
+
 		if (setAs)
 			return;
+
 		for (int j = i; j < numBosses - 1; j++)
-			bosses[j] = bosses[j + 1];
-		bosses[--numBosses] = NULL;
+			bossGuys[j] = bossGuys[j + 1];
+
+		bossGuys[--numBosses] = NULL;
 		return;
 	}
+
 	if (setAs && numBosses < 32)
 	{
-		bosses[numBosses++] = g;
+		printf("Marking enemy %p as BOSS.\n", (void*)g);
+		ShowBossLife();
+		bossGuys[numBosses++] = g;
+		switch (g->type)
+		{
+		case ENT_EDISONBOSS:
+			MarkPartsAsBoss(g);
+			break;
+		}
 	}
+}
+
+byte IsMarkedBoss(Guy* g)
+{
+	for (int i = 0; i < numBosses; i++)
+	{
+		if (bossGuys[i] != g)
+			continue;
+		return 1;
+	}
+	return 0;
+}
+
+void MarkAsCameraFocus(Guy* g)
+{
+	if (!g)
+		return;
+	cameraFocus = g;
+	SetCameraFocusAsGuy(g,1); // todo: allow camera modes (entire focus on enemy, shared focus, etc.)
+}
+
+void ResetCameraFocus()
+{
+	cameraFocus = nullptr;
+}
+
+std::pair<int,int> GetBossHP()
+{
+	int i;
+	int hp = 0;
+	int maxHP = 0;
+	for (i = 0;i < numBosses;i++)
+	{
+		if (!bossGuys[i])
+			continue;
+		hp += bossGuys[i]->hp;
+		maxHP += bossGuys[i]->maxHP;
+	}
+	return { hp, std::max(1,maxHP) };
 }

@@ -433,6 +433,13 @@ void Particle::Update(Map *map)
 				else
 					size = life / 16;
 				break;
+			case PART_YELLOW:		// used for ak-8087 bullets
+				color = 32*5 + Random(7)+16;
+				if (CanDoSplatter())
+					size = life / 8;
+				else
+					size = life / 16;
+				break;
 			case PART_SHRAPNEL:		// used for explosive weapons
 				color = 16;
 				if (CanDoSplatter())
@@ -1725,6 +1732,12 @@ static const byte particleVals[] = {
 	PART_FIRE,
 	PART_AKSPLAT,
 	PART_SHRAPNEL,
+	PART_LIGHT,
+	PART_SWAP,			// used to spice up swapguns a little
+	PART_SUCK,			// black hole gun
+	PART_PETAL,			// pink petals
+	PART_FOG,			// fog particles
+	PART_YELLOW,
 	PART_LIGHT
 };
 
@@ -1820,6 +1833,9 @@ void DoParticleEffect(int x, int y, byte type)
 			break;
 		case PART_FOG:
 			ExplodeParticles2(PART_FOG, xx, yy, z + FIXAMT * 40, 10, 8);
+			break;
+		case PART_YELLOW:
+			ExplodeParticles(PART_AKSPLAT, xx, yy, 0, 8);
 			break;
 		default:
 			break;

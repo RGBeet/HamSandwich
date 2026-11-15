@@ -8,7 +8,6 @@
 #include "nameentry.h"
 #include "progress.h"
 #include "shop.h"
-#include "textgame.h"
 #include "steam.h"
 #include "softjoystick.h"
 #include "plasma.h"
@@ -194,9 +193,8 @@ static byte *backgd;
 static int titleRuns;
 static int msx,msy,msx2,msy2;
 static byte cursor;
-static byte sliceOut[8];
 
-static char menuTxt[][16]={"Play","Profile","Shop","Editor","Extras","Exit"};
+static char menuTxt[][16]={"Play","Profile","Shop","Editor","Exit"};
 
 int igfX,igfY,igfDX,igfDY;
 
@@ -371,13 +369,6 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 				secretClicks=1;
 			}
 		}
-	}
-
-	if(secretClicks>=99)
-	{
-		AWAIT TextGame(mgl);
-		secretClicks=0;
-		secretDir=0;
 	}
 
 	if(mgl->MouseTap())

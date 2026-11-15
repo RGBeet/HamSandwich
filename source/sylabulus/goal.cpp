@@ -5,7 +5,6 @@
 #include "player.h"
 #include "bullet.h"
 #include "shop.h"
-#include "theater.h"
 #include "gallery.h"
 #include "steam.h"
 

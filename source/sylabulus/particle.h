@@ -35,6 +35,7 @@ enum : byte
 	PART_SUCK,			// black hole gun
 	PART_PETAL,			// pink petals
 	PART_FOG,			// fog particles
+	PART_YELLOW,		// for edison bullets
 	MAX_PARTICLES		// MAX PARTICLES
 };
 

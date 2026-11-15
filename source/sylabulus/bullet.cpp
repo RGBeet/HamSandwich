@@ -34,7 +34,7 @@ constexpr int SPR_SLASH     = 326;
 constexpr int SPR_MINE      = 350;
 constexpr int SPR_STINKY    = 355;
 constexpr int SPR_GREEN     = 358;
-constexpr int SPR_ORBITER   = 359;
+constexpr int SPR_ORBITER   = 587; // updated to have 16 faces
 constexpr int SPR_PAPER     = 367;
 constexpr int SPR_BUBBLE    = 375;
 constexpr int SPR_SCANSHOT  = 384;
@@ -47,6 +47,8 @@ constexpr int SPR_GLUESHOT		= 428;
 constexpr int SPR_RAINBOWSHOT	= 429;
 constexpr int SPR_CLAWHAMMER	= 441;
 constexpr int SPR_SHRUIKEN		= 569;
+constexpr int SPR_EDISONBOLT	= 577;
+constexpr int SPR_EDISONSHELL	= 585;
 
 static bullet_t *bullet;
 static sprite_set_t *bulletSpr;
@@ -309,6 +311,11 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 			me->x -= me->dx;
 			me->dx = -me->dx;
 			break;
+		case BLT_EDISONSHELL:
+			me->type=BLT_NONE;
+			ExplodeParticles(PART_YELLOW, me->x, me->y, me->z, 4);
+			MakeSound(SND_HAMMERBONK,me->x,me->y,SND_CUTOFF,1000);
+			break;
 	}
 }
 
@@ -480,6 +487,11 @@ void BulletHitWallY(bullet_t *me,Map *map,world_t *world)
 			me->y -= me->dy;
 			me->dy = -me->dy;
 			break;
+		case BLT_EDISONSHELL:
+			me->type = BLT_NONE;
+			ExplodeParticles(PART_YELLOW, me->x, me->y, me->z, 4);
+			MakeSound(SND_HAMMERBONK, me->x, me->y, SND_CUTOFF, 1000);
+			break;
 	}
 }
 
@@ -572,6 +584,7 @@ void BulletHitFloor(bullet_t *me,Map *map,world_t *world)
 		case BLT_BLACKHOLE:
 		case BLT_BOOMERANG:
 		case BLT_ROCKET:
+		case BLT_EDISONSHELL:
 			me->z=0;
 			break;
 		case BLT_SPEAR:
@@ -625,6 +638,10 @@ void BulletHitFloor(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_RAINBOWSHOT:
 			me->z = 0;
+			break;
+		case BLT_EDISONSTRIKE:
+			// detonate
+			BulletRanOut(me, map, world);
 			break;
 	}
 }
@@ -841,6 +858,19 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 		case BLT_RAINBOWSHOT:
 			MakeSound(SND_ACIDSPLAT, me->x, me->y, SND_CUTOFF, 850);
 			ExplodeParticles(PART_COLOR, me->x, me->y, me->z, 6);
+			me->type = 0;
+			break;
+		case BLT_EDISONSTRIKE:
+			// poof into snowballs
+			ExplodeParticles(PART_YELLOW, me->x, me->y, me->z, 12);
+			MakeSound(SND_ZAP, me->x, me->y, SND_CUTOFF, 850);
+			me->type = 0;
+			for (i = 0;i < 8;i++)
+				FireBullet(me->x, me->y, (byte)i * 32, BLT_EDISONSHELL, me->friendly);
+			break;
+		case BLT_EDISONSHELL:
+			MakeSound(SND_ZAP, me->x, me->y, SND_CUTOFF, 850);
+			ExplodeParticles(PART_YELLOW, me->x, me->y, me->z, 8);
 			me->type = 0;
 			break;
 	}
@@ -1245,6 +1275,14 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 					BulletRanOut(me, map, world);
 			}
 			break;
+		case BLT_EDISONSHELL:
+			if (Guy* g = FindVictim(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 12, me->dx, me->dy, 5, map, world, me->friendly))
+			{
+				me->type = BLT_NONE;
+				ExplodeParticles(PART_YELLOW, me->x, me->y, me->z, 8);
+				MakeSound(SND_HAMMERBONK, me->x, me->y, SND_CUTOFF, 900);
+			}
+			break;
 	}
 	attackType=BLT_NONE;
 }
@@ -1307,6 +1345,27 @@ inline void BulletFaceGuy(bullet_t *me,Guy *goodguy)
 			dir=-1;
 	}
 	me->facing=(me->facing+dir)&7;
+}
+
+inline void BulletFaceGuy2(bullet_t* me, Guy* goodguy)
+{
+	if (!goodguy)
+		return;
+
+	int desired = AngleFrom(me->x, me->y, goodguy->x, goodguy->y);
+
+	int diff = (desired - me->facing) & 255;
+
+	if (diff > 128)
+		diff -= 256;
+
+	// Rotate one direction unit toward the target.
+	if (diff > 0)
+		me->facing++;
+	else if (diff < 0)
+		me->facing--;
+
+	//printf("Facing: %d, Sprite: %d\n", me->facing, me->facing >> 4);
 }
 
 void UpdateBullet(bullet_t *me,Map *map,world_t *world)
@@ -1504,6 +1563,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			HitBadguys(me,map,world);
 			break;
 		case BLT_BIGSHELL:
+		case BLT_EDISONSHELL:
 		case BLT_SPINE:
 			HitBadguys(me,map,world);
 			break;
@@ -1829,12 +1889,12 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 				me->target=LockOnEvil(me->x>>FIXSHIFT,me->y>>FIXSHIFT);
 				if(me->target!=65535)
 				{
-					FireBullet(me->x,me->y,me->facing*32,BLT_GREEN,me->friendly);
+					FireBullet(me->x,me->y,me->facing,BLT_GREEN,me->friendly);
 				}
 			}
 			if(me->target!=65535)
 			{
-				BulletFaceGuy(me,GetGuy(me->target));
+				BulletFaceGuy2(me,GetGuy(me->target));
 			}
 			if(me->x<goodguy->x)
 				me->dx+=FIXAMT;
@@ -1856,12 +1916,12 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 				me->target=LockOnEvil(me->x>>FIXSHIFT,me->y>>FIXSHIFT);
 				if(me->target!=65535)
 				{
-					FireBullet(me->x,me->y,me->facing*32,BLT_BOMB,me->friendly);
+					FireBullet(me->x,me->y,me->facing,BLT_BOMB,me->friendly);
 				}
 			}
 			if(me->target!=65535)
 			{
-				BulletFaceGuy(me,GetGuy(me->target));
+				BulletFaceGuy2(me,GetGuy(me->target));
 			}
 			if(me->x<goodguy->x)
 				me->dx+=FIXAMT;
@@ -1891,7 +1951,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			}
 			if (me->target != 65535)
 			{
-				BulletFaceGuy(me, GetGuy(me->target));
+				BulletFaceGuy2(me, GetGuy(me->target));
 			}
 			if (me->x < goodguy->x)
 				me->dx += FIXAMT;
@@ -2055,6 +2115,12 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 				if(me->facing>15)
 					me->facing-=16;
 			}
+			break;
+		case BLT_EDISONSTRIKE:
+			me->anim++;
+			if (me->anim == 16)
+				me->anim = 0;
+			HitBadguys(me, map, world);
 			break;
 	}
 }
@@ -2358,6 +2424,13 @@ void RenderBullet(bullet_t *me)
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,0,255,me->bright,curSpr,
 					DISPLAY_DRAWME|DISPLAY_SHADOW);
 			break;
+		case BLT_EDISONSHELL:
+			curSpr = bulletSpr->GetSprite(SPR_EDISONSHELL);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 255, me->bright, curSpr,
+				DISPLAY_DRAWME);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 0, 255, me->bright, curSpr,
+				DISPLAY_DRAWME | DISPLAY_SHADOW);
+			break;
 		case BLT_BIGAXE:
 			curSpr=bulletSpr->GetSprite(SPR_BIGAXE+me->anim);
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,me->bright,curSpr,
@@ -2393,16 +2466,22 @@ void RenderBullet(bullet_t *me)
 		case BLT_ORBITER:
 			if ((me->timer < 8) && (me->timer & 1))
 				return;	// flicker when almost gone
-			curSpr=bulletSpr->GetSprite(SPR_ORBITER+me->facing);
-			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,me->bright,curSpr,
-					DISPLAY_DRAWME);
-			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,0,255,me->bright,curSpr,
-					DISPLAY_DRAWME|DISPLAY_SHADOW);
+
+			v = (me->facing >> 4) + SPR_ORBITER;
+			curSpr = bulletSpr->GetSprite(v);
+
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 255, me->bright, curSpr,
+				DISPLAY_DRAWME);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 0, 255, me->bright, curSpr,
+				DISPLAY_DRAWME | DISPLAY_SHADOW);
 			break;
 		case BLT_ORBITER2:
 			if((me->timer<8) && (me->timer&1))
 				return;	// flicker when almost gone
-			curSpr=bulletSpr->GetSprite(SPR_ORBITER+me->facing);
+
+			v = (me->facing >> 4) + SPR_ORBITER;
+			curSpr = bulletSpr->GetSprite(v);
+
 			SprDrawOff(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,1,4,me->bright-2,curSpr,
 					DISPLAY_DRAWME);
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,0,255,me->bright,curSpr,
@@ -2411,7 +2490,10 @@ void RenderBullet(bullet_t *me)
 		case BLT_ORBITER3:
 			if ((me->timer < 8) && (me->timer & 1))
 				return;	// flicker when almost gone
-			curSpr = bulletSpr->GetSprite(SPR_ORBITER + me->facing);
+
+			v = (me->facing >> 4) + SPR_ORBITER;
+			curSpr = bulletSpr->GetSprite(v);
+
 			SprDrawOff(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 1, 7, me->bright+4, curSpr,
 				DISPLAY_DRAWME);
 			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 0, 255, me->bright, curSpr,
@@ -2502,6 +2584,13 @@ void RenderBullet(bullet_t *me)
 				SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 0, 255, me->bright, curSpr,
 					DISPLAY_DRAWME | DISPLAY_SHADOW);
 			}
+			break;
+		case BLT_EDISONSTRIKE:
+			curSpr = bulletSpr->GetSprite(me->anim / 2 + SPR_EDISONBOLT);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 255, me->bright, curSpr,
+				DISPLAY_DRAWME);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 0, 255, me->bright, curSpr,
+				DISPLAY_DRAWME | DISPLAY_SHADOW);
 			break;
 	}
 }
@@ -3001,6 +3090,22 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type,byte friendly)
 			me->dx=Cosine(me->facing*32)*10;
 			me->dy=Sine(me->facing*32)*10;
 			me->dz=0;
+			break;
+		case BLT_EDISONSTRIKE:
+			me->anim = 0;
+			me->timer = 60;
+			me->z = FIXAMT * 108;
+			me->dx = 0;
+			me->dy = 0;
+			me->dz = -12 * FIXAMT;
+			break;
+		case BLT_EDISONSHELL:
+			me->anim = 0;
+			me->timer = 60;
+			me->z = FIXAMT * 20;
+			me->dx = Cosine(me->facing) * 9;
+			me->dy = Sine(me->facing) * 9;
+			me->dz = 0;
 			break;
 	}
 }

@@ -130,4 +130,12 @@ byte GetGamma(void);
 void SetGamma(byte g);
 void DrawLine(int x,int y,int x2,int y2,byte col);
 
+void SetCameraBounds(int x, int y);
+void ClearCameraBounds(void);
+void SetCameraFocusAsPoint(int x, int y);
+void SetCameraFocusAsGuy(Guy *g, byte type);
+void ClearCameraFocus(void);
+void SetCameraOffset(int x, int y);
+void ClearCameraOffset(void);
+
 #endif

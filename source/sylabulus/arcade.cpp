@@ -1,7 +1,6 @@
 #include "winpch.h"
 #include "arcade.h"
 #include "dialogbits.h"
-#include "spacegame.h"
 #include "racer.h"
 #include "steam.h"
 
@@ -1495,9 +1494,6 @@ TASK(void) Arcade(MGLDraw *mgl, byte gm)
 		{
 			switch(game)
 			{
-				case 0:
-					AWAIT SpaceGame(mgl);
-					break;
 				case 1:
 					AWAIT CaveGame(mgl);
 					break;

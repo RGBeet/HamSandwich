@@ -117,7 +117,7 @@
 // camera stuff (TODO: ADD CAMERA)
 #define EFF_CAMERAFOCUS		40	// focus camera on a specific point
 #define EFF_CAMERAGUY		41	// focus camera on a specific entity
-#define EFF_CAMERASCROLL	42	// scroll camera by X tiles and/or Y tiles (0 means no scroll in that direction) - overwrites previous scroll special
+#define EFF_CAMERAOFFSET	42	// set camera offset by N,M
 
 #define EFF_MARKASBOSS		43	// mark a monster as a boss, which means its HP contributes to the boss bar and it will be treated as a boss for other purposes (like the "boss" trigger)
 #define EFF_AFFLICT			44	// afflict a monster with a status effect for N frames (like poison, burn, etc.)
@@ -129,7 +129,9 @@
 #define EFF_SNGLAYER		48	// sets song layer 1-8 to volume 0-255 (if it isn't ON/OFF already)
 #define EFF_RANDCOLOR		49	// sets the set color of a monster to a random color
 
-#define EFF_MAX				50
+#define EFF_CAMERABOUNDARY	50	// focus camera on a rectangle
+
+#define EFF_MAX				51
 
 #define OLD_MAX_TRIGGERS	33
 #define OLD_MAX_EFFECTS		38

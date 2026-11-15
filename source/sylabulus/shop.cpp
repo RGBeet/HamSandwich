@@ -4,7 +4,6 @@
 #include "items.h"
 #include "dialogbits.h"
 #include "scanner.h"
-#include "theater.h"
 #include "arcade.h"
 #include "moron.h"
 #include "gallery.h"
