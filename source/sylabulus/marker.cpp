@@ -24,23 +24,6 @@
 static std::span<marker_t> mrkr;		// Local specials
 static int numMarkers;                  // Specials >= this aren't set.
 
-byte GetMarkerCount()
-{
-	return (byte)numMarkers;
-}
-
-void SetMarkerCount(int count)
-{
-	numMarkers = 0;
-
-	for (int i = 0; i < count && i < (int)mrkr.size(); i++)
-	{
-		if (mrkr[i].x1 != 255)
-			numMarkers = i + 1;
-	}
-	printf("markers = %d\n", numMarkers);
-}
-
 void InitMarkers(std::span<marker_t> list)
 {
 	mrkr = list;
@@ -57,7 +40,7 @@ int NewMarker(byte x,byte y)
 	for (int i = 0;i < (int)mrkr.size();i++)
 		if (mrkr[i].x1 == 255)
 		{
-			memset(&mrkr[i], 0, sizeof(special_t));
+			memset(&mrkr[i], 0, sizeof(marker_t));
 			mrkr[i].x1 = x;
 			mrkr[i].y1 = y;
 			if (i >= numMarkers)
@@ -71,10 +54,8 @@ int NewMarker(byte x,byte y)
 int GetMarker(byte x,byte y)
 {
 	for (int i = 0; i < numMarkers; i++)
-	{
 		if (mrkr[i].x1 == x && mrkr[i].y1 == y)
 			return i;
-	}
 
 	return -1;
 }

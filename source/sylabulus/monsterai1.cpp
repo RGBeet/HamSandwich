@@ -9,6 +9,127 @@
 
 static int pickupX, pickupY;
 
+
+
+
+void AI_Zombie(Guy* me, Map* map, world_t* world, Guy* goodguy)
+{
+	int x, y;
+
+	if (me->reload)
+		me->reload--;
+
+	if (me->ouch == 4)
+	{
+		if (me->hp > 0)
+			MakeSound(SND_ZOMBIEOUCH, me->x, me->y, SND_CUTOFF, 1200);
+		else
+			MakeSound(SND_ZOMBIEDIE, me->x, me->y, SND_CUTOFF, 1200);
+	}
+
+	if (me->action == ACTION_BUSY)
+	{
+		if (me->seq == ANIM_ATTACK && me->frm == 5)
+		{
+			me->dx = Cosine(me->facing * 32) * 8;
+			me->dy = Sine(me->facing * 32) * 8;
+		}
+		if (me->seq == ANIM_ATTACK && me->frm > 6)
+		{
+			Dampen(&me->dx, FIXAMT / 2);
+			Dampen(&me->dy, FIXAMT / 2);
+		}
+		if (me->seq == ANIM_ATTACK && me->frm >= 7 && me->frm < 13 && me->reload == 0 && goodguy)
+		{
+			x = me->x + Cosine(me->facing * 32) * 16;
+			y = me->y + Sine(me->facing * 32) * 16;
+			if (me->AttackCheck(8, x >> FIXSHIFT, y >> FIXSHIFT, goodguy))
+			{
+				goodguy->GetShot(Cosine(me->facing * 32) * 4, Sine(me->facing * 32) * 4, 1, map, world);
+				me->reload = 2;
+			}
+		}
+		return;	// can't do nothin' right now
+	}
+
+	if (me->mind == 0)		// when mind=0, singlemindedly lumber towards Bouapha
+	{
+		if (goodguy)
+		{
+			if (RangeToTarget(me, goodguy) < (128 * FIXAMT) && Random(32) == 0)
+			{
+				// get him!
+				MakeSound(SND_ZOMBIELEAP, me->x, me->y, SND_CUTOFF, 1200);
+				me->seq = ANIM_ATTACK;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 64;
+				me->action = ACTION_BUSY;
+				me->dx = 0;
+				me->dy = 0;
+				me->reload = 0;
+				return;
+			}
+
+			FaceGoodguy(me, goodguy);
+
+			me->dx = Cosine(me->facing * 32) * 1;
+			me->dy = Sine(me->facing * 32) * 1;
+			if (me->seq != ANIM_MOVE)
+			{
+				me->seq = ANIM_MOVE;
+				me->frm = 0;
+				me->frmTimer = 0;
+				me->frmAdvance = 64;
+			}
+			if (Random(64) == 0)
+			{
+				me->mind = 1;		// occasionally wander
+				me->mind1 = 1;
+			}
+		}
+		else
+		{
+			me->mind = 1;	// if there's no goodguy, get random
+			me->mind1 = 1;
+		}
+	}
+	else if (me->mind == 1)	// random wandering
+	{
+		if (!(me->mind1--))	// time to get a new direction
+		{
+			if ((goodguy) && Random(3) == 0)
+				me->mind = 0;	// get back on track
+			else
+				me->facing = (byte)Random(8);
+			me->mind1 = Random(40) + 1;
+		}
+
+		me->dx = Cosine(me->facing * 32) * 1;
+		me->dy = Sine(me->facing * 32) * 1;
+		if (me->seq != ANIM_MOVE)
+		{
+			me->seq = ANIM_MOVE;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 64;
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void AI_Bat(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
 	int x, y;
@@ -256,111 +377,6 @@ void AI_BigSpider(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		me->frm = 0;
 		me->frmTimer = 0;
 		me->frmAdvance = 128;
-	}
-}
-
-void AI_Zombie(Guy* me, Map* map, world_t* world, Guy* goodguy)
-{
-	int x, y;
-
-	if (me->reload)
-		me->reload--;
-
-	if (me->ouch == 4)
-	{
-		if (me->hp > 0)
-			MakeSound(SND_ZOMBIEOUCH, me->x, me->y, SND_CUTOFF, 1200);
-		else
-			MakeSound(SND_ZOMBIEDIE, me->x, me->y, SND_CUTOFF, 1200);
-	}
-
-	if (me->action == ACTION_BUSY)
-	{
-		if (me->seq == ANIM_ATTACK && me->frm == 5)
-		{
-			me->dx = Cosine(me->facing * 32) * 8;
-			me->dy = Sine(me->facing * 32) * 8;
-		}
-		if (me->seq == ANIM_ATTACK && me->frm > 6)
-		{
-			Dampen(&me->dx, FIXAMT / 2);
-			Dampen(&me->dy, FIXAMT / 2);
-		}
-		if (me->seq == ANIM_ATTACK && me->frm >= 7 && me->frm < 13 && me->reload == 0 && goodguy)
-		{
-			x = me->x + Cosine(me->facing * 32) * 16;
-			y = me->y + Sine(me->facing * 32) * 16;
-			if (me->AttackCheck(8, x >> FIXSHIFT, y >> FIXSHIFT, goodguy))
-			{
-				goodguy->GetShot(Cosine(me->facing * 32) * 4, Sine(me->facing * 32) * 4, 1, map, world);
-				me->reload = 2;
-			}
-		}
-		return;	// can't do nothin' right now
-	}
-
-	if (me->mind == 0)		// when mind=0, singlemindedly lumber towards Bouapha
-	{
-		if (goodguy)
-		{
-			if (RangeToTarget(me, goodguy) < (128 * FIXAMT) && Random(32) == 0)
-			{
-				// get him!
-				MakeSound(SND_ZOMBIELEAP, me->x, me->y, SND_CUTOFF, 1200);
-				me->seq = ANIM_ATTACK;
-				me->frm = 0;
-				me->frmTimer = 0;
-				me->frmAdvance = 64;
-				me->action = ACTION_BUSY;
-				me->dx = 0;
-				me->dy = 0;
-				me->reload = 0;
-				return;
-			}
-
-			FaceGoodguy(me, goodguy);
-
-			me->dx = Cosine(me->facing * 32) * 1;
-			me->dy = Sine(me->facing * 32) * 1;
-			if (me->seq != ANIM_MOVE)
-			{
-				me->seq = ANIM_MOVE;
-				me->frm = 0;
-				me->frmTimer = 0;
-				me->frmAdvance = 64;
-			}
-			if (Random(64) == 0)
-			{
-				me->mind = 1;		// occasionally wander
-				me->mind1 = 1;
-			}
-		}
-		else
-		{
-			me->mind = 1;	// if there's no goodguy, get random
-			me->mind1 = 1;
-		}
-	}
-	else if (me->mind == 1)	// random wandering
-	{
-		if (!(me->mind1--))	// time to get a new direction
-		{
-			if ((goodguy) && Random(3) == 0)
-				me->mind = 0;	// get back on track
-			else
-				me->facing = (byte)Random(8);
-			me->mind1 = Random(40) + 1;
-		}
-
-		me->dx = Cosine(me->facing * 32) * 1;
-		me->dy = Sine(me->facing * 32) * 1;
-		if (me->seq != ANIM_MOVE)
-		{
-			me->seq = ANIM_MOVE;
-			me->frm = 0;
-			me->frmTimer = 0;
-			me->frmAdvance = 64;
-		}
 	}
 }
 
@@ -1926,7 +1942,6 @@ void AI_Mush(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		}
 		if (me->seq == ANIM_DIE)
 		{
-			me->facing = 2;	// die only works from forward (memory saver)
 			if (me->frm >= 3)
 			{
 				x = me->x >> FIXSHIFT;
@@ -1958,7 +1973,6 @@ void AI_Mush(Guy* me, Map* map, world_t* world, Guy* goodguy)
 				me->dy = 0;
 				me->reload = 0;
 				me->mind = 3;		// destroy bouapha
-				me->facing = 2;	// angry animation ONLY works from forward (memory saver)
 			}
 		}
 	}

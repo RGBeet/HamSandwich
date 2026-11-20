@@ -2,7 +2,6 @@
 #include "arcade.h"
 #include "dialogbits.h"
 #include "racer.h"
-#include "steam.h"
 
 #include "goal.h"
 
@@ -212,7 +211,6 @@ byte CaveDie(void)
 		GetTaps();
 		coinsEarned=score/3000;
 		profile.progress.totalCoins+=coinsEarned;
-		Steam()->UploadArcadeScore("arcade/dig_man_iv", score);
 	}
 	NewCaveLevel();
 	return 1;

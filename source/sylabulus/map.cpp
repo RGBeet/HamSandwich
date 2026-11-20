@@ -939,7 +939,6 @@ int Map::ItemCountInRect(word itm,int x,int y,int x2,int y2)
 
 void Map::RenderStars(int camX, int camY)
 {
-
 	int w = GetDisplayMGL()->GetWidth(), h = GetDisplayMGL()->GetHeight();
 	for(int i=0; i<NUM_STARS; i++)
 	{

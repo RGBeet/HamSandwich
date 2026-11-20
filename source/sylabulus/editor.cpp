@@ -16,7 +16,6 @@
 #include "levelscan.h"
 #include "appdata.h"
 #include "exportdialog.h"
-#include "steam.h"
 #include "spclglobal.h"
 #include "water.h"
 
@@ -105,8 +104,6 @@ byte InitEditor(void)
 	StopSong();
 	SetPlayerStart(-1,-1);
 	InitStars();
-
-	Steam()->SetPresenceEditor();
 	return 1;
 }
 
@@ -130,8 +127,6 @@ void ExitEditor(void)
 	editing=0;
 
 	editmgl->ResizeBuffer(SCRWID, SCRHEI);
-
-	Steam()->SetPresenceNone();
 }
 
 void Delete(int x,int y)
@@ -572,12 +567,12 @@ void ShowMarkers(MGLDraw* mgl)
 	for (int i = 0;i < MAX_MARKER;i++)
 	{
 		const marker_t& marker = editorMap->marker[i];
-		if (marker.x1 != 255)
+		if (marker.x1 != 253)
 		{
 			int xx = marker.x1 * TILE_WIDTH + 2 - sx + editmgl->GetWidth() / 2;
 			int yy = marker.y1 * TILE_HEIGHT - sy + editmgl->GetHeight() / 2;
 
-			spclSprite->GetSprite(0)->Draw(xx, yy, mgl);
+			spclSprite->GetSprite(20)->Draw(xx + 17, yy + 18, mgl);
 
 			int i1 = (i / 100) % 10;
 			int i2 = (i / 10) % 10;
@@ -587,8 +582,6 @@ void ShowMarkers(MGLDraw* mgl)
 			spclSprite->GetSprite(2 + i1)->Draw(xx + 15, yy, mgl);
 			spclSprite->GetSprite(2 + i2)->Draw(xx + 22, yy, mgl);
 			spclSprite->GetSprite(2 + i3)->Draw(xx + 29, yy, mgl);
-
-			spclSprite->GetSprite(20)->Draw(xx + 17, yy + 18, mgl);
 		}
 	}
 }

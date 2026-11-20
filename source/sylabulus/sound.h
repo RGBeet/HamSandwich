@@ -508,6 +508,14 @@
 #define SND_SHOPKEEPER2			599
 #define SND_SHOPKEEPER3			600
 
+#define SND_EDISONFUTURE		601		// it's the future!
+#define SND_EDISONCARNAGE		602		// c-c-carnage!
+#define SND_EDISONSMARTS		603		// that smarts!
+#define SND_EDISONKILL			604		// k-k-kill!
+#define SND_EDISONSHOOT			605		// -der!
+#define SND_EDISONOUCH			606		// ouch noise!
+
+
 #define MAX_SOUNDS				1024	// doesn't mean a thing lol
 
 //--------------------------------

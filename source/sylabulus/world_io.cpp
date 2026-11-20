@@ -829,7 +829,7 @@ byte Syl_LoadWorld(world_t* world, const char* fname)
 			size_t marker_count = section.read_varint();
 			for (size_t i = 0; i < marker_count; ++i)
 				LoadMapMarker(&section, &map->marker[i]);
-			SetMarkerCount((int)marker_count);
+			//SetMarkerCount((int)marker_count);
 
 			LoadMapData(&section, map);
 

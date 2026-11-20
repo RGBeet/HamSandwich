@@ -31,7 +31,6 @@
 #include "log.h"
 #include "internet.h"
 #include "appdata.h"
-#include "steam.h"
 #include "unpickled.h"
 
 #include <SDL3/SDL_main.h>
@@ -40,7 +39,7 @@ extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
 void AfterFlip()
 {
-	Steam()->Update();
+	//Steam()->Update();
 }
 
 TASK(int) main(int argc, char* argv[])
@@ -64,7 +63,6 @@ TASK(int) main(int argc, char* argv[])
 	LoadConfig();
 	SetHamMusicEnabled(config.music && !unpickled);
 	SetJamulSoundEnabled(config.sound || unpickled, unpickled ? 0 : config.numSounds);
-	SteamManager::Init("2547330");
 	MGLDraw *mainmgl = new MGLDraw("Project Sylabulus", SCRWID, SCRHEI, windowedGame || unpickled);
 	if(!mainmgl)
 		CO_RETURN 0;
@@ -77,7 +75,6 @@ TASK(int) main(int argc, char* argv[])
 		StopSong();
 		LunaticExit();
 		delete mainmgl;
-		SteamManager::Quit();
 		JamulSoundExit();
 		CO_RETURN 0;
 	}
@@ -134,7 +131,6 @@ TASK(int) main(int argc, char* argv[])
 	StopSong();
 	LunaticExit();
 	delete mainmgl;
-	SteamManager::Quit();
 	JamulSoundExit();
 	CO_RETURN 0;
 }

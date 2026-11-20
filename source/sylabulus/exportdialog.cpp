@@ -12,7 +12,6 @@
 #include "appdata.h"
 #include "vanilla_extract.h"
 #include "log.h"
-#include "steam.h"
 #include "guy.h"
 #include "editor.h"
 #include "winpch.h"

@@ -5,7 +5,6 @@
 #include "music.h"
 #include "shop.h"
 #include "appdata.h"
-#include "steam.h"
 #include "ioext.h"
 #include "string_extras.h"
 
@@ -224,8 +223,6 @@ void LoadProfile(const char *name)
 		profile.progress.moreJoyCtrl[0]=2;
 		profile.progress.moreJoyCtrl[1]=3;
 	}
-
-	Steam()->ProfileReady();
 }
 
 byte FirstTime(void)

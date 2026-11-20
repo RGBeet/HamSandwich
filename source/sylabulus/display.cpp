@@ -879,6 +879,19 @@ void CenterPrintCompressed(int midx, int y, std::string_view s, byte compression
 	}
 }
 
+void CenterPrintCompressedWavy(int midx, int y, std::string_view s, byte compression, char bright, byte font)
+{
+	int x;
+
+	x = midx - FontStrLen(s, gameFont[font]) * (int)compression / 200;
+
+	for (char ch : s)
+	{
+		FontPrintCharBright(x, y, ch, bright, gameFont[font]);
+		x += (CharWidth(ch, gameFont[font]) + gameFont[font]->gapSize) * compression / 100;
+	}
+}
+
 void SetCameraBounds(int left, int top, int right, int bottom)
 {
 	cameraBounds.left = left;

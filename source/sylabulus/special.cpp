@@ -2133,15 +2133,7 @@ void RenderSpecialXes(Map *map)
 								c=((levelData.flags&LF_CANDLES)!=0);
 								break;
 							}
-
-						byte k=keyChainInLevel[effect.value]&(~player.worldProg->keychains);
-
-						if(k&15)
-							DrawRedX(special.x*TILE_WIDTH-camx+TILE_WIDTH/2-4+Random(9),
-								 special.y*TILE_HEIGHT-camy+TILE_HEIGHT/2-4+Random(9),c,GetDisplayMGL());
-						else
-							DrawRedX(special.x*TILE_WIDTH-camx+TILE_WIDTH/2,
-									 special.y*TILE_HEIGHT-camy+TILE_HEIGHT/2,c,GetDisplayMGL());
+							DrawRedX(special.x*TILE_WIDTH-camx+TILE_WIDTH/2,special.y*TILE_HEIGHT-camy+TILE_HEIGHT/2,c,GetDisplayMGL());
 						break;
 					}
 				}
@@ -2195,7 +2187,7 @@ void RenderSpecialXes(Map *map)
 							c = ((levelData.flags & LF_CANDLES) != 0);
 							break;
 						}
-					if (c)
+					if (c) // candles
 						GetIntfaceSprite(51)->DrawBright(cx - 5, cy - outXes - 12, GetDisplayMGL(), 0);
 					ang++;
 				}

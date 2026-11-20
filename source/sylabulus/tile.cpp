@@ -262,15 +262,24 @@ void RenderWallTileTrans(int x,int y,word w,word f,char light)
 	RenderFloorTileTrans(x,y-TILE_HEIGHT,f,light);
 }
 
-void PlotStar(int x,int y,byte col,byte tx,byte ty,word tileNum)
+void PlotStar(int x, int y, byte col, byte tx, byte ty, word tileNum)
 {
-	byte *dst;
+	const byte* tileData = current->GetTileData(tileNum);
 
-	if(current->GetTileData(tileNum)[tx+ty*TILE_WIDTH]<32)
-	{
-		dst=tileMGL->GetScreen()+x+y*tileMGL->GetWidth();
-		*dst=col;
-	}
+	if (!tileData)
+		return;
+
+	byte pixel = tileData[tx + ty * TILE_WIDTH];
+
+	if (pixel % 32 > 0)
+		return;
+
+	MGLDraw* mgl = GetDisplayMGL();
+
+	if (x < 0 || y < 0 || x >= mgl->GetWidth() || y >= mgl->GetHeight())
+		return;
+
+	mgl->GetScreen()[x + y * mgl->GetWidth()] = col;
 }
 
 void PlotSky(int x, int y, byte col, byte tx, byte ty, word tileNum)

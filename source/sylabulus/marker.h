@@ -35,7 +35,6 @@ bool CheckMarker(const marker_t& me);
 void CheckMarkers(Map* map);
 
 word GetPathMarker(Guy* me, byte pathValue, byte currentPriority);
-void SetMarkerCount(int count);
 byte GetMarkerCount(void);
 
 #endif

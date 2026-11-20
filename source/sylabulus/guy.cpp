@@ -2755,6 +2755,8 @@ void MonsterLife(byte fx,int x,int y,int type,int newLife)
 			}
 		}
 		guys[i].hp = newLife;
+		if (IsMarkedBoss(&guys[i]))
+			ShowBossLife();
 		if (EntityIsPlayer(guys[i].aiType))
 			SetPlayerHP(newLife);
 	}
@@ -2779,6 +2781,8 @@ void MonsterMaxLife(byte fx,int x,int y,int type,int newLife)
 			else
 				HealRing(4,guys[i].x,guys[i].y,0,16,2);
 			guys[i].maxHP=newLife;
+			if (IsMarkedBoss(&guys[i]))
+				ShowBossLife();
 		}
 	}
 }
@@ -2910,6 +2914,8 @@ void MonsterLifeAmt(byte fx,int x,int y,int type,int amt)
 			guys[i].hp=1;
 			guys[i].GetShot(0,0,255,curMap,&curWorld);
 		}
+		if (IsMarkedBoss(&guys[i]))
+			ShowBossLife();
 	}
 }
 
@@ -3531,6 +3537,7 @@ byte Guy::IsAwake(void)
 		case ENT_JALAPENO:
 		case ENT_NOHMANNCOMEDY:
 		case ENT_NOHMANNTRAGEDY:
+		case ENT_EDISONBOSS:
 			return (mind > 0);
 		case ENT_BOMBIE:
 			return (seq == ANIM_A1); // bombie is doing the funny
@@ -3985,15 +3992,15 @@ void MarkAsBoss(Guy* g, bool setAs)
 	if (setAs && numBosses < 32)
 	{
 		printf("Marking enemy %p as BOSS.\n", (void*)g);
-		ShowBossLife();
 		bossGuys[numBosses++] = g;
 		switch (g->type)
 		{
-		case ENT_EDISONBOSS:
-			MarkPartsAsBoss(g);
-			break;
+			case ENT_EDISONBOSS:
+				MarkPartsAsBoss(g);
+				break;
 		}
 	}
+	ShowBossLife();
 }
 
 byte IsMarkedBoss(Guy* g)

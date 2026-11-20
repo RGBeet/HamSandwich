@@ -18,7 +18,6 @@
 #include "palettes.h"
 #include "appdata.h"
 #include "winpch.h"
-#include "steam.h"
 #include "pickmenu.h"
 #include "pathfinding.h"
 #include "jamulsound.h"
@@ -422,8 +421,6 @@ TASK(byte) LunaticRun(int *lastTime)
 					ExitPauseMenuSong(true); // exit pause menu
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
-					if (!shopping && !editing)
-						Steam()->StartPlaytimeTracking(nullptr);
 					break;
 				case PAUSE_GIVEUP:
 					ExitPauseMenuSong(false); // exit pause menu
@@ -434,8 +431,6 @@ TASK(byte) LunaticRun(int *lastTime)
 						mapToGoTo=255;
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
-					if (!shopping && !editing)
-						Steam()->StartPlaytimeTracking(nullptr);
 					CO_RETURN LEVEL_ABORT;
 					break;
 				case PAUSE_WORLDSEL:
@@ -450,8 +445,6 @@ TASK(byte) LunaticRun(int *lastTime)
 					mapToGoTo=player.levelNum;	// repeat this level
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
-					if (!shopping && !editing)
-						Steam()->StartPlaytimeTracking(nullptr);
 					CO_RETURN LEVEL_ABORT;
 					break;
 				case PAUSE_EXIT:
@@ -800,7 +793,6 @@ void PauseGame(void)
 		return;
 	InitPauseMenu();
 	gameMode=GAMEMODE_MENU;
-	Steam()->StopPlaytimeTracking();
 }
 
 TASK(byte) PlayALevel(byte map)
@@ -887,6 +879,7 @@ TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 	StopSong();
 	InitWorld(&curWorld);
 
+	/*
 	if (!editing)
 	{
 		if (shopping)
@@ -897,6 +890,7 @@ TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 			Steam()->StartPlaytimeTracking(fullName);
 		}
 	}
+	*/
 
 	mapNum=player.levelNum;
 	
@@ -930,10 +924,10 @@ TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 
 	if (!editing && !shopping && (player.pendingLeaderboardUpload || player.worldProg->percentage != oldPercentage || player.worldProg->keychains != oldKeychains))
 	{
-		Steam()->UploadWorldScore();
+		//Steam()->UploadWorldScore();
 	}
 
-	Steam()->SetPresenceNone();
+	//Steam()->SetPresenceNone();
 	if(result==WORLD_QUITGAME || result==WORLD_SHOP)
 		CO_RETURN 0;
 	else

@@ -7,7 +7,6 @@
 #include "game.h"
 #include "config.h"
 #include "appdata.h"
-#include "steam.h"
 #include "string_extras.h"
 
 // ---------------- Encrypting scores into strings!

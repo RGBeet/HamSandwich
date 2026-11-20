@@ -263,7 +263,7 @@ intface_t defaultSetup[NUM_INTF]={
 	 0,0,
 	 0,0,
 	 0 },
-	{SCRWID/2-50,SCRHEI+20,SCRWID/2-50,SCRHEI+20,	// COUNTDOWN
+	{SCRWID/2-50,SCRHEI+20,SCRWID/2-50,SCRHEI+20,	// boss bar
 	 999,
 	 IV_BOSS,128,
 	 12,3,
@@ -1010,32 +1010,52 @@ void DrawLives(int x, int y, MGLDraw* mgl)
 
 void DrawBossBar(int x, int y, MGLDraw* mgl)
 {
-
-	byte c = 140;
+	char combo[16];
+	byte c = 48;
 	int amt = intf[INTF_BOSS].value * 144 / intf[INTF_BOSS].valueLength;
 
-	DrawFillBox(x,y+1,x,y+12,c-6);
-	DrawFillBox(x+amt,y+1,x+amt,y+12,c-6);
-	if(amt>1)
+	x = SCRWID / 2 - 72;
+
+	// Determine health color
+	if (amt < 48)
+		c = 144;	// red
+	else if (amt < 96)
+		c = 176;	// yellow
+	else
+		c = 48;		// green
+
+	// Dark outer frame
+	DrawFillBox(x - 3, y - 2, x + 147, y + 15, 8);
+	DrawFillBox(x - 2, y - 1, x + 146, y + 14, 20);
+
+	// Dark grey background
+	DrawFillBox(x, y, x + 144, y + 13, 12);
+	DrawFillBox(x + 1, y + 1, x + 143, y + 12, 6);
+
+	// Health fill
+	if (amt > 0)
 	{
-		DrawFillBox(x+1,y+1,x+1,y+12,c-1);
-		DrawFillBox(x+amt-1,y+1,x+amt-1,y+12,c-1);
-		if(amt>3)
+		DrawFillBox(x, y + 1, x + amt, y + 12, c - 6);
+		DrawFillBox(x + 1, y + 1, x + amt - 1, y + 12, c - 1);
+
+		if (amt > 3)
 		{
-			// here's the short parts on top and bottom
-			DrawFillBox(x+2,y,x+(amt-2),y,c-3);
-			DrawFillBox(x+2,y+13,x+(amt-2),y+13,c-3);
-			// and here's the normal part
-			DrawFillBox(x+2,y+1,x+amt-2,y+1,c);
-			DrawFillBox(x+2,y+12,x+amt-2,y+12,c);
-			DrawFillBox(x+2,y+2,x+amt-2,y+2,c+8);
-			DrawFillBox(x+2,y+3,x+amt-2,y+11,c+4);
+			// Top and bottom edges
+			DrawFillBox(x + 2, y, x + amt - 2, y, c - 3);
+			DrawFillBox(x + 2, y + 13, x + amt - 2, y + 13, c - 3);
+
+			// Main highlight
+			DrawFillBox(x + 2, y + 1, x + amt - 2, y + 1, c);
+			DrawFillBox(x + 2, y + 2, x + amt - 2, y + 2, c + 8);
+			DrawFillBox(x + 2, y + 3, x + amt - 2, y + 11, c + 4);
 		}
 	}
 
-	DrawSmallNumber(x, y, curBossLife, 6, mgl);
-	Print(x + 56, y, "/", 0, 2);
-	DrawSmallNumber(x + 72, y, maxBossLife, 6, mgl);
+	// Boss name
+	CenterPrint(SCRWID / 2, y - 18, "BOSS", 0, 2);
+	sprintf(combo, "%d / %d", curBossLife, maxBossLife);
+	CenterPrint(x + 47, y + 1, combo, 1, 1);
+	CenterPrint(x + 46, y + 0, combo, 0, 1);
 }
 
 void UpdateInterface(Map *map)

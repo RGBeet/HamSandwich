@@ -6,7 +6,6 @@
 #include "bullet.h"
 #include "shop.h"
 #include "gallery.h"
-#include "steam.h"
 
 static const char goalDesc[][48]={
 	"Rising Star", "beating Noh-Mann in the Demo",
@@ -55,27 +54,13 @@ void CompleteGoal(byte goal)
 
 	int i,t;
 
-	if(goal!=99)
-	{
-		t=0;
-		for(i=0;i<100;i++)
-			if(profile.progress.goal[i])
-				t++;
-		if(t>=99)
-			CompleteGoal(99);
-	}
-
 	if(profile.progress.goal[goal])
 		return;
 
-	if(editing)
-		return;
-
-	if(tutorial)
+	if(editing || tutorial)
 		return;
 
 	profile.progress.goal[goal]=1;
-	Steam()->CompleteGoal(goal);
 	coro::launch(std::bind(ShowGoalEarned, goal));
 
 	if(shopping)
@@ -84,117 +69,34 @@ void CompleteGoal(byte goal)
 
 void GoalKilledSomebody(Guy *g,byte type,byte frozen)
 {
-	dword totalKills=0;
-	int i;
-
-	if(type==MONS_BOUAPHA)
-	{
-		if(profile.progress.kills[MONS_BOUAPHA]>=100)
-			CompleteGoal(98);
-	}
-
-	if(totalKills>1000)
-		CompleteGoal(46);
-	if(totalKills>10000)
-		CompleteGoal(47);
-	if(totalKills>50000)
-		CompleteGoal(48);
-	if(totalKills>100000)
-		CompleteGoal(49);
-
-	if(player.combo>=20)
-		CompleteGoal(10);
-	if(player.combo>=100)
-		CompleteGoal(11);
-	if(player.combo>=500)
-		CompleteGoal(12);
-
-	totalKills=0;
-	for(i=2;i<NUM_PROFILE_MONSTERS;i++)	// skip Bouapha
-	{
-		if(!(MonsterFlags(i,i)&(MF_INVINCIBLE|MF_NOHIT)) && !(MonsterTheme(i)&(MT_GOOD|MT_BITS)) &&
-			(MonsterTheme(i)))
-		{
-			// only count those that can be hurt, aren't body parts, and aren't in the 'good' group
-			if(!profile.progress.kills[i])
-			{
-				totalKills=1;
-				break;
-			}
-		}
-	}
-	if(!totalKills)	// every one of them has been beaten!
-		CompleteGoal(13);
+	// add stuff here later
 }
 
 void GoalTallyPage(int score,byte perfect,byte destruct,int time)
 {
 	if(tutorial)
 		return;
-	// add gallery goals here
+	// add stuff here later
 }
 
 void GoalTimeDist(void)
 {
-	if(profile.progress.totalTime>=30*60*60)
-		CompleteGoal(14);
-	if(profile.progress.totalTime>=30*60*60*10)
-		CompleteGoal(15);
-	if(profile.progress.footDistance>=168960)
-		CompleteGoal(16);
-	if(profile.progress.footDistance>=168960*100)
-		CompleteGoal(17);
-	if(profile.progress.raftDistance>=168960)
-		CompleteGoal(18);
-	if(profile.progress.driveDistance+profile.progress.cartDistance>=168960*5)
-		CompleteGoal(19);
-	if(profile.progress.underwaterTime>=30*60*60)
-		CompleteGoal(60);
+	// add stuff here later
 }
 
 void GoalPurchase(void)
 {
-	if(AllPurchased())
-		CompleteGoal(26);
+	// add stuff here later
 }
 
 void GoalWinLevel(void)
 {
-	dword d;
-
-	d=CountLevelsPassed();
-	CalcFinishedWorlds();
-
-	if(d>=25)
-		CompleteGoal(61);
-	if(d>=100)
-		CompleteGoal(62);
-	if(d>=1000)
-		CompleteGoal(63);
-	if(profile.progress.finishedWorlds>0)
-		CompleteGoal(64);
-	if(profile.progress.finishedWorlds>=10)
-		CompleteGoal(65);
-	if(profile.progress.finishedWorlds>=50)
-		CompleteGoal(66);
-	if(profile.progress.finishedWorlds>=profile.progress.totalWorlds-1)
-		CompleteGoal(67);
+	// add stuff here later
 }
 
 void GoalFire(void)
 {
-	if(profile.progress.hammersThrown>=5000)
-		CompleteGoal(91);
-	if(profile.progress.hammersThrown>=50000)
-		CompleteGoal(92);
-	if(profile.progress.rages>=50)
-		CompleteGoal(93);
-	if(profile.progress.rages>=500)
-		CompleteGoal(94);
-	if(profile.progress.shotsFired>=5000)
-		CompleteGoal(96);
-	if(profile.progress.shotsFired>=50000)
-		CompleteGoal(97);
+	// add stuff here later
 }
 
 // -------------------------------------------------

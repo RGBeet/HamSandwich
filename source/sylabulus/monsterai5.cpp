@@ -4858,13 +4858,15 @@ void AI_Edison(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 	if (me->action == ACTION_BUSY)
 	{
-		if (me->seq == ANIM_ATTACK)
+		if (me->seq == ANIM_ATTACK && me->frm == 4 && !me->reload)
 		{
-
+			MakeSound(SND_EDISONCARNAGE, me->x, me->y, SND_CUTOFF, 1200);
+			me->reload = 20;
 		}
-		if (me->seq == ANIM_A1)
+		if (me->seq == ANIM_A1 && me->frm == 4 && !me->reload)
 		{
-
+			MakeSound(SND_EDISONCARNAGE, me->x, me->y, SND_CUTOFF, 1200);
+			me->reload = 20;
 		}
 		if (me->seq == ANIM_DIE)
 		{
@@ -4906,10 +4908,6 @@ void AI_Edison(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			}
 		}
 		return;	// can't do nothin' right now
-	}
-	if (me->mind == 0)
-	{
-		me->mind = 1;
 	}
 	if (me->mind == 1) // fire grenades mode
 	{
@@ -4991,7 +4989,11 @@ void AI_EdisonTreads(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	{
 		if (RangeToTarget(me, goodguy) < 300 * FIXAMT || me->ouch > 0)
 		{
-			MakeSound(SND_MORONHELLO, me->x, me->y, SND_CUTOFF, 1200);
+			if(me->parent)
+			{
+				MakeSound(SND_EDISONFUTURE, me->x, me->y, SND_CUTOFF, 1200);
+				me->parent->mind = 1; // wake edison up!!
+			}
 			me->mind = 1;
 		}
 	}

@@ -8,7 +8,6 @@
 #include "progress.h"
 #include "appdata.h"
 #include "title.h"
-#include "steam.h"
 
 namespace
 {
@@ -346,8 +345,6 @@ TASK(void) NameEntry(MGLDraw *mgl,byte makeNew)
 	int lastTime=1;
 
 	InitNameEntry(mgl);
-	if (FirstTime())
-		Steam()->GetUsername(entry, sizeof entry);
 
 	while(!done)
 	{

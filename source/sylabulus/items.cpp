@@ -602,10 +602,18 @@ static const item_t baseItems[] = {
 	{"Stone Pillar",0,0,0,184,0,0,0,
 		0,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_OBSTACLE,ITA_SHADOW,ITP_BULLETPROOF,ITRG_NONE,ITB_NONE,0,
 		IE_NONE,0,"",0 },
-	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
-	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
-	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
-	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Mirror (Down,Right)",0,0,0,186,0,0,0,
+		0,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_OBSTACLE,ITA_SHADOW,ITP_BULLETPROOF,ITRG_NONE,ITB_NONE,0,
+		IE_NONE,0,"",0 },
+	{"Mirror (Down,Left)",0,0,0,187,0,0,0,
+		0,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_OBSTACLE,ITA_SHADOW,ITP_BULLETPROOF,ITRG_NONE,ITB_NONE,0,
+		IE_NONE,0,"",0 },
+	{"Mirror (Up,Left)",0,0,0,188,0,0,0,
+		0,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_OBSTACLE,ITA_SHADOW,ITP_BULLETPROOF,ITRG_NONE,ITB_NONE,0,
+		IE_NONE,0,"",0 },
+	{"Mirror (Up,Right)",0,0,0,189,0,0,0,
+		0,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_OBSTACLE,ITA_SHADOW,ITP_BULLETPROOF,ITRG_NONE,ITB_NONE,0,
+		IE_NONE,0,"",0 },
 	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
 	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
 	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
@@ -896,54 +904,67 @@ int NumCustomSprites(void)
 	return CustomItemSprites() ? customItmSpr->GetCount() : 0;
 }
 
-
-
-void RenderAnimatedItem(int x, int y, word start, byte frames, byte type, char bright, MapRenderFlags flags, byte fromCol=255, byte toCol=255)
+void RenderAnimatedItem(int x, int y, word start, byte frames, byte type,
+	char bright, MapRenderFlags flags, byte fromCol = 255, byte toCol = 255)
 {
 	byte b;
 	sprite_t* curSpr;
 	int clock = player.clock;
 
-	switch(type)
+	switch (type)
 	{
-		case IT_UNHAMMER:
-		case IT_UNPANTS:
-		case IT_RADIOFOOD:
-			clock /= 2;
-			break;
+	case IT_UNHAMMER:
+	case IT_UNPANTS:
+	case IT_RADIOFOOD:
+		clock /= 2;
+		break;
 	}
 
-	switch(type)
+	switch (type)
 	{
-		case IT_PROJMIRROR: // reverse motion
-			curSpr = animItmSpr->GetSprite(start - ((clock / 4) % frames));
-			break;
-		default:
-			curSpr = animItmSpr->GetSprite(start + ((clock / 4) % frames));
-			break;
+	case IT_PROJMIRROR:
+		curSpr = animItmSpr->GetSprite(start - ((clock / 4) % frames));
+		break;
+	default:
+		curSpr = animItmSpr->GetSprite(start + ((clock / 4) % frames));
+		break;
 	}
 
-	
-	if (items[type].appearance == ITA_SHADOW || items[type].appearance == ITA_LOONYKEY) // has a shadow
-		SprDraw(x + items[type].xofs, y, -items[type].yofs + 1, 0, bright + items[type].bright, curSpr, DISPLAY_DRAWME | DISPLAY_SHADOW);
+	int drawX = (x >> FIXSHIFT) + items[type].xofs;
+	int drawY = (y >> FIXSHIFT);
 
+	if (items[type].appearance == ITA_SHADOW ||
+		items[type].appearance == ITA_LOONYKEY)
+	{
+		SprDraw(drawX, drawY, -items[type].yofs + 1, 0,
+			bright + items[type].bright, curSpr,
+			DISPLAY_DRAWME | DISPLAY_SHADOW);
+	}
 
-	if (items[type].appearance == ITA_LOONYKEY) // loony color (for loonykey?)
+	if (items[type].appearance == ITA_LOONYKEY)
 	{
 		b = abs(16 - (glowism & 31));
-		SprDraw(x + items[type].xofs, y, -items[type].yofs + 1, glowism / 32, bright + b + items[type].bright, curSpr, DISPLAY_DRAWME);
+
+		SprDraw(drawX, drawY, -items[type].yofs + 1,
+			glowism / 32, bright + b + items[type].bright,
+			curSpr, DISPLAY_DRAWME);
 	}
-	else if (items[type].appearance == ITA_GLOWING) // glowing
+	else if (items[type].appearance == ITA_GLOWING)
 	{
-		SprDraw(x + items[type].xofs, y, -items[type].yofs + 1, 0, bright + items[type].bright, curSpr, DISPLAY_DRAWME | DISPLAY_GLOW);
+		SprDraw(drawX, drawY, -items[type].yofs + 1,
+			0, bright + items[type].bright,
+			curSpr, DISPLAY_DRAWME | DISPLAY_GLOW);
 	}
-	if (fromCol != toCol && fromCol != 255) // recolor
+	else if (fromCol != toCol && fromCol != 255)
 	{
-		SprDrawOff(x >> FIXSHIFT, y >> FIXSHIFT, 0, fromCol, toCol, bright + items[type].bright, curSpr, DISPLAY_DRAWME);
+		SprDrawOff(drawX, drawY, 0,
+			fromCol, toCol, bright + items[type].bright,
+			curSpr, DISPLAY_DRAWME);
 	}
 	else
 	{
-		SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, 0, 255, bright + items[type].bright, curSpr, DISPLAY_DRAWME);
+		SprDraw(drawX, drawY, 0, 255,
+			bright + items[type].bright, curSpr, DISPLAY_DRAWME);
 	}
 }
 
@@ -960,6 +981,7 @@ void RenderAnimatedItem(int x, int y, word start, byte frames, byte type, char b
 #define ASPR_POCKET		72
 #define ASPR_TOTEM		80
 #define ASPR_COIN		88
+#define ASPR_LOONYKEY	96 // 16 frames!!!
 
 void RenderItem(int x,int y,int type,char bright,MapRenderFlags flags)
 {
@@ -1060,6 +1082,9 @@ void RenderItem(int x,int y,int type,char bright,MapRenderFlags flags)
 			case IT_COIN:
 				RenderAnimatedItem((x + items[type].xofs) * FIXAMT, (y + items[type].yofs) * FIXAMT, ASPR_COIN, 8, type, bright, flags);
 				return;
+			case IT_LOONYKEY:
+				RenderAnimatedItem((x + items[type].xofs) * FIXAMT, (y + items[type].yofs) * FIXAMT, ASPR_LOONYKEY, 16, type, bright, flags);
+				return;
 		}
 		if(items[type].appearance == ITA_SHADOW || items[type].appearance == ITA_LOONYKEY)
 		{
@@ -1137,14 +1162,20 @@ void InstaRenderItem(int x,int y,int type,char bright,MGLDraw *mgl)
 			sprite->DrawColored(x + items[type].xofs, y + items[type].yofs, mgl, glowism / 32, bright + b + items[type].bright);
 		}
 		
-		// recolor
-		if (items[type].fromColor == items[type].toColor)
+		if (items[type].appearance != ITA_LOONYKEY &&
+			items[type].appearance != ITA_GLOWING)
 		{
-			sprite->DrawBright(x + items[type].xofs, y + items[type].yofs, mgl, bright + items[type].bright);
-		}
-		else
-		{
-			sprite->DrawOffColor(x + items[type].xofs, y + items[type].yofs, mgl, items[type].fromColor, items[type].toColor, bright + items[type].bright);
+			if (items[type].fromColor == items[type].toColor)
+			{
+				sprite->DrawBright(x + items[type].xofs, y + items[type].yofs,
+					mgl, bright + items[type].bright);
+			}
+			else
+			{
+				sprite->DrawOffColor(x + items[type].xofs, y + items[type].yofs,
+					mgl, items[type].fromColor, items[type].toColor,
+					bright + items[type].bright);
+			}
 		}
 	}
 }

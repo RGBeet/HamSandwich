@@ -8,7 +8,6 @@
 #include "nameentry.h"
 #include "progress.h"
 #include "shop.h"
-#include "steam.h"
 #include "softjoystick.h"
 #include "plasma.h"
 
@@ -234,9 +233,6 @@ void MainMenuDisplay(MGLDraw *mgl)
 	/*const char* edition = Steam()->DescribeEdition();
 	Print(SCRWID - GetStrLength(edition, 1), 20, edition, 1, 1);
 	Print(SCRWID - GetStrLength(edition, 1) - 1, 20-1, edition, 0, 1);*/
-	const char* workshopStatus = Steam()->DescribeWorkshopStatus();
-	Print(3, 3, workshopStatus, 1, 1);
-	Print(3 - 1, 3 - 1, workshopStatus, 0, 1);
 
 	#ifdef DEMO
 		PrintSimpleShadow(2, 2, "DEMO Version", 1);

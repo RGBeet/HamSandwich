@@ -11,7 +11,6 @@
 #include "hiscore.h"
 #include "appdata.h"
 #include "vanilla_extract.h"
-#include "steam.h"
 #include "strnatcmp.h"
 
 enum Done : byte
@@ -378,7 +377,6 @@ static void PrepWorld()
 	noScoresAtAll=0;
 	FetchScores(0);
 	Vfs()->query_bottom(s, &worldMeta);
-	Steam()->PrepWorldLeaderboard(s);
 }
 
 static void SelectLastWorld(void)

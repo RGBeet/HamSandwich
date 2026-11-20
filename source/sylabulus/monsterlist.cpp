@@ -1335,4 +1335,18 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0 },
+		{ "Mush the Shroom",255,255,0,AI_Mush,
+		 32,50,200,800,"graphics/mushshroom.jsp",0,MF_NOMOVE,
+		 MT_EVIL | MT_MINIBOSS | MT_VEGGIE,
+			{
+				{0,255},	// idle
+				{1,2,3,2,1,0,4,5,6,5,4,0,255},	// move
+				{7,8,9,10,11,12,13,14,15,16,255},	// attack=cannon fire
+				{42,43,44,45,46,47,48,48,49,49,49,255},	// die
+				{17,18,19,20,21,22,23,24,25,26,24,25,26,24,25,26,27,28,29,255},	// A1=sporegun fire
+				{30,31,32,33,34,35,36,37,38,39,40,41,255},	// A2=angry
+				{23,24,25,26,24,25,26,27,255},	// attack=cannon fire
+				{0,255},
+				{0,255},
+			} },
 	};

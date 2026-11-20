@@ -105,6 +105,7 @@ void CenterPrint(int x,int y,std::string_view s,char bright,byte font);
 // from kid mystic
 void CenterPrintItalics(int midx, int y, const char* s, char bright, byte font);
 void CenterPrintCompressed(int midx, int y, std::string_view s, byte compression, char bright, byte font);
+void CenterPrintCompressedWavy(int midx, int y, std::string_view s, byte compression, char bright, byte font, int clock, int vert, int hori);
 
 
 void RenderItAll(world_t *world,Map *map,MapRenderFlags flags);
