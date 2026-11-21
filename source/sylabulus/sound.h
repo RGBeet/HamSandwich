@@ -365,13 +365,15 @@
 #define SND_MORONWIN	303
 
 #define SND_FREEZE		304
-#define SND_LUNASHOOT	305
-#define SND_LUNAOUCH	306
-#define SND_LUNADIE		307
-#define SND_LUNADROWN	308
-#define SND_LUNABORED	309
-#define SND_LUNABRAINS	310
-#define SND_BUNNYTHEME			311 // used for bunny: vampire slayer
+
+#define SND_RIOSHOOT	305
+#define SND_RIOOUCH		306
+#define SND_RIODIE		307
+#define SND_RIODROWN	308
+#define SND_RIOBORED	309
+#define SND_RIOBRAINS	310
+#define SND_RIOWIN		311
+
 #define SND_HAPPYWEEN			312
 #define SND_MARKMOVIE			313
 #define SND_TZONE				314

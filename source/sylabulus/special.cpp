@@ -1647,7 +1647,15 @@ void SpecialEffect(special_t *me,Map *map)
 					else
 					{
 						SendMessageToGame(MSG_WINLEVEL,me->effect[i].value);
-						MakeNormalSound(SND_WINLEVEL);
+						switch (player.playAs)
+						{
+							default:
+								MakeNormalSound(SND_WINLEVEL);
+								break;
+							case PLAY_AXOLOTL:
+								MakeNormalSound(SND_RIOWIN);
+								break;
+						}
 					}
 					if(me->effect[i].x==255)
 						SetPlayerStart(-1,-1);

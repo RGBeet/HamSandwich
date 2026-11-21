@@ -354,8 +354,9 @@
 #define ENT_EDISONARMLEFT		94
 #define ENT_EDISONARMRIGHT		95
 #define ENT_KINGMUSH			96
+#define ENT_PLAYRIO				97
 
-#define ENT_MAXID				97
+#define ENT_MAXID				98
 
 #define NUM_MONSTERS	243					// Can grow as needed
 #define NUM_PROFILE_MONSTERS 211			// Do not change without redoing the profile format

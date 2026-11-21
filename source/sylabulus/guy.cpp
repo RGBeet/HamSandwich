@@ -1001,9 +1001,16 @@ void Guy::Update(Map *map,world_t *world)
 				frmAdvance=255;
 				frmTimer=0;
 				action=ACTION_BUSY;
-				MakeSound(SND_DROWN,x,y,SND_CUTOFF|SND_ONE,65536);
-				if(player.shield)
-					CompleteGoal(57);	// fell in water while shielded
+				switch (player.playAs)
+				{
+					default:
+					case PLAY_BOUAPHA:
+						MakeSound(SND_DROWN, x, y, SND_CUTOFF | SND_ONE, 65536);
+						break;
+					case PLAY_AXOLOTL:
+						MakeSound(SND_RIODROWN, x, y, SND_CUTOFF | SND_ONE, 65536);
+						break;
+				}
 			}
 		}
 		if(EntityCanInteractWithGround(this,map,world,TRN_LAVA)) // lava - hurts a little, burns the player
@@ -1116,9 +1123,9 @@ void Guy::Render(byte light)
 			t2=ENT_MINISUB;
 		else if(aiType==ENT_BOUAPHA)
 		{
+			if(player.playAs==PLAY_AXOLOTL)
+				t2= ENT_PLAYRIO;
 			/*
-			if(player.playAs==PLAY_SHROOM)
-				t2=(short)EntityType::PlayShroom;
 			else if(player.playAs==PLAY_LUNACHIK)
 				t2=(short)EntityType::PlayLunachick;
 			*/

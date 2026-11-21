@@ -85,7 +85,7 @@ enum BulletType : byte
 	BLT_TORCH			= 67,		// torch visual effect
 	BLT_LANTERN			= 68,		// lantern shot
 	BLT_SHRUIKENBAD		= 69,
-	BLT_GIFTBOMB		= 70,		// santa claus's gift bomb
+	BLT_SUPERLASER		= 70,		// super killer laser deflected by mirrors
 	BLT_EDISONSTRIKE	= 71,		// shaman's new attack
 	BLT_ORBITER3		= 72,		// new type of orbiter?!
 	BLT_EDISONSHELL		= 73,
@@ -167,5 +167,6 @@ byte BulletHitItem(bullet_t* me, mapTile_t* m, int x, int y);
 void GetBulletDeltas(int *bdx, int *bdy);
 
 void TriggerItemWithBullet(int x, int y, ItemTrigger type);
+void LaserMirrorHit(bullet_t* me, Map* map, world_t* world);
 
 #endif

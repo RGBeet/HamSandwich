@@ -589,7 +589,7 @@ byte PlayerGetBrain(int amt)
 		if(player.playAs==PLAY_BOUAPHA)
 			MakeNormalSound(SND_KOOLKAT);
 		else if(player.playAs==PLAY_AXOLOTL)
-			MakeNormalSound(SND_MUSHMAD);
+			MakeNormalSound(SND_RIOBRAINS);
 
 		playerGlow=127;
 		return 2;
@@ -1570,10 +1570,10 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		else if(player.playAs==PLAY_AXOLOTL)
 		{
 			if(me->hp>0)
-				MakeSound(SND_MUSHOUCH,me->x,me->y,SND_CUTOFF|SND_ONE,2000);
+				MakeSound(SND_RIOOUCH,me->x,me->y,SND_CUTOFF|SND_ONE,2000);
 			else if(me->seq==ANIM_DIE)	// so it doesn't do this if you're drowning
 			{
-				MakeSound(SND_MUSHDIE,me->x,me->y,SND_CUTOFF|SND_ONE,2000);
+				MakeSound(SND_RIODIE,me->x,me->y,SND_CUTOFF|SND_ONE,2000);
 				x=me->x>>FIXSHIFT;
 				y=me->y>>FIXSHIFT;
 				BlowUpGuy(x+me->rectx,y+me->recty,x+me->rectx2,y+me->recty2,me->z,1);

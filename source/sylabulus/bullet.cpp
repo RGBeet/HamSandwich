@@ -222,6 +222,9 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 			me->dy+=-FIXAMT/4+Random(FIXAMT/2);
 			me->facing=((byte)(8-me->facing))&15;
 			break;
+		case BLT_SUPERLASER:
+			LaserMirrorHit(me, map, world);
+			break;
 		case BLT_BOMB:
 			MakeSound(SND_BOMBREFLECT,me->x,me->y,SND_CUTOFF,600);
 			me->x-=me->dx;
@@ -398,6 +401,9 @@ void BulletHitWallY(bullet_t *me,Map *map,world_t *world)
 			me->dx+=-FIXAMT/4+Random(FIXAMT/2);
 			me->facing=(16-me->facing)&15;
 			break;
+		case BLT_SUPERLASER:
+			LaserMirrorHit(me, map, world);
+			break;
 		case BLT_BOMB:
 			MakeSound(SND_BOMBREFLECT,me->x,me->y,SND_CUTOFF,600);
 			me->y-=me->dy;
@@ -555,6 +561,7 @@ void BulletHitFloor(bullet_t *me,Map *map,world_t *world)
 		case BLT_FLAME:
 		case BLT_FLAME2:
 		case BLT_LASER:
+		case BLT_SUPERLASER:
 		case BLT_MEGABEAM:
 		case BLT_MEGABEAM1:
 		case BLT_MEGABEAM2:
@@ -700,6 +707,7 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 		case BLT_BUBBLEPOP:
 		case BLT_SCANLOCK:
 		case BLT_BLACKHOLE:
+		case BLT_SUPERLASER:
 			me->type=0;
 			break;
 		case BLT_HOLESHOT:
@@ -928,6 +936,18 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 				me->type=BLT_NONE;
 				ExplodeParticles(PART_HAMMER,me->x,me->y,me->z,8);
 				MakeSound(SND_BULLETHIT,me->x,me->y,SND_CUTOFF,900);
+			}
+			break;
+		case BLT_SUPERLASER:
+			if (FindVictim(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 12, 0, 0, 80, map, world, me->friendly))
+			{
+				ExplodeParticlesColor(4, me->x, me->y, me->z, 2, 5);
+				MakeSound(SND_BATSTARE, me->x, me->y, SND_CUTOFF, 500);
+			}
+			if (me->timer < 30 * 10 - 2 && FindVictim(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 8, 0, 0, 80, map, world, 1 - me->friendly))
+			{
+				ExplodeParticlesColor(4, me->x, me->y, me->z, 2, 5);
+				MakeSound(SND_BATSTARE, me->x, me->y, SND_CUTOFF, 500);
 			}
 			break;
 		case BLT_GREEN:
@@ -1700,6 +1720,14 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 				me->anim=4;
 			break;
 		case BLT_LASER:
+			HitBadguys(me, map, world);
+			break;
+		case BLT_SUPERLASER:
+			me->anim += 4;
+			if (me->anim % 24 == 8)
+			{
+				ExplodeParticles2(PART_HAMMER, me->x, me->y, me->z, 4, 2);
+			}
 			HitBadguys(me,map,world);
 			break;
 		case BLT_BOMB:
@@ -2154,6 +2182,7 @@ void RenderBullet(bullet_t *me)
 {
 	int v;
 	sprite_t *curSpr;
+	int x, y;
 
 	switch(me->type)
 	{
@@ -2512,6 +2541,20 @@ void RenderBullet(bullet_t *me)
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,me->bright,curSpr,
 					DISPLAY_DRAWME|DISPLAY_GLOW);
 			break;
+		case BLT_SUPERLASER:
+			curSpr = bulletSpr->GetSprite(440);
+			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,0,255,me->bright,curSpr,
+				DISPLAY_DRAWME|DISPLAY_SHADOW);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 255, me->bright, curSpr,
+				DISPLAY_DRAWME | DISPLAY_GLOW);
+			for (v = 0;v < 4;v++)
+			{
+				x = me->x + Cosine((me->anim + v * 64) & 255) * 6;
+				y = me->y + Sine((me->anim + v * 64) & 255) * 6;
+				SprDraw(x >> FIXSHIFT, y >> FIXSHIFT, me->z >> FIXSHIFT, 255, me->bright, curSpr,
+					DISPLAY_DRAWME | DISPLAY_GLOW);
+			}
+			break;
 		case BLT_SCANLOCK:
 			if(me->timer>10 || (me->timer&1))
 			{
@@ -2535,7 +2578,6 @@ void RenderBullet(bullet_t *me)
 					DISPLAY_DRAWME|DISPLAY_GLOW);
 			break;
 		case BLT_SWAP:
-			int x,y;
 
 			curSpr=bulletSpr->GetSprite(SPR_GREEN);
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,me->bright,curSpr,
@@ -2855,6 +2897,16 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type,byte friendly)
 			me->facing/=16;
 			me->dz=0;
 			MakeSound(SND_BULLETFIRE,me->x,me->y,SND_CUTOFF,1050);
+			break;
+		case BLT_SUPERLASER:
+			me->anim = 0;
+			me->timer = 30 * 10;
+			me->facing = me->facing * 32;
+			me->dx = Cosine(me->facing) * 16;
+			me->dy = Sine(me->facing) * 12;
+			me->dz = 0;
+			me->z = 20 * FIXAMT;
+			me->target = 255 + 255 * 256;
 			break;
 		case BLT_ENERGY:
 			me->anim=0;
@@ -3314,7 +3366,7 @@ void HammerLaunch(int x,int y,byte facing,byte count,HammerFlags flags)
 			type=BLT_LUNA;
 		else if(type==BLT_HAMMER2)
 			type=BLT_LUNA2;
-		MakeSound(SND_LUNASHOOT,x,y,SND_CUTOFF,1200);
+		MakeSound(SND_RIOSHOOT,x,y,SND_CUTOFF,1200);
 	}
 	else
 		MakeSound(SND_HAMMERTOSS,x,y,SND_CUTOFF,1200);
@@ -3717,7 +3769,7 @@ static const byte bulletFacingType[] = {
 	0,		// BLT_TORCH
 	7,		// BLT_LANTERN
 	255,	// BLT_SHRUIKENBAD
-	255,	// BLT_GIFTBOMB
+	255,	// BLT_SUPERLASER
 	7,		// BLT_HEXATK
 	7,		// BLT_ORBITER3
 	255,	// BLT_TORNADO
@@ -3802,13 +3854,12 @@ static const char bulletName[][20] = {
 	"Torch FX",
 	"Lantern Shot",
 	"Evil Shruiken",
-	"Gift Bomb",
+	"Death Laser",
 	"Hex Attack",
 	"Orbit Shocker",
 	"Tornado",
 	"Rocket Boom",
 	"Claw Hammer",
-	"Death Laser"
 };
 
 const char* BulletName(int type)
@@ -3818,122 +3869,188 @@ const char* BulletName(int type)
 	return "???";
 }
 
-// Used by the death laster bullet type. 
+// Used by the death laser bullet type.
 void LaserMirrorHit(bullet_t* me, Map* map, world_t* world)
 {
 	short mapx, mapy;
-	char n[2];
 
 	mapx = me->x / (TILE_WIDTH * FIXAMT);
 	mapy = me->y / (TILE_HEIGHT * FIXAMT);
 
-	if (mapx == (me->target % 256) && mapy == (me->target / 256))	// you've already hit/not hit this space
+	// You've already hit this space.
+	if (mapx == (me->target % 32) && mapy == (me->target / 32))
 		return;
 
+	// Out of bounds.
 	if (mapx < 0 || mapy < 0 || mapx >= map->width || mapy >= map->height)
 	{
 		me->type = BLT_NONE;
 		return;
 	}
 
-	if (me->dx < 0)
+	word itmid = map->map[mapx + mapy * map->width].item;
+	bool bulletproof = true; // default mirrors = bulletproof!
+
+	// In case you want to make custom mirrors...
+	if (IsCustomItem(itmid)) // todo, make custom item start?
 	{
-		me->dx = me->dx;
+		item_t* itm = GetItem(itmid);
+		if (itm)
+		{
+			if (itm->name[0] == '@' && itm->name[1] == 'M')
+			{
+				switch (itm->name[2])
+				{
+				case '1':
+					itmid = IT_MIRRORDR;
+					break;
+				case '2':
+					itmid = IT_MIRRORDL;
+					break;
+				case '3':
+					itmid = IT_MIRRORUL;
+					break;
+				case '4':
+					itmid = IT_MIRRORUR;
+					break;
+				}
+			}
+			bulletproof = (itm->passability == ITP_BULLETPROOF || itm->passability == ITP_BARRIER);
+		}
 	}
-	n[0] = GetItem(map->map[mapx + mapy * map->width].item)->name[0];
-	n[1] = GetItem(map->map[mapx + mapy * map->width].item)->name[1];
-	if (n[0] == '@')	// mirror items start with @
+
+	// Mirror works.
+	if (itmid >= IT_MIRRORDR && itmid <= IT_MIRRORUR)
 	{
-		if (me->dx > 0)	// heading right
+		bool reflected = false;
+
+		switch (itmid)
 		{
-			if (n[1] == '1' || n[1] == '3')
-			{
-				me->type = BLT_NONE;
-				ExplodeParticlesColor(7, me->x, me->y, me->z, 1, 2);
-				return;	// blocked
-			}
-			else if (n[1] == '0')
-			{
-				me->dx = 0;
-				me->dy = -FIXAMT * 24;
-				me->facing = 6 * 32;
-			}
-			else if (n[1] == '2')
-			{
-				me->dx = 0;
-				me->dy = FIXAMT * 24;
-				me->facing = 2 * 32;
-			}
+			case IT_MIRRORDR: // lower right
+				if (me->dx < 0) // left -> down
+				{
+					me->dx = 0;
+					me->dy = FIXAMT * 12;
+					me->facing = 2 * 32;
+					reflected = true;
+				}
+				else if (me->dy < 0) // up -> right
+				{
+					me->dx = FIXAMT * 16;
+					me->dy = 0;
+					me->facing = 0 * 32;
+					reflected = true;
+				}
+				break;
+			case IT_MIRRORDL: // lower left
+				if (me->dx > 0) // right -> down
+				{
+					me->dx = 0;
+					me->dy = FIXAMT * 12;
+					me->facing = 2 * 32;
+					reflected = true;
+				}
+				else if (me->dy < 0) // up -> left
+				{
+					me->dx = -FIXAMT * 16;
+					me->dy = 0;
+					me->facing = 4 * 32;
+					reflected = true;
+				}
+				break;
+
+			case IT_MIRRORUL: // upper left
+				if (me->dx > 0) // right -> up
+				{
+					me->dx = 0;
+					me->dy = -FIXAMT * 12;
+					me->facing = 6 * 32;
+					reflected = true;
+				}
+				else if (me->dy > 0) // down -> left
+				{
+					me->dx = -FIXAMT * 16;
+					me->dy = 0;
+					me->facing = 4 * 32;
+					reflected = true;
+				}
+				break;
+
+			case IT_MIRRORUR: // upper right
+				if (me->dx < 0) // left -> up
+				{
+					me->dx = 0;
+					me->dy = -FIXAMT * 12;
+					me->facing = 6 * 32;
+					reflected = true;
+				}
+				else if (me->dy > 0) // down -> right
+				{
+					me->dx = FIXAMT * 16;
+					me->dy = 0;
+					me->facing = 0 * 32;
+					reflected = true;
+				}
+				break;
 		}
-		else if (me->dx < 0)	// heading left
+
+		if (!reflected)
 		{
-			if (n[1] == '0' || n[1] == '2')
-			{
-				me->type = BLT_NONE;
-				ExplodeParticlesColor(7, me->x, me->y, me->z, 1, 2);
-				return;	// blocked
-			}
-			else if (n[1] == '1')
-			{
-				me->dx = 0;
-				me->dy = -FIXAMT * 24;
-				me->facing = 6 * 32;
-			}
-			else if (n[1] == '3')
-			{
-				me->dx = 0;
-				me->dy = FIXAMT * 24;
-				me->facing = 2 * 32;
-			}
+			me->type = BLT_NONE;
+			ExplodeParticlesColor(7, me->x, me->y, me->z, 1, 2);
+			return;
 		}
-		else if (me->dy < 0)	// heading up
+
+		if (bulletproof)
 		{
-			if (n[1] == '0' || n[1] == '1')
+			if (me->dx > 0)
 			{
-				me->type = BLT_NONE;
-				ExplodeParticlesColor(7, me->x, me->y, me->z, 1, 2);
-				return;	// blocked
+				me->x = ((mapx + 1) * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+				me->y = (mapy * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
 			}
-			else if (n[1] == '2')
+			else if (me->dx < 0)
 			{
-				me->dx = -FIXAMT * 32;
-				me->dy = 0;
-				me->facing = 4 * 32;
+				me->x = (mapx * TILE_WIDTH - TILE_WIDTH / 2) * FIXAMT;
+				me->y = (mapy * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
 			}
-			else if (n[1] == '3')
+			else if (me->dy > 0)
 			{
-				me->dx = FIXAMT * 32;
-				me->dy = 0;
-				me->facing = 0 * 32;
+				me->x = (mapx * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+				me->y = ((mapy + 1) * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
 			}
+			else if (me->dy < 0)
+			{
+				me->x = (mapx * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+				me->y = (mapy * TILE_HEIGHT - TILE_HEIGHT / 2) * FIXAMT;
+			}
+
+			me->target = mapx + mapy * 256;
+			ExplodeParticlesColor(7, me->x, me->y, me->z, 1, 2);
+			return;
 		}
-		else if (me->dy > 0)	// heading down
-		{
-			if (n[1] == '2' || n[1] == '3')
-			{
-				me->type = BLT_NONE;
-				ExplodeParticlesColor(7, me->x, me->y, me->z, 1, 2);
-				return;	// blocked
-			}
-			else if (n[1] == '0')
-			{
-				me->dx = -FIXAMT * 32;
-				me->dy = 0;
-				me->facing = 4 * 32;
-			}
-			else if (n[1] == '1')
-			{
-				me->dx = FIXAMT * 32;
-				me->dy = 0;
-				me->facing = 0 * 32;
-			}
-		}
-		me->target = (mapx + mapy * 256);
+
 		me->x = (mapx * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
 		me->y = (mapy * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
+		me->target = mapx + mapy * 256;
 	}
 	else
 	{
+		// Bulletproof objects allow the laser to pass through.
+		if (bulletproof)
+		{
+			if (me->dx > 0)
+				me->x = (mapx + 1) * TILE_WIDTH * FIXAMT;
+			else if (me->dx < 0)
+				me->x = mapx * TILE_WIDTH * FIXAMT - 1;
+			else if (me->dy > 0)
+				me->y = (mapy + 1) * TILE_HEIGHT * FIXAMT;
+			else if (me->dy < 0)
+				me->y = mapy * TILE_HEIGHT * FIXAMT - 1;
+
+			me->target = mapx + mapy * 256;
+			return;
+		}
+
 		ExplodeParticlesColor(7, me->x, me->y, me->z, 1, 2);
 		me->type = BLT_NONE;
 	}

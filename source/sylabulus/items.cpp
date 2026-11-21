@@ -1440,6 +1440,10 @@ byte TriggerItem(Guy *me,mapTile_t *m,int x,int y)
 			m->item=IT_NONE;
 			SmokeTile(x,y);
 			return 1;
+		case IE_DROPITEM:
+			curMap->DropItem(x, y, GetRandomItem());
+			SmokeTile(x, y);
+			return 1;
 		case IE_POWERUP:
 			return PlayerPowerup(items[m->item].effectAmt);
 		case IE_HEALRANDOM:
@@ -1582,10 +1586,6 @@ byte TriggerItem(Guy *me,mapTile_t *m,int x,int y)
 			ExplodeParticles(PART_SHRAPNEL, (x * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (y * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 0, 8);
 			FireBullet((x * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (y * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 0, BLT_BOOM, 255);
 			m->item = IT_NONE;
-			return 1;
-		case IE_DROPITEM: // drop a random item at the area
-			ExplodeParticles(PART_COLOR, (x * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (y * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 0, 8);
-			m->item = GetRandomItem();
 			return 1;
 		case IE_XTRALIFE:
 			if (player.lives + items[m->item].effectAmt >= 99)
@@ -1965,4 +1965,9 @@ void CalculateItemRenderExtents()
 ItemRenderExtents GetItemRenderExtents()
 {
 	return extents;
+}
+
+byte IsCustomItem(byte id)
+{
+	return (id >= NUM_ORIGINAL_ITEMS);
 }

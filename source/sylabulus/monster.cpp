@@ -235,8 +235,8 @@ const sprite_t* GetMonsterSprite2(dword type, byte seq, byte frm, byte facing)
 			type = MONS_MINISUB; // is this ok???
 		else if (type == MONS_BOUAPHA)
 		{
-			//if (player.playAs == PLAY_LUNATIC)
-			//	type = MONS_DRL;
+			if (player.playAs == PLAY_AXOLOTL)
+				type = ENT_PLAYRIO;
 		}
 	}
 
@@ -272,8 +272,8 @@ const sprite_t *GetMonsterSprite(Guy *me)
 			type=MONS_MINISUB; // is this ok???
 		else if(type==MONS_BOUAPHA)
 		{
-			// if(player.playAs==PLAY_LUNATIC)
-			//	type=MONS_DRL;
+			if (player.playAs == PLAY_AXOLOTL)
+				type = ENT_PLAYRIO;
 		}
 	}
 
@@ -288,7 +288,7 @@ const sprite_t *GetMonsterSprite(Guy *me)
 	if(!(monsType[type].flags&MF_ONEFACE))
 		v+= me->facing*monsType[type].framesPerDir;
 
-	if (type == ENT_BOUAPHA && PlayerHasHammer())
+	if (type == ENT_BOUAPHA && player.playAs == PLAY_BOUAPHA && PlayerHasHammer())
 	{
 		v+=8*monsType[type].framesPerDir;
 	}
@@ -302,27 +302,33 @@ const sprite_t *GetMonsterSprite(Guy *me)
 
 std::unique_ptr<sprite_set_t>* intFace = GetIntfaceSpriteSet();
 
+word GetPlayerType(word type)
+{
+	if (player.weapon == WPN_PWRARMOR)
+		return MONS_PWRBOUAPHA;
+	else if (player.weapon == WPN_MINISUB)
+		return MONS_PWRBOUAPHA;
+	else if (type == MONS_BOUAPHA)
+	{
+		if (player.playAs == PLAY_AXOLOTL)
+			return ENT_PLAYRIO;
+	}
+	return ENT_BOUAPHA;
+}
+
 void DrawMe(Guy* g, const sprite_set_t* set) {
 	const sprite_t* curSpr;
 	int v;
 	int intfx = 0;
 	int intfoffset = 0;
-	word type = (word)g->type;
+	word type;
 	byte shld;
 	byte shake;
 
 	if (g->aiType == MONS_BOUAPHA)
-	{
-		if (player.weapon == WPN_PWRARMOR)
-			type = MONS_PWRBOUAPHA;
-		else if (player.weapon == WPN_MINISUB)
-			type = MONS_PWRBOUAPHA;
-		else if (type == MONS_BOUAPHA)
-		{
-			//if (player.playAs == PLAY_LUNATIC)
-			//	type = MONS_DRL;
-		}
-	}
+		type = GetPlayerType(g->type);
+	else
+		type = (word)g->type;
 
 	LoadMySprite(type);
 
@@ -366,21 +372,13 @@ void DrawMe(Guy* g, const sprite_set_t* set) {
 
 	if (g->type == ENT_BOUAPHA) // do player stuff
 	{
-		if (PlayerHasHammer())
+		if (player.playAs == PLAY_BOUAPHA && PlayerHasHammer())
 		{
 			v += 8 * monsType[type].framesPerDir;
 		}
 
-		// energy shield
-		shld = PlayerShield();
-		if (shld > 0 && (shld > 16 || shld % 2 != 0))
-		{
-			curSpr = monsType[MONS_BOUAPHA].spr->GetSprite(464 + (shld & 7)); // account for shield
-		}
-		else
-		{
-			curSpr = set->GetSprite(v);
-		}
+		curSpr = set->GetSprite(v);
+		
 
 		if (curSpr == NULL)
 			return;
@@ -388,8 +386,8 @@ void DrawMe(Guy* g, const sprite_set_t* set) {
 		if (!(monsType[type].flags & MF_NOSHADOW))
 			SprDraw(g->x >> FIXSHIFT, g->y >> FIXSHIFT, 0, 255, 0, curSpr, DISPLAY_DRAWME | DISPLAY_SHADOW);
 
-		if (shld) // energy shield
-			SprDraw(g->x >> FIXSHIFT, (g->y >> FIXSHIFT) + 1, 1 + (g->z >> FIXSHIFT), 255, g->bright, curSpr, DISPLAY_DRAWME | DISPLAY_GLOW);
+		//if (shld) // energy shield
+		//	SprDraw(g->x >> FIXSHIFT, (g->y >> FIXSHIFT) + 1, 1 + (g->z >> FIXSHIFT), 255, g->bright, curSpr, DISPLAY_DRAWME | DISPLAY_GLOW);
 
 		// invisibility
 		shld = player.invisibility[0];
@@ -527,7 +525,7 @@ void MonsterDraw(
 
 	if(isBouapha)
 	{
-		if(type == 1 && PlayerHasHammer())
+		if(type == ENT_BOUAPHA && player.playAs == PLAY_BOUAPHA && PlayerHasHammer())
 			v+=8*monsType[type].framesPerDir;
 
 		shld=PlayerShield();

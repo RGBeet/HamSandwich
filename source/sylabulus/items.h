@@ -441,4 +441,6 @@ void CalculateItemRenderExtents();
 sprite_t* GetItemSprite(int spr);
 sprite_t* GetAnimatedItemSprite(int spr);
 
+byte IsCustomItem(byte id);
+
 #endif
