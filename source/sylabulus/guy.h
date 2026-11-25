@@ -36,7 +36,34 @@ class Guy final
 		byte IsAwake(void);
 		void SmoothPath(Map* map, world_t* world);
 
-		// new functions
+
+		void SetSpeed(int spd);
+		void SetSpeed(byte angle, int spd);
+		void DampenSpeed(int div);
+		void ClampSpeed(int maxSpd);
+		void WanderMode(byte& currentMind, int wanderTime, int unWanderRate, byte targetMind);
+		void ForceSequence(byte newSequence, word newFrmAdvance, byte newFrm=0);
+		void TryWander(byte& currentMind, int wanderRate, byte targetMind);
+		void SimpleOuchNoises(word ouchSound, word deathSound, byte randomOuch);
+		void Revive(void);
+		void Accelerate(int spd);
+		void RegenerateInto(word type);
+
+		void FaceGuy(Guy* other);
+		void FaceGuyBroad(Guy* other);
+		int RangeToGuy(Guy* other);
+
+		byte GuyWithinRange(Guy* other, int range);				// TRUE if guy is within range
+		byte CanSeeGuy(Guy* other, int radius, Map *map);		// TRUE if guy can see other guy (line-of-sight)
+		byte HasGuyAI(word type);								// TRUE if guy has AI of specified entity type
+
+		int DirCos(int spd);				// get dx, but simpler
+		int DirSin(int spd);				// ditto, for dy
+		int ShiftDirCos(int pos);			// get new shifted x pos based on facing
+		int ShiftDirSin(int pos);			// ditto, for y pos
+
+		void SimpleFireBullet(int offset, byte type);				// simple bullet firing
+
 		byte IsInterface(void);				// returns TRUE if guy's hp is currnetly being displayed on the interface (i.e. a boss)
 		byte CanWalkPath(int xx, int yy,	// returns TRUE if pathfinding guy can walk path
 			Map* map, world_t* world);
@@ -99,7 +126,7 @@ class Guy final
 
 		// Good afflictions
 		word strength;		// take less damage (-25%)
-		word speed;			// twice as fast
+		word quickness;		// twice as fast
 
 		byte fromColor,toColor;
 		char brtChange;
@@ -181,6 +208,7 @@ byte CheckMonsterColor(int x,int y,int type,byte color);
 byte CheckMonsterProximity(int type,int proximity);
 byte CheckMonsterLOS(int x, int y, int type, int radius);
 byte CheckMonsterOuch(int x, int y, int type, byte flags);
+byte CheckMonsterAfflict(int x, int y, int type, byte flags);
 byte CheckMonsterAge(int x, int y, int type, int frames, byte flags);
 
 byte GoodguyInSight(Guy* me, Guy* goodguy, byte facing);
@@ -208,8 +236,10 @@ byte CanDrive(Guy* me, int x, int y, Map* map, world_t* world, Guy* goodguy);
 void OuchKids(Guy* g);
 
 void MarkAsBoss(Guy* g, bool setAs);
-void MarkAsCameraFocus(Guy* g);
+void MarkAsCameraFocus(Guy* g, byte immediate);
 void ResetCameraFocus(void);
+void SetEntityPath(byte fx, int x, int y, int type, int index);
+void AfflictEntity(byte fx, int x, int y, int type, int afflict);
 byte IsMarkedBoss(Guy* g);
 
 std::pair<int,int> GetBossHP(void);

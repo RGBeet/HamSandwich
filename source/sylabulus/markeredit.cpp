@@ -31,8 +31,8 @@ static byte valueSelect;
 #define ID_MRKRTYPD		3
 #define ID_MRKRVAL1		4
 #define ID_MRKRVAL2		5
-#define ID_MRKRWID		6
-#define ID_MRKRHEI		7
+#define ID_MRKRPICKRCT	6
+//#define ID_MRKRHEI	7
 #define ID_LABLVAL1		8
 #define ID_LABLVAL2		9
 #define ID_TEXT			100
@@ -45,13 +45,24 @@ static byte valueSelect;
 #define MMODE_HEIGHT	5
 #define MMODE_PICKGUY	6
 #define MMODE_HELP		7
+#define MMODE_PICKRECT	8
 
 static void SetupMarkerEditSetupButtons(void);
 
 static const char markerTypeName[][32] = {
 	"Unused",
 	"Enemy Path",
-	"Particle Rectangle",
+	"Particle Spawn",
+	"Enemy Spawn"
+};
+
+static const char spawnEnemyType[][32] = {
+	"At Random (Normal)",
+	"At Random (Quick)",
+	"At Random (Slow)",
+	"Constant (Normal)",
+	"Constant (Quick)",
+	"Constant (Slow)"
 };
 
 void MarkerEdit_Init(int m)
@@ -216,22 +227,46 @@ static void MonsterClick(int id)
 	}
 }
 
-static void ParticleClick(int id)
+void ValueCycleClick(int &val, int max)
 {
 	if (rightClick)
 	{
-		mrkr.value++;
-		if (mrkr.value >= MAX_PARTICLES)
-			mrkr.value = 0;
+		val++;
+		if (val >= max)
+			val = 0;
 	}
 	else
 	{
-		if (mrkr.value == 0)
-			mrkr.value = MAX_PARTICLES-1;
+		if (val == 0)
+			val = max - 1;
 		else
-			mrkr.value--;
+			val--;
 	}
+}
 
+// select the rectangle
+static void EditDimensionsClick(int id)
+{
+	if (rightClick)
+		return;
+	MakeNormalSound(SND_MENUCLICK);
+
+	printf("Editing dimensions...\n");
+	mode = MMODE_PICKRECT;
+	SetEditMode(EDITMODE_MARKERSPOT);
+}
+
+// cycle through particle names
+static void ParticleClick(int id)
+{
+	ValueCycleClick(mrkr.value, 24); // 24 available particle styles?
+	SetupMarkerEditSetupButtons();
+}
+
+// cycle through spawn style names
+static void SpawnStyleClick(int id)
+{
+	ValueCycleClick(mrkr.value2, 6); // six spawn styles
 	SetupMarkerEditSetupButtons();
 }
 
@@ -298,14 +333,15 @@ void MarkerEdit_Render(int mouseX, int mouseY, MGLDraw* mgl)
 		sprintf(s, "%s", markerTypeName[mrkr.type]);
 	else
 		sprintf(s, "Unknown (%d)", mrkr.type);
-
 	Print(150, 65, s, 0, 1);
 
-	sprintf(s, "X: %03d, Y: %03d", mrkr.x1, mrkr.y1);
+	// coordinates
+	sprintf(s, "X1: %03d, Y1: %03d", mrkr.x1, mrkr.y1);
 	Print(500, 2, s, 0, 1);
+	sprintf(s, "X2: %03d, Y2: %03d", mrkr.x2, mrkr.y2);
+	Print(500, 32, s, 0, 1);
 
 	DrawFillBox(0, 100, 639, 100, 31);
-
 	DrawFillBox(0, 430, 639, 430, 31);
 	Print(20, 440, "Left-click to edit, right-click to reset.", 0, 1);
 
@@ -370,43 +406,80 @@ static void SetupMarkerEditSetupButtons(void)
 	MakeButton(BTN_NORMAL, ID_MRKRTYPD, 0,
 		294, 65, 30, 14, "--", TypeDownClick);
 
+	MakeButton(BTN_NORMAL, ID_MRKRPICKRCT, 0,
+		394, 65, 54, 14, "Edit Dimensions", EditDimensionsClick);
+
 	switch (mrkr.type)
 	{
-	case MRK_PART:
-		MakeButton(BTN_STATIC, ID_TEXT, 0,
-			20, 125, 125, 14,
-			"Randomly spawn", 0);
+		// spawn particles at random
+		case MRK_PART:
+			MakeButton(BTN_STATIC, ID_TEXT, 0,
+				20, 125, 125, 14,
+				"Randomly spawn", 0);
 
-		MakeButton(BTN_NORMAL, ID_MRKRVAL1, 0,
-			150, 125, 120, 14,
-			GetParticleName(mrkr.value), ParticleClick);
+			MakeButton(BTN_NORMAL, ID_MRKRVAL1, 0,
+				150, 125, 120, 14,
+				GetParticleName(mrkr.value), ParticleClick);
 
-		MakeButton(BTN_STATIC, ID_TEXT + 1, 0,
-			280, 125, 75, 14,
-			"at rate of", 0);
+			MakeButton(BTN_STATIC, ID_TEXT + 1, 0,
+				280, 125, 75, 14,
+				"at rate of", 0);
 
-		sprintf(s, "%d", mrkr.value2);
-		MakeButton(BTN_NORMAL, ID_MRKRVAL2, 0,
-			360, 125, 50, 14, s, Value2Click);
-		break;
+			sprintf(s, "%d", mrkr.value2);
+			MakeButton(BTN_NORMAL, ID_MRKRVAL2, 0,
+				360, 125, 50, 14, s, Value2Click);
+			break;
+		// marker path
+		case MRK_PATH:
+			MakeButton(BTN_STATIC, ID_TEXT, 0,
+				20, 125, 135, 14,
+				"Act as path node for path #", 0);
 
-	case MRK_PATH:
-		MakeButton(BTN_STATIC, ID_TEXT, 0,
-			20, 125, 135, 14,
-			"Act as path node for path #", 0);
+			sprintf(s, "%d", mrkr.value);
+			MakeButton(BTN_NORMAL, ID_MRKRVAL1, 0,
+				240, 125, 120, 14,
+				s, Value1Click);
 
-		sprintf(s, "%d", mrkr.value);
-		MakeButton(BTN_NORMAL, ID_MRKRVAL1, 0,
-			240, 125, 120, 14,
-			s, Value1Click);
+			MakeButton(BTN_STATIC, ID_TEXT + 1, 0,
+				290, 125, 80, 14,
+				"of priority", 0);
 
-		MakeButton(BTN_STATIC, ID_TEXT + 1, 0,
-			290, 125, 80, 14,
-			"of priority", 0);
+			sprintf(s, "%d", mrkr.value2);
+			MakeButton(BTN_NORMAL, ID_MRKRVAL2, 0,
+				375, 125, 50, 14, s, Value2Click);
+			break;
+		// spawn monster
+		case MRK_SPAWN:
+			MakeButton(BTN_STATIC, ID_TEXT, 0,
+				20, 125, 135, 14,
+				"Spawn Entity:", 0);
 
-		sprintf(s, "%d", mrkr.value2);
-		MakeButton(BTN_NORMAL, ID_MRKRVAL2, 0,
-			375, 125, 50, 14, s, Value2Click);
-		break;
+			sprintf(s, "%s", MonsterName(mrkr.value));
+			MakeButton(BTN_NORMAL, ID_MRKRVAL1, 0,
+				124, 125, 120, 14,
+				s, MonsterClick);
+
+			MakeButton(BTN_STATIC, ID_TEXT + 1, 0,
+				264, 125, 80, 14,
+				"Spawn Style:", 0);
+
+			sprintf(s, spawnEnemyType[mrkr.value2]);
+			MakeButton(BTN_NORMAL, ID_MRKRVAL2, 0,
+				367, 125, 150, 14, s, SpawnStyleClick);
+			break;
 	}
+}
+
+void SetMarkerRect(int x1, int y1, int x2, int y2)
+{
+	if (x1 < 0 || y1 < 0 || x2 < 0 || y2 < 0)
+	{
+		mode = MMODE_NORMAL;
+		return;
+	}
+	mrkr.x1 = (byte)x1;
+	mrkr.x2 = (byte)x2;
+	mrkr.y1 = (byte)y1;
+	mrkr.y2 = (byte)y2;
+	mode = MMODE_NORMAL;
 }

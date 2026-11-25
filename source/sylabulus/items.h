@@ -213,6 +213,7 @@ enum ItemType : word
 	IT_MIRRORDL,
 	IT_MIRRORUL,
 	IT_MIRRORUR,
+	IT_JAWBREAKER,
 	NUM_ORIGINAL_ITEMS = 350,
 	IT_RANDOM = 65535
 };
@@ -339,8 +340,9 @@ BITFLAGS(ItemTriggers)
 #define IE_EXPLODE	31	// explode!!
 #define IE_DROPITEM	32	// drop a random item
 #define IE_XTRALIFE 33	// give an extra life (for the level)
+#define IE_COMBOTIMER 34	// add M frames to combo timer
 
-#define IE_MAX		34	// max # of effects
+#define IE_MAX		35	// max # of effects
 
 // Power ups. SERIALIZED in custom item definitions.
 enum : int
@@ -442,5 +444,6 @@ sprite_t* GetItemSprite(int spr);
 sprite_t* GetAnimatedItemSprite(int spr);
 
 byte IsCustomItem(byte id);
+void GiveChineseFood(void);
 
 #endif

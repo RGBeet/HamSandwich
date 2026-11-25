@@ -217,7 +217,7 @@ void AI_Yerfboss(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_Lantern(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_Hardhat(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_Pelican(Guy* me, Map* map, world_t* world, Guy* goodguy);
-void AI_Ninja(Guy* me, Map* map, world_t* world, Guy* goodguy);
+
 void AI_Kappa(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_Tsuchizoid(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_Jimbo(Guy* me, Map* map, world_t* world, Guy* goodguy);
@@ -229,20 +229,13 @@ void AI_NohMannTragedy(Guy* me, Map* map, world_t* world, Guy* goodguy);	// form
 void AI_NohMannArm(Guy* me, Map* map, world_t* world, Guy* goodguy);		// arms
 
 void AI_EyeballTree(Guy* me, Map* map, world_t* world, Guy* goodguy);
-void AI_StickNinja(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_CrazyBush(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_Bombie(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_Deathcap(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_GlueTrap(Guy* me, Map* map, world_t* world, Guy* goodguy);
-void AI_Gingersnap(Guy* me, Map* map, world_t* world, Guy* goodguy);
-void AI_PurpleKappa(Guy* me, Map* map, world_t* world, Guy* goodguy);
-void AI_GreaterIsozoid(Guy* me, Map* map, world_t* world, Guy* goodguy);
-void AI_CroquetBird(Guy* me, Map* map, world_t* world, Guy* goodguy);
-void AI_NastyTree(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_EasterEgg(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_SpikeBall(Guy* me, Map* map, world_t* world, Guy* goodguy);
 
-void AI_MiniZombie(Guy* me, Map* map, world_t* world, Guy* goodguy);
-void AI_MiniBonehead(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_Pathfinder(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_StopSign(Guy* me, Map* map, world_t* world, Guy* goodguy);
 

@@ -49,6 +49,8 @@ constexpr int SPR_CLAWHAMMER	= 441;
 constexpr int SPR_SHRUIKEN		= 569;
 constexpr int SPR_EDISONBOLT	= 577;
 constexpr int SPR_EDISONSHELL	= 585;
+constexpr int SPR_SHIELD		= 603;
+
 
 static bullet_t *bullet;
 static sprite_set_t *bulletSpr;
@@ -160,7 +162,7 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 			ExplodeParticles(PART_SHRAPNEL, me->x, me->y, me->z, 4);
 			break;
 		case BLT_HAMMER:
-		case BLT_LUNA:
+		case BLT_RIOHAMMER:
 		case BLT_BIGSHELL:
 			me->type=BLT_NONE;
 			ExplodeParticles(PART_HAMMER,me->x,me->y,me->z,4);
@@ -180,7 +182,7 @@ void BulletHitWallX(bullet_t *me,Map *map,world_t *world)
 			me->dx=-me->dx;
 			break;
 		case BLT_HAMMER2:
-		case BLT_LUNA2:
+		case BLT_RIOHAMMER2:
 		case BLT_EVILHAMMER:	// reflects off walls
 			me->x-=me->dx;
 			me->dx=-me->dx;
@@ -334,7 +336,7 @@ void BulletHitWallY(bullet_t *me,Map *map,world_t *world)
 			BulletRanOut(me,map,world);
 			break;
 		case BLT_HAMMER:
-		case BLT_LUNA:
+		case BLT_RIOHAMMER:
 		case BLT_BIGSHELL:
 			me->type=BLT_NONE;
 			ExplodeParticles(PART_HAMMER,me->x,me->y,me->z,8);
@@ -359,7 +361,7 @@ void BulletHitWallY(bullet_t *me,Map *map,world_t *world)
 			me->dy=-me->dy;
 			break;
 		case BLT_HAMMER2:
-		case BLT_LUNA2:
+		case BLT_RIOHAMMER2:
 		case BLT_EVILHAMMER:	// reflects off walls
 			me->y-=me->dy;
 			me->dy=-me->dy;
@@ -513,8 +515,8 @@ void BulletHitFloor(bullet_t *me,Map *map,world_t *world)
 		case BLT_HAMMER:
 		case BLT_HAMMER2:
 		case BLT_EVILHAMMER:
-		case BLT_LUNA:
-		case BLT_LUNA2:
+		case BLT_RIOHAMMER:
+		case BLT_RIOHAMMER2:
 			MakeSound(SND_HAMMERREFLECT,me->x,me->y,SND_CUTOFF,850);
 			me->dz=-me->dz*3/4;
 			me->z=0;
@@ -660,8 +662,8 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 
 	switch(me->type)
 	{
-		case BLT_LUNA:
-		case BLT_LUNA2:
+		case BLT_RIOHAMMER:
+		case BLT_RIOHAMMER2:
 			ExplodeParticles(PART_HAMMER, me->x, me->y, 0, 8);
 			me->type = 0;
 			break;
@@ -971,8 +973,8 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_HAMMER:
 		case BLT_HAMMER2:
-		case BLT_LUNA:
-		case BLT_LUNA2:
+		case BLT_RIOHAMMER:
+		case BLT_RIOHAMMER2:
 		case BLT_BIGSHELL:
 			if(Guy *g = FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,12,me->dx,me->dy,5,map,world,me->friendly))
 			{
@@ -1439,10 +1441,25 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 		BulletHitFloor(me,map,world);
 
 	// all gravity-affected bullets, get gravitized
-	if(me->type==BLT_HAMMER || me->type==BLT_HAMMER2 || me->type==BLT_BOMB || me->type==BLT_GRENADE
-		|| me->type==BLT_ROCK || me->type==BLT_EVILHAMMER || me->type==BLT_SPEAR || me->type==BLT_BADSPEAR
-		|| me->type==BLT_BUBBLE || me->type==BLT_GLUESHOT || me->type == BLT_CLAWHAMMER)
-		me->dz-=FIXAMT;
+
+	switch (me->type)
+	{
+		case BLT_HAMMER:
+		case BLT_HAMMER2:
+		case BLT_RIOHAMMER:
+		case BLT_RIOHAMMER2:
+		case BLT_BOMB:
+		case BLT_GRENADE:
+		case BLT_ROCK:
+		case BLT_EVILHAMMER:
+		case BLT_CLAWHAMMER:
+		case BLT_SPEAR:
+		case BLT_BADSPEAR:
+		case BLT_BUBBLE:
+		case BLT_GLUESHOT:
+			me->dz -= FIXAMT; // get gravitized
+			break;
+	}
 
 	me->timer--;
 	if(!me->timer)
@@ -1486,17 +1503,13 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 				MakeSound(SND_BLACKHOLE, me->x, me->y, SND_CUTOFF, 1100);
 			}
 			break;
-		case BLT_LUNA:
-		case BLT_LUNA2:
-			me->dz=0;
-			//ExplodeParticlesColor(4,me->x,me->y,me->z,1,1);
-			ColorDrop(4,me->x,me->y,me->z);
-			HitBadguys(me,map,world);
-			break;
+		// the hammers
 		case BLT_HAMMER:
 		case BLT_HAMMER2:
 		case BLT_EVILHAMMER:
 		case BLT_CLAWHAMMER:
+		case BLT_RIOHAMMER:
+		case BLT_RIOHAMMER2:
 			me->anim++;
 			if(me->anim>15)
 				me->anim=0;
@@ -2178,6 +2191,11 @@ void RenderStinky(int x,int y,int z,char bright,byte frm)
 	SprDraw(x,y,z,255,bright-64,bulletSpr->GetSprite(SPR_STINKY+frm),DISPLAY_DRAWME|DISPLAY_GHOST);
 }
 
+void RenderShield(int x, int y, int z, char bright, byte frm)
+{
+	SprDraw(x, y, z, 255, bright - 64, bulletSpr->GetSprite(SPR_SHIELD + (frm%8)), DISPLAY_DRAWME | DISPLAY_GLOW);
+}
+
 void RenderBullet(bullet_t *me)
 {
 	int v;
@@ -2201,6 +2219,15 @@ void RenderBullet(bullet_t *me)
 					DISPLAY_DRAWME|DISPLAY_SHADOW);
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,me->bright,curSpr,
 					DISPLAY_DRAWME);
+			break;
+		case BLT_RIOHAMMER:
+		case BLT_RIOHAMMER2:
+			v = me->facing * 16 + (me->anim) + SPR_HAMMER;
+			curSpr = bulletSpr->GetSprite(v);
+			SprDraw(me->x >> FIXSHIFT, me->y >> FIXSHIFT, 0, 255, me->bright, curSpr,
+				DISPLAY_DRAWME | DISPLAY_SHADOW);
+			SprDrawOff(me->x >> FIXSHIFT, me->y >> FIXSHIFT, me->z >> FIXSHIFT, 4, 3, me->bright+2, curSpr,
+				DISPLAY_DRAWME);
 			break;
 		case BLT_CLAWHAMMER:
 			v=me->facing*16+(me->anim)+SPR_CLAWHAMMER;
@@ -2756,12 +2783,13 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type,byte friendly)
 			me->dy=Sine(me->facing*32)*12;
 			me->dz=FIXAMT*10;
 			break;
-		case BLT_LUNA:
+		case BLT_RIOHAMMER:
+		case BLT_RIOHAMMER2:
 			me->anim=0;
-			me->timer=30;
+			me->timer=24;
 			me->z=FIXAMT*20;
-			me->dx=Cosine(me->facing*32)*12;
-			me->dy=Sine(me->facing*32)*12;
+			me->dx=Cosine(me->facing*32)*15;
+			me->dy=Sine(me->facing*32)*15;
 			me->dz=0;
 			break;
 		case BLT_CHEESEHAMMER:
@@ -3363,9 +3391,9 @@ void HammerLaunch(int x,int y,byte facing,byte count,HammerFlags flags)
 	if(player.playAs==PLAY_AXOLOTL)
 	{
 		if(type==BLT_HAMMER)
-			type=BLT_LUNA;
+			type=BLT_RIOHAMMER;
 		else if(type==BLT_HAMMER2)
-			type=BLT_LUNA2;
+			type=BLT_RIOHAMMER2;
 		MakeSound(SND_RIOSHOOT,x,y,SND_CUTOFF,1200);
 	}
 	else
@@ -3425,9 +3453,9 @@ void HammerLaunch(int x,int y,byte facing,byte count,HammerFlags flags)
 
 void HappyFire(int x,int y,byte facing)
 {
-	byte happyList[]={BLT_HAMMER,BLT_HAMMER2,BLT_MISSILE,BLT_FLAME,BLT_LASER,BLT_BOMB,
+	byte happyList[]={BLT_HAMMER2,BLT_MISSILE,BLT_FLAME,BLT_LASER,BLT_BOMB,
 					  BLT_BALLLIGHTNING,BLT_BIGSHELL,BLT_BIGAXE,BLT_LIGHTNING,BLT_SPEAR,BLT_SLASH,
-					  BLT_GREEN,BLT_TORPEDO,BLT_BUBBLE,BLT_LUNA};
+					  BLT_GREEN,BLT_TORPEDO,BLT_BUBBLE,BLT_RIOHAMMER2};
 	byte b;
 
 	b=happyList[Random(16)];

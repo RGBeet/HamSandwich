@@ -208,6 +208,8 @@ void MainMenuDisplay(MGLDraw *mgl)
 
 	planetSpr->GetSprite(0)->Draw(64, 16, mgl);
 
+	planetSpr->GetSprite(1)->Draw(200, mgl->GetHeight() - 24, mgl);
+
 	x=0;
 	y=100;
 	for(i=0;i<6;i++)

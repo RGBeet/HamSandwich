@@ -424,9 +424,9 @@ byte PlayerPowerup(int powerup)
 				player.garlic=0;
 				return 1;
 			case PU_SPEED:
-				if (!goodguy->speed) // no speed to take
+				if (!goodguy->quickness) // no speed to take
 					return 0;
-				goodguy->speed = 0;
+				goodguy->quickness = 0;
 				player.speed[1] = 0;
 				CalculateMusicSpeed();
 				return 1;
@@ -514,46 +514,6 @@ void PlayerRadioactiveFood(void)
 			NewMessage("Atomic Inviso-Power!",75,0);
 			player.invisibility[0] = 30 * 10;
 			player.invisibility[1] = 30 * 10;
-			break;
-	}
-}
-
-void PlayerChineseFood(void)
-{
-	goodguy->poison=0;
-	switch(Random(8))
-	{
-		case 0:
-			NewMessage("Just fried rice",75,0);
-			PlayerHeal(5);
-			break;
-		case 1:
-			NewMessage("Mmm, Kung Pao!",75,0);
-			PlayerHeal(25);
-			break;
-		case 2:
-			NewMessage("Szechwan Shredded Pork!!",75,0);
-			PlayerHeal(50);
-			break;
-		case 3:
-			NewMessage("Moo Shi Beef!",75,0);
-			PlayerHeal(25);
-			break;
-		case 4:
-			NewMessage("Ick, mostly veggies",75,0);
-			PlayerHeal(1);
-			break;
-		case 5:
-			NewMessage("Hmm, tastes kind of citrusy",75,0);
-			PlayerHeal(15);
-			break;
-		case 6:
-			NewMessage("Joy! Wontons!",75,0);
-			PlayerHeal(20);
-			break;
-		case 7:
-			NewMessage("GeneralTsao has outdone himself",75,0);
-			PlayerHeal(40);
 			break;
 	}
 }
@@ -1369,6 +1329,17 @@ void DoJetpackLogic(Guy *me)
 	}
 }
 
+int GetPlayerMaxSpeed(void)
+{
+	switch (player.playAs)
+	{
+		default:
+			return 6 * FIXAMT;
+		case PLAY_AXOLOTL:
+			return 7 * FIXAMT;
+	}
+}
+
 void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 {
 	byte c;
@@ -1392,7 +1363,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	if(player.torch)
 		player.torch--;
 
-	if(PlayerGetAccelerate()>0)
+	if(PlayerGetAccelerate()>0) // speed up
 	{
 		if (PlayerGetAccelerate() == 30 * 2)
 			MakeSound(SND_TIMEWARN, me->x, me->y, SND_CUTOFF, 1200);
@@ -1400,7 +1371,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			CalculateMusicSpeed();
 	}
 
-	if(PlayerGetTimeStop()>0)
+	if(PlayerGetTimeStop()>0) // time stop
 	{
 		player.timeStop[0]--;
 		if (PlayerGetTimeStop() == 30 * 2)
@@ -1408,7 +1379,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		else if (PlayerGetTimeStop() == 1)
 		{
 			player.timeStop[0]=0;
-			printf("Time Stop Over");
+			//printf("Time Stop Over");
 			RestoreGameplayGfx();
 			CalculateMusicSpeed();
 		}
@@ -1417,16 +1388,19 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	if(player.ammoCrate)
 		player.ammoCrate--;
 
+	if (player.invisibility[0])
+		player.invisibility[0]--;
+
+	if (player.auraDmg[0])
+		player.auraDmg[0]--;
+
+	if (player.cheesePower)
+		player.cheesePower--;
+
 	if(player.rageClock && GetGameMode()!=GAMEMODE_RAGE)
 		DoRage(me);
 
-	if(player.invisibility[0])
-		player.invisibility[0]--;
-
-	if(player.cheesePower)
-		player.cheesePower--;
-
-	if(player.jetting && me->seq!=ANIM_DIE && me->seq!=ANIM_A3)
+	if(player.jetting && me->seq!=ANIM_DIE && me->seq!=ANIM_A3) // jetpack update
 	{
 		me->dx+=Cosine(me->facing*32)*6;
 		me->dy+=Sine(me->facing*32)*6;
@@ -1469,6 +1443,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 
 	if(player.reload)
 		player.reload--;
+
 	if(player.wpnReload)
 		player.wpnReload--;
 
@@ -1480,13 +1455,21 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	}
 
 	if(player.shield)
-		player.shield--;
+	{
+		if (player.shield-- % 2 == 1)
+			MakeShieldParticles(me->x + Cosine((player.shield % 16)*16)*32, me->y + Sine((player.shield % 16) * 16) * 32,
+				me->z + FIXAMT * 40, FIXAMT * 2);
+	}
 
 	if(player.pushPower)
 		player.pushPower--;
 
+
 	if (player.waterWalk)
-		player.waterWalk--;
+	{
+		if (player.waterWalk-- % 2 == 1)
+			BlowBubble(me->x + Cosine((player.waterWalk % 16) * 16) * 32, me->y + Sine((player.waterWalk % 16) * 16) * 32, me->z + FIXAMT * 16, FIXAMT * 2);
+	}
 
 	if(tportclock)
 		tportclock--;
@@ -1521,6 +1504,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 				MakeSound(SND_BOING + Random(3), me->x, me->y, SND_CUTOFF | SND_RANDOM, 2);
 			}
 			break;
+		// launch the player (and stun them)
 		case TRN_LNCHUP:
 		case TRN_LNCHDN:
 		case TRN_LNCHLF:
@@ -1741,7 +1725,9 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			player.boredom=0;
 			if(player.hammers>0)
 				PlayerThrowHammer(me);
-			player.reload+=(10-(4-(player.hamSpeed>>2)));;
+
+			player.reload+=(10-(4-(player.hamSpeed>>2)));
+
 			if(player.modifier[MDFY_RELOAD]) // slower reload modifier
 				player.reload*=1.5;
 		}
@@ -1797,7 +1783,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	}
 	if(c&CONTROL_B2)
 	{
-		if (player.vehicle == VE_YUGO && goodguy->parent && goodguy->parent->mind3 == 0)
+		if (player.vehicle == VE_YUGO && goodguy->parent && goodguy->parent->mind3 == 0) // it's drifting time
 			goodguy->parent->mind3 = 120;
 	}
 	// if you are moving indeed
@@ -1805,14 +1791,14 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	{
 		terrainType = GetTerrain(world, mapTile->floor)->type;
 
-		if (terrainType == TRN_ICE && !(player.hammerFlags & HMR_NOSKID))
+		if (terrainType == TRN_ICE && !(player.hammerFlags & HMR_NOSKID)) // icy terrain
 		{
 			me->dx += Cosine(me->facing * 32)/4;
 			me->dy += Sine(me->facing * 32)/4;
-			Clamp(&me->dx, PLYR_MAXSPD * 3/2);
-			Clamp(&me->dy, PLYR_MAXSPD * 3/2);
+			Clamp(&me->dx, GetPlayerMaxSpeed() * 3/2);
+			Clamp(&me->dy, GetPlayerMaxSpeed() * 3/2);
 		}
-		else if ((terrainType == TRN_MUD || terrainType == TRN_QUICKSAND) && !(player.hammerFlags & HMR_NOSKID))
+		else if ((terrainType == TRN_MUD || terrainType == TRN_QUICKSAND) && !(player.hammerFlags & HMR_NOSKID)) // slow terrains (mud/quicksand)
 		{
 			me->dx += Cosine(me->facing * 32)*3/2;
 			me->dy += Sine(me->facing * 32)*3/2;
@@ -1820,15 +1806,15 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 				me->dx = 0;
 			if ((Sine(me->facing * 32) < 0 && me->dy > 0) || (Sine(me->facing * 32) > 0 && me->dy < 0))
 				me->dy = 0;
-			Clamp(&me->dx, PLYR_MAXSPD/2);
-			Clamp(&me->dy, PLYR_MAXSPD/2);
+			Clamp(&me->dx, GetPlayerMaxSpeed()/2);
+			Clamp(&me->dy, GetPlayerMaxSpeed()/2);
 			if (me->z == 0)
 			{
 				SpurtParticles(PART_DIRT, 0, me->x, me->y, 0, ((me->facing * 32) + 128) & 255, 8);
 				SpurtParticles(PART_DIRT, 1, me->x, me->y, 0, ((me->facing * 32) + 128) & 255, 8);
 			}
 		}
-		else
+		else // moving: normal terrain
 		{
 			me->dx += Cosine(me->facing * 32) * 3 / 2;
 			me->dy += Sine(me->facing * 32) * 3 / 2;
@@ -1836,8 +1822,8 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 				me->dx = 0;
 			if ((Sine(me->facing * 32) < 0 && me->dy > 0) || (Sine(me->facing * 32) > 0 && me->dy < 0))
 				me->dy = 0;
-			Clamp(&me->dx, PLYR_MAXSPD);
-			Clamp(&me->dy, PLYR_MAXSPD);
+			Clamp(&me->dx, GetPlayerMaxSpeed());
+			Clamp(&me->dy, GetPlayerMaxSpeed());
 		}
 
 		if(me->seq!=ANIM_MOVE)
@@ -1845,7 +1831,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			me->seq=ANIM_MOVE;
 			me->frm=0;
 			me->frmTimer=0;
-			me->frmAdvance=128;
+			me->frmAdvance = GetPlayerMaxSpeed() / (6*FIXAMT) * 128;
 		}
 		player.boredom=0;
 	}
@@ -1874,7 +1860,16 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		player.boredom++;
 		if(player.boredom>(int)(200+Random(3200)))
 		{
-			MakeSound(SND_BOUAPHABORED,me->x,me->y,SND_CUTOFF|SND_ONE,2000);
+			switch (player.playAs)
+			{
+				default:
+				case PLAY_BOUAPHA:
+				MakeSound(SND_BOUAPHABORED,me->x,me->y,SND_CUTOFF|SND_ONE,2000);
+					break;
+				case PLAY_AXOLOTL:
+				MakeSound(SND_RIOBORED,me->x,me->y,SND_CUTOFF|SND_ONE,2000);
+					break;
+			}
 			me->seq=ANIM_A2;
 			me->frm=0;
 			me->frmTimer=0;
@@ -2071,13 +2066,19 @@ void PlayerControlPowerArmor(Guy *me,mapTile_t *mapTile,world_t *world)
 }
 
 
-byte PlayerIsMovingAgainstVehicle(Guy *vehicle, Guy *goodguy)
+byte PlayerIsMovingOnVehicle(Guy *vehicle, Guy *goodguy)
 {
 	byte c = GetControls();
 	if (!goodguy || !vehicle || vehicle->mind == 0)
 		return 0;
 
-	return (((c & CONTROL_UP) && vehicle->dy > 0) || ((c & CONTROL_DN) && vehicle->dy < 0) || ((c & CONTROL_LF) && vehicle->dx > 0) || ((c & CONTROL_RT) && vehicle->dx < 0));
+	if (((c & CONTROL_UP) && vehicle->dy > 0) || ((c & CONTROL_DN) && vehicle->dy < 0) || ((c & CONTROL_LF) && vehicle->dx > 0) || ((c & CONTROL_RT) && vehicle->dx < 0))
+		return 1; // moving against vehicle (slow down)
+
+	if (((c & CONTROL_UP) && vehicle->dy < 0) || ((c & CONTROL_DN) && vehicle->dy > 0) || ((c & CONTROL_LF) && vehicle->dx < 0) || ((c & CONTROL_RT) && vehicle->dx > 0))
+		return 2; // moving with the vehicle (speed up)
+
+	return 0; // not moving at all
 }
 
 void PlayerControlMiniSub(Guy *me,mapTile_t *mapTile,world_t *world)
@@ -2337,18 +2338,19 @@ const int GetWeaponIcon(byte weapon)
 }
 
 static const char afflictName[][16] = {
-	"None",
 	"Poison",
 	"Freeze",
 	"Burn",			// new
 	"Weakened",
-	"Strength"
+	"Strength",
+	"Slowness",
+	"Speed"
 };
-static_assert(std::size(afflictName) == 6, "Must give new affliction a name");
+static_assert(std::size(afflictName) == 7, "Must give new affliction a name");
 
 const char* GetAfflictName(byte afflict)
 {
-	if (afflict < 3)
+	if (afflict < 6)
 		return afflictName[afflict];
 	return "???";
 }
@@ -2371,28 +2373,30 @@ const char* GetKeychainName(byte keychain)
 }
 
 static const char particleName[][24] = {
-	"Rain",
-	"Snow",
-	"Dirt",
-	"Hammer Bits",
-	"Slime",
-	"Smoke",
-	"Explosion",
-	"Water",
-	"Lightning",
-	"Garlic Stink",
-	"Stained Glass",
-	"Bubble",
-	"Colorful",
-	"Radar",
-	"Fire",
-	"AK Bullet Splat",
-	"Shrapnel",
-	"Light",
-	"Swap Particle",
-	"Suck Particle",
-	"Falling Petal",
-	"???"
+	"PART_RAIN",
+	"PART_SNOW",
+	"PART_DIRT",
+	"PART_HAMMER",
+	"PART_SLIME",
+	"PART_SMOKE",
+	"PART_BOOM",
+	"PART_WATER",
+	"PART_LIGHTNING",
+	"PART_STINKY",
+	"PART_GLASS",
+	"PART_BUBBLE",
+	"PART_COLOR",
+	"PART_RADAR",
+	"PART_FIRE",
+	"PART_AKSPLAT",
+	"PART_SHRAPNEL",
+	"PART_LIGHT",
+	"PART_SWAP",			// used to spice up swapguns a little
+	"PART_SUCK",			// black hole gun
+	"PART_PETAL",			// pink petals
+	"PART_FOG",			// fog particles
+	"PART_YELLOW",
+	"PART_LIGHT"
 };
 
 const char* GetParticleName(byte particle)
@@ -2611,13 +2615,13 @@ word PlayerGetTimeStop()
 // Sets and gets the player acceleration powerup.
 void PlayerSetAccelerate(word amt)
 {
-	goodguy->speed		= amt;
+	goodguy->quickness		= amt;
 	player.speed[1]		= amt;
 	CalculateMusicSpeed(); // x1.5 speed
 }
 word PlayerGetAccelerate()
 {
-	return goodguy ? goodguy->speed : 0;
+	return goodguy ? goodguy->quickness : 0;
 }
 void PlayerSetAuraDamage(word amt)
 {

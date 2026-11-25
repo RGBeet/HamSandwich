@@ -171,6 +171,9 @@ byte InitLevel(byte map)
 	InitCheater();
 
 	GetSpecialsFromMapAndWorld(curMap->special, curWorld.special);
+	GetMarkersFromMap(curMap->marker);
+
+
 	InitSpecialsForPlay();
 	ClearCameraBounds();
 	ClearCameraFocus();
@@ -976,6 +979,7 @@ TASK(void) TestLevel(world_t *world,byte level)
 	curWorld = {};
 	InitGuys(256);
 	GetSpecialsFromMapAndWorld(EditorGetMap()->special, EditorGetWorld()->special);
+	GetMarkersFromMap(EditorGetMap()->marker);
 	editing=1;
 }
 

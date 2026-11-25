@@ -462,6 +462,11 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 			eff->value		= 1;
 			eff->value2		= 200;
 			break;
+		case EFF_SETPATH:
+			eff->value = MONS_ANYBODY;
+			eff->x = 255;
+			eff->value2 = 0;
+			break;
 		default:
 			break;
 	}
@@ -1396,6 +1401,7 @@ byte TriggerYes(special_t *me,trigger_t *t,Map *map)
 			answer = CheckMonsterOuch(t->x, t->y, t->value, t->flags);
 			break;
 		case TRG_AFFLICT:
+			answer = CheckMonsterAfflict(t->x, t->y, t->value, t->value2);
 			break;
 		case TRG_BULLETRECT:
 			i=CountBulletsInRect(t->value,t->x,t->y,(t->value2%256),(t->value2/256));	// count how many of this type there are in the rect
@@ -1647,6 +1653,7 @@ void SpecialEffect(special_t *me,Map *map)
 					else
 					{
 						SendMessageToGame(MSG_WINLEVEL,me->effect[i].value);
+						// win sound
 						switch (player.playAs)
 						{
 							default:
@@ -1935,10 +1942,10 @@ void SpecialEffect(special_t *me,Map *map)
 				player.timer += me->effect[i].value;
 				break;
 			case EFF_CAMERAFOCUS:
-				SetCameraFocusAsPoint(me->effect[i].x * TILE_WIDTH + TILE_WIDTH / 2, me->effect[i].y * TILE_HEIGHT + TILE_HEIGHT / 2);
+				SetCameraFocusAsPoint(me->effect[i].x * TILE_WIDTH + TILE_WIDTH / 2, me->effect[i].y * TILE_HEIGHT + TILE_HEIGHT / 2, (me->effect[i].flags & EF_NOFX));
 				break;
 			case EFF_CAMERAGUY:
-				MarkAsCameraFocus(FindMonster(me->effect[i].x, me->effect[i].y, me->effect[i].value));
+				MarkAsCameraFocus(FindMonster(me->effect[i].x, me->effect[i].y, me->effect[i].value), (me->effect[i].flags & EF_NOFX));
 				break;
 			case EFF_CAMERAOFFSET:
 				SetCameraOffset(me->effect[i].value, me->effect[i].value2);
@@ -1976,6 +1983,23 @@ void SpecialEffect(special_t *me,Map *map)
 				break;
 			case EFF_MARKASBOSS:
 				MarkAsBoss(FindMonster(me->effect[i].x, me->effect[i].y, me->effect[i].value),true);
+				break;
+			case EFF_SETPATH:
+				SetEntityPath(!(me->effect[i].flags & EF_NOFX), me->effect[i].x, me->effect[i].y, me->effect[i].value, me->effect[i].value2);
+				break;
+			case EFF_AFFLICT:
+				AfflictEntity(!(me->effect[i].flags & EF_NOFX), me->effect[i].x, me->effect[i].y, me->effect[i].value, me->effect[i].value2);
+				break;
+			case EFF_CAMERARESET:
+				ClearCameraFocus();
+				ClearCameraOffset();
+				ClearCameraBounds();
+				SetCameraImmediate(!(me->effect[i].flags & EF_NOFX));
+				break;
+			case EFF_CAMERABOUNDARY:
+				v = me->effect[i].value % 256;
+				v2 = me->effect[i].value / 256;
+				SetCameraBounds(me->effect[i].x, me->effect[i].y, v, v2);
 				break;
 		}
 	}

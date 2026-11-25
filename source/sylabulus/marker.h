@@ -3,11 +3,12 @@
 
 #include "bitflags.h"
 
-#define MRK_NONE    0
-#define MRK_PATH    1
-#define MRK_PART	2
+#define MRK_NONE    0 // 
+#define MRK_PATH    1 // path for monsters (TODO: make special assigning monster to path)
+#define MRK_PART	2 // particle spawner
+#define MRK_SPAWN	3 // spawns 
 
-#define N_MRKTYPES	3
+#define N_MRKTYPES	4
 
 #define MAX_MARKER 128
 
@@ -36,5 +37,7 @@ void CheckMarkers(Map* map);
 
 word GetPathMarker(Guy* me, byte pathValue, byte currentPriority);
 byte GetMarkerCount(void);
+
+void GetMarkersFromMap(std::span<marker_t> list);
 
 #endif

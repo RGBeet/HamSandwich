@@ -121,7 +121,7 @@ void DoRage(Guy *me)
 						HammerLaunch(me->x,me->y,me->facing,5,HMR_REVERSE|HMR_REFLECT);
 					break;
 				case PLAY_AXOLOTL:
-					FireExactBullet(me->x,me->y,FIXAMT*20,Cosine((player.rageClock*16))*12,Sine((player.rageClock*16))*12,0,0,50,0,BLT_LUNA2,1);
+					FireExactBullet(me->x,me->y,FIXAMT*20,Cosine((player.rageClock*32))*12,Sine((player.rageClock*32))*12,0,0,50,0,BLT_RIOHAMMER2,1);
 					break;
 			}
 			break;

@@ -253,15 +253,33 @@ void AI_MineCart(Guy* me, Map* map, world_t* world, Guy* goodguy)
 	goodguy->dy = 0;
 	goodguy->dz = 0;
 
-	if (!PlayerIsMovingAgainstVehicle(me, goodguy))
+
+	if (me->mind4)
+		me->mind4--;
+
+	byte moving = PlayerIsMovingOnVehicle(me, goodguy);
+	byte angle;
+	switch (moving)
 	{
-		if (me->mind1 < 96)
-			me->mind1++;
-	}
-	else
-	{
-		if (me->mind1 > 8)
-			me->mind1--;
+		case 0:
+			if (me->mind1 < 48)
+				me->mind1++;
+			else if (me->mind1 > 48)
+				me->mind1--;
+			break;
+		case 2:
+			angle = ((me->mind3) + 128) & 255;
+			if (me->mind1 < 96)
+				me->mind1++;
+			SpurtParticles(PART_HAMMER, 0, me->x + Cosine(angle) * 16, me->y + Sine(angle) * 16, FIXAMT * 4, angle, 6);
+			SpurtParticles(PART_HAMMER, 1, me->x + Cosine(angle) * 16, me->y + Sine(angle) * 16, FIXAMT * 4, angle, 6);
+			break;
+		case 1:
+			angle = (me->mind3) & 255;
+			if (me->mind1 > 8)
+				me->mind1--;
+			SpurtParticles(PART_DIRT, 0, me->x+Cosine(angle)*16, me->y+Sine(angle)*16, FIXAMT * 4, angle, 4);
+			break;
 	}
 
 	if (me->seq != ANIM_MOVE)
@@ -431,19 +449,22 @@ void AI_Raft(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		goodguy->dy = 0;
 		goodguy->dz = 0;
 
-		if (PlayerIsMovingAgainstVehicle(me, goodguy))
+		byte moving = PlayerIsMovingOnVehicle(me, goodguy);
+		switch (moving)
 		{
-			if (me->mind1>4)
-				me->mind1--;
-			if (me->mind1>16)
-				me->mind1--;
-		}
-		else
-		{
-			if(me->mind1<8)
-				me->mind1++;
-			if(me->mind1<24)
-				me->mind1++;
+			case 0:
+			case 2:
+				if (me->mind1 < 8)
+					me->mind1++;
+				if (me->mind1 < 24)
+					me->mind1++;
+				break;
+			case 1:
+				if (me->mind1 > 4)
+					me->mind1--;
+				if (me->mind1 > 16)
+					me->mind1--;
+				break;
 		}
 
 		if (me->seq != ANIM_MOVE)

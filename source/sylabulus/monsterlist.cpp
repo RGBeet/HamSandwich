@@ -115,7 +115,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,10,11,12,13,14,15,16,17,255},		// attack
 				{25,48,49,50,51,52,53,254,54,254,55,255},	// defeated
 				{18,19,20,21,21,21,22,23,255},				// water pour
-				NULL_ANIM,
+				{7,8,9,10,11,12,13,14,15,16,17,255},		// attack (work)
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
@@ -288,7 +288,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 				NULL_ANIM,
 			},0},
-		{"Easter Egg",255,255,0,AI_Gingersnap,
+		{"Easter Egg",255,255,0,AI_EasterEgg,
 		 18,26,128,1000,"graphics/easteregg.jsp",0,{},
 		 MT_EVIL | MT_WACKY,
 			{
@@ -619,7 +619,7 @@ MonsterType monsType[NUM_MONSTERS]=
 				{7,8,9,10,11,12,13,14,15,16,17,255},		// attack
 				{25,48,49,50,51,52,53,254,54,254,55,255},	// defeated
 				{18,19,20,21,21,21,22,23,255},				// water pour
-				NULL_ANIM,
+				{7,8,9,10,11,12,13,14,15,16,17,255},		// attack (work)
 				NULL_ANIM,
 				NULL_ANIM,
 				NULL_ANIM,
@@ -906,15 +906,15 @@ MonsterType monsType[NUM_MONSTERS]=
 				NULL_ANIM,
 			},0 },
 		{"Punk Bunny",255,255,0,AI_PunkBunny,
-		 8,16,40,100,"graphics/punkbunny.jsp",0,{},
+		 8,40,40,100,"graphics/punkbunny.jsp",0,{},
 		 MT_ANIMAL | MT_URBAN | MT_GOOD,
 			{
-				{0,255},	// idle
-				{1,2,1,0,3,4,3,0,255},	// walk
-				{5,6,7,8,9,7,8,9,7,8,9,10,7,6,5,255},	// attack (machine gun)
-				{0,0,254,254,255},	// die
-				{11,12,13,14,15,255},	// A1 = bomb throw
-				{5,6,7,8,9,7,8,9,7,8,9,10,7,6,5,255},	// attack (machine gun)
+				{0,255},												// idle
+				{1,2,3,2,1,0,5,6,7,6,5,4,255},							// move
+				{8,9,10,11,12,13,12,11,12,13,12,11,12,13,14,15,255},	// attack
+				{15,16,17,18,19,20,21,22,23,24,25,255},					// die
+				{26,27,28,29,30,31,32,33,32,31,30,29,28,27,255},		// A1 = laser gun?
+				{34,35,36,37,38,39,255},								// A2 = bombs
 				{5,6,7,8,9,7,8,9,7,8,9,10,7,6,5,255},	// attack (machine gun)
 				{5,6,7,8,9,7,8,9,7,8,9,10,7,6,5,255},	// attack (machine gun)
 				{5,6,7,8,9,7,8,9,7,8,9,10,7,6,5,255},	// attack (machine gun)
@@ -1271,7 +1271,7 @@ MonsterType monsType[NUM_MONSTERS]=
 			}},
 		
 		{"Spotlight",255,255,16,AI_Spotlight,
-		 11,29,6,300,"graphics/burner.jsp",0,MF_WATERWALK|MF_FREEWALK,
+		 11,29,6,300,"graphics/burner.jsp",0,MF_WATERWALK|MF_FREEWALK|MF_WATERWALK|MF_WALLWALK|MF_INVINCIBLE|MF_NOHIT,
 		 MT_EVIL|MT_TRAP,
 			{
 				{254,255},	// idle
@@ -1284,7 +1284,7 @@ MonsterType monsType[NUM_MONSTERS]=
 		 MT_BITS,
 			{
 				{0,255},	// idle
-				{0,1,2,3,4,5,255},	// move
+				{5,4,3,2,1,0,255},	// move
 				{0,1,2,3,4,5,255},	// move
 				{0,1,2,3,4,5,255},	// move
 				NULL_ANIM,

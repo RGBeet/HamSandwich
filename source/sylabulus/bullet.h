@@ -13,63 +13,64 @@
 // SERIALIZED in the Summon/Change Bullet special effects. Add to end, don't reorder.
 enum BulletType : byte
 {
-	BLT_NONE          = 0,
-	BLT_HAMMER        = 1,
-	BLT_HAMMER2       = 2, // this is a hammer with reflection
-	BLT_MISSILE       = 3,
-	BLT_FLAME         = 4,
-	BLT_LASER         = 5,
-	BLT_ACID          = 6,
-	BLT_BOMB          = 7,
-	BLT_BOOM          = 8,
-	BLT_ENERGY        = 9,
-	BLT_MEGABEAM      = 10, // this is a ball of energy that launches off a megabeam1
-	BLT_MEGABEAM1     = 11, // this is a huge laser beam (downward)
-	BLT_MEGABEAM2     = 12, // this is the laser hitting an object (just a visual effect)
-	BLT_FLAME2        = 13, // just like flame, except it is anti-Bouapha
-	BLT_SPORE         = 14,
-	BLT_SHROOM        = 15,
-	BLT_GRENADE       = 16, // energy grenade, an enemy weapon
-	BLT_YELBOOM       = 17, // yellow explosion made by energy grenade
-	BLT_SHOCKWAVE     = 18, // purple shockwave, for Super Zombie stomp
-	BLT_LILBOOM       = 19, // explosion made by missile
-	BLT_SNOWBALL      = 20,
-	BLT_BIGSNOW       = 21,
-	BLT_ICESPIKE      = 22, // spike juts out of the ground
-	BLT_ROCK          = 23,
-	BLT_SPINE         = 24, // cactus spine
-	BLT_EVILHAMMER    = 25, // a grey hammer that is anti-bouapha
-	BLT_BIGSHELL      = 26, // Bouapha's power armor shoots these
-	BLT_BIGAXE        = 27, // Bouapha weapon
-	BLT_LIGHTNING     = 28, // Bouapha weapon
-	BLT_SPEAR         = 29, // Bouapha's version of the pygmy spear
-	BLT_SLASH         = 30, // Bouapha's machete slash
-	BLT_MINE          = 31, // Bouapha's mines
-	BLT_BADSPEAR      = 32, // pygmy-thrown spear
-	BLT_ORBITER       = 33, // guy that flies around Bouapha shooting
-	BLT_GREEN         = 34, // friendly green bullets
-	BLT_BALLLIGHTNING = 35,
-	BLT_LIGHTNING2    = 36,
-	BLT_MINDWIPE      = 37,
-	BLT_REFLECT       = 38,
-	BLT_SWAP          = 39,
-	BLT_SHARK         = 40,
-	BLT_ORBITER2      = 41, // orbit bomber
-	BLT_HARPOON       = 42, // a spear, underwater - only difference is it sinks much more slowly
-	BLT_SCANNER       = 43, // what the scanner scans with
-	BLT_SCANSHOT      = 44, // the shots the scanner fires after scanning
-	BLT_TORPEDO       = 45, // Bouapha's minisub shoots them
-	BLT_DIRTSPIKE     = 46, // ice spike in brown
-	BLT_PAPER         = 47,
-	BLT_SCANLOCK      = 48, // the scanner locked onto a guy
-	BLT_BUBBLE        = 49,
-	BLT_FREEZE        = 50,
-	BLT_BUBBLEPOP     = 51, // a bubble that is popping, just visual effect
-	BLT_LILBOOM2      = 52, // a harmless lilboom
-	BLT_CHEESEHAMMER  = 53, // enhanced hammers
-	BLT_FREEZE2       = 54, // a freeze bullet that drops like acid bullets and splats
-	BLT_LUNA          = 55, // lunachick's bullets
-	BLT_LUNA2         = 56, // lunachick's bullets with wall-bounce power
+	BLT_NONE			= 0,
+	BLT_HAMMER			= 1,
+	BLT_HAMMER2			= 2, // this is a hammer with reflection
+	BLT_MISSILE			= 3,
+	BLT_FLAME			= 4,
+	BLT_LASER			= 5,
+	BLT_ACID			= 6,
+	BLT_BOMB			= 7,
+	BLT_BOOM			= 8,
+	BLT_ENERGY			= 9,
+	BLT_MEGABEAM		= 10, // this is a ball of energy that launches off a megabeam1
+	BLT_MEGABEAM1		= 11, // this is a huge laser beam (downward)
+	BLT_MEGABEAM2		= 12, // this is the laser hitting an object (just a visual effect)
+	BLT_FLAME2			= 13, // just like flame, except it is anti-Bouapha
+	BLT_SPORE			= 14,
+	BLT_SHROOM			= 15,
+	BLT_GRENADE			= 16, // energy grenade, an enemy weapon
+	BLT_YELBOOM			= 17, // yellow explosion made by energy grenade
+	BLT_SHOCKWAVE		= 18, // purple shockwave, for Super Zombie stomp
+	BLT_LILBOOM			= 19, // explosion made by missile
+	BLT_SNOWBALL		= 20,
+	BLT_BIGSNOW			= 21,
+	BLT_ICESPIKE		= 22, // spike juts out of the ground
+	BLT_ROCK			= 23,
+	BLT_SPINE			= 24, // cactus spine
+	BLT_EVILHAMMER		= 25, // a grey hammer that is anti-bouapha
+	BLT_BIGSHELL		= 26, // Bouapha's power armor shoots these
+	BLT_BIGAXE			= 27, // Bouapha weapon
+	BLT_LIGHTNING		= 28, // Bouapha weapon
+	BLT_SPEAR			= 29, // Bouapha's version of the pygmy spear
+	BLT_SLASH			= 30, // Bouapha's machete slash
+	BLT_MINE			= 31, // Bouapha's mines
+	BLT_BADSPEAR		= 32, // pygmy-thrown spear
+	BLT_ORBITER			= 33, // guy that flies around Bouapha shooting
+	BLT_GREEN			= 34, // friendly green bullets
+	BLT_BALLLIGHTNING	= 35,
+	BLT_LIGHTNING2		= 36,
+	BLT_MINDWIPE		= 37,
+	BLT_REFLECT			= 38,
+	BLT_SWAP			= 39,
+	BLT_SHARK			= 40,
+	BLT_ORBITER2		= 41, // orbit bomber
+	BLT_HARPOON			= 42, // a spear, underwater - only difference is it sinks much more slowly
+	BLT_SCANNER			= 43, // what the scanner scans with
+	BLT_SCANSHOT		= 44, // the shots the scanner fires after scanning
+	BLT_TORPEDO			= 45, // Bouapha's minisub shoots them
+	BLT_DIRTSPIKE		= 46, // ice spike in brown
+	BLT_PAPER			= 47,
+	BLT_SCANLOCK		= 48, // the scanner locked onto a guy
+	BLT_BUBBLE			= 49,
+	BLT_FREEZE			= 50,
+	BLT_BUBBLEPOP		= 51, // a bubble that is popping, just visual effect
+	BLT_LILBOOM2		= 52, // a harmless lilboom
+	BLT_CHEESEHAMMER	= 53, // enhanced hammers
+	BLT_FREEZE2			= 54, // a freeze bullet that drops like acid bullets and splats
+
+	BLT_RIOHAMMER		= 55, // rio's hammers
+	BLT_RIOHAMMER2		= 56, // ditto, with wall bouncing
 	
 	BLT_BOOMERANG		= 57,
 	BLT_MEGABLAST		= 58,
@@ -132,6 +133,7 @@ void RenderBoom(int x, int y, int z, char bright, byte frm);
 void RenderBubble(int x, int y, int z, char bright, byte frm);
 void RenderMindControl(int x, int y, int z, char bright, byte frm);
 void RenderStinky(int x, int y, int z, char bright, byte frm);
+void RenderShield(int x, int y, int z, char bright, byte frm);
 
 void QuadMissile(int x, int y, byte facing, byte friendly);
 void LaunchMegabeam(int x, int y, word owner);

@@ -130,8 +130,10 @@
 #define EFF_RANDCOLOR		49	// sets the set color of a monster to a random color
 
 #define EFF_CAMERABOUNDARY	50	// focus camera on a rectangle
+#define EFF_SETPATH			51	// set "path" (mind1) for path enemies. will update later when a path variable is made.
+#define EFF_CAMERARESET		52	// reset camera settings.
 
-#define EFF_MAX				51
+#define EFF_MAX				53
 
 #define OLD_MAX_TRIGGERS	33
 #define OLD_MAX_EFFECTS		38

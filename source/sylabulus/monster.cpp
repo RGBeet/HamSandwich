@@ -349,15 +349,15 @@ void DrawMe(Guy* g, const sprite_set_t* set) {
 	switch (type)
 	{
 		case ENT_KAPTANA:
-			if (g->mind2 && g->seq != ANIM_DIE)
-				v += 24; // special case for Kaptana when mind == 3
+			if (g->mind2 && g->seq != ANIM_DIE) // dude has no water
+				v += 24;
 			break;
 		case ENT_MIKASA:
-			if (v == 0 && g->mind > 0)
+			if (v == 0 && g->mind > 0) // dude is flying
 				v = 8;
 			break;
 		case ENT_DULLDRUM:
-			if (v == 0 && g->mind > 1)
+			if (v == 0 && g->mind > 1) // case is open
 				v = 6;
 			break;
 	}
@@ -484,7 +484,7 @@ void DrawMe(Guy* g, const sprite_set_t* set) {
 	DrawStatusIcon(g->ignite, 123);
 	DrawStatusIcon(g->slow, 124);
 	DrawStatusIcon(g->weaken, 125);
-	DrawStatusIcon(g->speed, 126);
+	DrawStatusIcon(g->quickness, 126);
 	DrawStatusIcon(g->strength, 127);
 }
 

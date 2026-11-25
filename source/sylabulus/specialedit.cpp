@@ -105,56 +105,56 @@ static byte realClick;
 
 static const char trigName[][32]={
 	"Unused",
-	"Step On/Near Coordinate",
-	"Step In Rectangle",
-	"Have Item",
-	"Shoot Item/Wall",
-	"Entities Alive",
-	"Defeat Entity",
-	"Floor Is Tile",
-	"Passed Levels",
-	"Passed Specific Level",
-	"Variable Check",
-	"Timed",
-	"Check Frames",
-	"Random Chance",
-	"Chain Off Special",
-	"Tiles in Rectangle",
-	"Entity Life",
-	"Step On Tile",
-	"Get Item At",
-	"Item At Coordinate",
+	"Map: Step On/Near Coord.",
+	"Map: Step In Rect.",
+	"Player: Have Item",
+	"Map: Shoot Item/Wall",
+	"Level: Entities Alive",
+	"Level: Defeat Entity",
+	"Map: Floor Is Tile",
+	"World: Passed Lvls.",
+	"World: Passed Specific Lvl.",
+	"Math: Variable Check",
+	"Level: Timed Check",
+	"Level: Delayed Check",
+	"Level: Random Chance",
+	"Map: Chain Off Special",
+	"Map: Tiles in Rect.",
+	"Entity: Check Life",
+	"Entity: Step On Tile",
+	"Player: Get Item At",
+	"Map: Item At Coordinate",
 	"Entity Awake",
-	"Items In Level",
-	"Compare Areas",
-	"Compare Vars",
-	"Entity in Rectangle",
-	"Item In Rectangle",
-	"Game Difficulty",
-	"Key Press",
-	"Playable Character",
-	"Entity Color",
-	"Equation",
-	"Variable Equation",
-	"Bullet In Rectangle",
+	"Map: Items In Level",
+	"Map: Compare Areas",
+	"Math: Compare Vars",
+	"Map: Entity in Rect.",
+	"Map: Item In Rect.",
+	"Player: Difficulty",
+	"Player: Key Press",
+	"Player: Check Char.",
+	"Entity: Check Color",
+	"Math: Equation",
+	"Math: Var. Equation",
+	"Map: Bullet In Rectangle",
 
-	"Countdown Timer",
-	"Entity Hurt",
-	"Has Status Effect",
+	"Level: Check Timer",
+	"Entity: Check Hurt",
+	"Entity: Check Affliction",
 
-	"Rage Bar Value",
-	"Player Has Raged",
+	"Player: Rage Value",
+	"Player: Has Raged",
 
-	"Entity Proximity",
-	"Entity Line of Sight",
+	"Entity: Check Proximity",
+	"Entity: Check Line of Sight",
 
-	"Key From Other World",
-	"Other World Percentage",
-	"Adjacent Color Special",
-	"Monster Age",
-	"Step On Tile Var.",
-	"Force Activate At Start",
-	"Stealth Check"
+	"Game: Check LoonyKeys",
+	"Game: World Percentage",
+	"Map: Check Adj. Color Special",
+	"Entity: Age",
+	"Map: Step On Tile Var.",
+	"Level: Activate At Start",
+	"Player: Check Stealth"
 };
 
 static const char effName[][32]={
@@ -162,52 +162,55 @@ static const char effName[][32]={
 	"Show Message",
 	"Play Sound",
 	"Play Song",
-	"Win Level",
-	"Go To Level",
-	"Teleport",
-	"Change Tiles",
-	"Summon Entity",
-	"Change Light Value",
+	"Level: Win",
+	"Level: Go To",
+	"Entity: Teleport",
+	"Change Tile(s)",
+	"Entity: Summon",
+	"Light: Set Value",
 	"Show Picture or Movie",
-	"Change Items",
-	"Copy Map Tiles",
-	"Kill Entities",
-	"Change Entites",
-	"Change Entity Team",
-	"Disable Special",
+	"Item: Change",
+	"Map: Copy Tiles",
+	"Entity: Destroy",
+	"Entity: Change Type",
+	"Entity: Set Team",
+	"Special: Remove",
 	"Set Variable",
-	"Light Rectangle",
-	"Toggle Level Flags",
-	"Old Toggle",
-	"Set Entity Life",
+	"Light: Rectangle",
+	"Level: Toggle Flags",
+	"OLD Toggle",
+	"Entity: Set Life",
 	"Force Player Weapon",
-	"Tag Target Entity",
-	"Tag Entity",
-	"Set Entity Item",
-	"Change Tile to Variable",
-	"Change Entity Life",
-	"Set Entity AI",
-	"Set Entity Name",
-	"Set Entity Color",
-	"Set Entity Bright",
-	"Force Playable Character",
-	"Set Entity Graphics",
-	"Set Item Graphics",
+	"Entity: Tag Target",
+	"Entity: Tag",
+	"Entity: Set Item",
+	"Map: Tile to Variable",
+	"Entity: Change Life",
+	"Entity: Set AI",
+	"Entity: Set Name",
+	"Entity: Set Color",
+	"Entity: Set Brightness",
+	"Player: Force Character",
+	"Entity: Set Graphics",
+	"World: Set Item Graphics",
 	"Set Variable Bar",
-	"Summon Bullet",
-	"Change Bullet",
+	"Bullet: Summon",
+	"Bullet: Change",
 	"Initiate Chat Dialogue",
-	"Adjust Countdown Clock",
-	"Focus Camera on Point",
-	"Focus Camera on Entity",
-	"Scroll Camera",
-	"Mark Entity as Boss",
-	"Set Entity Status Effect",
+	"Level: Change Timer",
+	"Camera: Focus on Point",
+	"Camera: Focus on Entity",
+	"Camera: Set Offset",
+	"Entity: Mark as Boss",
+	"Entity: Set Status Effect",
 	"Create Particle",
-	"Move Special Along Grid",
+	"Special: Move Along Grid",
 	"Set Var. to Tile Value",
-	"Edit Song Layer",
-	"Set Entity Color (Random)"
+	"Song: Adjust Layer",
+	"Entity: Randomize Color",
+	"Camera: Set Boundaries",
+	"Entity: Set Path",
+	"Camera: Reset",
 };
 
 void SetGlobalState(byte tf)
@@ -1339,8 +1342,10 @@ static void WeaponClick(int id)
 	SetupEffectButtons(curEff-effStart,(curEff-effStart)*38+264);
 }
 
+#define MAX_AFFLICTS	6
+
 // burn, poison, freeze
-static void AfflictClick(int id)
+static void AfflictTriggerClick(int id)
 {
 	byte t;
 	MakeNormalSound(SND_MENUCLICK);
@@ -1348,11 +1353,36 @@ static void AfflictClick(int id)
 	t = trgStart + id / 100 - 1;
 	ClearButtons(id, id);
 
-	spcl.trigger[t].value++;
-	if (spcl.trigger[t].value > 3)
-		spcl.trigger[t].value = 0;
+	if (!rightClick)
+	{
+		if (++spcl.trigger[t].value2 >= MAX_AFFLICTS)
+			spcl.trigger[t].value2 = 0;
+	}
+	else
+	{
+		if (--spcl.trigger[t].value2 < 0)
+			spcl.trigger[t].value2 = MAX_AFFLICTS-1;
+	}
 
 	SetupTriggerButtons(t - trgStart, (t - trgStart) * 38 + 30);
+}
+
+static void AfflictEffectClick(int id)
+{
+	curEff = effStart + (id - ID_EFF0) / 100;
+
+	if (!rightClick)
+	{
+		if (++spcl.effect[curEff].value2 >= MAX_AFFLICTS)
+			spcl.effect[curEff].value2 = 0;
+	}
+	else
+	{
+		if (--spcl.effect[curEff].value2 < 0)
+			spcl.effect[curEff].value2 = MAX_AFFLICTS-1;
+	}
+
+	SetupEffectButtons(curEff - effStart, (curEff - effStart) * 38 + 264);
 }
 
 static void KeychainClick(int id)
@@ -1920,15 +1950,16 @@ static void SetupTriggerButtons(int t,int y)
 				MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 5 + 100 * t, 0, 413, y + 17, 80, 14, "Exactly", LessMoreClick);
 			break;
 		case TRG_AFFLICT:
-			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 0 + 100 * t, 0, 50, y + 17, 1, 1, "Afflict", NULL);
-			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 1 + 100 * t, 0, 124, y + 17, 140, 14, GetAfflictName(trigger.value), AfflictClick);
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 0 + 100 * t, 0, 50, y + 17, 1, 1, "If ", NULL);
+			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 1 + 100 * t, 0, 124, y + 17, 140, 14, MonsterName(trigger.value), MonsterClick);
 			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 2 + 100 * t, 0, 228, y + 17, 1, 1, "at", NULL);
 			if (trigger.x == 255)
 				strcpy(s, "Anywhere");
 			else
 				sprintf(s, "%d, %d", effect.x, effect.y);
 			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 3 + 100 * t, 0, 248, y + 17, 75, 14, s, XY3Click);
-			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 4 + 100 * t, 0, 327, y + 17, 1, 1, "with", NULL);
+			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 4 + 100 * t, 0, 327, y + 17, 1, 1, "is afflicted with", NULL);
+			MakeButton(BTN_NORMAL, ID_TRIG0 + OFS_CUSTOM + 5 + 100 * t, 0, 424, y + 17, 140, 14, GetAfflictName(trigger.value2), AfflictTriggerClick);
 			break;
 		case TRG_MONSAGE:
 			MakeButton(BTN_STATIC, ID_TRIG0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "If", NULL);
@@ -2591,6 +2622,10 @@ static void SetupEffectButtons(int t,int y)
 			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 60, 14, "Focus camera on", NULL);
 			sprintf(s, "%d, %d", effect.x, effect.y);
 			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 258, y + 17, 70, 14, s, XY3Click);
+			if (effect.flags & EF_NOFX)
+				MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 2 + 100 * t, 0, 520, y + 17, 65, 14, "Instant", NoFXClick);
+			else
+				MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 2 + 100 * t, 0, 520, y + 17, 65, 14, "Gradual", NoFXClick);
 			break;
 		case EFF_CAMERAGUY: // FIX!!!
 			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 60, 14, "Focus camera on", NULL);;
@@ -2601,6 +2636,10 @@ static void SetupEffectButtons(int t,int y)
 			else
 				sprintf(s, "%d, %d", effect.x, effect.y);
 			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 3 + 100 * t, 0, 258, y + 17, 70, 14, s, XY3Click);
+			if (effect.flags & EF_NOFX)
+				MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 4 + 100 * t, 0, 520, y + 17, 65, 14, "Instant", NoFXClick);
+			else
+				MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 4 + 100 * t, 0, 520, y + 17, 65, 14, "Gradual", NoFXClick);
 			break;
 		case EFF_CAMERAOFFSET: // FIX!!!
 			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 50, y + 17, 1, 1, "Set Camera offset to", NULL);
@@ -2634,7 +2673,7 @@ static void SetupEffectButtons(int t,int y)
 				sprintf(s, "%d, %d", effect.x, effect.y);
 			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 3 + 100 * t, 0, 248, y + 17, 75, 14, s, XY3Click);
 			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 4 + 100 * t, 0, 327, y + 17, 1, 1, "with", NULL);
-			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 5 + 100 * t, 0, 464, y + 17, 140, 14, GetAfflictName(effect.value2), AfflictClick);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 5 + 100 * t, 0, 464, y + 17, 140, 14, GetAfflictName(effect.value2), AfflictEffectClick);
 			break;
 		case EFF_PARTICLE:
 			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 50, y + 17, 1, 1, "Make particle of type", NULL);
@@ -2673,6 +2712,33 @@ static void SetupEffectButtons(int t,int y)
 			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 2 + 100 * t, 0, 244, y + 17, 1, 1, "to volume", NULL);
 			sprintf(s, "%d", std::max(0,std::min(effect.value2,255)));
 			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 3 + 100 * t, 0, 304, y + 17, 40, 14, s, Number2Click);
+			break;
+		case EFF_SETPATH:
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "Assign", NULL);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 104, y + 17, 140, 14, MonsterName(effect.value), MonsterClick);
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 2 + 100 * t, 0, 248, y + 17, 1, 1, "at", NULL);
+			if (effect.x == 255)
+				strcpy(s, "Anywhere");
+			else
+				sprintf(s, "%d, %d", effect.x, effect.y);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 3 + 100 * t, 0, 268, y + 17, 70, 14, s, XY3Click);
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 4 + 100 * t, 0, 343, y + 17, 1, 1, "to path #", NULL);
+
+			sprintf(s, "%d", effect.value2);
+			MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 5 + 100 * t, 0, 410, y + 17, 40, 14, s, Number2Click);
+			break;
+		case EFF_CAMERARESET:
+			MakeButton(BTN_STATIC, ID_EFF0 + OFS_CUSTOM + 0 + 100 * t, 0, 40, y + 17, 1, 1, "Reset camera settings.", NULL);
+			if (effect.flags & EF_NOFX)
+				MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 520, y + 17, 65, 14, "Instant", NoFXClick);
+			else
+				MakeButton(BTN_NORMAL, ID_EFF0 + OFS_CUSTOM + 1 + 100 * t, 0, 520, y + 17, 65, 14, "Gradual", NoFXClick);
+			break;
+		case EFF_CAMERABOUNDARY:
+			MakeButton(BTN_STATIC,ID_EFF0+OFS_CUSTOM+0+100*t,0,40,y+17,1,1,"Set camera boundaries within",NULL);
+
+			sprintf(s,"(%d,%d)-(%d,%d)",effect.x,effect.y,((word)effect.value)%256,((word)effect.value)/256);
+			MakeButton(BTN_NORMAL,ID_EFF0+OFS_CUSTOM+3+100*t,0,223,y+17,140,14,s,Rect2Click);
 			break;
 	}
 }

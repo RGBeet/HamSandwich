@@ -163,17 +163,23 @@ void Particle::Update(Map *map)
 
 	if(life>0)
 	{
-		if(type!=PART_LIGHTNING)
+		switch (type)
 		{
-			dz-=FIXAMT;
-			x+=dx;
-			y+=dy;
-			z+=dz;
-			if(z<0)
-			{
-				z=0;
-				dz=-dz/2;
-			}
+			case PART_LIGHTNING:
+			case PART_SHIELD:
+				// do nothing!
+				break;
+			default:
+				dz -= FIXAMT;
+				x += dx;
+				y += dy;
+				z += dz;
+				if (z < 0)
+				{
+					z = 0;
+					dz = -dz / 2;
+				}
+				break;
 		}
 
 		life--;
@@ -523,11 +529,18 @@ void Particle::Update(Map *map)
 			return;
 		}
 
-		if(type==PART_SMOKE || type==PART_BOOM || type==PART_STINKY || type==PART_BUBBLE || type==PART_MINDCONTROL)
+		switch (type)
 		{
-			mapx=(x/TILE_WIDTH)>>FIXSHIFT;
-			mapy=(y/TILE_HEIGHT)>>FIXSHIFT;
-			color=64+map->GetTile(mapx,mapy)->templight;
+			case PART_SMOKE:
+			case PART_BOOM:
+			case PART_STINKY:
+			case PART_BUBBLE:
+			case PART_MINDCONTROL:
+			case PART_SHIELD:
+				mapx = (x / TILE_WIDTH) >> FIXSHIFT;
+				mapy = (y / TILE_HEIGHT) >> FIXSHIFT;
+				color = 64 + map->GetTile(mapx, mapy)->templight;
+				break;
 		}
 	}
 }
@@ -883,6 +896,10 @@ void RenderParticles(void)
 				RenderStinky(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
 							 particleList[i].z>>FIXSHIFT,(char)(particleList[i].color),
 							 particleList[i].size);
+			else if (particleList[i].type == PART_SHIELD)
+				RenderShield(particleList[i].x >> FIXSHIFT, particleList[i].y >> FIXSHIFT,
+					particleList[i].z >> FIXSHIFT, (char)(particleList[i].color),
+					particleList[i].life/2);
 			else if(particleList[i].type==PART_COUNTESS)
 				SprDraw(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
 						particleList[i].z>>FIXSHIFT,
@@ -1027,6 +1044,28 @@ void StinkySteam(int x,int y,int z,int dz)
 			particleList[i].size=0;
 			particleList[i].color=64;
 			particleList[i].type=PART_STINKY;
+			break;
+		}
+	}
+}
+
+void MakeShieldParticles(int x, int y, int z, int dz)
+{
+	int i;
+	for (i = 0;i < maxParticles;i++)
+	{
+		if (!particleList[i].Alive())
+		{
+			particleList[i].x = x;
+			particleList[i].y = y;
+			particleList[i].z = z;
+			particleList[i].dx = 0;
+			particleList[i].dy = 0;
+			particleList[i].dz = 2*FIXAMT;
+			particleList[i].life = 16;
+			particleList[i].size = 0;
+			particleList[i].color = 32;
+			particleList[i].type = PART_SHIELD;
 			break;
 		}
 	}
@@ -1488,6 +1527,29 @@ void DoFallingPetals(Map* map)
 			particleList[i].life = 50 + Random(50);
 			particleList[i].type = PART_PETAL;
 			particleList[i].color = 6 * 32 + 31;
+			break;
+		}
+	}
+}
+
+void ShieldParticle(int x, int y)
+{
+	int i;
+
+	for (i = 0;i < maxParticles;i++)
+	{
+		if (!particleList[i].Alive())
+		{
+
+			particleList[i].x = x;
+			particleList[i].y = y;
+			particleList[i].z = (10 + Random(20)) << FIXSHIFT;
+			particleList[i].dx = 0;
+			particleList[i].dy = 0;
+			particleList[i].dz = 0;
+			particleList[i].size = 2;
+			particleList[i].life = 20 + Random(30);
+			particleList[i].type = PART_SHIELD;
 			break;
 		}
 	}

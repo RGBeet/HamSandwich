@@ -39,6 +39,7 @@ struct CameraFocus // used to determine camera focus
 	Guy* g;
 	byte focusType;
 	bool active;
+	bool immediate;
 };
 CameraFocus cameraFocus = { 0,0,0,0,NULL,0,false };
 
@@ -302,28 +303,59 @@ void UpdateCamera(int x, int y, int dx, int dy, Map* map)
 					int playerX = ((x << FIXSHIFT) + dx * 20) >> FIXSHIFT;
 					int playerY = ((y << FIXSHIFT) + dy * 20) >> FIXSHIFT;
 
-					desiredX = (playerX + focusX) / 2;
-					desiredY = (playerY + focusY) / 2;
+					if (cameraOffset.active)
+					{
+						desiredX = (playerX + focusX + cameraOffset.x * TILE_WIDTH) / 2;
+						desiredY = (playerY + focusY + cameraOffset.y * TILE_HEIGHT) / 2;
+					}
+					else
+					{
+						desiredX = (playerX + focusX) / 2;
+						desiredY = (playerY + focusY) / 2;
+					}
 				}
 			}
 			else
 			{
 				desiredX = cameraFocus.g->x / FIXAMT;
 				desiredY = cameraFocus.g->y / FIXAMT;
+				if (cameraOffset.active)
+				{
+					desiredX += cameraOffset.x * TILE_WIDTH;
+					desiredY += cameraOffset.y * TILE_HEIGHT;
+				}
 			}
 		}
 		else
 		{
 			desiredX = cameraFocus.x;
 			desiredY = cameraFocus.y;
+			// add offset after focus
+			if (cameraOffset.active)
+			{
+				desiredX += cameraOffset.x * TILE_WIDTH;
+				desiredY += cameraOffset.y * TILE_HEIGHT;
+			}
+		}
+	}
+	else
+	{
+		// just add offset
+		if (cameraOffset.active)
+		{
+			desiredX += cameraOffset.x * TILE_WIDTH;
+			desiredY += cameraOffset.y * TILE_HEIGHT;
 		}
 	}
 
-	// add the offset
-	if (cameraOffset.active)
+	// immediate camera
+	if (cameraFocus.active && cameraFocus.immediate)
 	{
-		desiredX += cameraOffset.x * TILE_WIDTH;
-		desiredY += cameraOffset.y * TILE_HEIGHT;
+		rscrx = desiredX << FIXSHIFT;
+		rscry = desiredY << FIXSHIFT;
+
+		scrdx = 0;
+		scrdy = 0;
 	}
 
 	rscrx += scrdx;
@@ -894,10 +926,10 @@ void CenterPrintCompressedWavy(int midx, int y, std::string_view s, byte compres
 
 void SetCameraBounds(int left, int top, int right, int bottom)
 {
-	cameraBounds.left = left;
-	cameraBounds.top = top;
-	cameraBounds.right = right;
-	cameraBounds.bottom = bottom;
+	cameraBounds.left = left * TILE_WIDTH;
+	cameraBounds.top = top * TILE_HEIGHT;
+	cameraBounds.right = right * TILE_WIDTH;
+	cameraBounds.bottom = bottom * TILE_HEIGHT;
 	cameraBounds.active = true;
 }
 
@@ -906,22 +938,28 @@ void ClearCameraBounds()
 	cameraBounds.active = false;
 }
 
-void SetCameraFocusAsPoint(int x, int y)
+void SetCameraFocusAsPoint(int x, int y, byte immediate)
 {
 	cameraFocus.x = x;
 	cameraFocus.y = y;
 	cameraFocus.g = NULL;
 	cameraFocus.active = true;
+	cameraFocus.immediate = immediate;
 }
 
-void SetCameraFocusAsGuy(Guy *g, byte type)
+void SetCameraFocusAsGuy(Guy *g, byte type, byte immediate)
 {
-	printf("Set Guy %d as Camera Focus.", g);
+	if (!g) // no guy
+		return;
+
 	cameraFocus.g = g;
 	cameraFocus.x = 0;
 	cameraFocus.y = 0;
 	cameraFocus.active = true;
 	cameraFocus.focusType = type;
+	cameraFocus.immediate = immediate;
+
+
 }
 
 void ClearCameraFocus()
@@ -940,4 +978,9 @@ void SetCameraOffset(int x, int y)
 void ClearCameraOffset()
 {
 	cameraOffset.active = false;
+}
+
+void SetCameraImmediate(bool flag)
+{
+	cameraFocus.immediate = flag;
 }

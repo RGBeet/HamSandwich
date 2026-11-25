@@ -199,7 +199,6 @@ int WeaponMaxAmmo(byte wpn);
 byte PlayerGetWeapon(byte wpn,int x,int y);
 byte PlayerPowerup(int powerup);
 void PlayerRadioactiveFood(void);
-void PlayerChineseFood(void);
 void KeyChainAllCheck(void);
 
 byte PlayerGetBrain(int amt);
@@ -246,6 +245,6 @@ word PlayerGetAuraDamage(void);
 
 Guy* GetInterfaceEnemy();
 void SetInterfaceEnemy(Guy* g);
-byte PlayerIsMovingAgainstVehicle(Guy* vehicle, Guy* goodguy);
+byte PlayerIsMovingOnVehicle(Guy* vehicle, Guy* goodguy);
 
 #endif

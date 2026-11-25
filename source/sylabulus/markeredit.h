@@ -19,6 +19,7 @@ void MarkerPick_Init(int s);
 void MarkerPick_Update(int mouseX, int mouseY, int scroll, MGLDraw* mgl);
 void MarkerPick_Render(int mouseX, int mouseY, MGLDraw* mgl);
 
+void SetMarkerRect(int x1, int y1, int x2, int y2);
 void MarkerEdit_Key(char k);
 
 #endif

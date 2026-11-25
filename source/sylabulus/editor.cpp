@@ -49,6 +49,7 @@ namespace
 	int lastPick;
 
 	byte zoom = 1;
+	byte checker = 0;
 
 	dword oldGamepad = ~0;
 }
@@ -114,9 +115,7 @@ void ExitEditor(void)
 
 	EditorSaveWorld("worlds/backup_exit.psw");
 
-	// change monsters back to normal
-	ChangeOffColor(MONS_SHARK,255,255);
-	ChangeOffColor(MONS_SNKYSHRK2,255,255);
+	//ChangeOffColor(MONS_SHARK,255,255);
 
 	spclSprite.reset();
 
@@ -475,6 +474,60 @@ TASK(void) UpdateMouse(void)
 				SetSpecialRect(rectX1,rectY1,rectX2,rectY2);
 			}
 			break;
+		case EDITMODE_MARKERSPOT:
+			if (editmgl->MouseTap())
+			{
+				editMode = EDITMODE_MARKERSPOT2;
+				cx = tileX;
+				cy = tileY;
+				if (cx < 0)
+					cx = 0;
+				if (cy < 0)
+					cy = 0;
+				if (cx >= editorMap->width)
+					cx = editorMap->width - 1;
+				if (cy >= editorMap->height)
+					cy = editorMap->height - 1;
+				tileX = cx;
+				tileY = cy;
+				rectX1 = tileX;
+				rectY1 = tileY;
+				rectX2 = tileX;
+				rectY2 = tileY;
+			}
+			break;
+		case EDITMODE_MARKERSPOT2:
+			cx = tileX;
+			cy = tileY;
+			if (cx < 0)
+				cx = 0;
+			if (cy < 0)
+				cy = 0;
+			if (cx >= editorMap->width)
+				cx = editorMap->width - 1;
+			if (cy >= editorMap->height)
+				cy = editorMap->height - 1;
+			rectX2 = cx;
+			rectY2 = cy;
+
+			if (editmgl->MouseTap())
+			{
+				editMode = EDITMODE_MARKER;
+				if (rectX2 < rectX1)
+				{
+					cx = rectX2;
+					rectX2 = rectX1;
+					rectX1 = cx;
+				}
+				if (rectY2 < rectY1)
+				{
+					cy = rectY2;
+					rectY2 = rectY1;
+					rectY1 = cy;
+				}
+				SetMarkerRect(rectX1, rectY1, rectX2, rectY2);
+			}
+			break;
 		case EDITMODE_EXPORT:
 			if(editmgl->MouseTap())
 				if (!ExportDialogClick(mouseX,mouseY))
@@ -567,7 +620,7 @@ void ShowMarkers(MGLDraw* mgl)
 	for (int i = 0;i < MAX_MARKER;i++)
 	{
 		const marker_t& marker = editorMap->marker[i];
-		if (marker.x1 != 253)
+		if (marker.x1 != 255)
 		{
 			int xx = marker.x1 * TILE_WIDTH + 2 - sx + editmgl->GetWidth() / 2;
 			int yy = marker.y1 * TILE_HEIGHT - sy + editmgl->GetHeight() / 2;
@@ -578,6 +631,12 @@ void ShowMarkers(MGLDraw* mgl)
 			int i2 = (i / 10) % 10;
 			int i3 = i % 10;
 
+			int ww = (marker.x2 - marker.x1 + 1) * TILE_WIDTH;
+			int hh = (marker.y2 - marker.y1 + 1) * TILE_HEIGHT;
+
+			mgl->Box(xx, yy, xx + ww, yy + hh, 32*6+8);
+			mgl->Box(xx+2, yy+2, xx + ww-2, yy + hh-2, 32*6+12);
+
 			// draw number
 			spclSprite->GetSprite(2 + i1)->Draw(xx + 15, yy, mgl);
 			spclSprite->GetSprite(2 + i2)->Draw(xx + 22, yy, mgl);
@@ -585,6 +644,7 @@ void ShowMarkers(MGLDraw* mgl)
 		}
 	}
 }
+
 void EditorShowRect(void)
 {
 	static byte col=0;
@@ -681,6 +741,7 @@ void EditorDraw(MGLDraw* mgl)
 			Print(editmgl->GetWidth()-640+579,editmgl->GetHeight()-480+465,s,0,1);
 			break;
 		case EDITMODE_PICKRSPOT:
+		case EDITMODE_MARKERSPOT:
 			ApplyZoom();
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
@@ -697,6 +758,7 @@ void EditorDraw(MGLDraw* mgl)
 			Print(editmgl->GetWidth()-640+579,editmgl->GetHeight()-480+465,s,0,1);
 			break;
 		case EDITMODE_PICKRSPOT2:
+		case EDITMODE_MARKERSPOT2:
 			ApplyZoom();
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
@@ -1186,6 +1248,7 @@ void EditorSelectMap(byte w)
 	else
 		PutCamera(320<<FIXSHIFT,240<<FIXSHIFT);
 	GetSpecialsFromMap(editorMap->special);
+	GetMarkersFromMap(editorMap->marker);
 }
 
 void PickedTile(int t)

@@ -5324,15 +5324,12 @@ void AI_HunterEgg(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 void AI_PunkBunny(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {
-	int x, y;
+	int x, y, i;
 	Guy* bouapha;
 
-	bouapha = GetGuyOfAIType(MONS_BOUAPHA);
+	bouapha = GetGuyOfAIType(ENT_BOUAPHA);
 	if (!bouapha)
 		return;
-
-	if (me->reload)
-		me->reload--;
 
 	if (me->ouch == 4)
 	{
@@ -5341,7 +5338,8 @@ void AI_PunkBunny(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 	if (me->action == ACTION_BUSY)
 	{
-		if (me->seq == ANIM_ATTACK && (me->frm == 3 || me->frm == 6 || me->frm == 9) && me->reload == 0)
+
+		if (me->seq == ANIM_A1 && (me->frm == 3 || me->frm == 6 || me->frm == 9) && me->reload == 0)
 		{
 			x = me->x + Cosine(me->facing * 32) * 20;
 			y = me->y + Sine(me->facing * 32) * 20;
@@ -5350,7 +5348,7 @@ void AI_PunkBunny(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			MakeSound(SND_BULLETFIRE, x, y, SND_CUTOFF, 100);
 			me->reload = 3;
 		}
-		if (me->seq == ANIM_A1 && me->frm == 2 && me->reload == 0)
+		if (me->seq == ANIM_A2 && me->frm == 2 && me->reload == 0)
 		{
 			x = me->x + Cosine(me->facing * 32) * 10;
 			y = me->y + Sine(me->facing * 32) * 10;
@@ -5369,10 +5367,16 @@ void AI_PunkBunny(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 	if (me->mind == 0)	// not activated yet
 	{
-		if (RangeToTarget(me, bouapha) < 72 * FIXAMT)
+		if (RangeToTarget(me, bouapha) < 80 * FIXAMT)
 		{
 			me->mind = 1;
 			MakeNormalSound(SND_FOLLOWHI);
+			me->seq = ANIM_ATTACK;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->action = ACTION_BUSY;
+			me->frmAdvance = 128;
+			return;
 		}
 	}
 	else if (me->mind == 1)	// following Bouapha
@@ -5431,9 +5435,9 @@ void AI_PunkBunny(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			me->dx += -FIXAMT / 2 + Random(FIXAMT);
 			me->dy += -FIXAMT / 2 + Random(FIXAMT);
 
-			if (RangeToTarget(me, goodguy) < 280 * FIXAMT && Random(10) == 0)
+			if (RangeToTarget(me, goodguy) < 280 * FIXAMT && !Random(10))
 			{
-				me->seq = ANIM_ATTACK;
+				me->seq = ANIM_A1;
 				me->frm = 0;
 				me->frmTimer = 0;
 				me->frmAdvance = 256;
@@ -5445,7 +5449,7 @@ void AI_PunkBunny(Guy* me, Map* map, world_t* world, Guy* goodguy)
 			}
 			if (Random(50) == 0)
 			{
-				me->seq = ANIM_A1;
+				me->seq = ANIM_A2;
 				me->frm = 0;
 				me->frmTimer = 0;
 				me->frmAdvance = 128;
@@ -5505,6 +5509,8 @@ void AI_PunkBunny(Guy* me, Map* map, world_t* world, Guy* goodguy)
 		}
 	}
 }
+
+	
 
 void AI_Skeleton(Guy* me, Map* map, world_t* world, Guy* goodguy)
 {

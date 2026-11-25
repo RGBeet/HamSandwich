@@ -796,8 +796,8 @@ void Guy::Update(Map *map,world_t *world)
 	if(strength>0)
 		strength--;
 
-	if(speed>0)
-		speed--;
+	if(quickness>0)
+		quickness--;
 
 	oldx=x;
 	oldy=y;
@@ -1614,7 +1614,13 @@ void UpdateGuys(Map *map,world_t *world)
 	ShouldCheckControls(1);
 	for(i=0;i<maxGuys;i++)
 	{
-		if ((guys[i].type == MONS_NONE) || (PlayerGetTimeStop() > 0 && !HasPlayerAI(guys[i].aiType) && guys[i].hp > 0 && !HasVehicleAI(guys[i].aiType)))
+		if (guys[i].type == MONS_NONE)
+			continue;
+
+		if (player.auraDmg[0] && guys[i].friendly != goodguy->friendly && RangeToTarget(&guys[i], goodguy) < 40 * FIXAMT && !guys[i].ouch)
+			guys[i].GetShot(0, 0, 4, map, world, false);
+		
+		if ((PlayerGetTimeStop() > 0 && !HasPlayerAI(guys[i].aiType) && guys[i].hp > 0 && !HasVehicleAI(guys[i].aiType)))
 			continue;
 
 		if (guys[i].slow > 0 && (guys[i].slow % 2) == 0) // slowness takes away frames
@@ -1636,7 +1642,7 @@ void UpdateGuys(Map *map,world_t *world)
 		}
 		else
 		{
-			if (guys[i].speed > 0)
+			if (guys[i].quickness > 0)
 			{
 				updates++;
 				render = 1;
@@ -1813,7 +1819,7 @@ Guy *AddGuy(int x,int y,int z,int type,byte friendly)
 			guys[i].slow=0;
 			guys[i].mindControl=0;
 			guys[i].strength=0;
-			guys[i].speed=0;
+			guys[i].quickness=0;
 
 			guys[i].type=type;
 			guys[i].x=x;
@@ -2857,6 +2863,90 @@ void SetRandomMonsterColor(byte fx, int x, int y, int type, int colCode)
 
 		guys[i].fromColor = fromCol;
 		guys[i].toColor = toCol;
+
+		if (!fx)
+			continue;
+		if (guys[i].friendly != goodguy->friendly)
+			TeamChangeRing(4, guys[i].x, guys[i].y, 0, 16, 4);
+		else
+			TeamChangeRing(4, guys[i].x, guys[i].y, 0, 16, 3);
+	}
+}
+
+void SetEntityPath(byte fx, int x, int y, int type, int index)
+{
+	int i;
+
+	switch (type)
+	{
+		default: // only works for easter egg and spotlight atm. oops!
+			return;
+		case ENT_EASTEREGG:
+		case ENT_SPOTLIGHT:
+			// continue forth!
+			break;
+	}
+
+	for (i = 0; i < maxGuys; i++)
+	{
+		if (!CheckMonsterType(&guys[i], x, y, type))
+			continue;
+
+		guys[i].mind2 = 1;
+		guys[i].mind3 = 0;
+		guys[i].mind4 = index; // New path ID
+
+		if (!fx)
+			continue;
+		
+		if(guys[i].friendly != goodguy->friendly)
+			TeamChangeRing(4, guys[i].x, guys[i].y, 0, 16, 4);
+		else
+			TeamChangeRing(3, guys[i].x, guys[i].y, 0, 16, 3);
+	}
+}
+
+void AfflictEntity(byte fx, int x, int y, int type, int afflict)
+{
+	int i;
+
+	for (i = 0; i < maxGuys; i++)
+	{
+		if (!CheckMonsterType(&guys[i], x, y, type))
+			continue;
+
+		switch (afflict)
+		{
+			case 0:
+				SetPoisonFrames(&guys[i], guys[i].poison+30*2);
+				break;
+			case 1:
+				SetFreezeFrames(&guys[i], guys[i].frozen+30*2);
+				break;
+			case 2:
+				SetIgniteFrames(&guys[i], guys[i].ignite+30*2);
+				break;
+			case 3:
+				SetWeakenFrames(&guys[i], guys[i].weaken+30*2);
+				break;
+			case 4:
+				SetStrengthFrames(&guys[i], guys[i].strength+30*2);
+				break;
+			case 5:
+				SetSlownessFrames(&guys[i], guys[i].slow+30*2);
+				break;
+			case 6:
+				SetSpeedFrames(&guys[i], guys[i].slow + 30 * 2);
+				break;
+		}
+
+		if (!fx)
+			continue;
+
+		if (guys[i].friendly != goodguy->friendly)
+			TeamChangeRing(4, guys[i].x, guys[i].y, 0, 16, 4);
+		else
+			TeamChangeRing(3, guys[i].x, guys[i].y, 0, 16, 3);
 	}
 }
 
@@ -2980,6 +3070,7 @@ byte CheckMonsterColor(int x,int y,int type,byte color)
 	return 0; // no check passed
 }
 
+// checks proximity to player
 byte CheckMonsterProximity(int type, int proximity)
 {
 	int i;
@@ -2993,6 +3084,7 @@ byte CheckMonsterProximity(int type, int proximity)
 	return 0; // no check passed
 }
 
+// checks if monster just got hit
 byte CheckMonsterOuch(int x, int y, int type, byte flags)
 {
 	int i;
@@ -3002,6 +3094,49 @@ byte CheckMonsterOuch(int x, int y, int type, byte flags)
 			continue;
 		if (guys[i].ouch==4)
 			return 1; // check passed
+	}
+	return 0; // no check passed
+}
+
+// checks if entity is burning/poisoned/etc.
+byte CheckMonsterAfflict(int x, int y, int type, byte value2)
+{
+	int i;
+	for (i = 0;i < maxGuys;i++)
+	{
+		if (!CheckMonsterType(&guys[i], x, y, type))
+			continue;
+		switch (value2)
+		{
+			case 0:
+				if (guys[i].poison > 0)
+					return 1;
+				break;
+			case 1:
+				if (guys[i].frozen > 0)
+					return 1;
+				break;
+			case 2:
+				if (guys[i].ignite > 0)
+					return 1;
+				break;
+			case 3:
+				if (guys[i].weaken > 0)
+					return 1;
+				break;
+			case 4:
+				if (guys[i].strength > 0)
+					return 1;
+				break;
+			case 5:
+				if (guys[i].slow > 0)
+					return 1;
+				break;
+			case 6:
+				if (guys[i].quickness > 0)
+					return 1;
+				break;
+		}
 	}
 	return 0; // no check passed
 }
@@ -3329,6 +3464,7 @@ byte SwapMe(int x,int y,byte size,Map *map)
 	}
 	return 0;
 }
+
 
 int CountMonsters(int type)
 {
@@ -3706,7 +3842,7 @@ void SetSpeedFrames(Guy* g, word frames)
 		if (player.modifier[MDFY_STATEFCT] && g->weaken)
 			frames *= 0.75;
 	}
-	g->speed = (frames < MAX_STATUS_FRAMES) ? frames : MAX_STATUS_FRAMES;
+	g->quickness = (frames < MAX_STATUS_FRAMES) ? frames : MAX_STATUS_FRAMES;
 }
 
 byte Guy::IsInterface()
@@ -3907,6 +4043,7 @@ byte ConveyorCheck(Guy* g, mapTile_t* mapTile, world_t* world)
 	return 0;
 }
 
+// TODO: fix this!!!
 void WakeUpGuys(Guy *g,int x, int y, byte size, Map* map, world_t* world, byte friendly)
 {
 	int i;
@@ -3933,12 +4070,8 @@ void WakeUpGuys(Guy *g,int x, int y, byte size, Map* map, world_t* world, byte f
 void SetParent(Guy* g, Guy* parent)
 {
 	if (!g)
-	{
-		printf("SetParent: g is NULL!!\n");
 		return;
-	}
 	g->parent = parent;
-	printf("Set parent of guy %d to %d\n", g->ID, parent ? parent->ID : -1);
 }
 
 byte CanDrive(Guy* me, int x, int y, Map* map, world_t* world, Guy* goodguy)
@@ -3979,8 +4112,6 @@ void MarkAsBoss(Guy* g, bool setAs)
 	if (!g)
 		return;
 
-	printf("Marking guy %p as boss: %s\n", (void*)g, setAs ? "TRUE" : "FALSE");
-
 	for (int i = 0; i < numBosses; i++)
 	{
 		if (bossGuys[i] != g)
@@ -3998,7 +4129,6 @@ void MarkAsBoss(Guy* g, bool setAs)
 
 	if (setAs && numBosses < 32)
 	{
-		printf("Marking enemy %p as BOSS.\n", (void*)g);
 		bossGuys[numBosses++] = g;
 		switch (g->type)
 		{
@@ -4007,6 +4137,7 @@ void MarkAsBoss(Guy* g, bool setAs)
 				break;
 		}
 	}
+
 	ShowBossLife();
 }
 
@@ -4021,12 +4152,12 @@ byte IsMarkedBoss(Guy* g)
 	return 0;
 }
 
-void MarkAsCameraFocus(Guy* g)
+void MarkAsCameraFocus(Guy* g, byte immediate)
 {
 	if (!g)
 		return;
 	cameraFocus = g;
-	SetCameraFocusAsGuy(g,1); // todo: allow camera modes (entire focus on enemy, shared focus, etc.)
+	SetCameraFocusAsGuy(g,1,immediate); // todo: allow camera modes (entire focus on enemy, shared focus, etc.)
 }
 
 void ResetCameraFocus()
@@ -4047,4 +4178,279 @@ std::pair<int,int> GetBossHP()
 		maxHP += bossGuys[i]->maxHP;
 	}
 	return { hp, std::max(1,maxHP) };
+}
+
+// sets the guy's speed, assuming they face in eight directions
+void Guy::SetSpeed(int spd)
+{
+	dx = Cosine(facing * 32) * spd;
+	dy = Sine(facing * 32) * spd;
+}
+
+// sets the guy's speed
+void Guy::SetSpeed(byte angle, int spd)
+{
+	dx = Cosine(angle) * spd;
+	dy = Sine(angle) * spd;
+}
+
+// gradually reduces the guy's speed - larger numbers = more gradual easing
+void Guy::DampenSpeed(int div)
+{
+	if (div == 0)
+		return;
+	Dampen(&dx, FIXAMT / div);
+	Dampen(&dy, FIXAMT / div);
+}
+
+void Guy::Accelerate(int spd)
+{
+	dx += Cosine(facing * 32) * spd;
+	dy += Sine(facing * 32) * spd;
+}
+
+void Guy::ClampSpeed(int maxSpd)
+{
+	Clamp(&dx, maxSpd * FIXAMT);
+	Clamp(&dy, maxSpd * FIXAMT);
+}
+
+// randomly starts the guy's wander mode
+void Guy::TryWander(byte& currentMind, int wanderRate, byte targetMind)
+{
+	if (Random(wanderRate))
+		return;
+	mind		= targetMind;	// switch to wander mind index (usually 1).
+	currentMind	= 1;			// set the wander mode timer (usually mind1).
+}
+
+// updates whenever the guy is in wander mode
+void Guy::WanderMode(byte &currentMind, int wanderTime, int unWanderRate, byte targetMind)
+{
+	if (!(currentMind--))	// time to get a new direction
+	{
+		if (unWanderRate > 0 && goodguy && !Random(unWanderRate))
+			mind	= targetMind;		// exit wander mode
+		else
+			facing	= (byte)Random(8);	// face random direction
+		currentMind = (byte)Random(wanderTime) + 1;
+	}
+	// use Walk() and ForceSequence() to do the rest
+}
+
+// sets the guy in a new sequence
+void Guy::ForceSequence(byte newSequence, word newFrmAdvance, byte newFrm)
+{
+	if (seq == newSequence)
+		return;
+	seq			= newSequence;
+	frm			= newFrm;
+	frmTimer	= 0;
+	frmAdvance	= newFrmAdvance;
+
+	switch (newSequence)
+	{
+		case ANIM_IDLE:
+		case ANIM_MOVE:
+			action = ACTION_IDLE;
+			break;
+		default:
+			action = ACTION_BUSY;
+			break;
+	}
+}
+
+// checks whether this guy can see the other guy within the allotted radius
+byte Guy::CanSeeGuy(Guy *other, int radius, Map *map)
+{
+	if (!other) // guy does not exist
+		return 0;
+
+	return map->CheckLOS(this->mapx, this->mapy, radius, other->mapx, other->mapy);
+}
+
+// returns the distance between this guy and the other guy
+int Guy::RangeToGuy(Guy* other)
+{
+	if (!other) // please check if the guy exists beforehand (checks anyways to prevent crashing)
+		return 10000;
+	return abs(x - other->x) + abs(y - other->y);
+}
+
+// checks whether this guy is in range of the other guy (uses FIXAMT for range!)
+byte Guy::GuyWithinRange(Guy* other, int range)
+{
+	return (other != nullptr && RangeToGuy(other) < range * FIXAMT);
+}
+
+// 
+void Guy::FaceGuy(Guy* other)
+{
+	if (!other) // guy does not exist
+		return;
+
+	int diff = FIXAMT * 16;
+	if (other->x < this->x - diff)
+	{
+		if (other->y < this->y - diff)
+			this->facing = 5; // up-left
+		else if (other->y > this->y + diff)
+			this->facing = 3; // down-left
+		else
+			this->facing = 4; // left
+	}
+	else if (other->x > this->x + diff)
+	{
+		if (other->y < this->y - diff)
+			this->facing = 7; // up-right
+		else if (other->y > this->y + diff)
+			this->facing = 1; // down-right
+		else
+			this->facing = 0; // right
+	}
+	else
+	{
+		if (other->y < this->y - diff)
+			this->facing = 6; // up
+		else if (other->y > this->y + diff)
+			this->facing = 2; // down
+	}
+}
+
+void Guy::FaceGuyBroad(Guy* other)
+{
+	if (!other) // guy does not exist
+		return;
+
+	int desired;
+	int diff, dir;
+
+	if (other->x < this->x - FIXAMT * 32)
+	{
+		if (other->y < this->y - FIXAMT * 32)
+			desired = 5;
+		else if (other->y > this->y + FIXAMT * 32)
+			desired = 3;
+		else
+			desired = 4;
+	}
+	else if (other->x > this->x + FIXAMT * 32)
+	{
+		if (other->y < this->y - FIXAMT * 32)
+			desired = 7;
+		else if (other->y > this->y + FIXAMT * 32)
+			desired = 1;
+		else
+			desired = 0;
+	}
+	else
+	{
+		if (other->y < this->y - FIXAMT * 32)
+			desired = 6;
+		else
+			desired = 2;
+	}
+
+	if (desired == this->facing)
+		return;
+
+	if (desired > this->facing)
+	{
+		diff = desired - this->facing;
+		if (diff > 4)
+		{
+			dir = -1;
+		}
+		else
+			dir = 1;
+	}
+	else
+	{
+		diff = this->facing - desired;
+		if (diff > 4)
+		{
+			dir = 1;
+		}
+		else
+			dir = -1;
+	}
+	this->facing = (this->facing + dir) & 7;
+}
+
+// easier way to do cosine facing (horizontal)
+int Guy::DirCos(int spd)
+{
+	return Cosine(facing * 32) * spd;
+}
+
+// easier way to do sine facing (vertical)
+int Guy::DirSin(int spd)
+{
+	return Sine(facing * 32) * spd;
+}
+
+int Guy::ShiftDirCos(int pos)
+{
+	return x + Cosine(facing * 32) * pos;
+}
+
+// easier way to do sine facing (vertical)
+int Guy::ShiftDirSin(int pos)
+{
+	return y + Sine(facing * 32) * pos;
+}
+
+// handles ouch/death noises
+void Guy::SimpleOuchNoises(word ouchSound, word deathSound, byte randomOuch)
+{
+	if(hp > 0)
+		MakeSound(ouchSound, x, y, randomOuch ? (SND_CUTOFF | SND_RANDOM) : SND_CUTOFF, 1200);
+	else
+		MakeSound(deathSound, x, y, SND_CUTOFF, 1200);
+}
+
+// returns true if the guy has the ai of the selected entity type (may be overridden)
+byte Guy::HasGuyAI(word type)
+{
+	return aiType == type;
+}
+
+// fires a bullet of [type]
+void Guy::SimpleFireBullet(int offset, byte type)
+{
+	byte f = facing;
+	switch (type)
+	{
+		default:
+			f *= 32;
+			break;
+	}
+	FireBullet(ShiftDirCos(offset), ShiftDirSin(offset), f, type, friendly);
+}
+
+void Guy::Revive()
+{
+	if (friendly != friendly) // not slain anymore
+		player.enemiesSlain--;
+
+	hp = MonsterHP(type); // full health!
+}
+
+// turn into your second stage...
+void Guy::RegenerateInto(word newType)
+{
+	if (type == newType)
+	{
+		hp = maxHP;
+		return; // you're already the guy!
+	}
+
+	type		= newType;
+	aiType		= newType;
+	hp			= MonsterHP(newType);
+	maxHP		= hp;
+	ham_strcpy(name, MonsterName(type));
+	if (goodguy && friendly != goodguy->friendly)
+		player.enemiesSlain--;
+
 }

@@ -36,6 +36,7 @@ enum : byte
 	PART_PETAL,			// pink petals
 	PART_FOG,			// fog particles
 	PART_YELLOW,		// for edison bullets
+	PART_SHIELD,
 	MAX_PARTICLES		// MAX PARTICLES
 };
 
@@ -94,6 +95,7 @@ void ColorDrop(byte color,int x,int y,int z);
 void TrackParticle(byte color,int x,int y,int tx,int ty);
 void HealRing(byte color,int x,int y,int z,byte num,byte force);
 void TeamChangeRing(byte color,int x,int y,int z,byte num,byte force);
+void MakeShieldParticles(int x, int y, int z, int dz);
 
 void StopwatchRing(int x, int y, int z, byte num, byte force);
 void SuckParticle(int x, int y, int z);

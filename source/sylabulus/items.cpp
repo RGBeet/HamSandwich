@@ -16,6 +16,8 @@
 #include "math_extras.h"
 #include "string_extras.h"
 
+Guy* itemTarget;
+
 static const item_t baseItems[] = {
 	{"None",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
 
@@ -528,7 +530,7 @@ static const item_t baseItems[] = {
 		0,ITH_POWERUP,ITA_NONE,ITP_PICKUP,ITRG_PICKUP,ITB_NONE,0,
 		IE_RAGE,128,"",SND_TURNEVIL},
 	{"Present",0,0,0,158,0,0,0, // TODO: make item effect (random weapon)
-		50,ITH_POWERUP|ITH_WEAPON,ITA_NONE,ITP_BARRIER,ITRG_PROJECTILE,ITB_NONE,0,
+		50,ITH_POWERUP|ITH_WEAPON,ITA_NONE,ITP_PICKUP,ITRG_PICKUP,ITB_NONE,0,
 		IE_DROPITEM,0,"",0},
 	{"Small Gemstone",0,0,0,159,0,0,0, // TODO: make add score effect
 		0,ITH_COLLECTIBLE,ITA_NONE,ITP_PICKUP,ITRG_PICKUP,ITB_NONE,0,
@@ -614,10 +616,18 @@ static const item_t baseItems[] = {
 	{"Mirror (Up,Right)",0,0,0,189,0,0,0,
 		0,ITH_OBSTACLE|ITH_BULLETPROOF|ITH_OBSTACLE,ITA_SHADOW,ITP_BULLETPROOF,ITRG_NONE,ITB_NONE,0,
 		IE_NONE,0,"",0 },
-	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
-	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
-	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
-	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
+	{"Jawbreaker",0,0,0,190,0,0,0,
+		0,ITH_POWERUP,ITA_NONE,ITP_PICKUP,ITRG_PICKUP,ITB_NONE,0,
+		IE_COMBOTIMER,30,"",SND_GEMSMALL},
+	{"Shroom (Tall)",0,0,0,191,0,0,0,
+		0,ITH_OBSTACLE|ITH_OBSTACLE|ITH_PLANTS,ITA_SHADOW,ITP_SOLID,ITRG_NONE,ITB_NONE,0,
+		IE_NONE,0,"",0 },
+	{"Shroom (Fat Head)",0,0,0,192,0,0,0,
+		0,ITH_OBSTACLE|ITH_OBSTACLE|ITH_PLANTS,ITA_SHADOW,ITP_SOLID,ITRG_NONE,ITB_NONE,0,
+		IE_NONE,0,"",0 },
+	{"Shroom (Large)",0,0,0,193,0,0,0,
+		0,ITH_OBSTACLE|ITH_OBSTACLE|ITH_PLANTS,ITA_SHADOW,ITP_SOLID,ITRG_NONE,ITB_NONE,0,
+		IE_NONE,0,"",0 },
 	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
 	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
 	{"Unused Item",0,0,0,0,0,0,0,0,{},ITA_NONE,ITP_FREEWALK,ITRG_NONE,ITB_NONE,0,0,0,"",0},
@@ -981,7 +991,8 @@ void RenderAnimatedItem(int x, int y, word start, byte frames, byte type,
 #define ASPR_POCKET		72
 #define ASPR_TOTEM		80
 #define ASPR_COIN		88
-#define ASPR_LOONYKEY	96 // 16 frames!!!
+#define ASPR_JAWBREAKER	96
+#define ASPR_LOONYKEY	104 // 16 frames!!!
 
 void RenderItem(int x,int y,int type,char bright,MapRenderFlags flags)
 {
@@ -1084,6 +1095,9 @@ void RenderItem(int x,int y,int type,char bright,MapRenderFlags flags)
 				return;
 			case IT_LOONYKEY:
 				RenderAnimatedItem((x + items[type].xofs) * FIXAMT, (y + items[type].yofs) * FIXAMT, ASPR_LOONYKEY, 16, type, bright, flags);
+				return;
+			case IT_JAWBREAKER:
+				RenderAnimatedItem((x + items[type].xofs) * FIXAMT, (y + items[type].yofs) * FIXAMT, ASPR_JAWBREAKER, 8, type, bright, flags);
 				return;
 		}
 		if(items[type].appearance == ITA_SHADOW || items[type].appearance == ITA_LOONYKEY)
@@ -1325,6 +1339,8 @@ void ItemGetEffect(int x,int y)
 byte TriggerItem(Guy *me,mapTile_t *m,int x,int y)
 {
 	int i;
+	if (!itemTarget)
+		itemTarget = goodguy;
 
 	switch(items[m->item].effect)
 	{
@@ -1339,12 +1355,21 @@ byte TriggerItem(Guy *me,mapTile_t *m,int x,int y)
 		case IE_HEAL:
 			if(items[m->item].effectAmt>=0)
 			{
-				if(player.life==goodguy->maxHP)
+				if(itemTarget->hp >= itemTarget->maxHP)
 					return 0;
-				PlayerHeal((byte)items[m->item].effectAmt);
+				if(itemTarget->aiType == ENT_BOUAPHA)
+					PlayerHeal((byte)items[m->item].effectAmt);
+				else
+				{
+					HealRing(1, itemTarget->x, itemTarget->y, 0, 16, 2);
+					if (itemTarget->hp + (byte)items[m->item].effectAmt < itemTarget->maxHP)
+						itemTarget->hp += (byte)items[m->item].effectAmt;
+					else
+						itemTarget->hp = itemTarget->maxHP;
+				}
 			}
 			else
-				goodguy->GetShot(0,0,-items[m->item].effectAmt,curMap,&curWorld);
+				itemTarget->GetShot(0,0,-items[m->item].effectAmt,curMap,&curWorld);
 			return 1;
 		case IE_WEAPON:
 			return PlayerGetWeapon(items[m->item].effectAmt,x,y);
@@ -1383,12 +1408,6 @@ byte TriggerItem(Guy *me,mapTile_t *m,int x,int y)
 			}
 			else
 			{
-				if(!editing && !player.cheated && verified)
-				{
-					profile.progress.keysFound+=items[m->item].effectAmt;
-					if(profile.progress.keysFound>=100)
-							CompleteGoal(73);
-				}
 				player.keys[0]+=items[m->item].effectAmt;
 			}
 			return 1;
@@ -1436,6 +1455,7 @@ byte TriggerItem(Guy *me,mapTile_t *m,int x,int y)
 			m->item=items[m->item].effectAmt;
 			return 1;
 		case IE_SUMMON:
+			printf("Summon monster\n");
 			AddGuy((x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,10*FIXAMT,items[m->item].effectAmt,2);
 			m->item=IT_NONE;
 			SmokeTile(x,y);
@@ -1449,7 +1469,7 @@ byte TriggerItem(Guy *me,mapTile_t *m,int x,int y)
 		case IE_HEALRANDOM:
 			if(player.life==goodguy->maxHP)
 				return 0;
-			PlayerChineseFood();
+			GiveChineseFood();
 			return 1;
 		case IE_BRAIN:
 			return PlayerGetBrain(items[m->item].effectAmt);
@@ -1597,6 +1617,11 @@ byte TriggerItem(Guy *me,mapTile_t *m,int x,int y)
 				return 0; // cannot work with negative or too high score
 			player.score += items[m->item].effectAmt;
 			return 1;
+		case IE_COMBOTIMER:
+			if (player.comboClock + items[m->item].effectAmt > (30*10))
+				return 0; // cannot work with negative or too high score
+			player.comboClock += items[m->item].effectAmt;
+			return 1;
 	}
 	return 0;
 }
@@ -1677,6 +1702,8 @@ byte GetVehicleCheck(word type, Guy* me)
 			switch (me->aiType)
 			{
 				case ENT_MINECART:
+				case ENT_RAFT:
+					return 1;
 				case ENT_YOUGO:
 				case ENT_AUTOZOID:
 				case ENT_TRAFFIC:
@@ -1736,8 +1763,11 @@ byte InteractWithItem(Guy *me,mapTile_t *m,int x,int y)
 	if(me->aiType==ENT_BOUAPHA && (items[type].passability == ITP_PICKUP) && me->hp>0)
 	{
 		result=1;
-		if(items[type].triggerType == ITRG_PICKUP)
-			result=TriggerItem(me,m,x,y);	// returns 0 if you can't pick it up, 2 if sound should be overriden
+		if (items[type].triggerType == ITRG_PICKUP)
+		{
+			itemTarget = me;
+			result = TriggerItem(me, m, x, y);	// returns 0 if you can't pick it up, 2 if sound should be overriden
+		}
 
 		if(result>0)
 		{
@@ -1766,6 +1796,7 @@ byte InteractWithItem(Guy *me,mapTile_t *m,int x,int y)
 
 	if(GetTeamBumpCheck(type,me))
 	{
+		itemTarget = me;
 		if(TriggerItem(me,m,x,y))
 		{
 			MakeSound(items[type].sound,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,SND_CUTOFF,1000);
@@ -1773,6 +1804,7 @@ byte InteractWithItem(Guy *me,mapTile_t *m,int x,int y)
 				NewMessage(items[type].msg,75,0);
 			result = 1;
 		}
+		itemTarget = nullptr;
 	}
 
 	return result;
@@ -1817,19 +1849,27 @@ byte BulletHitItem(bullet_t *me,mapTile_t *m,int x,int y)
 	return result;
 }
 
-void UpdateItem(mapTile_t *m,int width,int offset)
+void UpdateItem(mapTile_t* m, int width, int offset)
 {
-	int x,y;
+	int x, y;
+	byte result;
+	word item = m->item;
 
-	if(items[m->item].triggerType == ITRG_ALWAYS)
+	if (items[item].triggerType == ITRG_ALWAYS)
 	{
-		x=offset%width;
-		y=offset/width;
-		if(TriggerItem(NULL,m,x,y))
+		x = offset % width;
+		y = offset / width;
+
+		result = TriggerItem(itemTarget, m, x, y);
+		if (result)
 		{
-			MakeSound(items[m->item].sound,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,SND_CUTOFF,1000);
-			if(items[m->item].msg[0])
-				NewMessage(items[m->item].msg,75,0);
+			MakeSound(items[item].sound,
+				(x * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT,
+				(y * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT,
+				SND_CUTOFF, 1000);
+
+			if (items[item].msg[0])
+				NewMessage(items[item].msg, 75, 0);
 		}
 	}
 
@@ -1838,12 +1878,15 @@ void UpdateItem(mapTile_t *m,int width,int offset)
 		case ITB_BUBBLES:
 			x = offset % width;
 			y = offset / width;
-			BlowBubble((x * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (y * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 0, FIXAMT / 2);
+			BlowBubble((x * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT,
+				(y * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 0, FIXAMT / 2);
 			break;
+
 		case ITB_FIRE:
 			x = offset % width;
 			y = offset / width;
-			Burn((x * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (y * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, FIXAMT*12);
+			Burn((x * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT,
+				(y * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, FIXAMT * 12);
 			break;
 	}
 }
@@ -1970,4 +2013,68 @@ ItemRenderExtents GetItemRenderExtents()
 byte IsCustomItem(byte id)
 {
 	return (id >= NUM_ORIGINAL_ITEMS);
+}
+
+
+void HealTarget(word amt)
+{
+	if (itemTarget->hp + amt > itemTarget->maxHP)
+		return;
+
+	if (itemTarget->aiType == 0)
+	{
+		PlayerHeal(amt);
+		return;
+	}
+	else
+	{
+		HealRing(1, itemTarget->x, itemTarget->y, 0, 16, 2);
+		if (itemTarget->hp + amt < itemTarget->maxHP)
+			itemTarget->hp += amt;
+		else
+			itemTarget->hp = itemTarget->maxHP;
+	}
+}
+
+void GiveChineseFood(void)
+{
+	itemTarget->poison = 0;
+	switch (Random(8))
+	{
+	case 0:
+		NewMessage("Just fried rice", 75, 0);
+		HealTarget(5);
+		break;
+	case 1:
+		NewMessage("Mmm, Kung Pao!", 75, 0);
+		HealTarget(25);
+		break;
+	case 2:
+		NewMessage("Szechwan Shredded Pork!!", 75, 0);
+		itemTarget->ignite = 0;
+		itemTarget->weaken = 0;
+		itemTarget->slow = 0;
+		HealTarget(50);
+		break;
+	case 3:
+		NewMessage("Moo Shi Beef!", 75, 0);
+		HealTarget(25);
+		break;
+	case 4:
+		NewMessage("Ick, mostly veggies", 75, 0);
+		HealTarget(2);
+		break;
+	case 5:
+		NewMessage("Hmm, tastes kind of citrusy", 75, 0);
+		HealTarget(15);
+		break;
+	case 6:
+		NewMessage("Joy! Wontons!", 75, 0);
+		HealTarget(20);
+		break;
+	case 7:
+		NewMessage("General Tsao has outdone himself", 75, 0);
+		PlayerHeal(40);
+		break;
+	}
 }
